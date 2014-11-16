@@ -1,0 +1,200 @@
+Coding Convention for C Code
+============================
+Lars Pötter <lars@ing-poetter.de>
+1st draft
+
+[quote,  Brian Kernighan ]
+Everyone knows that debugging is twice as hard as writing a program in the first place. So if you're as clever as you can be when you write it, how will you ever debug it?
+
+
+Introduction
+------------
+This document is a collection of rules from other Coding Conventions found on the Internet. So if you recognize a sentence here and there it might actually be stolen from wherever you have read it before. But in the quest for the best possible solution and to not reinvent the wheel that should be allowed.
+Although this set of rules might seem overwhelming on first sight some rules have been left out on purpose. There is no benefit in discussions on where curly braces need to go. Therefore there is no rule in this document regulating the position of braces.
+Also rules that disallow very bad things, that only the experts even know that these are possible, have been skipped as well as bad examples for the rules to not give the reader wrong ideas. If you know all the advanced dangerous constructs(Trigraphs,..) then please be a professional and don't use them.
+If you really feel that you have to break a rule stated here, because it does not apply to the lines of code you are working on, then break the rule. That is the reason why the rules have arguments. The argument shall help to decide when the right thing to do is to break the rule. Be a nice person and document the reasons for breaking rules where appropriate. Pull request that only replace one formating scheme with another will be turned down. Please use your common sense, be consistent and adopt to the surrounding where appropriate.
+
+These rules are not set in stone. If the need arises they can be changed accordingly. But be warned we will not change the convention to add you favorite brace positions in and then spend endless days adopting all the code to the new rules.
+Please keep in mind no part of the code belongs to one coder. All the code belongs all the coders. So be a good Boy Scout and  "Always leave the campground cleaner than you found it." 
+
+Lets all concentrate on the important things(bug fixing and implementing new features). 
+
+All the Rules look like this:
+
+*Unique ID*: Text of the Rule. +
+*Reason*: explanation why the rule is here. +
+*Example*: an optional example to clarify the rule. +
+
+
+
+
+Files
+-----
+*F1*: The character encoding of all files shall be UTF-8. +
+*Reason*: UTF-8 is compatible to ASCII (in the first 127 characters) but provides all the Unicode characters. +
+
+*F2*: Use the following organization for source files: +
+- includes of system headers +
+- includes of local headers +
+- type and constant definitions +
+- variables +
+- functions +
+*Reason*: clear structure, includes in the middle of a c file can have interesting side effects +
+
+*F3*: Order your functions in a ``bottom up'' manner - defining functions before their use. +
+*Reason*: The benefit of avoiding redundant (hence error-prone) forward declarations outweighs the minor irritation of having to jump to the bottom of the file to find the main functions. +
+
+*F4*: Use the .h extension for header files and .c for source files. +
+*Reason*: It makes no sense to distinguish between different types of header files. And these are the standard extensions. +
+
+*F5*: Use Header File Guards. +
+*Reason*: Include files should be protected against multiple inclusion through the use of macros that "guard" the files. Note that for C++ compatibility and interoperability reasons, do not use underscores `_' as the first or last character of a header guard. +
+*Example*: +
++#ifndef SYS_SOCKET_H+ +
++#define SYS_SOCKET_H  /* NOT _SYS_SOCKET_H_ */+ +
+<now all the content of the header file> +
++#endif+ +
+
+
+Indentation
+-----------
+Coding style and formatting are pretty arbitrary, but a project is much easier to follow if everyone uses the same style. Individuals may not agree with every aspect of the formatting rules, and some of the rules may take some getting used to, but it is important that all project contributors follow the style rules so that they can all read and understand everyone's code easily. 
+
+*I1*:use spaces not tabs. +
+*Reason*: There is no common default value of how many spaces equal one tab character it might be 2 or 4 or 8. So Code that uses tabs will look different in different editors. As the memory saving of tabs is not relevant anymore spaces are the save solution for this issue. +
+
+*I2*:lines may not be longer than 80 characters. +
+*Reason*: For printing code on paper or displaying it in a small window it is a benefit to have short lines. But the bigger benefit is that short lines are easier to read than long lines. +
+*Example*:
+Function calls have the following format: +
++bool retval = DoSomething(argument1, argument2, argument3);+
+ +
+If the arguments do not all fit on one line, they should be broken up onto multiple lines, with each subsequent line aligned with the first argument. +
+----------------------------------------------------------
+bool retval = DoSomething(averyveryveryverylongargument1,
+                          argument2, argument3);
+----------------------------------------------------------
+If the function has many arguments, consider having one per line if this makes the code more readable: +
+----------------------------------------
+bool retval = DoSomething(argument1,
+                          argument2,
+                          argument3,
+                          argument4);
+----------------------------------------
+
+Comments
+--------
+good comments rarely state the obvious; rather, they tell the programmer something that isn't immediately obvious when reading the code itself. 
+
+When writing your comments, write for your audience: the next contributor who will need to understand your code. Be generous — the next one may be you! 
+
+If you do something weird, a comment to explain why can save future generations from wondering what drug you were on and where to get it.
+
+*C1*: code should not be commented out. +
+*Reason*: That's what git is for. +
+
+*C2*: comments shall start with `/**` so that they can be used by automatic documentation tools such as doxygen. +
+*Reason*: If doxygen can create some documentation for us then we do not have to write it! Yeah! +
+
+*C3*: Comments should document decisions. +
+*Reason*: At every point where you had a choice of what to do place a comment describing which choice you made and why. Archaeologists will find this the most useful information. +
+
+
+Naming
+------
+A name is the result of a long deep thought process about the ecology it lives in. Only a programmer who understands the system as a whole can create a name that "fits" with the system. If the name is appropriate everything fits together naturally, relationships are clear, meaning is derivable, and reasoning from common human expectations works as expected.
+
+If you find all your names could be Thing and DoIt then you should probably revisit your design. 
+
+*N1*: use descriptive names. +
+*Reason*: that makes it easier to understand what the variable will be used for. +
+
+*N2*: Avoid "Hungarian"-style naming conventions which encode type information in variable names. +
+*Reason*: They may be systematic, but they'll screw you if you ever need to change the type of a variable. If the variable has a small scope, the type will be visible in the declaration, so the annotation is useless clutter. If the variable has a large scope, the code should be modular against a change in the variable's type. +
+
+*N3*:Include Units in Names. +
+*Reason*: If a variable represents time, weight, or some other unit then include the unit in the name so developers can more easily spot problems. +
+*Example*: +
++uint32 timeout_msecs;+ +
++uint32 my_weight_kg;+ +
+
+*N4*: When a name has to consist of several words, separate words by underscores, not by CamelCase. +
+*Reason*: nobody uses CamelCase in C. +
+
+
+
+Dangerous language constructs
+-----------------------------
+As the introduction states not all baned coding techniques are listed in this chapter. If unsure about a certain construct let the spirit of the rules and especially the first rule guide you.
+
+*D1*:Don't create clever code. +
+*Reason*: Debugging is more difficult than coding. So if your code is as clever as you can make it then you are by definition to stupid to debug it ! +
+
+*D2*: Avoid using global variables; Avoid exporting names outside of individual C source files; i.e., declare as static every function and global variable that you possibly can. +
+*Reason*: This makes the code easier to understand, easier to change/extend. +
+
+*D3*: Each global Variable shall have a module prefix. +
+*Reason*: There are weaknesses in C for large-scale programming - there is only a single, flat name scope level greater than the module level. Therefore, libraries whose implementations have more than one module can't guard their inter-module linkage from conflicting with any other global identifiers. The best solution to this problem is to give each library a short prefix that it prepends to all global identifiers. +
+
+*D4*: Define Constants and use them. No magic numbers! +
+*Reason*: Constants make your code more readable, and easier to change (if you decide MAX should be 100 instead of 50, just change the constant definition rather than finding all uses of 50 in your program and trying to decide which 50's correspond to max value and changing just those 50's) +
+
+*D5*: fully capitalize Macros and Defines. +
+*Reason*: Macros can be dangerous. This makes them easily recognizable. +
+*Example*: +
++#define NUMBER_TASKS 8+ +
++#define IS_NORMAL(S) ((S)->state == Normal)+ +
+
+*D6*:All if, while and do statements require braces even if there is only a single statement within the braces. +
+*Reason*: It ensures that when someone adds a line of code later there are already braces and they don't forget. It provides a more consistent look. This doesn't affect execution speed. It's easy to do. +
+*Example*: +
+----------------------
+if (1 == somevalue) {
+   somevalue = 2;
+}
+----------------------
+
+*D7*: In switch statements, be sure every case ends with either a break, continue, return, or `/* fall through */` comment. Especially don't forget to put a break on the last case of a switch statement. +
+*Reason*: If you do, I promise someone will forget to add one someday when adding new cases. For the upper cases it shows if the fall Trough is intentional or not. +
+
+*D8*. do not use goto ! +
+*Reason*: It makes the code hard to understand and has the potential to cause bigger problems. +
+
+*D9*: use Yoda notation ! +
+*Explanation*: Yoda is a figure in the Star Wars Universe. He has his grammar backwards. In the context of C Yoda Notation means that instead of writing +if(i==5)+ you should write +if(5==i)+. +
+*Reason*: For a C compiler this: +if(i=5)+ is valid code. But is probably not what was intended, and also hard to spot. You saw that missing second equal sign right? +
+
+*D10*: only one statement per line. +
+*Reason*: clarity, makes the code easier to read. +
+
+
+*D11*:Functions should be short and sweet. +
+*Reason*: If a function won't fit on a single screen, it's probably too long. Don't be afraid to break functions down into smaller helper functions. If they are static to the module an optimizing compiler can inline them again, if necessary. Helper functions can also be reused by other functions. +
+However, sometimes it is hard to break things down. Since functions don't nest, variables have to be communicated through function arguments or global variables. Don't create huge interfaces to enable a decomposition that is just not meant to be. +
+The idea is that the each method represents a technique for achieving a single objective. +
+Most arguments of inefficiency turn out to be false in the long run. +
+True function calls are slower than not, but there needs to a thought out decision (see premature optimization). +
+
+
+*D12*: In C macros are not needed for code efficiency. Use inlines. However, macros for small functions are OK. +
+*Reason*: Inline functions get checked by the compiler for errors. Macros are not checked. +
+
+
+*D13*: Always Wrap the Expression in Parenthesis. +
+*Reason*: When putting expressions in macros always wrap the expression in parenthesis to avoid potential communitive operation abiguity. +
+*Example*: `#define ADD(x,y) x + y` must be written as `#define ADD(x,y) ((x) + (y))` +
+
+*D14*:Initialize all Variables. +
+*Reason*: More problems than you can believe are eventually traced back to a pointer or variable left uninitialized. +
+
+
+Parting Words
+-------------
+*Use common sense and BE CONSISTENT.*
+
+If you are editing code, take a few minutes to look at the code around you and determine its style. If they use spaces around their if clauses, you should, too. If their comments have little boxes of stars around them, make your comments have little boxes of stars around them too.
+
+The point of having style guidelines is to have a common vocabulary of coding so people can concentrate on what you are saying, rather than on how you are saying it. We present global style rules here so people know the vocabulary. But local style is also important. If code you add to a file looks drastically different from the existing code around it, the discontinuity throws readers out of their rhythm when they go to read it. Try to avoid this.
+
+OK, enough writing about writing code; the code itself is much more interesting. Have fun! 
+

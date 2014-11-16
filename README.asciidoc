@@ -1,0 +1,34 @@
+Pacemaker Client
+----------------
+
+The pacemaker client is the counterpart to the pacemaker host. The Client handles the time critical tasks.
+You can find the pacemaker host here: https://github.com/JustAnother1/Pacemaker
+
+Summary
+-------
+
+The Pacemaker protocol provides an open interface to allow the separation of real-time and non-real-time control components for 3D printers, CNC machines and laser cutters.
+
+This has the huge benefit of allowing new controller hardware (the real-time component) to work with existing host software solutions (the non-real-time component). This makes it easy to expand the Pacemaker system to new machines.
+
+Pacemaker allows a much richer level of machine control by the non-real-time host software than is possible with typical G-code based systems. This provides feature-rich host software, more integrated start-to-finish tool chain solutions whilst still being able to operate on a wide range of platforms.
+
+Building and Starting
+---------------------
+
+The firmware can be build using make. The generated Files will be placed in the bin folder.
+
+License
+-------
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License version 2
+as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along
+with this program; if not, see <http://www.gnu.org/licenses/>
