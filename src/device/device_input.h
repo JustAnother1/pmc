@@ -23,7 +23,7 @@ uint_fast8_t dev_input_get_count(void);
 uint_fast8_t dev_input_get_status(uint_fast8_t number);
 void dev_input_enable(uint_fast8_t switch_number, uint_fast8_t enable);
 void dev_input_enable_two(uint_fast8_t switch_number, uint_fast8_t enable, uint_fast8_t switch_number2, uint_fast8_t enable2);
-uint_fast8_t dev_input_get_name(uint_fast8_t number, uint_fast8_t *position);
+uint_fast8_t dev_input_get_name(uint_fast8_t number, uint8_t *position);
 uint_fast8_t dev_input_get_switch_state(uint_fast8_t number);
 
 #endif /* DEVICE_INPUT_H_ */

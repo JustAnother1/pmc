@@ -15,12 +15,10 @@
 
 #include "step.h"
 #include "error.h"
+#ifdef HAS_SPI
+#include "hal_spi.h"
+#endif
 
-// 20 bit per stepper in Bytes (1 Stepper = 3 Bytes; 2 Stepper = 5 Bytes; 4 Stepper = 10 Bytes)
-#define SPI_BUFFER_LENGTH           5
-
-#define STEP_PORT                   P2
-#define DIR_PORT                    P3
 #define STEP_CHUNK_SIZE             10
 
 #define SLOT_TYPE_EMPTY             0
@@ -32,10 +30,10 @@
 #define MOVE_PHASE_DECELLERATE      2
 // Timer runs on 12 MHz clock.
 #define STEP_TIME_ONE_MS            12000
-
-
-static void start_spi_transaction(uint_fast8_t *data_to_send, uint_fast8_t idx_of_first_byte);
-static void do_spi_transaction(uint_fast8_t *data_to_send, uint_fast8_t idx_of_first_byte);
+#ifdef HAS_SPI
+// 20 bit per stepper in Bytes (1 Stepper = 3 Bytes; 2 Stepper = 5 Bytes; 4 Stepper = 10 Bytes)
+#define SPI_BUFFER_LENGTH           5
+#endif
 
 static void calculate_conmstant_speed_reloads(void);
 static void calculate_chunk_constant_speed(void);
@@ -44,18 +42,20 @@ static void calculate_chunk_decellerate(void);
 static void get_steps_for_this_phase(float factor);
 static void calculate_step_chunk(uint_fast8_t num_slots);
 
-static uint_fast8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
-// The index of the byte in the current buffer that will be send next,
-// will be decremented to 0 - end of message
-static uint_fast8_t spi_offset;
-// pointer to Bytes to send
-static uint_fast8_t * spi_send_buffer;
-// SPI is idle
-static bool spi_idle;
+#if !defined(USE_STEP_DIR) && !defined(HAS_SPI)
+#error "Can not do steps! Need either SPI or STEP + DIR or both !"
+#endif
 
 static uint_fast8_t step_pos = 0;
 static uint_fast8_t stop_pos = 0;
-#ifdef USE_SPI_FOR_STEPS
+#ifdef USE_STEP_DIR
+static uint_fast8_t next_step[256];
+static uint_fast8_t next_direction[256];
+#endif
+
+#ifdef HAS_SPI
+static uint8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
+
 // DRVCTRL in SPI Mode:
 //
 // Bit     |Range  |Meaning
@@ -65,8 +65,7 @@ static uint_fast8_t stop_pos = 0;
 // 9-16    |0..255 |Current in coil A
 // 8       |0/1    |Polarity B
 // 0..7    |0..255 |Current in coil B
-
-static uint_fast8_t DRVCONTROL_Buffer[32][3] = {
+static uint8_t DRVCONTROL_Buffer[32][3] = {
         //  0,    1,    2
         {0x00, 0xf0, 0x01}, // 0
         {0x30, 0xe6, 0x01}, // 1
@@ -105,10 +104,7 @@ uint_fast8_t cur_step = 0;
 bool direction_is_increasing = true;
 bool is_a_move[256];
 #endif
-#ifdef USE_STEP_DIR_FOR_STEPS
-static uint_fast8_t next_step[256];
-static uint_fast8_t next_direction[256];
-#endif
+
 static uint_fast16_t next_reload[256];
 
 static bool reached_tag = false;
@@ -118,7 +114,7 @@ static bool busy = false;
 static uint_fast16_t delay_ms = 0;
 // to handle Basic Linear Move:
 static uint_fast16_t steps_on_axis[8];
-static uint_fast8_t invertea_axis = 0; // each inverted Axis has a 1 in this bitmap
+static uint_fast8_t inverted_axis = 0; // each inverted Axis has a 1 in this bitmap
 static uint_fast8_t direction_for_move;
 static bool is_a_homing_move;
 static uint_fast8_t phase_of_move;
@@ -185,9 +181,9 @@ void step_init(void)
     }
     start_speed = 0;
 
-
-    // initialize SPI Hardware
-    spi_idle = true;
+#ifdef HAS_SPI
+    hal_spi_init();
+#endif
 }
 
 /*
@@ -222,8 +218,7 @@ void step_init(void)
  writing the calculated values out to the port pins.
 
  */
-/*
-INTERRUPT(step_isr, INTERRUPT_TIMER4) // 16bit Timer at 12MHz Tick Rate High priority !
+void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 {
     if(step_pos == stop_pos)
     {
@@ -233,11 +228,10 @@ INTERRUPT(step_isr, INTERRUPT_TIMER4) // 16bit Timer at 12MHz Tick Rate High pri
     }
     else
     {
-#ifdef USE_STEP_DIR_FOR_STEPS
-        STEP_PORT = next_step[step_pos];
-        DIR_PORT = next_direction[step_pos];
-#endif
-#ifdef USE_SPI_FOR_STEPS
+#ifdef USE_STEP_DIR
+        // STEP_PORT = next_step[step_pos];
+        // DIR_PORT = next_direction[step_pos];
+#else
         if(true == is_a_move[step_pos])
         {
             start_spi_transaction(&DRVCONTROL_Buffer[cur_step][0], 2);
@@ -267,7 +261,7 @@ INTERRUPT(step_isr, INTERRUPT_TIMER4) // 16bit Timer at 12MHz Tick Rate High pri
         step_pos++;
     }
 }
-*/
+
 
 /*
        +-----+
@@ -288,8 +282,7 @@ INTERRUPT(step_isr, INTERRUPT_TIMER4) // 16bit Timer at 12MHz Tick Rate High pri
 
 
  */
-/*
-INTERRUPT(step_buffer_isr, INTERRUPT_TIMER3)
+static void refill_step_buffer(void)
 {
     uint_fast8_t free_slots;
     if(stop_pos > step_pos)
@@ -312,7 +305,7 @@ INTERRUPT(step_buffer_isr, INTERRUPT_TIMER3)
         // TODO stop this timer if we have nothing to do
     }
 }
-*/
+
 
 static void get_steps_for_this_phase(float factor)
 {
@@ -372,10 +365,9 @@ static void calculate_chunk_constant_speed(void)
             if(cur_reload >= next_move_on_axis_in[i])
             {
                 // make a step
-#ifdef USE_STEP_DIR_FOR_STEPS
+#ifdef USE_STEP_DIR
             // TODO STEP_PORT = next_step[step_pos];
-#endif
-#ifdef USE_SPI_FOR_STEPS
+#else
                 is_a_move[stop_pos] = true;
 #endif
                 next_reload[stop_pos] = cur_reload;
@@ -442,8 +434,8 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
 
 
             // TODO
-#ifdef USE_STEP_DIR_FOR_STEPS
-            DIR_PORT[stop_pos] = direction_for_move;
+#ifdef USE_STEP_DIR
+            // TODO DIR_PORT[stop_pos] = direction_for_move;
 #endif
             stop_pos ++;
         }
@@ -464,12 +456,11 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
                 cur_slot_type = SLOT_TYPE_EMPTY;
                 return;
             }
-#ifdef USE_STEP_DIR_FOR_STEPS
+#ifdef USE_STEP_DIR
             // TODO STEP_PORT = nextStep[stepPos];
             // TODO DIR_PORT = nextDirection[stepPos];
-#endif
-#ifdef USE_SPI_FOR_STEPS
-            is_a_move[stop_pos] = FALSE;
+#else
+            is_a_move[stop_pos] = false;
 #endif
             next_reload[stop_pos] = STEP_TIME_ONE_MS;
             stop_pos ++;
@@ -499,7 +490,7 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         // active Axes
         active_axes_map = *(move_data + 2);
         // Directions of Axis are in that byte. The XOR takes care of the inverted axes
-        direction_for_move = invertea_axis ^ *(move_data + 4);
+        direction_for_move = inverted_axis ^ *(move_data + 4);
         // primary Axis
         primary_axis = (0x0f & *(move_data + 5));
         // Homing ?
@@ -532,7 +523,7 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         // active Axes
         active_axes_map = (0x7f & *(move_data + 1));
         // Directions of Axis are in that byte. The XOR takes care of the inverted axes
-        direction_for_move = invertea_axis ^ (0x7f & *(move_data + 2));
+        direction_for_move = inverted_axis ^ (0x7f & *(move_data + 2));
         // primary Axis
         primary_axis = (0x0f & *(move_data + 3));
         // Homing ?
@@ -662,6 +653,7 @@ bool step_has_reached_tag(void)
 
 uint_fast8_t step_detect_number_of_steppers(void)
 {
+#ifdef HAS_SPI
     /*
     uint_fast8_t detect_data[5];
     uint_fast8_t i;
@@ -670,7 +662,7 @@ uint_fast8_t step_detect_number_of_steppers(void)
     {
         detect_data[i] = 0;
     }
-    do_spi_transaction(&detect_data[0], 4);
+    hal_spi_do_transaction(&detect_data[0], 4, 5, &spi_receive_buffer);
     // last Stepper:
     if( (   (0xff == spi_receive_buffer[0])
          && (0xff == spi_receive_buffer[1])
@@ -704,12 +696,16 @@ uint_fast8_t step_detect_number_of_steppers(void)
     // TODO
     return count;
     */
-    return 2;
+    return 1;
+#else
+    return 1;
+#endif
 }
 
 void step_configure_steppers(uint_fast8_t num_steppers)
 {
-    uint_fast8_t cfg_data[5];
+#ifdef HAS_SPI
+    uint8_t cfg_data[5];
 
     if(0 == num_steppers)
     {
@@ -746,7 +742,7 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0x29;
     cfg_data[3] = 0x9f;
     cfg_data[4] = 0x9a;
-    do_spi_transaction(&cfg_data[0], 4);
+    hal_spi_do_transaction(&cfg_data[0], 4, 5, &spi_receive_buffer[0]);
 
     // SGCSCONF
     //
@@ -767,7 +763,7 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0xfc;
     cfg_data[3] = 0x41;
     cfg_data[4] = 0xc0;
-    do_spi_transaction(&cfg_data[0], 4);
+    hal_spi_do_transaction(&cfg_data[0], 4, 5, &spi_receive_buffer[0]);
 
 
     // DRVCONF
@@ -793,7 +789,7 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0x0e;
     cfg_data[3] = 0x4e;
     cfg_data[4] = 0xef;
-    do_spi_transaction(&cfg_data[0], 4);
+    hal_spi_do_transaction(&cfg_data[0], 4, 5, &spi_receive_buffer[0]);
 
 
     // SMARTEN
@@ -820,58 +816,16 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0x0a;
     cfg_data[3] = 0x00;
     cfg_data[4] = 0xa0;
-    do_spi_transaction(&cfg_data[0], 4);
+    hal_spi_do_transaction(&cfg_data[0], 4, 5, &spi_receive_buffer[0]);
 
     // TODO
 
-#ifdef USE_STEP_DIR_FOR_STEPS
+#ifdef USE_STEP_DIR
+
+#else
 
 #endif
-#ifdef USE_SPI_FOR_STEPS
-
 #endif
-
 }
 
-static void do_spi_transaction(uint_fast8_t *data_to_send, uint_fast8_t idx_of_first_byte)
-{
-    start_spi_transaction(data_to_send, idx_of_first_byte);
-    /*
-    while(false == spi_idle)
-    {
-        ; // wait until we have the data back;
-    }
-    */
-}
-
-static void start_spi_transaction(uint_fast8_t *data_to_send, uint_fast8_t idx_of_first_byte)
-{
-    spi_send_buffer = data_to_send;
-    spi_idle = false;
-    spi_offset = idx_of_first_byte;
-    // SPI0DAT = spi_send_buffer[idx_of_first_byte];
-}
-
-/*
-INTERRUPT(spi_isr, INTERRUPT_SPI0)
-{
-
-    SPI0CN &= ~0x80; // reset Interrupt Flag
-    if(0 == spi_offset)
-    {
-        spi_receive_buffer[0] = SPI0DAT;
-        NSS = 1;
-        spi_idle = TRUE;
-        return;
-    }
-    else
-    {
-        spi_receive_buffer[spi_offset] = SPI0DAT;
-        spi_offset--;
-        SPI0DAT = spi_send_buffer[spi_offset];
-        return;
-    }
-
-}
-*/
 // end of File

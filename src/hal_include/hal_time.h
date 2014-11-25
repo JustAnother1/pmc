@@ -16,6 +16,9 @@
 #ifndef HAL_TIME_H_
 #define HAL_TIME_H_
 
+#include <inttypes.h>
+
 void hal_time_init(void);
+void hal_time_ms_sleep(uint32_t ms);
 
 #endif /* HAL_TIME_H_ */

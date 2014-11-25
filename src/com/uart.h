@@ -25,7 +25,7 @@ uint_fast8_t uart_get_order(void);
 uint_fast8_t uart_get_parameter_byte(uint_fast8_t index);
 uint_fast8_t uart_get_parameter_length(void);
 uint_fast8_t uart_get_control(void);
-void uart_send_frame(uint_fast8_t * frame, uint_fast16_t length);
+void uart_send_frame(uint8_t * frame, uint_fast16_t length);
 void uart_forget_frame(void);
 
 #endif /* UART_H_ */

@@ -46,3 +46,12 @@ static void* ms_timer_task(void * arg)
     return NULL;
 }
 
+void hal_time_ms_sleep(uint32_t ms)
+{
+    uint32_t i;
+    for(i = 0; i < ms; i++)
+    {
+        usleep(1000);
+    }
+}
+

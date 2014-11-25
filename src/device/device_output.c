@@ -26,7 +26,7 @@ uint_fast8_t dev_output_get_count(void)
     return 0;
 }
 
-uint_fast8_t dev_output_get_name(uint_fast8_t number, uint_fast8_t *position)
+uint_fast8_t dev_output_get_name(uint_fast8_t number, uint8_t *position)
 {
     return 0;
 }

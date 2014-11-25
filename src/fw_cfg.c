@@ -40,7 +40,7 @@ void fw_cfg_set_value_to(uint_fast8_t parameterLength)
 
 }
 
-uint_fast8_t fw_cfg_write_setting_to(uint_fast8_t setting, uint_fast8_t *position)
+uint_fast8_t fw_cfg_write_setting_to(uint_fast8_t setting, uint8_t *position)
 {
     switch(setting)
     {

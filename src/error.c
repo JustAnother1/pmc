@@ -13,9 +13,11 @@
  *
  */
 
+#include <stdbool.h>
 #include "error.h"
 #include "com.h"
 #include "hal_cpu.h"
+#include "hal_led.h"
 
 void error_fatal_error(char* msg)
 {
@@ -26,6 +28,7 @@ void error_fatal_error(char* msg)
 
 void error_signal_error_and_die(void)
 {
+    hal_led_set_error_led(true);
     hal_cpu_signal_error();
     hal_cpu_die();
 }

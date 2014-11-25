@@ -28,6 +28,7 @@
 #include "fw_cfg.h"
 #include "command_queue.h"
 #include "hal_watchdog.h"
+#include "hal_cpu.h"
 
 
 int main (void)
@@ -35,6 +36,7 @@ int main (void)
 #ifdef WATCHDOG_ACTIVE
     watchdog_init();
 #endif
+    hal_cpu_init_hal();
     time_base_init(); // start time base
     events_init();
     fw_cfg_init();

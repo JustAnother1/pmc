@@ -13,15 +13,18 @@
  *
  */
 
-#ifndef DEVICE_TEMPERATURE_SENSOR_H_
-#define DEVICE_TEMPERATURE_SENSOR_H_
+#include "hal_spi.h"
 
-#include <inttypes.h>
+void hal_spi_init(void)
+{
 
-void dev_temperature_sensor_init(void);
-uint_fast8_t dev_temperature_sensor_get_count(void);
-uint_fast8_t dev_temperature_sensor_get_name(uint_fast8_t number, uint8_t *position);
-uint_fast8_t dev_temperature_sensor_get_status(uint_fast8_t number);
-uint_fast16_t dev_temperature_sensor_get_temperature(uint_fast8_t number);
+}
 
-#endif /* DEVICE_TEMPERATURE_SENSOR_H_ */
+void hal_spi_do_transaction(uint8_t *data_to_send,
+                            uint_fast8_t idx_of_first_byte,
+                            uint_fast8_t num_bytes_to_send,
+                            uint8_t *data_received)
+{
+
+}
+

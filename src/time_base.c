@@ -18,7 +18,7 @@
 
 #include <inttypes.h>
 
-static uint_fast16_t now = 0;
+static uint32_t now = 0;
 
 // start the milli second counter -  Timer 5
 void time_base_init(void)
@@ -29,6 +29,11 @@ void time_base_init(void)
 void time_base_ISR(void)
 {
     now++;
+}
+
+uint32_t time_base_get_tick(void)
+{
+    return now;
 }
 
 // end of File

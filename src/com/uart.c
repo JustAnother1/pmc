@@ -35,7 +35,7 @@ bool start_uart(void)
     return hal_uart_init();
 }
 
-void uart_send_frame(uint_fast8_t * frame, uint_fast16_t length)
+void uart_send_frame(uint8_t * frame, uint_fast16_t length)
 {
     if(1 > length)
     {

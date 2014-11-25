@@ -23,5 +23,5 @@ bool hal_uart_init(void);
 uint_fast8_t hal_uart_get_byte_at_offset(uint_fast16_t offset);
 uint_fast16_t hal_uart_get_available_bytes(void);
 void hal_uart_forget_bytes(uint_fast16_t how_many);
-void hal_uart_send_frame(uint_fast8_t * frame, uint_fast16_t length);
+void hal_uart_send_frame(uint8_t * frame, uint_fast16_t length);
 #endif /* HAL_UART_H_ */

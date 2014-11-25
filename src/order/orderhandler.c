@@ -64,7 +64,7 @@ void oh_handle_request_information(uint_fast8_t parameter)
 
     case 6: // list of supported protocol extensions
     {
-        uint_fast8_t *para_start = com_get_start_parameter();
+        uint8_t *para_start = com_get_start_parameter();
         *(para_start + 0) = 0; // Stepper Control
         *(para_start + 1) = 1; // Queued Command
         *(para_start + 2) = 2; // Basic Move
@@ -96,11 +96,11 @@ void oh_handle_request_information(uint_fast8_t parameter)
 
     case 12: // maximum supported Step rate
     {
-        uint_fast8_t *para_start = com_get_start_parameter();
-        *(para_start + 0) = (MAX_STEP_RATE >> 24) & 0xff;
-        *(para_start + 1) = (MAX_STEP_RATE >> 16) & 0xff;
-        *(para_start + 2) = (MAX_STEP_RATE >> 8)  & 0xff;
-        *(para_start + 3) =  MAX_STEP_RATE        & 0xff;
+        uint8_t *para_start = com_get_start_parameter();
+        *(para_start + 0) = (uint8_t)(MAX_STEP_RATE >> 24) & 0xff;
+        *(para_start + 1) = (uint8_t)(MAX_STEP_RATE >> 16) & 0xff;
+        *(para_start + 2) = (uint8_t)(MAX_STEP_RATE >> 8)  & 0xff;
+        *(para_start + 3) = (uint8_t) MAX_STEP_RATE        & 0xff;
         com_send_ok_with_prefilled_parameter(4);
     }
         break;
@@ -290,7 +290,7 @@ void oh_handle_request_temperature_reading(uint_fast8_t parameter_length)
 {
     uint_fast8_t bytes_done = 0;
     uint_fast16_t temperature = 0;
-    uint_fast8_t * result_position = com_get_start_parameter();
+    uint8_t * result_position = com_get_start_parameter();
     while(1 < parameter_length - bytes_done)
     {
         switch(com_get_parameter_byte(bytes_done + 0))
@@ -316,9 +316,9 @@ void oh_handle_request_temperature_reading(uint_fast8_t parameter_length)
             com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
             return;
         }
-        *result_position =(uint_fast8_t)(temperature >> 8);
+        *result_position =(uint8_t)(temperature >> 8);
         result_position++;
-        *result_position = (uint_fast8_t)(0xff & temperature);
+        *result_position = (uint8_t)(0xff & temperature);
         result_position++;
         bytes_done = bytes_done + 2;
     }
@@ -329,7 +329,7 @@ void oh_handle_request_state_of_switch(uint_fast8_t parameter_length)
 {
     uint_fast8_t bytes_done = 0;
     uint_fast8_t switch_state = 0;
-    uint_fast8_t * result_position = com_get_start_parameter();
+    uint8_t * result_position = com_get_start_parameter();
     while(1 < parameter_length - bytes_done)
     {
         switch(com_get_parameter_byte(bytes_done + 0))
@@ -355,7 +355,7 @@ void oh_handle_request_state_of_switch(uint_fast8_t parameter_length)
             com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
             return;
         }
-        *result_position =switch_state;
+        *result_position =(uint8_t)switch_state;
         result_position++;
         bytes_done = bytes_done + 2;
     }

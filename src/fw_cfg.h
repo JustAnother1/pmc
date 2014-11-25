@@ -22,7 +22,7 @@
 #define SETTING_GIVEN_NAME      1
 #define LAST_SETTING_IDX        1
 
-uint_fast8_t fw_cfg_write_setting_to(uint_fast8_t setting, uint_fast8_t *position);
+uint_fast8_t fw_cfg_write_setting_to(uint_fast8_t setting, uint8_t *position);
 void fw_cfg_init(void);
 void fw_cfg_get_value_property(uint_fast8_t idx);
 void fw_cfg_get_next_value(uint_fast8_t last_value_idx);

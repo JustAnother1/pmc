@@ -16,7 +16,10 @@
 #ifndef TIME_BASE_H_
 #define TIME_BASE_H_
 
+#include <inttypes.h>
+
 void time_base_init(void);
 void time_base_ISR(void);
+uint32_t time_base_get_tick(void);
 
 #endif /* TIME_BASE_H_ */

@@ -60,7 +60,7 @@ uint_fast8_t dev_stepper_get_count(void)
     return available_steppers;
 }
 
-uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint_fast8_t *position)
+uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint8_t *position)
 {
     if(number > available_steppers -1)
     {

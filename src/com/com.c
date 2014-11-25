@@ -26,6 +26,7 @@
 #include "events.h"
 #include "command_queue.h"
 #include "hal_cpu.h"
+#include "hal_time.h"
 #include "error.h"
 
 #if defined(HAS_USB) && defined(HAS_UART)
@@ -43,7 +44,7 @@
 
 #define NOT_MATCHING_SEQUENCE_NUMBER  255
 
-static uint_fast8_t send_buffer[MAX_SEND_FRAME_SIZE];
+static uint8_t send_buffer[MAX_SEND_FRAME_SIZE];
 #define CS_STOPPED       0
 #define CS_CLEARED       1
 static uint_fast8_t client_state = CS_STOPPED;
@@ -52,9 +53,8 @@ static uint_fast8_t cause = STOPPED_CAUSE_RESET;
 static uint_fast8_t last_sequence_number = NOT_MATCHING_SEQUENCE_NUMBER; // Invalid Number so that it does not match
 static uint_fast16_t cached_length;
 static uint_fast8_t cur_sequence_number = NOT_MATCHING_SEQUENCE_NUMBER;
-static uint_fast8_t wrong_length[] = "wrong length : ";
 static uint_fast8_t string_length[NUMBER_OF_STRINGS] = {15};
-static uint_fast8_t *strings[NUMBER_OF_STRINGS] = {&wrong_length[0]};
+static const char *strings[NUMBER_OF_STRINGS] = {"wrong length : "};
 
 static const uint_fast8_t crc_array[256] =
 {
@@ -84,8 +84,8 @@ static void send_cached_frame(void);
 static void send_stopped_response(void);
 static void send_frame(uint_fast16_t length);
 static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint_fast8_t control);
-static void fill_in_byte(uint_fast8_t value, uint_fast8_t *position);
-static void fill_in_nibble(uint_fast8_t value, uint_fast8_t *position);
+static void fill_in_byte(uint_fast8_t value, uint8_t *position);
+static void fill_in_nibble(uint_fast8_t value, uint8_t *position);
 static uint_fast8_t crc8(uint_fast8_t length);
 
 
@@ -598,7 +598,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
 
         case ORDER_RESET:
             com_send_ok_response(); // it might get through
-            hal_cpu_ms_sleep(20); // give the Response a realistic chance
+            hal_time_ms_sleep(20); // give the Response a realistic chance
             hal_cpu_do_software_reset();
             break;
 
@@ -647,17 +647,17 @@ uint_fast8_t com_crc_a_byte(uint_fast8_t new_byte, uint_fast8_t old_crc)
     return crc_array[new_byte ^ old_crc];
 }
 
-uint_fast8_t *com_get_start_parameter(void)
+uint8_t *com_get_start_parameter(void)
 {
     return &send_buffer[REPLY_FRAME_START_OF_PARAMETER];
 }
 
-uint_fast8_t com_copy_string_to_parameter(char* str, uint_fast8_t* parameter)
+uint_fast8_t com_copy_string_to_parameter(char* str, uint8_t* parameter)
 {
     uint_fast8_t length = 0;
     while(0 != *str)
     {
-        *parameter = *str;
+        *parameter = (uint8_t)*str;
         str ++;
         parameter ++;
         length ++;
@@ -780,7 +780,7 @@ void com_send_debug_frame_with_filled_parameter(uint_fast8_t parameter_length)
     send_frame(5 + parameter_length);
 }
 
-static void fill_in_nibble(uint_fast8_t value, uint_fast8_t *position)
+static void fill_in_nibble(uint_fast8_t value, uint8_t *position)
 {
     switch(value)
     {
@@ -803,7 +803,7 @@ static void fill_in_nibble(uint_fast8_t value, uint_fast8_t *position)
     }
 }
 
-static void fill_in_byte(uint_fast8_t value, uint_fast8_t *position)
+static void fill_in_byte(uint_fast8_t value, uint8_t *position)
 {
     uint_fast8_t highNibble = (0xf0 & value) >>4;
     fill_in_nibble(highNibble, position);
@@ -814,7 +814,7 @@ static void fill_in_byte(uint_fast8_t value, uint_fast8_t *position)
 void com_send_generic_application_error_response_with_comment(uint_fast8_t cause, uint_fast8_t message_index, uint_fast8_t value)
 {
     uint_fast8_t i;
-    uint_fast8_t *p = &strings[message_index][0];
+    const char *p = strings[message_index];
     send_buffer[REPLY_FRAME_POS_OF_LENGTH] = 5 + string_length[message_index];
     send_buffer[REPLY_FRAME_POS_OF_CONTROL] = cur_sequence_number;
     send_buffer[REPLY_FRAME_POS_OF_REPLY_CODE] = REPLY_CODE_GENERIC_APPLICATION_ERROR;

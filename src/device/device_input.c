@@ -41,7 +41,7 @@ void dev_input_enable_two(uint_fast8_t switch_number, uint_fast8_t enable, uint_
 
 }
 
-uint_fast8_t dev_input_get_name(uint_fast8_t number, uint_fast8_t *position)
+uint_fast8_t dev_input_get_name(uint_fast8_t number, uint8_t *position)
 {
     return 0;
 }

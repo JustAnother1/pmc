@@ -16,7 +16,10 @@
 #ifndef HAL_LED_H_
 #define HAL_LED_H_
 
+#include <stdbool.h>
+
 void hal_led_init(void);
 void hal_led_toggle_debug_led(void);
+void hal_led_set_error_led(bool on);
 
 #endif /* HAL_LED_H_ */
