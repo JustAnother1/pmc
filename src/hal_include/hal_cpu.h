@@ -17,9 +17,8 @@
 #define HAL_CPU_H_
 
 void hal_cpu_init_hal(void);
-void hal_cpu_signal_error(void);
+void hal_cpu_start_ms_timer(void);
 void hal_cpu_die(void);
 void hal_cpu_do_software_reset(void);
-void hal_cpu_start_ms_timer(void);
 
 #endif /* HAL_CPU_H_ */

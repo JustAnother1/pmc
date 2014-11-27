@@ -23,11 +23,6 @@ void hal_cpu_init_hal(void)
 
 }
 
-void hal_cpu_signal_error(void)
-{
-
-}
-
 void hal_cpu_die(void)
 {
     exit(1);
