@@ -16,7 +16,10 @@ Pacemaker allows a much richer level of machine control by the non-real-time hos
 Building and Starting
 ---------------------
 
-The firmware can be build using make. The generated Files will be placed in the bin folder.
+The firmware can be build using make. The generated Files will be placed in the bin folder. For details try
+
++make help+
+
 
 License
 -------
