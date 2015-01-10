@@ -23,6 +23,11 @@ void hal_cpu_init_hal(void)
 
 }
 
+void hal_cpu_complete_init(void)
+{
+
+}
+
 void hal_cpu_die(void)
 {
     exit(1);

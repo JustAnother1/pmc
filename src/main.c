@@ -13,7 +13,6 @@
  *
  */
 
-#include "time_base.h"
 #include "com.h"
 #include "led.h"
 #include "error.h"
@@ -29,6 +28,8 @@
 #include "command_queue.h"
 #include "hal_watchdog.h"
 #include "hal_cpu.h"
+#include "hal_led.h"
+#include "hal_time.h"
 
 
 int main (void)
@@ -37,7 +38,9 @@ int main (void)
     watchdog_init();
 #endif
     hal_cpu_init_hal();
-    time_base_init(); // start time base
+    hal_time_init();
+    hal_led_init();
+    hal_cpu_complete_init();
     events_init();
     fw_cfg_init();
     led_init();

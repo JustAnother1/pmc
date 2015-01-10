@@ -24,7 +24,7 @@ void led_init(void)
 
 void led_tick(void)
 {
-    hal_led_toggle_debug_led();
+    //hal_led_toggle_debug_led();
 }
 
 // end of File

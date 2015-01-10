@@ -19,6 +19,7 @@
 #include <inttypes.h>
 
 void hal_time_init(void);
-void hal_time_ms_sleep(uint32_t ms);
+uint32_t hal_time_get_ms_tick(void);
+void hal_time_ms_sleep(uint_fast32_t ms);
 
 #endif /* HAL_TIME_H_ */

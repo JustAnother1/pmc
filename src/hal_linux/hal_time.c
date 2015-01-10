@@ -19,7 +19,6 @@
 #include "stddef.h"
 #include "pthread.h"
 #include "hal_time.h"
-#include "time_base.h"
 
 
 static void* ms_timer_task(void * arg);
@@ -41,12 +40,12 @@ static void* ms_timer_task(void * arg)
     for(;;)
     {
         usleep(1000);
-        time_base_ISR();
+        // TODO
     }
     return NULL;
 }
 
-void hal_time_ms_sleep(uint32_t ms)
+void hal_time_ms_sleep(uint_fast32_t ms)
 {
     uint32_t i;
     for(i = 0; i < ms; i++)

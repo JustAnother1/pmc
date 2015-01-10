@@ -16,8 +16,11 @@
 #ifndef HAL_CPU_H_
 #define HAL_CPU_H_
 
+typedef void (*msTickFkt)(void);
+
 void hal_cpu_init_hal(void);
-void hal_cpu_start_ms_timer(void);
+void hal_cpu_add_ms_tick_function(msTickFkt additional_function);
+void hal_cpu_complete_init(void);
 void hal_cpu_die(void);
 void hal_cpu_do_software_reset(void);
 
