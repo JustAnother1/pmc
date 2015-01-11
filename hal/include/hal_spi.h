@@ -17,11 +17,13 @@
 #define HAL_SPI_H_
 
 #include <inttypes.h>
+#include "hal_cfg.h"
 
-void hal_spi_init(void);
-void hal_spi_do_transaction(uint8_t *data_to_send,
+void hal_spi_init(uint_fast8_t device);
+void hal_spi_do_transaction(uint_fast8_t device,
+                            uint8_t      *data_to_send,
                             uint_fast8_t idx_of_first_byte,
                             uint_fast8_t num_bytes_to_send,
-                            uint8_t *data_received);
+                            uint8_t      *data_received);
 
 #endif /* HAL_SPI_H_ */

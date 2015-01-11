@@ -13,19 +13,10 @@
  *
  */
 
-#include "hal_spi.h"
+#ifndef DEBUG_H_
+#define DEBUG_H_
 
-void hal_spi_init(uint_fast8_t device)
-{
+void debug_init(void);
+void debug_tick(void);
 
-}
-
-void hal_spi_do_transaction(uint_fast8_t device,
-                            uint8_t      *data_to_send,
-                            uint_fast8_t idx_of_first_byte,
-                            uint_fast8_t num_bytes_to_send,
-                            uint8_t      *data_received)
-{
-
-}
-
+#endif /* DEBUG_H_ */

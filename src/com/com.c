@@ -15,7 +15,6 @@
 
 #include "protocol.h"
 #include "uart.h"
-#include "led.h"
 #include "orderhandler.h"
 #include "com.h"
 #include "usb.h"

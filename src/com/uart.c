@@ -32,7 +32,7 @@ static uint_fast8_t length;
 
 bool start_uart(void)
 {
-    return hal_uart_init();
+    return hal_uart_init(GCODE_UART);
 }
 
 void uart_send_frame(uint8_t * frame, uint_fast16_t length)
@@ -42,7 +42,7 @@ void uart_send_frame(uint8_t * frame, uint_fast16_t length)
         return;
     }
     // else :
-    hal_uart_send_frame(frame, length);
+    hal_uart_send_frame(GCODE_UART, frame, length);
 }
 
 bool uart_has_next_frame(void)
@@ -55,7 +55,7 @@ bool uart_has_next_frame(void)
     // else :
     // check the Frame:
     // Enough Bytes
-    bytes_available = hal_uart_get_available_bytes();
+    bytes_available = hal_uart_get_available_bytes(GCODE_UART);
     if(checked_bytes == bytes_available)
     {
         // we did a check on this number of Bytes and had no Frame
@@ -71,14 +71,14 @@ bool uart_has_next_frame(void)
         return false;
     }
     // starts with a sync byte
-    if(HOST_SYNC_REQUEST != hal_uart_get_byte_at_offset(0))
+    if(HOST_SYNC_REQUEST != hal_uart_get_byte_at_offset(GCODE_UART, 0))
     {
-        hal_uart_forget_bytes(1);
+        hal_uart_forget_bytes(GCODE_UART, 1);
         checked_bytes = 0;
         return false;
     }
     // length OK and also enough bytes for Parameter
-    length = hal_uart_get_byte_at_offset(1);
+    length = hal_uart_get_byte_at_offset(GCODE_UART, 1);
     if(length + 3 > bytes_available)
     {
         return false;
@@ -95,7 +95,7 @@ bool uart_has_next_frame(void)
 
 uint_fast8_t uart_get_order(void)
 {
-    return hal_uart_get_byte_at_offset(REQUEST_FRAME_POS_OF_ORDER_CODE);
+    return hal_uart_get_byte_at_offset(GCODE_UART, REQUEST_FRAME_POS_OF_ORDER_CODE);
 }
 
 uint_fast8_t uart_get_parameter_length(void)
@@ -105,17 +105,17 @@ uint_fast8_t uart_get_parameter_length(void)
 
 uint_fast8_t uart_get_control(void)
 {
-    return hal_uart_get_byte_at_offset(REQUEST_FRAME_POS_OF_CONTROL);
+    return hal_uart_get_byte_at_offset(GCODE_UART, REQUEST_FRAME_POS_OF_CONTROL);
 }
 
 uint_fast8_t uart_get_parameter_byte(uint_fast8_t index)
 {
-    return hal_uart_get_byte_at_offset(REQUEST_FRAME_START_OF_PARAMETER + index);
+    return hal_uart_get_byte_at_offset(GCODE_UART, REQUEST_FRAME_START_OF_PARAMETER + index);
 }
 
 void uart_forget_frame(void)
 {
-    hal_uart_forget_bytes(MIN_BYTES_HOST_FRAME + uart_get_parameter_length());
+    hal_uart_forget_bytes(GCODE_UART, MIN_BYTES_HOST_FRAME + uart_get_parameter_length());
     checked_bytes = 0;
     has_a_frame = false;
 }
@@ -123,12 +123,12 @@ void uart_forget_frame(void)
 static bool crc_is_valid(void)
 {
     // CRC valid ?
-    uint_fast8_t received_crc = hal_uart_get_byte_at_offset(length + 2);
+    uint_fast8_t received_crc = hal_uart_get_byte_at_offset(GCODE_UART, length + 2);
     uint_fast8_t claculated_crc = com_crc_a_byte(length, 0);
     uint_fast16_t off;
     for(off = 0; off < length; off++)
     {
-        claculated_crc = com_crc_a_byte(hal_uart_get_byte_at_offset(off + 2), claculated_crc);
+        claculated_crc = com_crc_a_byte(hal_uart_get_byte_at_offset(GCODE_UART, off + 2), claculated_crc);
     }
 
     if(claculated_crc != received_crc)

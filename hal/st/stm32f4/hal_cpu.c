@@ -127,7 +127,7 @@ static void hal_cpu_start_ms_timer(void)
     }
     // else :
     SysTick->LOAD  = (FREQUENCY_OF_SYSTEM_CORE_CLOCK /1000) - 1; // set reload register
-    NVIC_SetPriority (SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);  // set Priority for Systick Interrupt
+    NVIC_SetPriority(SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);  // set Priority for Systick Interrupt
     SysTick->VAL   = 0;                                          // Load the SysTick Counter Value
     SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
                      SysTick_CTRL_TICKINT_Msk   |

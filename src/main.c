@@ -14,7 +14,6 @@
  */
 
 #include "com.h"
-#include "led.h"
 #include "error.h"
 #include "device_buzzer.h"
 #include "device_heater.h"
@@ -26,6 +25,7 @@
 #include "events.h"
 #include "fw_cfg.h"
 #include "command_queue.h"
+#include "debug.h"
 #include "hal_watchdog.h"
 #include "hal_cpu.h"
 #include "hal_led.h"
@@ -37,13 +37,15 @@ int main (void)
 #ifdef WATCHDOG_ACTIVE
     watchdog_init();
 #endif
+    // initialize Hardware Abstraction Layer
     hal_cpu_init_hal();
     hal_time_init();
     hal_led_init();
     hal_cpu_complete_init();
+    // initialize Pacemaker Client Firmware
+    debug_init();
     events_init();
     fw_cfg_init();
-    led_init();
     dev_buzzer_init();
     dev_stepper_init();
     dev_heater_init();
@@ -57,10 +59,10 @@ int main (void)
     {
         com_tick();
         cmd_queue_tick();
+        debug_tick();
 #ifdef WATCHDOG_ACTIVE
-         watchdog_tick();
+        watchdog_tick();
 #endif
-        led_tick();
     }
     return 0;
 }

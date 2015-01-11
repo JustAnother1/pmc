@@ -4,14 +4,15 @@ INCDIRS +=$(SRC_FOLDER)
 INCDIRS +=$(SRC_FOLDER)com/
 INCDIRS +=$(SRC_FOLDER)device/
 INCDIRS +=$(SRC_FOLDER)order/
+INCDIRS +=$(SRC_FOLDER)debug/
 INCDIRS +=$(HAL_FOLDER)include/
+INCDIRS +=$(HAL_FOLDER)$(BOARD_FOLDER)/
 
 # general source files - always compiled
 SRC += $(SRC_FOLDER)main.c
 SRC += $(SRC_FOLDER)error.c
 SRC += $(SRC_FOLDER)events.c
 SRC += $(SRC_FOLDER)fw_cfg.c
-SRC += $(SRC_FOLDER)led.c
 SRC += $(SRC_FOLDER)com/com.c
 SRC += $(SRC_FOLDER)device/device_buzzer.c
 SRC += $(SRC_FOLDER)device/device_heater.c
@@ -23,6 +24,7 @@ SRC += $(SRC_FOLDER)device/device_temperature_sensor.c
 SRC += $(SRC_FOLDER)device/step.c
 SRC += $(SRC_FOLDER)order/command_queue.c
 SRC += $(SRC_FOLDER)order/orderhandler.c
+SRC += $(SRC_FOLDER)debug/debug.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_led.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_cpu.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_time.c

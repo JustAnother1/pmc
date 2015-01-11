@@ -13,18 +13,15 @@
  *
  */
 
-#include "led.h"
-#include "hal_led.h"
+#include "debug.h"
 
-
-void led_init(void)
+void debug_init(void)
 {
-    hal_led_init();
+
 }
 
-void led_tick(void)
+void debug_tick(void)
 {
-    //hal_led_toggle_debug_led();
+
 }
 
-// end of File

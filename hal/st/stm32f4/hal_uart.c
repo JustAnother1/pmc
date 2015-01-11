@@ -21,53 +21,58 @@
 // #define RECEIVE_BUFFER_SIZE_BYTES (MAX_RECEIVE_FRAME_SIZE * RECEIVE_BUFFER_SIZE_FRAMES)
 #define endPos (RECEIVE_BUFFER_SIZE_BYTES -1)
 
-// USART_HandleTypeDef huart1;
 
-static uint_fast8_t receive_buffer[RECEIVE_BUFFER_SIZE_BYTES];
-static volatile uint_fast16_t read_pos;
-static volatile uint_fast16_t write_pos;
+typedef struct {
+    uint_fast8_t receive_buffer[RECEIVE_BUFFER_SIZE_BYTES];
+    volatile uint_fast16_t read_pos;
+    volatile uint_fast16_t write_pos;
+}uart_device_typ;
 
-uint_fast8_t hal_uart_get_byte_at_offset(uint_fast16_t offset)
+
+static uart_device_typ devices[MAX_UART + 1]; // +1 as MAX_UART is the highest index into this array
+
+
+uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16_t offset)
 {
     uint_fast8_t res;
-    uint_fast16_t target_pos = read_pos + offset;
+    uint_fast16_t target_pos = devices[device].read_pos + offset;
     if(endPos < target_pos)
     {
         target_pos = target_pos - endPos;
     }
-    res = receive_buffer[target_pos];
+    res = devices[device].receive_buffer[target_pos];
     return res;
 }
 
-uint_fast16_t hal_uart_get_available_bytes(void)
+uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device)
 {
     uint_fast16_t res = 0;
-    if(read_pos != write_pos)
+    if(devices[device].read_pos != devices[device].write_pos)
     {
-        if(write_pos > read_pos)
+        if(devices[device].write_pos > devices[device].read_pos)
         {
-            res = write_pos - read_pos;
+            res = devices[device].write_pos - devices[device].read_pos;
         }
         else
         {
-            res = (endPos + 1) - read_pos + (0 - write_pos);
+            res = (endPos + 1) - devices[device].read_pos + (0 - devices[device].write_pos);
         }
     }
     // else res = 0;
     return res;
 }
 
-void hal_uart_forget_bytes(uint_fast16_t how_many)
+void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many)
 {
-    uint_fast16_t target_pos = read_pos + how_many;
+    uint_fast16_t target_pos = devices[device].read_pos + how_many;
     if(endPos < target_pos)
     {
         target_pos = target_pos - endPos;
     }
-    read_pos = target_pos;
+    devices[device].read_pos = target_pos;
 }
 
-void hal_uart_send_frame(uint8_t * frame, uint_fast16_t length)
+void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
     /*
     while(HAL_BUSY == HAL_USART_Transmit_IT(&huart1, frame, length))
@@ -78,10 +83,10 @@ void hal_uart_send_frame(uint8_t * frame, uint_fast16_t length)
 }
 
 
-bool hal_uart_init(void)
+bool hal_uart_init(uint_fast8_t device)
 {
-    read_pos = 0;
-    write_pos = 0;
+    devices[device].read_pos = 0;
+    devices[device].write_pos = 0;
     /*
     huart1.Instance = USART1;
     huart1.Init.BaudRate = 115200;

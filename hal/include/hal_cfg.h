@@ -13,10 +13,14 @@
  *
  */
 
-#ifndef LED_H_
-#define LED_H_
+#ifndef HAL_INCLUDE_HAL_CFG_H_
+#define HAL_INCLUDE_HAL_CFG_H_
 
-void led_init(void);
-void led_tick(void);
+#define STEPPER_SPI 1
+#define MAX_SPI     1
 
-#endif /* LED_H_ */
+#define GCODE_UART  1
+#define MAX_UART    1
+
+
+#endif /* HAL_INCLUDE_HAL_CFG_H_ */

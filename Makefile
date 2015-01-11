@@ -12,6 +12,7 @@
 
 # Define project name
 PROJECT = pmc
+
 include hal/hal.mk
 include cfg/features.mk
 include cfg/system.mk
@@ -82,7 +83,7 @@ clean:
 	-rm -rf $(BIN_FOLDER)
 ifeq ($(BOARD),stm407disco)
 burn: 
-	$(STLINK_FOLDER)/st-flash write $(BIN_FOLDER)/$(PROJECT).bin 0x8000000
+	$(STLINK_FOLDER)/st-flash write $(BIN_FOLDER)$(PROJECT).bin 0x8000000
 
 debug:
 	$(STLINK_FOLDER)/st-util&

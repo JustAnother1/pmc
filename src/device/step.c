@@ -182,7 +182,7 @@ void step_init(void)
     start_speed = 0;
 
 #ifdef HAS_SPI
-    hal_spi_init();
+    hal_spi_init(STEPPER_SPI);
 #endif
 }
 
@@ -742,7 +742,7 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0x29;
     cfg_data[3] = 0x9f;
     cfg_data[4] = 0x9a;
-    hal_spi_do_transaction(&cfg_data[0], 4, 5, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 4, 5, &spi_receive_buffer[0]);
 
     // SGCSCONF
     //
@@ -763,7 +763,7 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0xfc;
     cfg_data[3] = 0x41;
     cfg_data[4] = 0xc0;
-    hal_spi_do_transaction(&cfg_data[0], 4, 5, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 4, 5, &spi_receive_buffer[0]);
 
 
     // DRVCONF
@@ -789,7 +789,7 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0x0e;
     cfg_data[3] = 0x4e;
     cfg_data[4] = 0xef;
-    hal_spi_do_transaction(&cfg_data[0], 4, 5, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 4, 5, &spi_receive_buffer[0]);
 
 
     // SMARTEN
@@ -816,7 +816,7 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0x0a;
     cfg_data[3] = 0x00;
     cfg_data[4] = 0xa0;
-    hal_spi_do_transaction(&cfg_data[0], 4, 5, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 4, 5, &spi_receive_buffer[0]);
 
     // TODO
 

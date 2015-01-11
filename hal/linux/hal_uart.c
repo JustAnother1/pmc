@@ -35,25 +35,45 @@
 #define endPos (RECEIVE_BUFFER_SIZE_BYTES -1)
 #define PORT 54321
 
-static void* uart_task(void * arg);
+typedef struct {
+    uint_fast16_t port;
+    uint_fast16_t read_pos;
+    uint_fast16_t write_pos;
+    bool i_want_to_send;
+    pthread_t uart_thread;
+    uint_fast8_t receive_buffer[RECEIVE_BUFFER_SIZE_BYTES];
+    uint_fast8_t * send_frame;
+    uint_fast16_t send_length;
+    pthread_mutex_t receive_mutex;
+    pthread_mutex_t send_mutex;
+    pthread_cond_t  sending_done;
+}uart_device_typ;
 
-static uint_fast8_t receive_buffer[RECEIVE_BUFFER_SIZE_BYTES];
-static uint_fast16_t read_pos;
-static uint_fast16_t write_pos;
-static bool i_want_to_send;
-static uint_fast8_t * send_frame;
-static uint_fast16_t send_length;
-pthread_t uart_thread;
-pthread_mutex_t receive_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_mutex_t send_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_cond_t  sending_done   = PTHREAD_COND_INITIALIZER;
 
-bool hal_uart_init(void)
+static uart_device_typ devices[MAX_UART + 1]; // +1 as MAX_UART is the highest index into this array
+
+static void* uart_task(void * device);
+
+
+
+bool hal_uart_init(uint_fast8_t device)
 {
-    read_pos = 0;
-    write_pos = 0;
-    i_want_to_send = false;
-    int ret = pthread_create( &uart_thread, NULL, uart_task, NULL);
+    if((0 > device) || (MAX_UART < device))
+    {
+        fprintf(stderr,"Device number out of range! Device number: %d\n", device);
+        return false;
+    }
+    devices[device].port = PORT + device;
+    devices[device].read_pos = 0;
+    devices[device].write_pos = 0;
+    devices[device].i_want_to_send = false;
+    pthread_mutex_init(&devices[device].receive_mutex, NULL);
+    pthread_mutex_init(&devices[device].send_mutex, NULL);
+    pthread_cond_init(&devices[device].sending_done, NULL);
+    int ret = pthread_create(&devices[device].uart_thread,
+                             NULL,
+                             uart_task,
+                             &devices[device]);
     if(ret)
     {
         fprintf(stderr,"Error - pthread_create() return code: %d\n",ret);
@@ -62,8 +82,9 @@ bool hal_uart_init(void)
     return true;
 }
 
-static void* uart_task(void * arg)
+static void* uart_task(void * dev_ptr)
 {
+    uart_device_typ * device = dev_ptr;
     int sock_fd;
     int client_fd;
     int err;
@@ -93,7 +114,7 @@ static void* uart_task(void * arg)
 
     // bind
     my_addr.sin_family = AF_INET;
-    my_addr.sin_port = htons(PORT);
+    my_addr.sin_port = htons(device->port);
     my_addr.sin_addr.s_addr = INADDR_ANY;
     err = bind(sock_fd,
               (struct sockaddr *)&my_addr,
@@ -155,8 +176,11 @@ static void* uart_task(void * arg)
         {
             fprintf(stderr, "receive\n");
             // receive
-            pthread_mutex_lock(&receive_mutex);
-            length = recv(client_fd, &receive_buffer[write_pos], RECEIVE_BUFFER_SIZE_BYTES - write_pos, 0);
+            pthread_mutex_lock(&device->receive_mutex);
+            length = recv(client_fd,
+                          &device->receive_buffer[device->write_pos],
+                          RECEIVE_BUFFER_SIZE_BYTES - device->write_pos,
+                          0);
             if(-1 == length)
             {
                 if((EAGAIN == errno) || (EWOULDBLOCK == errno))
@@ -166,31 +190,31 @@ static void* uart_task(void * arg)
                 else
                 {
                     fprintf(stderr, "Connection closed by remote host.\n");
-                    pthread_mutex_unlock(&receive_mutex);
+                    pthread_mutex_unlock(&device->receive_mutex);
                     break;
                 }
             }
             else if(0 < length)
             {
                 // we received something
-                write_pos += length;
-                if(write_pos > endPos)
+                device->write_pos += length;
+                if(device->write_pos > endPos)
                 {
-                    write_pos = write_pos - RECEIVE_BUFFER_SIZE_BYTES;
+                    device->write_pos = device->write_pos - RECEIVE_BUFFER_SIZE_BYTES;
                 }
             }
-            pthread_mutex_unlock(&receive_mutex);
+            pthread_mutex_unlock(&device->receive_mutex);
 
             fprintf(stderr, "send\n");
             // send
-            pthread_mutex_lock(&send_mutex);
-            if(true == i_want_to_send)
+            pthread_mutex_lock(&device->send_mutex);
+            if(true == device->i_want_to_send)
             {
-                send(client_fd, send_frame, send_length, 0);
-                i_want_to_send = false;
-                pthread_cond_signal( &sending_done );
+                send(client_fd, device->send_frame, device->send_length, 0);
+                device->i_want_to_send = false;
+                pthread_cond_signal( &device->sending_done );
             }
-            pthread_mutex_unlock(&send_mutex);
+            pthread_mutex_unlock(&device->send_mutex);
 
             fprintf(stderr, "wait\n");
             // do not use the whole CPU
@@ -204,62 +228,62 @@ static void* uart_task(void * arg)
 }
 
 
-uint_fast8_t hal_uart_get_byte_at_offset(uint_fast16_t offset)
+uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16_t offset)
 {
     uint_fast8_t res;
-    pthread_mutex_lock(&receive_mutex);
-    uint_fast16_t target_pos = read_pos + offset;
+    pthread_mutex_lock(&devices[device].receive_mutex);
+    uint_fast16_t target_pos = devices[device].read_pos + offset;
     if(endPos < target_pos)
     {
         target_pos = target_pos - endPos;
     }
-    res = receive_buffer[target_pos];
-    pthread_mutex_unlock(&receive_mutex);
+    res = devices[device].receive_buffer[target_pos];
+    pthread_mutex_unlock(&devices[device].receive_mutex);
     return res;
 }
 
-uint_fast16_t hal_uart_get_available_bytes(void)
+uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device)
 {
     uint_fast16_t res = 0;
-    pthread_mutex_lock(&receive_mutex);
-    if(read_pos != write_pos)
+    pthread_mutex_lock(&devices[device].receive_mutex);
+    if(devices[device].read_pos != devices[device].write_pos)
     {
-        if(write_pos > read_pos)
+        if(devices[device].write_pos > devices[device].read_pos)
         {
-            res = write_pos - read_pos;
+            res = devices[device].write_pos - devices[device].read_pos;
         }
         else
         {
-            res = (endPos + 1) - read_pos + (0 - write_pos);
+            res = (endPos + 1) - devices[device].read_pos + (0 - devices[device].write_pos);
         }
     }
     // else res = 0;
-    pthread_mutex_unlock(&receive_mutex);
+    pthread_mutex_unlock(&devices[device].receive_mutex);
     return res;
 }
 
-void hal_uart_forget_bytes(uint_fast16_t how_many)
+void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many)
 {
-    pthread_mutex_lock(&receive_mutex);
-    uint_fast16_t target_pos = read_pos + how_many;
+    pthread_mutex_lock(&devices[device].receive_mutex);
+    uint_fast16_t target_pos = devices[device].read_pos + how_many;
     if(endPos < target_pos)
     {
         target_pos = target_pos - endPos;
     }
-    read_pos = target_pos;
-    pthread_mutex_unlock(&receive_mutex);
+    devices[device].read_pos = target_pos;
+    pthread_mutex_unlock(&devices[device].receive_mutex);
 }
 
-void hal_uart_send_frame(uint_fast8_t * frame, uint_fast16_t length)
+void hal_uart_send_frame(uint_fast8_t device, uint_fast8_t * frame, uint_fast16_t length)
 {
     // prepare to send
-    send_frame = frame;
-    send_length = length;
-    pthread_mutex_lock(&send_mutex);
-    i_want_to_send = true;
-    pthread_mutex_unlock(&send_mutex);
+    devices[device].send_frame = frame;
+    devices[device].send_length = length;
+    pthread_mutex_lock(&devices[device].send_mutex);
+    devices[device].i_want_to_send = true;
+    pthread_mutex_unlock(&devices[device].send_mutex);
     // wait until data has been send
-    pthread_mutex_lock(&send_mutex);
-    pthread_cond_wait(&sending_done, &send_mutex);
-    pthread_mutex_unlock(&send_mutex);
+    pthread_mutex_lock(&devices[device].send_mutex);
+    pthread_cond_wait(&devices[device].sending_done, &devices[device].send_mutex);
+    pthread_mutex_unlock(&devices[device].send_mutex);
 }
