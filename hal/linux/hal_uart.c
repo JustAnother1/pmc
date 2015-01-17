@@ -29,6 +29,7 @@
 #include "pthread.h"
 #include "hal_uart.h"
 #include "protocol.h"
+#include "hal_cfg.h"
 
 #define RECEIVE_BUFFER_SIZE_FRAMES  2
 #define RECEIVE_BUFFER_SIZE_BYTES (MAX_RECEIVE_FRAME_SIZE * RECEIVE_BUFFER_SIZE_FRAMES)

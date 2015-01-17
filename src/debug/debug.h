@@ -18,5 +18,6 @@
 
 void debug_init(void);
 void debug_tick(void);
+void debug_msg(const char* format, ...);
 
 #endif /* DEBUG_H_ */

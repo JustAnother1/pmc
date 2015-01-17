@@ -34,16 +34,16 @@
 
 int main (void)
 {
+    bool on = false;
 #ifdef WATCHDOG_ACTIVE
     watchdog_init();
 #endif
     // initialize Hardware Abstraction Layer
     hal_cpu_init_hal();
-    hal_time_init();
     hal_led_init();
-    hal_cpu_complete_init();
-    // initialize Pacemaker Client Firmware
+    hal_time_init();
     debug_init();
+    // initialize Pacemaker Client Firmware
     events_init();
     fw_cfg_init();
     dev_buzzer_init();
@@ -57,6 +57,8 @@ int main (void)
     com_init();
     for(;;)
     {
+        hal_led_set_error_led(on);
+        on = !on;
         com_tick();
         cmd_queue_tick();
         debug_tick();

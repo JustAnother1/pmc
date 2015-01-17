@@ -16,6 +16,7 @@
 #include "hal_cpu.h"
 #include "hal_time.h"
 #include "hal_common.h"
+#include "hal_led.h"
 
 static void hal_time_ISR(void);
 
@@ -28,6 +29,7 @@ void hal_time_init(void)
 
 static void hal_time_ISR(void)
 {
+    hal_led_toggle_debug_led();
     now++;
 }
 
@@ -42,6 +44,6 @@ void hal_time_ms_sleep(uint_fast32_t ms)
     uint32_t curtick = hal_time_get_ms_tick();
     while(curtick < tickend)
     {
-		curtick = hal_time_get_ms_tick();
+        curtick = hal_time_get_ms_tick();
     }
 }

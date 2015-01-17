@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef UART_H_
-#define UART_H_
+#ifndef HAL_ST_STM32F4_UART_H_
+#define HAL_ST_STM32F4_UART_H_
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -28,4 +28,4 @@ uint_fast8_t uart_get_control(void);
 void uart_send_frame(uint8_t * frame, uint_fast16_t length);
 void uart_forget_frame(void);
 
-#endif /* UART_H_ */
+#endif /* HAL_ST_STM32F4_UART_H_ */

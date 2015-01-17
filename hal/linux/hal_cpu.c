@@ -23,11 +23,6 @@ void hal_cpu_init_hal(void)
 
 }
 
-void hal_cpu_complete_init(void)
-{
-
-}
-
 void hal_cpu_die(void)
 {
     exit(1);
@@ -38,7 +33,7 @@ void hal_cpu_do_software_reset(void)
 
 }
 
-void hal_cpu_ms_sleep(int ms)
+void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
 {
-    usleep(1000);
+
 }

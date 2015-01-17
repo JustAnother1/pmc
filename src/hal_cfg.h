@@ -16,9 +16,12 @@
 #ifndef HAL_INCLUDE_HAL_CFG_H_
 #define HAL_INCLUDE_HAL_CFG_H_
 
-#define STEPPER_SPI 0
-#define MAX_SPI     0
+// SPI
+#define STEPPER_SPI   0
+#define EXPANSION_SPI 1
+#define MAX_SPI       1
 
+// UART
 #define GCODE_UART  0
 #define DEBUG_UART  1
 #define MAX_UART    1

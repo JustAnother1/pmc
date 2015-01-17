@@ -1,15 +1,22 @@
 /*
- * gpio.h
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation.
  *
- *  Created on: 28.11.2014
- *      Author: lars
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see <http://www.gnu.org/licenses/>
+ *
  */
 
-#ifndef GPIO_H_
-#define GPIO_H_
+#ifndef HAL_ST_STM32F4_GPIO_H_
+#define HAL_ST_STM32F4_GPIO_H_
 
 #include "hal_common.h"
-#include "core_cm4.h"
 
 /******************************************************************************/
 /*                                                                            */
@@ -371,6 +378,15 @@ typedef struct
   __IO uint_fast32_t AFR[2];   /*!< GPIO alternate function registers,     Address offset: 0x20-0x24 */
 } GPIO_TypeDef;
 
+#define GPIOA_BASE          (AHB1PERIPH_BASE + 0x0000)
+#define GPIOB_BASE          (AHB1PERIPH_BASE + 0x0400)
+#define GPIOC_BASE          (AHB1PERIPH_BASE + 0x0800)
+#define GPIOD_BASE          (AHB1PERIPH_BASE + 0x0C00)
+#define GPIOE_BASE          (AHB1PERIPH_BASE + 0x1000)
+#define GPIOF_BASE          (AHB1PERIPH_BASE + 0x1400)
+#define GPIOG_BASE          (AHB1PERIPH_BASE + 0x1800)
+#define GPIOH_BASE          (AHB1PERIPH_BASE + 0x1C00)
+#define GPIOI_BASE          (AHB1PERIPH_BASE + 0x2000)
 #define GPIOA               ((GPIO_TypeDef *) GPIOA_BASE)
 #define GPIOB               ((GPIO_TypeDef *) GPIOB_BASE)
 #define GPIOC               ((GPIO_TypeDef *) GPIOC_BASE)
@@ -381,4 +397,4 @@ typedef struct
 #define GPIOH               ((GPIO_TypeDef *) GPIOH_BASE)
 #define GPIOI               ((GPIO_TypeDef *) GPIOI_BASE)
 
-#endif /* GPIO_H_ */
+#endif /* HAL_ST_STM32F4_GPIO_H_ */

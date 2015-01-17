@@ -1,15 +1,22 @@
 /*
- * flash.h
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License version 2
+ * as published by the Free Software Foundation.
  *
- *  Created on: 27.11.2014
- *      Author: lars
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, see <http://www.gnu.org/licenses/>
+ *
  */
 
-#ifndef FLASH_H_
-#define FLASH_H_
+#ifndef HAL_ST_STM32F4_FLASH_H_
+#define HAL_ST_STM32F4_FLASH_H_
 
 #include "hal_common.h"
-#include "core_cm4.h"
 
 /******************************************************************************/
 /*                                                                            */
@@ -126,4 +133,4 @@ typedef struct
 
 #define FLASH               ((FLASH_TypeDef *) FLASH_R_BASE)
 
-#endif /* FLASH_H_ */
+#endif /* HAL_ST_STM32F4_FLASH_H_ */

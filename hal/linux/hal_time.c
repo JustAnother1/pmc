@@ -24,6 +24,7 @@
 static void* ms_timer_task(void * arg);
 
 pthread_t ms_timer_thread;
+static volatile uint32_t now = 0;
 
 void hal_time_init(void)
 {
@@ -40,6 +41,7 @@ static void* ms_timer_task(void * arg)
     for(;;)
     {
         usleep(1000);
+        now++;
         // TODO
     }
     return NULL;
@@ -52,5 +54,9 @@ void hal_time_ms_sleep(uint_fast32_t ms)
     {
         usleep(1000);
     }
+}
+uint32_t hal_time_get_ms_tick(void)
+{
+    return now;
 }
 

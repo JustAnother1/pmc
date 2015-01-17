@@ -33,6 +33,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/src/device}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/src/order}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/src/debug}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/st/stm32f4/407Discovery}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1829167494" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>

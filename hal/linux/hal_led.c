@@ -23,7 +23,7 @@ void hal_led_init(void)
 
 void hal_led_toggle_debug_led(void)
 {
-    usleep(1000);
+
 }
 
 void hal_led_set_error_led(bool on)

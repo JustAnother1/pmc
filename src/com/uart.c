@@ -17,6 +17,7 @@
 #include "protocol.h"
 #include "com.h"
 #include "hal_uart.h"
+#include "hal_cfg.h"
 
 
 

@@ -13,45 +13,52 @@
  *
  */
 
-#include "hal_led.h"
+#include "rcc.h"
 #include "gpio.h"
+#include "board_cfg.h"
+#include "hal_led.h"
 
 static bool debugLedIsOn = false;
 
 void hal_led_init(void)
 {
-    // LEDS are outputs
-    GPIOD->MODER = GPIO_MODER_MODER15_0
-                 + GPIO_MODER_MODER14_0
-                 + GPIO_MODER_MODER13_0
-                 + GPIO_MODER_MODER12_0;
+// Debug LED
+    RCC->AHB1ENR |= DEBUG_LED_RCC_GPIO_ENABLE;
+    // LEDS are general purpose outputs
+    DEBUG_LED_GPIO_PORT->MODER |= DEBUG_LED_MODER;
     // LEDS are push pull
-    GPIOD->OTYPER = (GPIOD->OTYPER & 0xffff0000);
-    // LEDS are high speed
-    GPIOD->OSPEEDR = GPIO_OSPEEDER_OSPEEDR15_1
-                   + GPIO_OSPEEDER_OSPEEDR15_0
-                   + GPIO_OSPEEDER_OSPEEDR14_1
-                   + GPIO_OSPEEDER_OSPEEDR14_0
-                   + GPIO_OSPEEDER_OSPEEDR13_1
-                   + GPIO_OSPEEDER_OSPEEDR13_0
-                   + GPIO_OSPEEDER_OSPEEDR12_1
-                   + GPIO_OSPEEDER_OSPEEDR12_0;
+    DEBUG_LED_GPIO_PORT->OTYPER &= ~DEBUG_LED_OTYPER;
+    // LEDS are low speed (= max 2MHz) but high current
+    DEBUG_LED_GPIO_PORT->OSPEEDR &= ~DEBUG_LED_OSPEEDR;
     // No pull ups or pull downs
-    GPIOD->PUPDR = 0;
+    DEBUG_LED_GPIO_PORT->PUPDR &= ~ DEBUG_LED_PUPD;
     // start with output = 0
-    GPIOD->ODR = 0;
+    DEBUG_LED_GPIO_PORT->ODR &= DEBUG_LED_ODR;
+
+// Error LED
+    RCC->AHB1ENR |= ERROR_LED_RCC_GPIO_ENABLE;
+    // LEDS are general purpose outputs
+    ERROR_LED_GPIO_PORT->MODER |= ERROR_LED_MODER;
+    // LEDS are push pull
+    ERROR_LED_GPIO_PORT->OTYPER &= ~ERROR_LED_OTYPER;
+    // LEDS are high speed
+    ERROR_LED_GPIO_PORT->OSPEEDR &= ~ERROR_LED_OSPEEDR;
+    // No pull ups or pull downs
+    ERROR_LED_GPIO_PORT->PUPDR &= ~ ERROR_LED_PUPD;
+    // start with output = 0
+    ERROR_LED_GPIO_PORT->ODR &= ERROR_LED_ODR;
 }
 
 void hal_led_toggle_debug_led(void)
 {
     if(true == debugLedIsOn)
     {
-        GPIOD->ODR = (GPIOD->ODR & ~GPIO_ODR_ODR_12);
+        DEBUG_LED_GPIO_PORT->ODR &= ~DEBUG_LED_ODR;
         debugLedIsOn = false;
     }
     else
     {
-        GPIOD->ODR = (GPIOD->ODR |GPIO_ODR_ODR_12);
+        DEBUG_LED_GPIO_PORT->ODR |= DEBUG_LED_ODR;
         debugLedIsOn = true;
     }
 }
@@ -61,12 +68,12 @@ void hal_led_set_error_led(bool on)
     if(true == on)
     {
         // led on
-        GPIOD->ODR = (GPIOD->ODR |GPIO_ODR_ODR_14);
+        ERROR_LED_GPIO_PORT->ODR |= ERROR_LED_ODR;
     }
     else
     {
         // led off
-        GPIOD->ODR = (GPIOD->ODR & ~GPIO_ODR_ODR_14);
+        ERROR_LED_GPIO_PORT->ODR &= ~ERROR_LED_ODR;
     }
 }
 

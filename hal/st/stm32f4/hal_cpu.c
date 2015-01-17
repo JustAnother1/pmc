@@ -13,23 +13,30 @@
  *
  */
 
+#include <407discovery/board_cfg.h>
 #include "hal_common.h"
 #include "hal_cpu.h"
 #include "hal_led.h"
 #include "hal_time.h"
-#include "cpu_cfg.h"
 #include "flash.h"
 #include "rcc.h"
 #include <stddef.h>
+#include <stdlib.h>
 
 #define HEART_BEAT_FAST_LIMIT 5
 #define HEART_BEAT_SLOW_LIMIT 500
 #define HEART_BEAT_STEP_SIZE  5
 
-static void hal_cpu_start_ms_timer(void);
+struct tick_node {
+    msTickFkt tick;
+    struct tick_node * next;
+};
+typedef struct tick_node tick_entry;
 
-static msTickFkt theMsTick = NULL;
-static bool ms_tick_active = false;
+static void hal_cpu_start_ms_timer(void);
+static tick_entry * allocateNewEntry(void);
+
+static tick_entry * tick_list = NULL;
 
 
 /**
@@ -43,14 +50,17 @@ static bool ms_tick_active = false;
 void SystemInit(void)
 {
   // FPU settings
-  SCB->CPACR |= ((3UL << 10*2)|(3UL << 11*2));  /* set CP10 and CP11 Full Access */
+  SCB->CPACR |= 0x00f00000;  /* set CP10 and CP11 Full Access */
   // Configure the Vector Table location add offset address
   SCB->VTOR = FLASH_BASE; // Vector Table Relocation in Internal FLASH
 }
 
-
 void hal_cpu_init_hal(void)
 {
+    // Power
+    RCC->APB1ENR |= (RCC_APB1ENR_PWREN);
+    MODIFY_REG(PWR->CR, PWR_CR_VOS, ((uint32_t)0x00008000));
+
     // FLASH
     // Enable Cache and prefetch for performance
     // configure wait states
@@ -59,79 +69,113 @@ void hal_cpu_init_hal(void)
                + FLASH_ACR_ICEN
                + FLASH_ACR_DCEN;
     // RCC - Reset and Clock Control
-    RCC->CR = RCC_CR_PLLON
-            + RCC_CR_HSEON
-            + (RCC->CR & 0xfffe); // preserve calibration and trimming bits
     RCC->PLLCFGR = (RCC->PLLCFGR & 0xf0bc8000) // preserve Reserved Bits
                  + RCC_PLL_PLLQ
                  + RCC_PLLCFGR_PLLSRC_HSE
                  + RCC_PLL_PLLP
                  + RCC_PLL_PLLN
                  + RCC_PLL_PLLM;
-    RCC->CFGR = RCC_MC02
-              + RCC_MC01
-              + RCC_PRESC_APB2
+    RCC->CR = RCC_CR_PLLON
+            + RCC_CR_HSEON
+            + (RCC->CR & 0x0000fff8); // preserve calibration and trimming bits
+    // Disable all interrupts
+    RCC->CIR = 0x00000000;
+    do
+    {
+        // wait for High Speed External (HSE) Clock to become ready.
+        ;
+    }while(0 == (RCC->CR & RCC_CR_HSERDY));
+    do
+    {
+        // wait for High Speed External (HSE) Clock to become ready.
+        ;
+    }while(0 == (RCC->CR & RCC_CR_PLLRDY));
+
+    RCC->CFGR = RCC_PRESC_APB2
               + RCC_PRESC_APB1
               + RCC_PRESC_AHB
               + RCC_SYS_CLK_SW;
-    // Disable all interrupts
-    RCC->CIR = 0x00000000;
-    RCC->AHB1ENR = (RCC->AHB1ENR & 0x8183EE00)
-                 + RCC_AHB1ENR_DMA2EN
-                 + RCC_AHB1ENR_DMA1EN
-                 + RCC_AHB1ENR_CCMDATARAMEN
-                 + RCC_AHB1ENR_GPIODEN;
-    // TODO other GPIO
-    RCC->APB1ENR = (RCC->APB1ENR & 0xc9013600)
-                 + RCC_APB1ENR_PWREN
-                 + RCC_APB1ENR_USART2EN;
-    // TODO Timer enable, I2C SPI,..
-    RCC->APB2ENR = (RCC->APB2ENR & 0xfff8a0cc)
-                 + RCC_APB2ENR_SPI1EN
-                 + RCC_APB2ENR_USART1EN;
-    // TODO ADC + TIM
+    do
+    {
+        // wait for High Speed External (HSE) Clock to become ready.
+        ;
+    }while(0x00000008 != (RCC->CFGR & RCC_CFGR_SWS));
 }
 
-void hal_cpu_complete_init(void)
+static tick_entry * allocateNewEntry(void)
 {
-    if(true == ms_tick_active)
+    tick_entry * theMsTick = (struct tick_node *) malloc(sizeof(struct tick_node));
+    if(NULL == theMsTick)
     {
-        hal_cpu_start_ms_timer();
+        for(;;){;} // Time not yet working
     }
+    theMsTick->tick = NULL;
+    theMsTick->next = NULL;
+    return theMsTick;
 }
 
 void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
 {
     if(NULL != additional_function)
     {
-        theMsTick = additional_function;
-        ms_tick_active = true;
+        if(NULL == tick_list)
+        {
+            tick_list = allocateNewEntry();
+        }
+        tick_entry *cur = tick_list;
+        bool done = false;
+        do
+        {
+            if(NULL == cur->tick)
+            {
+                // No tick in this Entry
+                cur->tick = additional_function;
+                done = true;
+            }
+            else
+            {
+                if(NULL == cur->next)
+                {
+                    // create a new entry
+                    cur->next = allocateNewEntry();
+                    cur = cur->next;
+                }
+                else
+                {
+                    // goto next entry
+                    cur = cur->next;
+                }
+            }
+        } while(false == done);
+        hal_cpu_start_ms_timer();
     }
 }
 
 void SysTick_Handler(void)
 {
-    if(NULL != theMsTick)
+    tick_entry *cur = tick_list;
+    while(NULL != cur)
     {
-        (*theMsTick)();
+        if(NULL != cur->tick)
+        {
+            // Execute that function
+            (*cur->tick)();
+        }
+        cur = cur->next;
     }
 }
 
 // Configure SysTick to generate an interrupt every millisecond
 static void hal_cpu_start_ms_timer(void)
 {
-    if (((FREQUENCY_OF_SYSTEM_CORE_CLOCK /1000) - 1) > SysTick_LOAD_RELOAD_Msk)
-    {
-        // Reload value impossible
-        hal_cpu_die();
-    }
-    // else :
-    SysTick->LOAD  = (FREQUENCY_OF_SYSTEM_CORE_CLOCK /1000) - 1; // set reload register
-    NVIC_SetPriority(SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);  // set Priority for Systick Interrupt
-    SysTick->VAL   = 0;                                          // Load the SysTick Counter Value
-    SysTick->CTRL  = SysTick_CTRL_CLKSOURCE_Msk |
-                     SysTick_CTRL_TICKINT_Msk   |
-                     SysTick_CTRL_ENABLE_Msk;                    // Enable SysTick IRQ and SysTick Timer
+    // set reload register
+    SysTick->LOAD  = (FREQUENCY_OF_HCLK /1000) - 1;
+    // set Priority for Systick Interrupt
+    NVIC_SetPriority(SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);
+    // make sure that counter starts at 0 now
+    SysTick->VAL   = 0;
+    // Enable SysTick IRQ and SysTick Timer ClkSrc = AHB
+    SysTick->CTRL  = 7;
 }
 
 void hal_cpu_die(void)
@@ -140,6 +184,7 @@ void hal_cpu_die(void)
     bool direction_is_increment = true;
     for(;;)
     {
+        /*
         if((i <HEART_BEAT_FAST_LIMIT) && (false == direction_is_increment))
         {
             direction_is_increment = true;
@@ -160,6 +205,7 @@ void hal_cpu_die(void)
         }
         hal_led_toggle_debug_led();
         hal_time_ms_sleep(i);
+        */
     }
 }
 
