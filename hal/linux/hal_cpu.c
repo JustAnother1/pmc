@@ -17,6 +17,7 @@
 #include <stdlib.h>
 
 #include "hal_cpu.h"
+#include "debug.h"
 
 void hal_cpu_init_hal(void)
 {
@@ -30,10 +31,16 @@ void hal_cpu_die(void)
 
 void hal_cpu_do_software_reset(void)
 {
-
+    debug_msg("not implemented!\n");
 }
 
 void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
 {
 
+}
+
+void hal_cpu_tick(void)
+{
+    // do not use the whole CPU
+    usleep(100);
 }

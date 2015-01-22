@@ -102,7 +102,7 @@ void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t len
         }
         // TODO check if we had a timeout or not
         // send one Byte
-        devices[device].port->DR = frame[bytesSend];
+        devices[device].port->DR = (uint16_t)frame[bytesSend];
         bytesSend++;
     }
 

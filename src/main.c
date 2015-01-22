@@ -55,6 +55,7 @@ int main (void)
     dev_output_init();
     cmd_queue_init();
     com_init();
+    debug_msg("Reached end of initialization!\n");
     for(;;)
     {
         hal_led_set_error_led(on);
@@ -62,6 +63,7 @@ int main (void)
         com_tick();
         cmd_queue_tick();
         debug_tick();
+        hal_cpu_tick();
 #ifdef WATCHDOG_ACTIVE
         watchdog_tick();
 #endif

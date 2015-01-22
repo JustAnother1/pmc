@@ -57,9 +57,14 @@ void SystemInit(void)
 
 void hal_cpu_init_hal(void)
 {
+    // CC Memory
+    RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN;
     // Power
-    RCC->APB1ENR |= (RCC_APB1ENR_PWREN);
-    MODIFY_REG(PWR->CR, PWR_CR_VOS, ((uint32_t)0x00008000));
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+    // Sys Cfg
+    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+    // Power Scale 1 (for 168MHz, Brown out Reset activated)
+    PWR->CR = 0x000040f0;
 
     // FLASH
     // Enable Cache and prefetch for performance
@@ -184,7 +189,6 @@ void hal_cpu_die(void)
     bool direction_is_increment = true;
     for(;;)
     {
-        /*
         if((i <HEART_BEAT_FAST_LIMIT) && (false == direction_is_increment))
         {
             direction_is_increment = true;
@@ -205,13 +209,17 @@ void hal_cpu_die(void)
         }
         hal_led_toggle_debug_led();
         hal_time_ms_sleep(i);
-        */
     }
 }
 
 void hal_cpu_do_software_reset(void)
 {
     NVIC_SystemReset();
+}
+
+void hal_cpu_tick(void)
+{
+    // nothing to do here
 }
 
 // end of file

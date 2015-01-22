@@ -30,6 +30,7 @@
 #include "hal_uart.h"
 #include "protocol.h"
 #include "hal_cfg.h"
+#include "board_cfg.h"
 
 #define RECEIVE_BUFFER_SIZE_FRAMES  2
 #define RECEIVE_BUFFER_SIZE_BYTES (MAX_RECEIVE_FRAME_SIZE * RECEIVE_BUFFER_SIZE_FRAMES)
@@ -37,9 +38,10 @@
 #define PORT 54321
 
 typedef struct {
+    bool is_std_io;
     uint_fast16_t port;
-    uint_fast16_t read_pos;
-    uint_fast16_t write_pos;
+    volatile uint_fast16_t read_pos;
+    volatile uint_fast16_t write_pos;
     bool i_want_to_send;
     pthread_t uart_thread;
     uint_fast8_t receive_buffer[RECEIVE_BUFFER_SIZE_BYTES];
@@ -53,16 +55,27 @@ typedef struct {
 
 static uart_device_typ devices[MAX_UART + 1]; // +1 as MAX_UART is the highest index into this array
 
-static void* uart_task(void * device);
-
+static void* uart_task(void * dev_ptr);
+static void* uart_std_task(void * dev_ptr);
 
 
 bool hal_uart_init(uint_fast8_t device)
 {
+    int ret = 0;
     if((0 > device) || (MAX_UART < device))
     {
         fprintf(stderr,"Device number out of range! Device number: %d\n", device);
         return false;
+    }
+    fprintf(stdout,"Initializing the Device number: %d\n", device);
+    switch(device)
+    {
+    case 0: devices[device].is_std_io = UART_0_IS_STD_IO; break;
+    case 1: devices[device].is_std_io = UART_1_IS_STD_IO; break;
+    case 2: devices[device].is_std_io = UART_2_IS_STD_IO; break;
+    case 3: devices[device].is_std_io = UART_3_IS_STD_IO; break;
+    case 4: devices[device].is_std_io = UART_4_IS_STD_IO; break;
+    default: devices[device].is_std_io = false;
     }
     devices[device].port = PORT + device;
     devices[device].read_pos = 0;
@@ -71,16 +84,49 @@ bool hal_uart_init(uint_fast8_t device)
     pthread_mutex_init(&devices[device].receive_mutex, NULL);
     pthread_mutex_init(&devices[device].send_mutex, NULL);
     pthread_cond_init(&devices[device].sending_done, NULL);
-    int ret = pthread_create(&devices[device].uart_thread,
+    if(false == devices[device].is_std_io)
+    {
+        // listen to TCP connection
+        ret = pthread_create(&devices[device].uart_thread,
                              NULL,
                              uart_task,
                              &devices[device]);
+    }
+    else
+    {
+        // use std streams
+        ret = pthread_create(&devices[device].uart_thread,
+                             NULL,
+                             uart_std_task,
+                             &devices[device]);
+    }
     if(ret)
     {
         fprintf(stderr,"Error - pthread_create() return code: %d\n",ret);
         return false;
     }
     return true;
+}
+
+static void* uart_std_task(void * dev_ptr)
+{
+    uart_device_typ * device = dev_ptr;
+    int c;
+    fprintf(stdout,"Standard I/O task started,...\n");
+    while((c = fgetc(stdin)) != EOF)
+    {
+        pthread_mutex_lock(&device->receive_mutex);
+        device->receive_buffer[device->write_pos] = c;
+        device->write_pos ++;
+        if(device->write_pos > endPos)
+        {
+            device->write_pos = 0;
+        }
+        pthread_mutex_unlock(&device->receive_mutex);
+        // do not use the whole CPU
+        usleep(1000);
+    }
+    return NULL;
 }
 
 static void* uart_task(void * dev_ptr)
@@ -277,14 +323,29 @@ void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many)
 
 void hal_uart_send_frame(uint_fast8_t device, uint_fast8_t * frame, uint_fast16_t length)
 {
-    // prepare to send
-    devices[device].send_frame = frame;
-    devices[device].send_length = length;
-    pthread_mutex_lock(&devices[device].send_mutex);
-    devices[device].i_want_to_send = true;
-    pthread_mutex_unlock(&devices[device].send_mutex);
-    // wait until data has been send
-    pthread_mutex_lock(&devices[device].send_mutex);
-    pthread_cond_wait(&devices[device].sending_done, &devices[device].send_mutex);
-    pthread_mutex_unlock(&devices[device].send_mutex);
+    if(false == devices[device].is_std_io)
+    {
+        // prepare to send
+        devices[device].send_frame = frame;
+        devices[device].send_length = length;
+        pthread_mutex_lock(&devices[device].send_mutex);
+        devices[device].i_want_to_send = true;
+        pthread_mutex_unlock(&devices[device].send_mutex);
+        // wait until data has been send
+        /* not working if no client connected
+        pthread_mutex_lock(&devices[device].send_mutex);
+        pthread_cond_wait(&devices[device].sending_done, &devices[device].send_mutex);
+        pthread_mutex_unlock(&devices[device].send_mutex);
+        */
+    }
+    else
+    {
+        // just write it to stdout
+        uint_fast16_t i;
+        for(i = 0; i < length; i++)
+        {
+            char c = frame[i];
+            printf("%c",c);
+        }
+    }
 }

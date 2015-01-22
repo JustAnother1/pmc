@@ -15,6 +15,7 @@
 
 #include "step.h"
 #include "error.h"
+#include "hal_cfg.h"
 #ifdef HAS_SPI
 #include "hal_spi.h"
 #endif
