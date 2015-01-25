@@ -17,7 +17,7 @@
 #include "board_cfg.h"
 #include "rcc.h"
 #include "gpio.h"
-#include "debug.h"
+#include "hal_debug.h"
 #include "util.h"
 
 void hal_dout_init(void)

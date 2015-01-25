@@ -24,7 +24,6 @@ SRC += $(SRC_FOLDER)device/device_temperature_sensor.c
 SRC += $(SRC_FOLDER)device/step.c
 SRC += $(SRC_FOLDER)order/command_queue.c
 SRC += $(SRC_FOLDER)order/orderhandler.c
-SRC += $(SRC_FOLDER)debug/debug.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_led.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_cpu.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_time.c
@@ -51,3 +50,10 @@ endif
 ifeq ($(USE_STEP_DIR), yes)
 	DDEFS += -DUSE_STEP_DIR
 endif
+
+ifeq ($(ACTIVATE_DEBUG), yes)
+	SRC += $(SRC_FOLDER)debug/debug.c
+	SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_debug.c
+	DDEFS += -DDEBUG_ACTIVE
+endif
+

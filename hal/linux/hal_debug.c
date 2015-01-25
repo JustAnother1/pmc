@@ -13,34 +13,22 @@
  *
  */
 
-#include <unistd.h>
-#include <stdlib.h>
-
-#include "hal_cpu.h"
 #include "hal_debug.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include "hal_cfg.h"
 
-void hal_cpu_init_hal(void)
+void hal_debug_init(void)
 {
-
 }
 
-void hal_cpu_die(void)
+void debug_msg(const char* format, ...)
 {
-    exit(1);
+    va_list args;
+    va_start(args, format);
+    vprintf(format, args );
+    va_end(args);
 }
 
-void hal_cpu_do_software_reset(void)
-{
-    debug_msg("not implemented!\n");
-}
 
-void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
-{
-
-}
-
-void hal_cpu_tick(void)
-{
-    // do not use the whole CPU
-    usleep(100);
-}

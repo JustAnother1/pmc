@@ -18,7 +18,7 @@
 #include "rcc.h"
 #include "gpio.h"
 #include "util.h"
-#include "debug.h"
+#include "hal_debug.h"
 
 void hal_din_init(void)
 {

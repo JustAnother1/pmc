@@ -16,7 +16,7 @@
 #include "device_buzzer.h"
 #include "protocol.h"
 #include "hal_dout.h"
-#include "debug.h"
+#include "hal_debug.h"
 
 void dev_output_init(void)
 {

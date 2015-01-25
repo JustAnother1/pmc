@@ -25,6 +25,7 @@
 #include "events.h"
 #include "fw_cfg.h"
 #include "command_queue.h"
+#include "hal_debug.h"
 #include "debug.h"
 #include "hal_watchdog.h"
 #include "hal_cpu.h"

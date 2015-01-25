@@ -5,6 +5,9 @@ USE_UART = yes
 USE_USB = no
 USE_SPI = yes
 USE_STEP_DIR = yes
+# enables / disables the debug console and debug_msg()
+ACTIVATE_DEBUG = yes
+
 
 # List all C defines here
 DDEFS += -DPROTOCOL_VERSION_MAJOR=0

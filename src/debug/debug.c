@@ -21,9 +21,7 @@
 #include "error.h"
 #include "debug.h"
 #include "hal_cpu.h"
-
-#define MSG_BUFFER_LENGTH 100
-uint8_t buffer[MSG_BUFFER_LENGTH];
+#include "hal_debug.h"
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
@@ -45,24 +43,8 @@ void debug_init(void)
     tick_value = 0;
     tick_max = 0;
     tick_min = 42424242;
-    // UART
-    bool res = false;
-    res = hal_uart_init(DEBUG_UART);
-    if(false == res)
-    {
-        error_signal_error_and_die();
-    }
+    hal_debug_init();
     debug_msg("Debug Console PMC\n(db)");
-}
-
-void debug_msg(const char* format, ...)
-{
-    int nwritten = 0;
-    va_list args;
-    va_start(args, format);
-    nwritten = vsnprintf((char *)buffer, MSG_BUFFER_LENGTH, format, args );
-    va_end(args);
-    hal_uart_send_frame(DEBUG_UART, &buffer[0], nwritten);
 }
 
 void debug_tick(void)

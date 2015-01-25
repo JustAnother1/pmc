@@ -15,9 +15,12 @@
 
 #ifndef DEBUG_H_
 #define DEBUG_H_
-
+#ifdef DEBUG_ACTIVE
 void debug_init(void);
 void debug_tick(void);
-void debug_msg(const char* format, ...);
+#else
+void debug_init(void) {}
+void debug_tick(void) {}
+#endif
 
 #endif /* DEBUG_H_ */
