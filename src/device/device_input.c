@@ -15,40 +15,50 @@
 
 #include "device_buzzer.h"
 #include "protocol.h"
+#include "hal_din.h"
 
 void dev_input_init(void)
 {
-
+    hal_din_init();
 }
 
 uint_fast8_t dev_input_get_count(void)
 {
-    return 0;
+    return hal_din_get_amount();
 }
 
 uint_fast8_t dev_input_get_status(uint_fast8_t number)
 {
-    return DEVICE_STATUS_FAULT;
+    if(number < hal_din_get_amount())
+    {
+        // TODO enabled?
+        return DEVICE_STATUS_ACTIVE;
+    }
+    else
+    {
+        return DEVICE_STATUS_FAULT;
+    }
 }
 
 void dev_input_enable(uint_fast8_t switch_number, uint_fast8_t enable)
 {
-
+    // TODO
 }
 
 void dev_input_enable_two(uint_fast8_t switch_number, uint_fast8_t enable, uint_fast8_t switch_number2, uint_fast8_t enable2)
 {
-
+    // TODO
 }
 
 uint_fast8_t dev_input_get_name(uint_fast8_t number, uint8_t *position)
 {
-    return 0;
+    return hal_din_get_name(number, position);
 }
 
 uint_fast8_t dev_input_get_switch_state(uint_fast8_t number)
 {
-    return SWITCH_STATE_NOT_TRIGGERED;
+    // TODO handle inverted switch
+    return hal_din_get_switch_state(number);
 }
 
 // end of File

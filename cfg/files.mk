@@ -30,6 +30,7 @@ SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_cpu.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_time.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_watchdog.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_dout.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_din.c
 
 # source files for specific features - only compiled if feature is activated
 ifeq ($(USE_UART), yes)

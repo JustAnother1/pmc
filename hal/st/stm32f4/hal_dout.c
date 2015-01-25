@@ -18,35 +18,26 @@
 #include "rcc.h"
 #include "gpio.h"
 #include "debug.h"
+#include "util.h"
 
 void hal_dout_init(void)
 {
     if(D_OUT_NUM_PINS > 0)
     {
         RCC->AHB1ENR |= D_OUT_0_RCC_GPIO_ENABLE;
-        // LEDS are general purpose outputs
         D_OUT_0_GPIO_PORT->MODER |= D_OUT_0_MODER;
-        // LEDS are push pull
         D_OUT_0_GPIO_PORT->OTYPER &= ~D_OUT_0_OTYPER;
-        // LEDS are low speed (= max 2MHz) but high current
         D_OUT_0_GPIO_PORT->OSPEEDR &= ~D_OUT_0_OSPEEDR;
-        // No pull ups or pull downs
         D_OUT_0_GPIO_PORT->PUPDR &= ~ D_OUT_0_PUPD;
-        // start with output = 0
         D_OUT_0_GPIO_PORT->ODR &= D_OUT_0_ODR;
     }
     if(D_OUT_NUM_PINS > 1)
     {
         RCC->AHB1ENR |= D_OUT_1_RCC_GPIO_ENABLE;
-        // LEDS are general purpose outputs
         D_OUT_1_GPIO_PORT->MODER |= D_OUT_1_MODER;
-        // LEDS are push pull
         D_OUT_1_GPIO_PORT->OTYPER &= ~D_OUT_1_OTYPER;
-        // LEDS are low speed (= max 2MHz) but high current
         D_OUT_1_GPIO_PORT->OSPEEDR &= ~D_OUT_1_OSPEEDR;
-        // No pull ups or pull downs
         D_OUT_1_GPIO_PORT->PUPDR &= ~ D_OUT_1_PUPD;
-        // start with output = 0
         D_OUT_1_GPIO_PORT->ODR &= D_OUT_1_ODR;
     }
 }
@@ -92,19 +83,6 @@ void hal_dout_set_pin_low(uint_fast8_t number)
     {
         debug_msg("dout pin(%d) not available!\n", number);
     }
-}
-
-static uint_fast8_t copy_string(char * str, uint8_t *position)
-{
-    uint_fast8_t num = 0;
-    char c = str[num];
-    while(c !=0)
-    {
-        *position = c;
-        num++;
-        c = str[num];
-    }
-    return num;
 }
 
 uint_fast8_t hal_dout_get_name(uint_fast8_t number, uint8_t *position)

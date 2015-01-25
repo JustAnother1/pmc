@@ -321,4 +321,30 @@
 #define D_OUT_1_OSPEEDR            GPIO_OSPEEDER_OSPEEDR12
 #define D_OUT_1_PUPD               GPIO_PUPDR_PUPDR12
 #define D_OUT_1_ODR                GPIO_ODR_ODR_12
+
+/******************************************************************************/
+/*                                                                            */
+/*         Digital Input Pin                                                 */
+/*                                                                            */
+/******************************************************************************/
+
+#define D_IN_NUM_PINS              2
+#define D_IN_0_NAME                "In 1"
+#define D_IN_0_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIODEN
+#define D_IN_0_GPIO_PORT           GPIOD
+#define D_IN_0_MODER               GPIO_MODER_MODER12_0
+#define D_IN_0_OTYPER              GPIO_OTYPER_OT_12
+#define D_IN_0_OSPEEDR             GPIO_OSPEEDER_OSPEEDR12
+#define D_IN_0_PUPD                GPIO_PUPDR_PUPDR12
+#define D_IN_0_IDR                 GPIO_IDR_IDR_12
+
+#define D_IN_1_NAME                "In 2"
+#define D_IN_1_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIODEN
+#define D_IN_1_GPIO_PORT           GPIOD
+#define D_IN_1_MODER               GPIO_MODER_MODER12_0
+#define D_IN_1_OTYPER              GPIO_OTYPER_OT_12
+#define D_IN_1_OSPEEDR             GPIO_OSPEEDER_OSPEEDR12
+#define D_IN_1_PUPD                GPIO_PUPDR_PUPDR12
+#define D_IN_1_IDR                 GPIO_IDR_IDR_12
+
 #endif /* CPU_CFG_H_ */

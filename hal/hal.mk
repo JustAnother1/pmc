@@ -9,6 +9,7 @@ ifeq ($(BOARD), stm407disco)
 	STARTUP += $(HAL_FOLDER)$(BOARD_FOLDER)/407discovery/startup_stm32f407xx.s
 	INCDIRS +=$(HAL_FOLDER)arm/
 	INCDIRS +=$(HAL_FOLDER)$(BOARD_FOLDER)/407discovery/
+	SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/util.c
 	OPTIONS_ARCH += -mthumb -mcpu=cortex-m4 -march=armv7e-m
 	ASFLAGS += -g -Wall -gdwarf-2 -Wa,-amhls=$(addprefix $(BIN_FOLDER),$(<:.s=.lst))
 	CFLAGS += -ffunction-sections -fdata-sections -ffreestanding --specs=nano.specs 
