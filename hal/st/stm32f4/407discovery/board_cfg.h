@@ -297,4 +297,28 @@
 #define SPI_1_SCK_GPIO_AFR_1_1    0x00500000
 #define SPI_1_SCK_GPIO_AFR_1_0    0x00a00000
 
+/******************************************************************************/
+/*                                                                            */
+/*         Digital Output Pin                                                 */
+/*                                                                            */
+/******************************************************************************/
+
+#define D_OUT_NUM_PINS             2
+#define D_OUT_0_NAME               "Out 1"
+#define D_OUT_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
+#define D_OUT_0_GPIO_PORT          GPIOD
+#define D_OUT_0_MODER              GPIO_MODER_MODER12_0
+#define D_OUT_0_OTYPER             GPIO_OTYPER_OT_12
+#define D_OUT_0_OSPEEDR            GPIO_OSPEEDER_OSPEEDR12
+#define D_OUT_0_PUPD               GPIO_PUPDR_PUPDR12
+#define D_OUT_0_ODR                GPIO_ODR_ODR_12
+
+#define D_OUT_1_NAME               "Out 2"
+#define D_OUT_1_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
+#define D_OUT_1_GPIO_PORT          GPIOD
+#define D_OUT_1_MODER              GPIO_MODER_MODER12_0
+#define D_OUT_1_OTYPER             GPIO_OTYPER_OT_12
+#define D_OUT_1_OSPEEDR            GPIO_OSPEEDER_OSPEEDR12
+#define D_OUT_1_PUPD               GPIO_PUPDR_PUPDR12
+#define D_OUT_1_ODR                GPIO_ODR_ODR_12
 #endif /* CPU_CFG_H_ */

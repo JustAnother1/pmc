@@ -137,6 +137,9 @@
 
 #define SWITCH_STATE_NOT_TRIGGERED                             0
 #define SWITCH_STATE_TRIGGERED                                 1
+#define OUTPUT_STATE_LOW                                       0
+#define OUTPUT_STATE_HIGH                                      1
+#define OUTPUT_STATE_HIGH_Z                                    2
 
 #define MOVEMENT_BLOCK_TYPE_COMMAND_WRAPPER     1
 #define MOVEMENT_BLOCK_TYPE_DELAY               2
