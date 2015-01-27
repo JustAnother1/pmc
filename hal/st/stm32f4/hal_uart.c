@@ -187,6 +187,44 @@ bool hal_uart_init(uint_fast8_t device)
     switch(device)
     {
     case 0 :
+        // configure UART parameters
+        // enable UART
+        UART_0->CR1 = 0x00002000;
+        // baud rate
+        UART_0->BRR = UART_0_BRR;
+        // 16x oversampling,  no parity, 1 stop bit, 8 data bits, only Receive interrupts
+        //UART_0->CR1 = 0x0000202c;
+        UART_0->CR1 = 0x00002008;
+        // not Lin, No SPI, address = 0
+        UART_0->CR2 = 0x00000000;
+        //  No CTS, RTS, no DMA, no Smartcard, full duplex, no IRDA
+        UART_0->CR3 = 0x00000000;
+        // enable RX and TX
+        UART_0->CR1 = 0x0000202c;
+        // configure Pins
+        // RX
+        UART_0_RX_GPIO_PORT->MODER   |=  UART_0_RX_GPIO_MODER_1;
+        UART_0_RX_GPIO_PORT->MODER   &= ~UART_0_RX_GPIO_MODER_0;
+        UART_0_RX_GPIO_PORT->AFR[0]  |=  UART_0_RX_GPIO_AFR_0_1;
+        UART_0_RX_GPIO_PORT->AFR[0]  &= ~UART_0_RX_GPIO_AFR_0_0;
+        UART_0_RX_GPIO_PORT->AFR[1]  |=  UART_0_RX_GPIO_AFR_1_1;
+        UART_0_RX_GPIO_PORT->AFR[1]  &= ~UART_0_RX_GPIO_AFR_1_0;
+        UART_0_RX_GPIO_PORT->OTYPER  |=  UART_0_RX_GPIO_OTYPER_1;
+        UART_0_RX_GPIO_PORT->OTYPER  &= ~UART_0_RX_GPIO_OTYPER_0;
+        UART_0_RX_GPIO_PORT->PUPDR   |=  UART_0_RX_GPIO_PUPD_1;
+        UART_0_RX_GPIO_PORT->PUPDR   &= ~UART_0_RX_GPIO_PUPD_0;
+        // TX
+        UART_0_TX_GPIO_PORT->MODER   |=  UART_0_TX_GPIO_MODER_1;
+        UART_0_TX_GPIO_PORT->MODER   &= ~UART_0_TX_GPIO_MODER_0;
+        UART_0_TX_GPIO_PORT->AFR[0]  |=  UART_0_TX_GPIO_AFR_0_1;
+        UART_0_TX_GPIO_PORT->AFR[0]  &= ~UART_0_TX_GPIO_AFR_0_0;
+        UART_0_TX_GPIO_PORT->AFR[1]  |=  UART_0_TX_GPIO_AFR_1_1;
+        UART_0_TX_GPIO_PORT->AFR[1]  &= ~UART_0_TX_GPIO_AFR_1_0;
+        UART_0_TX_GPIO_PORT->OTYPER  |=  UART_0_TX_GPIO_OTYPER_1;
+        UART_0_TX_GPIO_PORT->OTYPER  &= ~UART_0_TX_GPIO_OTYPER_0;
+        UART_0_TX_GPIO_PORT->PUPDR   |=  UART_0_TX_GPIO_PUPD_1;
+        UART_0_TX_GPIO_PORT->PUPDR   &= ~UART_0_TX_GPIO_PUPD_0;
+
         // enable clock for GPIO Port
         RCC->AHB1ENR |= UART_0_RX_GPIO_PORT_RCC;
         RCC->AHB1ENR |= UART_0_TX_GPIO_PORT_RCC;
@@ -195,44 +233,46 @@ bool hal_uart_init(uint_fast8_t device)
         RCC->APB2ENR |= UART_0_APB2ENR;
         // configure Pins
         // RX
-        UART_0_RX_GPIO_PORT->MODER   |=  UART_0_RX_GPIO_MODER_1;
-        UART_0_RX_GPIO_PORT->MODER   &= ~UART_0_RX_GPIO_MODER_0;
-        UART_0_RX_GPIO_PORT->OTYPER  |=  UART_0_RX_GPIO_OTYPER_1;
-        UART_0_RX_GPIO_PORT->OTYPER  &= ~UART_0_RX_GPIO_OTYPER_0;
         UART_0_RX_GPIO_PORT->OSPEEDR |=  UART_0_RX_GPIO_OSPEEDR_1;
         UART_0_RX_GPIO_PORT->OSPEEDR &= ~UART_0_RX_GPIO_OSPEEDR_0;
-        UART_0_RX_GPIO_PORT->PUPDR   |=  UART_0_RX_GPIO_PUPD_1;
-        UART_0_RX_GPIO_PORT->PUPDR   &= ~UART_0_RX_GPIO_PUPD_0;
-        UART_0_RX_GPIO_PORT->AFR[0]  |=  UART_0_RX_GPIO_AFR_0_1;
-        UART_0_RX_GPIO_PORT->AFR[0]  &= ~UART_0_RX_GPIO_AFR_0_0;
-        UART_0_RX_GPIO_PORT->AFR[1]  |=  UART_0_RX_GPIO_AFR_1_1;
-        UART_0_RX_GPIO_PORT->AFR[1]  &= ~UART_0_RX_GPIO_AFR_1_0;
         // TX
-        UART_0_TX_GPIO_PORT->MODER   |=  UART_0_TX_GPIO_MODER_1;
-        UART_0_TX_GPIO_PORT->MODER   &= ~UART_0_TX_GPIO_MODER_0;
-        UART_0_TX_GPIO_PORT->OTYPER  |=  UART_0_TX_GPIO_OTYPER_1;
-        UART_0_TX_GPIO_PORT->OTYPER  &= ~UART_0_TX_GPIO_OTYPER_0;
         UART_0_TX_GPIO_PORT->OSPEEDR |=  UART_0_TX_GPIO_OSPEEDR_1;
         UART_0_TX_GPIO_PORT->OSPEEDR &= ~UART_0_TX_GPIO_OSPEEDR_0;
-        UART_0_TX_GPIO_PORT->PUPDR   |=  UART_0_TX_GPIO_PUPD_1;
-        UART_0_TX_GPIO_PORT->PUPDR   &= ~UART_0_TX_GPIO_PUPD_0;
-        UART_0_TX_GPIO_PORT->AFR[0]  |=  UART_0_TX_GPIO_AFR_0_1;
-        UART_0_TX_GPIO_PORT->AFR[0]  &= ~UART_0_TX_GPIO_AFR_0_0;
-        UART_0_TX_GPIO_PORT->AFR[1]  |=  UART_0_TX_GPIO_AFR_1_1;
-        UART_0_TX_GPIO_PORT->AFR[1]  &= ~UART_0_TX_GPIO_AFR_1_0;
-        // configure UART parameters
-        UART_0->BRR = UART_0_BRR;  // baud rate
-        // 16x oversampling,  no parity, 1 stop bit, 8 data bits, only Receive interrupts
-        //UART_0->CR1 = 0x0000202c;
-        UART_0->CR1 = 0x00002008;
-        // not Lin, No SPI, address = 0
-        UART_0->CR2 = 0x00000000;
-        //  No CTS, RTS, no DMA, no Smartcard, full duplex, no IRDA
-        UART_0->CR3 = 0x00000000;
+
+
         devices[device].port = UART_0;
         break;
 
     case 1:
+        // configure UART parameters
+        // enable UART
+        UART_1->CR1 = 0x00002000;
+        // baud rate
+        UART_1->BRR = UART_0_BRR;
+        // 16x oversampling,  no parity, 1 stop bit, 8 data bits, only Receive interrupts
+        UART_1->CR1 = 0x00002020;
+        // not Lin, No SPI, address = 0
+        UART_1->CR2 = 0x00000000;
+        //  No CTS, RTS, no DMA, no Smartcard, full duplex, no IRDA
+        UART_1->CR3 = 0x00000000;
+        // enable RX and TX
+        UART_1->CR1 = 0x0000202c;
+        // configure Pins
+        // RX
+        UART_1_RX_GPIO_PORT->MODER   |=  UART_1_RX_GPIO_MODER_1;
+        UART_1_RX_GPIO_PORT->MODER   &= ~UART_1_RX_GPIO_MODER_0;
+        UART_1_RX_GPIO_PORT->AFR[0]  |=  UART_1_RX_GPIO_AFR_0_1;
+        UART_1_RX_GPIO_PORT->AFR[0]  &= ~UART_1_RX_GPIO_AFR_0_0;
+        UART_1_RX_GPIO_PORT->AFR[1]  |=  UART_1_RX_GPIO_AFR_1_1;
+        UART_1_RX_GPIO_PORT->AFR[1]  &= ~UART_1_RX_GPIO_AFR_1_0;
+        // TX
+        UART_1_TX_GPIO_PORT->MODER   |=  UART_1_TX_GPIO_MODER_1;
+        UART_1_TX_GPIO_PORT->MODER   &= ~UART_1_TX_GPIO_MODER_0;
+        UART_1_TX_GPIO_PORT->AFR[0]  |=  UART_1_TX_GPIO_AFR_0_1;
+        UART_1_TX_GPIO_PORT->AFR[0]  &= ~UART_1_TX_GPIO_AFR_0_0;
+        UART_1_TX_GPIO_PORT->AFR[1]  |=  UART_1_TX_GPIO_AFR_1_1;
+        UART_1_TX_GPIO_PORT->AFR[1]  &= ~UART_1_TX_GPIO_AFR_1_0;
+
         // enable clock for GPIO Port
         RCC->AHB1ENR |= UART_1_RX_GPIO_PORT_RCC;
         RCC->AHB1ENR |= UART_1_TX_GPIO_PORT_RCC;
@@ -241,39 +281,19 @@ bool hal_uart_init(uint_fast8_t device)
         RCC->APB2ENR |= UART_1_APB2ENR;
         // configure Pins
         // RX
-        UART_1_RX_GPIO_PORT->MODER   |=  UART_1_RX_GPIO_MODER_1;
-        UART_1_RX_GPIO_PORT->MODER   &= ~UART_1_RX_GPIO_MODER_0;
         UART_1_RX_GPIO_PORT->OTYPER  |=  UART_0_RX_GPIO_OTYPER_1;
         UART_1_RX_GPIO_PORT->OTYPER  &= ~UART_0_RX_GPIO_OTYPER_0;
         UART_1_RX_GPIO_PORT->OSPEEDR |=  UART_1_RX_GPIO_OSPEEDR_1;
         UART_1_RX_GPIO_PORT->OSPEEDR &= ~UART_1_RX_GPIO_OSPEEDR_0;
         UART_1_RX_GPIO_PORT->PUPDR   |=  UART_0_RX_GPIO_PUPD_1;
         UART_1_RX_GPIO_PORT->PUPDR   &= ~UART_0_RX_GPIO_PUPD_0;
-        UART_1_RX_GPIO_PORT->AFR[0]  |=  UART_1_RX_GPIO_AFR_0_1;
-        UART_1_RX_GPIO_PORT->AFR[0]  &= ~UART_1_RX_GPIO_AFR_0_0;
-        UART_1_RX_GPIO_PORT->AFR[1]  |=  UART_1_RX_GPIO_AFR_1_1;
-        UART_1_RX_GPIO_PORT->AFR[1]  &= ~UART_1_RX_GPIO_AFR_1_0;
         // TX
-        UART_1_TX_GPIO_PORT->MODER   |=  UART_1_TX_GPIO_MODER_1;
-        UART_1_TX_GPIO_PORT->MODER   &= ~UART_1_TX_GPIO_MODER_0;
         UART_1_TX_GPIO_PORT->OTYPER  |=  UART_0_TX_GPIO_OTYPER_1;
         UART_1_TX_GPIO_PORT->OTYPER  &= ~UART_0_TX_GPIO_OTYPER_0;
         UART_1_TX_GPIO_PORT->OSPEEDR |=  UART_1_TX_GPIO_OSPEEDR_1;
         UART_1_TX_GPIO_PORT->OSPEEDR &= ~UART_1_TX_GPIO_OSPEEDR_0;
         UART_1_TX_GPIO_PORT->PUPDR   |=  UART_0_TX_GPIO_PUPD_1;
         UART_1_TX_GPIO_PORT->PUPDR   &= ~UART_0_TX_GPIO_PUPD_0;
-        UART_1_TX_GPIO_PORT->AFR[0]  |=  UART_1_TX_GPIO_AFR_0_1;
-        UART_1_TX_GPIO_PORT->AFR[0]  &= ~UART_1_TX_GPIO_AFR_0_0;
-        UART_1_TX_GPIO_PORT->AFR[1]  |=  UART_1_TX_GPIO_AFR_1_1;
-        UART_1_TX_GPIO_PORT->AFR[1]  &= ~UART_1_TX_GPIO_AFR_1_0;
-        // configure UART parameters
-        UART_1->BRR = UART_0_BRR;  // baud rate
-        // 16x oversampling,  no parity, 1 stop bit, 8 data bits, only Receive interrupts
-        UART_1->CR1 = 0x0000202c;
-        // not Lin, No SPI, address = 0
-        UART_1->CR2 = 0x00000000;
-        //  No CTS, RTS, no DMA, no Smartcard, full duplex, no IRDA
-        UART_1->CR3 = 0x00000000;
         devices[device].port = UART_1;
         break;
 

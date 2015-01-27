@@ -187,6 +187,8 @@ void hal_cpu_die(void)
 {
     uint_fast32_t i = HEART_BEAT_FAST_LIMIT;
     bool direction_is_increment = true;
+    // Disable all System Tick( = 1ms) services
+    tick_list = NULL;
     for(;;)
     {
         if((i <HEART_BEAT_FAST_LIMIT) && (false == direction_is_increment))

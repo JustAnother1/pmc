@@ -60,6 +60,7 @@
 #define DEBUG_LED_OSPEEDR          GPIO_OSPEEDER_OSPEEDR12
 #define DEBUG_LED_PUPD             GPIO_PUPDR_PUPDR12
 #define DEBUG_LED_ODR              GPIO_ODR_ODR_12
+#define DEBUG_LED_BSRR             GPIO_BSRR_12
 
 #define ERROR_LED_GPIO_PORT        GPIOD
 #define ERROR_LED_RCC_GPIO_ENABLE  RCC_AHB1ENR_GPIODEN
@@ -68,6 +69,7 @@
 #define ERROR_LED_OSPEEDR          GPIO_OSPEEDER_OSPEEDR14
 #define ERROR_LED_PUPD             GPIO_PUPDR_PUPDR14
 #define ERROR_LED_ODR              GPIO_ODR_ODR_14
+#define ERROR_LED_BSRR             GPIO_BSRR_14
 
 /******************************************************************************/
 /*                                                                            */

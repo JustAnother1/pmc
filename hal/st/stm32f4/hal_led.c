@@ -53,12 +53,12 @@ void hal_led_toggle_debug_led(void)
 {
     if(true == debugLedIsOn)
     {
-        DEBUG_LED_GPIO_PORT->ODR &= ~DEBUG_LED_ODR;
+        DEBUG_LED_GPIO_PORT->BSRR_RESET = DEBUG_LED_BSRR;
         debugLedIsOn = false;
     }
     else
     {
-        DEBUG_LED_GPIO_PORT->ODR |= DEBUG_LED_ODR;
+        DEBUG_LED_GPIO_PORT->BSRR_SET = DEBUG_LED_BSRR;
         debugLedIsOn = true;
     }
 }
@@ -68,12 +68,12 @@ void hal_led_set_error_led(bool on)
     if(true == on)
     {
         // led on
-        ERROR_LED_GPIO_PORT->ODR |= ERROR_LED_ODR;
+        ERROR_LED_GPIO_PORT->BSRR_SET = ERROR_LED_BSRR;
     }
     else
     {
         // led off
-        ERROR_LED_GPIO_PORT->ODR &= ~ERROR_LED_ODR;
+        ERROR_LED_GPIO_PORT->BSRR_RESET = ERROR_LED_BSRR;
     }
 }
 
