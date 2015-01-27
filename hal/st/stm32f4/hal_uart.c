@@ -187,6 +187,13 @@ bool hal_uart_init(uint_fast8_t device)
     switch(device)
     {
     case 0 :
+        // enable clock for GPIO Port
+        RCC->AHB1ENR |= UART_0_RX_GPIO_PORT_RCC;
+        RCC->AHB1ENR |= UART_0_TX_GPIO_PORT_RCC;
+        // enable clock for interface
+        RCC->APB1ENR |= UART_0_APB1ENR;
+        RCC->APB2ENR |= UART_0_APB2ENR;
+
         // configure UART parameters
         // enable UART
         UART_0->CR1 = 0x00002000;
@@ -225,12 +232,6 @@ bool hal_uart_init(uint_fast8_t device)
         UART_0_TX_GPIO_PORT->PUPDR   |=  UART_0_TX_GPIO_PUPD_1;
         UART_0_TX_GPIO_PORT->PUPDR   &= ~UART_0_TX_GPIO_PUPD_0;
 
-        // enable clock for GPIO Port
-        RCC->AHB1ENR |= UART_0_RX_GPIO_PORT_RCC;
-        RCC->AHB1ENR |= UART_0_TX_GPIO_PORT_RCC;
-        // enable clock for interface
-        RCC->APB1ENR |= UART_0_APB1ENR;
-        RCC->APB2ENR |= UART_0_APB2ENR;
         // configure Pins
         // RX
         UART_0_RX_GPIO_PORT->OSPEEDR |=  UART_0_RX_GPIO_OSPEEDR_1;
@@ -244,6 +245,13 @@ bool hal_uart_init(uint_fast8_t device)
         break;
 
     case 1:
+        // enable clock for GPIO Port
+        RCC->AHB1ENR |= UART_1_RX_GPIO_PORT_RCC;
+        RCC->AHB1ENR |= UART_1_TX_GPIO_PORT_RCC;
+        // enable clock for interface
+        RCC->APB1ENR |= UART_1_APB1ENR;
+        RCC->APB2ENR |= UART_1_APB2ENR;
+
         // configure UART parameters
         // enable UART
         UART_1->CR1 = 0x00002000;
@@ -273,12 +281,6 @@ bool hal_uart_init(uint_fast8_t device)
         UART_1_TX_GPIO_PORT->AFR[1]  |=  UART_1_TX_GPIO_AFR_1_1;
         UART_1_TX_GPIO_PORT->AFR[1]  &= ~UART_1_TX_GPIO_AFR_1_0;
 
-        // enable clock for GPIO Port
-        RCC->AHB1ENR |= UART_1_RX_GPIO_PORT_RCC;
-        RCC->AHB1ENR |= UART_1_TX_GPIO_PORT_RCC;
-        // enable clock for interface
-        RCC->APB1ENR |= UART_1_APB1ENR;
-        RCC->APB2ENR |= UART_1_APB2ENR;
         // configure Pins
         // RX
         UART_1_RX_GPIO_PORT->OTYPER  |=  UART_0_RX_GPIO_OTYPER_1;
