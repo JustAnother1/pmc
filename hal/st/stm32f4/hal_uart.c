@@ -200,6 +200,14 @@ void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint
         // no data
         return;
     }
+    if(NULL == devices[device].send_buffer)
+    {
+        devices[device].is_sending = false; // for safety
+        devices[device].port->CR1 &= ~USART_CR1_TXEIE;
+        // no sendbuffer -> blocking
+        hal_uart_send_frame(device, frame, length);
+        return;
+    }
     // can we copy the data ?
     if(devices[device].send_end_pos < devices[device].send_pos)
     {
@@ -225,7 +233,7 @@ void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint
     else
     {
         // not wrapped yet
-        if(length < (devices[device].send_end_pos - devices[device].send_end_pos))
+        if(length < (devices[device].size_send_buffer - devices[device].send_end_pos))
         {
             // and we can put it in without wrapping
             // copy data
@@ -275,6 +283,7 @@ void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint
         // start sending now
         check_if_we_can_send(device);
         devices[device].is_sending = true;
+        devices[device].port->CR1 |= USART_CR1_TXEIE;
         devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_pos];
         devices[device].send_pos++;
         if(devices[device].send_pos < devices[device].size_send_buffer)
@@ -291,6 +300,7 @@ void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint
 
 void UART_0_IRQ_HANDLER(void)
 {
+    hal_led_toggle_debug_led();
     if(USART_SR_RXNE == (USART_SR_RXNE & UART_0->SR))
     {
         uint32_t reg = UART_0->DR;
@@ -318,6 +328,11 @@ void UART_0_IRQ_HANDLER(void)
                 // wrap around
                 devices[0].send_pos = 0;
             }
+            if(devices[0].send_pos == devices[0].send_end_pos)
+            {
+                devices[0].is_sending = false;
+                UART_0->CR1 &= ~USART_CR1_TXEIE;
+            }
         }
         // else nothing to do;
         UART_0->SR &= ~USART_SR_TXE;
@@ -326,6 +341,7 @@ void UART_0_IRQ_HANDLER(void)
 
 void UART_1_IRQ_HANDLER(void)
 {
+    hal_led_toggle_debug_led();
     if(USART_SR_RXNE == (USART_SR_RXNE & UART_1->SR))
     {
         uint32_t reg = UART_1->DR;
@@ -352,6 +368,11 @@ void UART_1_IRQ_HANDLER(void)
             {
                 // wrap around
                 devices[1].send_pos = 0;
+            }
+            if(devices[1].send_pos == devices[1].send_end_pos)
+            {
+                devices[1].is_sending = false;
+                UART_1->CR1 &= ~USART_CR1_TXEIE;
             }
         }
         // else nothing to do;
@@ -434,6 +455,8 @@ bool hal_uart_init(uint_fast8_t device, uint_fast16_t rec_buf_size, uint_fast16_
     }
     devices[device].size_receive_buffer = rec_buf_size;
     devices[device].size_send_buffer = send_buf_size;
+    devices[device].send_end_pos = 0;
+    devices[device].send_pos = 0;
 
     switch(device)
     {

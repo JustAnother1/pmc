@@ -49,7 +49,7 @@ void debug_msg(const char* format, ...)
     va_start(args, format);
     nwritten = vsnprintf((char *)buffer, MSG_BUFFER_LENGTH, format, args );
     va_end(args);
-    hal_uart_send_frame(DEBUG_UART, &buffer[0], nwritten);
+    hal_uart_send_frame_non_blocking(DEBUG_UART, &buffer[0], nwritten);
 }
 
 void debug_line(const char* format, ...)
@@ -73,6 +73,6 @@ void debug_line(const char* format, ...)
         buffer[MSG_BUFFER_LENGTH -1] = '\n';
         nwritten = MSG_BUFFER_LENGTH;
     }
-    hal_uart_send_frame(DEBUG_UART, &buffer[0], nwritten);
+    hal_uart_send_frame_non_blocking(DEBUG_UART, &buffer[0], nwritten);
 }
 

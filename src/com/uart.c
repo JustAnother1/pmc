@@ -44,7 +44,7 @@ void uart_send_frame(uint8_t * frame, uint_fast16_t length)
         return;
     }
     // else :
-    hal_uart_send_frame(GCODE_UART, frame, length);
+    hal_uart_send_frame_non_blocking(GCODE_UART, frame, length);
 }
 
 bool uart_has_next_frame(void)
