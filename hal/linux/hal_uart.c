@@ -31,6 +31,7 @@
 #include "protocol.h"
 #include "hal_cfg.h"
 #include "board_cfg.h"
+#include "hal_debug.h"
 
 #define RECEIVE_BUFFER_SIZE_FRAMES  2
 #define RECEIVE_BUFFER_SIZE_BYTES (MAX_RECEIVE_FRAME_SIZE * RECEIVE_BUFFER_SIZE_FRAMES)
@@ -58,6 +59,18 @@ static uart_device_typ devices[MAX_UART + 1]; // +1 as MAX_UART is the highest i
 static void* uart_task(void * dev_ptr);
 static void* uart_std_task(void * dev_ptr);
 
+void print_uart_configuration(uint_fast8_t device)
+{
+    debug_line("Configuration of UART_%d :", device);
+    if(true == devices[device].is_std_io)
+    {
+        debug_line(" is a standard io interface");
+    }
+    else
+    {
+        debug_line(" is a telnet interface");
+    }
+}
 
 bool hal_uart_init(uint_fast8_t device)
 {

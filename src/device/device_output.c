@@ -67,17 +67,17 @@ void dev_output_set_switch_state(uint_fast8_t number, uint_fast8_t state)
 
         case OUTPUT_STATE_HIGH_Z:
             // TODO
-            debug_msg("high-Z:not implemented");
+            debug_line("high-Z:not implemented");
             break;
 
         default:
-            debug_msg("invalid output state (%d)!", state);
+            debug_line("invalid output state (%d)!", state);
             break;
         }
     }
     else
     {
-        debug_msg("requested switching of invalid output(%d)!", number);
+        debug_line("requested switching of invalid output(%d)!", number);
     }
 }
 

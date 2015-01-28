@@ -176,7 +176,7 @@ static void hal_cpu_start_ms_timer(void)
     // set reload register
     SysTick->LOAD  = (FREQUENCY_OF_HCLK /1000) - 1;
     // set Priority for Systick Interrupt
-    NVIC_SetPriority(SysTick_IRQn, (1<<__NVIC_PRIO_BITS) - 1);
+    NVIC_SetPriority(SysTick_IRQn, 15); // set to lowest possible priority = 15
     // make sure that counter starts at 0 now
     SysTick->VAL   = 0;
     // Enable SysTick IRQ and SysTick Timer ClkSrc = AHB

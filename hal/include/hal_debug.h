@@ -18,9 +18,11 @@
 #ifdef DEBUG_ACTIVE
 void hal_debug_init(void);
 void debug_msg(const char* format, ...);
+void debug_line(const char* format, ...);
 #else
 void hal_debug_init(void) {}
 void debug_msg(const char* format, ...) {}
+void debug_line(const char* format, ...) {}
 #endif
 
 #endif /* HAL_INCLUDE_HAL_DEBUG_H_ */

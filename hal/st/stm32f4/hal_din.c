@@ -72,13 +72,13 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t number)
         case 0: if(0 !=(D_IN_0_GPIO_PORT->IDR & D_IN_0_IDR)) {return 1;} else {return 0;} break;
         case 1: if(0 !=(D_IN_1_GPIO_PORT->IDR & D_IN_1_IDR)) {return 1;} else {return 0;} break;
         default:
-            debug_msg("dout pin(%d) not available!\n", number);
+            debug_line("dout pin(%d) not available!", number);
             break;
         }
     }
     else
     {
-        debug_msg("dout pin(%d) not available!\n", number);
+        debug_line("dout pin(%d) not available!", number);
     }
     return 0;
 }

@@ -49,6 +49,16 @@
 
 /******************************************************************************/
 /*                                                                            */
+/*         I R Q                                                              */
+/*                                                                            */
+/******************************************************************************/
+#define UART_0_IRQ_NUMBER          USART1_IRQn
+#define UART_0_IRQ_PRIORITY        5
+#define UART_1_IRQ_NUMBER          USART6_IRQn
+#define UART_1_IRQ_PRIORITY        14
+
+/******************************************************************************/
+/*                                                                            */
 /*         L E D                                                              */
 /*                                                                            */
 /******************************************************************************/
@@ -157,7 +167,7 @@
 #define UART_1_TX_GPIO_OTYPER_0    GPIO_OTYPER_OT_6
 #define UART_1_TX_GPIO_OSPEEDR_1   0
 #define UART_1_TX_GPIO_OSPEEDR_0   GPIO_OSPEEDER_OSPEEDR6
-#define UART_2_TX_GPIO_PUPD_1      GPIO_PUPDR_PUPDR6_0
+#define UART_1_TX_GPIO_PUPD_1      GPIO_PUPDR_PUPDR6_0
 #define UART_1_TX_GPIO_PUPD_0      GPIO_PUPDR_PUPDR6_1
 // PC6 = AF8 = 1000
 #define UART_1_TX_GPIO_AFR_0_1     0x08000000

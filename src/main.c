@@ -56,7 +56,7 @@ int main (void)
     dev_output_init();
     cmd_queue_init();
     com_init();
-    debug_msg("Reached end of initialization!\n");
+    debug_line("Reached end of initialization!");
     for(;;)
     {
         hal_led_set_error_led(on);

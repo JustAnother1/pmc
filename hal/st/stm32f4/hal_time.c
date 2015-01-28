@@ -29,7 +29,6 @@ void hal_time_init(void)
 
 static void hal_time_ISR(void)
 {
-    hal_led_toggle_debug_led();
     now++;
 }
 

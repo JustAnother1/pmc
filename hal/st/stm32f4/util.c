@@ -14,6 +14,7 @@
  */
 
 #include "util.h"
+#include "hal_debug.h"
 
 uint_fast8_t copy_string(char * str, uint8_t *position)
 {
@@ -26,4 +27,17 @@ uint_fast8_t copy_string(char * str, uint8_t *position)
         c = str[num];
     }
     return num;
+}
+
+void print_gpio_configuration(GPIO_TypeDef * gpio)
+{
+    debug_line("GPIO->AFRL    = 0x%08x", gpio->AFR[0]);
+    debug_line("GPIO->AFRH    = 0x%08x", gpio->AFR[1]);
+    debug_line("GPIO->IDR     = 0x%08x", gpio->IDR);
+    debug_line("GPIO->LCKR    = 0x%08x", gpio->LCKR);
+    debug_line("GPIO->MODER   = 0x%08x", gpio->MODER);
+    debug_line("GPIO->ODR     = 0x%08x", gpio->ODR);
+    debug_line("GPIO->OSPEEDR = 0x%08x", gpio->OSPEEDR);
+    debug_line("GPIO->OTYPER  = 0x%08x", gpio->OTYPER);
+    debug_line("GPIO->PUPDR   = 0x%08x", gpio->PUPDR);
 }

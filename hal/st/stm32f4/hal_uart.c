@@ -13,6 +13,7 @@
  *
  */
 
+#include <stddef.h>
 #include "hal_uart.h"
 #include "hal_time.h"
 #include "rcc.h"
@@ -20,6 +21,9 @@
 #include "board_cfg.h"
 #include "usart.h"
 #include "gpio.h"
+#include "util.h"
+#include "hal_debug.h"
+#include "hal_common.h"
 
 #define RECEIVE_BUFFER_SIZE_BYTES  512
 #define endPos                     (RECEIVE_BUFFER_SIZE_BYTES -1)
@@ -28,14 +32,14 @@
 
 
 typedef struct {
-    uint_fast8_t receive_buffer[RECEIVE_BUFFER_SIZE_BYTES];
-    volatile uint_fast16_t read_pos;
-    volatile uint_fast16_t write_pos;
+    uint_fast8_t    receive_buffer[RECEIVE_BUFFER_SIZE_BYTES];
+    uint_fast16_t   read_pos;
+    uint_fast16_t   write_pos;
     USART_TypeDef * port;
 }uart_device_typ;
 
 
-static uart_device_typ devices[MAX_UART + 1]; // +1 as MAX_UART is the highest index into this array
+static volatile uart_device_typ devices[MAX_UART + 1]; // +1 as MAX_UART is the highest index into this array
 
 
 uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16_t offset)
@@ -153,8 +157,10 @@ void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t len
 
 void UART_0_IRQ_HANDLER(void)
 {
-    if(USART_SR_RXNE == (USART_SR_RXNE && UART_0->SR))
+    hal_led_toggle_debug_led();
+    if(USART_SR_RXNE == (USART_SR_RXNE & UART_0->SR))
     {
+        // hal_led_toggle_debug_led();
         uint8_t received_byte = (UART_0->DR & 0xff);
         devices[0].receive_buffer[devices[0].write_pos] = received_byte;
         devices[0].write_pos ++;
@@ -167,15 +173,56 @@ void UART_0_IRQ_HANDLER(void)
 
 void UART_1_IRQ_HANDLER(void)
 {
-    if(USART_SR_RXNE == (USART_SR_RXNE && UART_1->SR))
+    if(USART_SR_RXNE == (USART_SR_RXNE & UART_1->SR))
     {
-        uint8_t received_byte = (UART_1->DR & 0xff);
+        uint32_t reg = UART_1->DR;
+        uint8_t received_byte = (reg & 0xff);
+        UART_1->SR &= ~0x20;
+        hal_led_toggle_debug_led();
+
         devices[1].receive_buffer[devices[1].write_pos] = received_byte;
         devices[1].write_pos ++;
         if(RECEIVE_BUFFER_SIZE_BYTES == devices[1].write_pos)
         {
             devices[1]. write_pos = 0;
         }
+    }
+}
+
+void print_uart_configuration(uint_fast8_t device)
+{
+    debug_line("Configuration of UART_%d :", device);
+    // Clock
+    debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
+    debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
+    debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
+    // Uart
+    debug_line("UART->BRR     = 0x%08x", devices[device].port->BRR);
+    debug_line("UART->CR1     = 0x%08x", devices[device].port->CR1);
+    debug_line("UART->CR2     = 0x%08x", devices[device].port->CR2);
+    debug_line("UART->CR3     = 0x%08x", devices[device].port->CR3);
+    debug_line("UART->DR      = 0x%08x", devices[device].port->DR);
+    debug_line("UART->GTPR    = 0x%08x", devices[device].port->GTPR);
+    debug_line("UART->SR      = 0x%08x", devices[device].port->SR);
+    // GPIO
+    switch(device)
+    {
+    case 0 :
+        debug_line("RX Pin:");
+        print_gpio_configuration(UART_0_RX_GPIO_PORT);
+        debug_line("TX Pin:");
+        print_gpio_configuration(UART_0_TX_GPIO_PORT);
+        break;
+
+    case 1 :
+        debug_line("RX Pin:");
+        print_gpio_configuration(UART_1_RX_GPIO_PORT);
+        debug_line("TX Pin:");
+        print_gpio_configuration(UART_1_TX_GPIO_PORT);
+        break;
+
+    default:
+        break;
     }
 }
 
@@ -208,6 +255,9 @@ bool hal_uart_init(uint_fast8_t device)
         UART_0->CR3 = 0x00000000;
         // enable RX and TX
         UART_0->CR1 = 0x0000202c;
+        // Enable Receive Interrupt
+        NVIC_SetPriority(UART_0_IRQ_NUMBER, UART_0_IRQ_PRIORITY);
+        NVIC_EnableIRQ(UART_0_IRQ_NUMBER);
         // configure Pins
         // RX
         UART_0_RX_GPIO_PORT->MODER   |=  UART_0_RX_GPIO_MODER_1;
@@ -240,7 +290,6 @@ bool hal_uart_init(uint_fast8_t device)
         UART_0_TX_GPIO_PORT->OSPEEDR |=  UART_0_TX_GPIO_OSPEEDR_1;
         UART_0_TX_GPIO_PORT->OSPEEDR &= ~UART_0_TX_GPIO_OSPEEDR_0;
 
-
         devices[device].port = UART_0;
         break;
 
@@ -265,6 +314,9 @@ bool hal_uart_init(uint_fast8_t device)
         UART_1->CR3 = 0x00000000;
         // enable RX and TX
         UART_1->CR1 = 0x0000202c;
+        // Enable Receive Interrupt
+        NVIC_SetPriority(UART_1_IRQ_NUMBER, UART_1_IRQ_PRIORITY);
+        NVIC_EnableIRQ(UART_1_IRQ_NUMBER);
         // configure Pins
         // RX
         UART_1_RX_GPIO_PORT->MODER   |=  UART_1_RX_GPIO_MODER_1;
@@ -283,19 +335,19 @@ bool hal_uart_init(uint_fast8_t device)
 
         // configure Pins
         // RX
-        UART_1_RX_GPIO_PORT->OTYPER  |=  UART_0_RX_GPIO_OTYPER_1;
-        UART_1_RX_GPIO_PORT->OTYPER  &= ~UART_0_RX_GPIO_OTYPER_0;
+        UART_1_RX_GPIO_PORT->OTYPER  |=  UART_1_RX_GPIO_OTYPER_1;
+        UART_1_RX_GPIO_PORT->OTYPER  &= ~UART_1_RX_GPIO_OTYPER_0;
         UART_1_RX_GPIO_PORT->OSPEEDR |=  UART_1_RX_GPIO_OSPEEDR_1;
         UART_1_RX_GPIO_PORT->OSPEEDR &= ~UART_1_RX_GPIO_OSPEEDR_0;
-        UART_1_RX_GPIO_PORT->PUPDR   |=  UART_0_RX_GPIO_PUPD_1;
-        UART_1_RX_GPIO_PORT->PUPDR   &= ~UART_0_RX_GPIO_PUPD_0;
+        UART_1_RX_GPIO_PORT->PUPDR   |=  UART_1_RX_GPIO_PUPD_1;
+        UART_1_RX_GPIO_PORT->PUPDR   &= ~UART_1_RX_GPIO_PUPD_0;
         // TX
-        UART_1_TX_GPIO_PORT->OTYPER  |=  UART_0_TX_GPIO_OTYPER_1;
-        UART_1_TX_GPIO_PORT->OTYPER  &= ~UART_0_TX_GPIO_OTYPER_0;
+        UART_1_TX_GPIO_PORT->OTYPER  |=  UART_1_TX_GPIO_OTYPER_1;
+        UART_1_TX_GPIO_PORT->OTYPER  &= ~UART_1_TX_GPIO_OTYPER_0;
         UART_1_TX_GPIO_PORT->OSPEEDR |=  UART_1_TX_GPIO_OSPEEDR_1;
         UART_1_TX_GPIO_PORT->OSPEEDR &= ~UART_1_TX_GPIO_OSPEEDR_0;
-        UART_1_TX_GPIO_PORT->PUPDR   |=  UART_0_TX_GPIO_PUPD_1;
-        UART_1_TX_GPIO_PORT->PUPDR   &= ~UART_0_TX_GPIO_PUPD_0;
+        UART_1_TX_GPIO_PORT->PUPDR   |=  UART_1_TX_GPIO_PUPD_1;
+        UART_1_TX_GPIO_PORT->PUPDR   &= ~UART_1_TX_GPIO_PUPD_0;
         devices[device].port = UART_1;
         break;
 

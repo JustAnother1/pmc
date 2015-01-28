@@ -25,4 +25,5 @@ uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16_t offs
 uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device);
 void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many);
 void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
+void print_uart_configuration(uint_fast8_t device);
 #endif /* HAL_UART_H_ */

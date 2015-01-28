@@ -56,13 +56,13 @@ void hal_dout_set_pin_high(uint_fast8_t number)
         case 0: D_OUT_0_GPIO_PORT->ODR |= D_OUT_0_ODR; break;
         case 1: D_OUT_1_GPIO_PORT->ODR |= D_OUT_1_ODR; break;
         default:
-            debug_msg("dout pin(%d) not available!\n", number);
+            debug_line("dout pin(%d) not available!", number);
             break;
         }
     }
     else
     {
-        debug_msg("dout pin(%d) not available!\n", number);
+        debug_line("dout pin(%d) not available!", number);
     }
 }
 
@@ -75,13 +75,13 @@ void hal_dout_set_pin_low(uint_fast8_t number)
         case 0: D_OUT_0_GPIO_PORT->ODR &= ~D_OUT_0_ODR; break;
         case 1: D_OUT_1_GPIO_PORT->ODR &= ~D_OUT_1_ODR; break;
         default:
-            debug_msg("dout pin(%d) not available!\n", number);
+            debug_line("dout pin(%d) not available!", number);
             break;
         }
     }
     else
     {
-        debug_msg("dout pin(%d) not available!\n", number);
+        debug_line("dout pin(%d) not available!", number);
     }
 }
 

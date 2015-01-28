@@ -31,7 +31,7 @@ void hal_cpu_die(void)
 
 void hal_cpu_do_software_reset(void)
 {
-    debug_msg("not implemented!\n");
+    debug_line("not implemented!");
 }
 
 void hal_cpu_add_ms_tick_function(msTickFkt additional_function)

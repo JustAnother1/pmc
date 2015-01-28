@@ -28,6 +28,7 @@ uint8_t buffer[MSG_BUFFER_LENGTH];
 
 void hal_debug_init(void)
 {
+    // TODO create alternative implementation that uses core_cm4.h:ITM_SendChar() / ITM_ReceiveChar()
     // UART
     bool res = false;
     res = hal_uart_init(DEBUG_UART);
@@ -48,4 +49,27 @@ void debug_msg(const char* format, ...)
     hal_uart_send_frame(DEBUG_UART, &buffer[0], nwritten);
 }
 
+void debug_line(const char* format, ...)
+{
+    int nwritten = 0;
+    va_list args;
+    va_start(args, format);
+    nwritten = vsnprintf((char *)buffer, MSG_BUFFER_LENGTH, format, args );
+    va_end(args);
+    if(nwritten < MSG_BUFFER_LENGTH)
+    {
+        buffer[nwritten] = '\r';
+        buffer[nwritten + 1] = '\n';
+        nwritten += 2;
+    }
+    else
+    {
+        buffer[MSG_BUFFER_LENGTH -4] = '.';
+        buffer[MSG_BUFFER_LENGTH -3] = '.';
+        buffer[MSG_BUFFER_LENGTH -2] = '\r';
+        buffer[MSG_BUFFER_LENGTH -1] = '\n';
+        nwritten = MSG_BUFFER_LENGTH;
+    }
+    hal_uart_send_frame(DEBUG_UART, &buffer[0], nwritten);
+}
 
