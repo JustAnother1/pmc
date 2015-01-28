@@ -23,6 +23,9 @@
 #include "hal_led.h"
 #include "hal_cpu.h"
 
+#define RECEIVE_BUFFER_SIZE  50
+#define SEND_BUFFER_SIZE     1024
+
 #define MSG_BUFFER_LENGTH 100
 uint8_t buffer[MSG_BUFFER_LENGTH];
 
@@ -31,7 +34,7 @@ void hal_debug_init(void)
     // TODO create alternative implementation that uses core_cm4.h:ITM_SendChar() / ITM_ReceiveChar()
     // UART
     bool res = false;
-    res = hal_uart_init(DEBUG_UART);
+    res = hal_uart_init(DEBUG_UART, RECEIVE_BUFFER_SIZE, SEND_BUFFER_SIZE);
     if(false == res)
     {
         hal_led_set_error_led(true);

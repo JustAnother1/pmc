@@ -14,6 +14,7 @@
  */
 
 #include <stddef.h>
+#include <stdlib.h>
 #include "hal_uart.h"
 #include "hal_time.h"
 #include "rcc.h"
@@ -25,16 +26,23 @@
 #include "hal_debug.h"
 #include "hal_common.h"
 
-#define RECEIVE_BUFFER_SIZE_BYTES  512
-#define endPos                     (RECEIVE_BUFFER_SIZE_BYTES -1)
 // Baudrate is 115200 so a byte should transfere in less than one ms
 #define UART_BYTE_TIMEOUT_MS      5
 
 
 typedef struct {
-    uint_fast8_t    receive_buffer[RECEIVE_BUFFER_SIZE_BYTES];
+    // receive
+    uint8_t       * receive_buffer;
     uint_fast16_t   read_pos;
     uint_fast16_t   write_pos;
+    uint_fast16_t   size_receive_buffer;
+    // send
+    uint8_t       * send_buffer;
+    bool            is_sending;
+    uint_fast16_t   send_pos; // the byte that will be send next
+    uint_fast16_t   send_end_pos; // free slot after data to send
+    uint_fast16_t   size_send_buffer;
+    // the port
     USART_TypeDef * port;
 }uart_device_typ;
 
@@ -46,9 +54,9 @@ uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16_t offs
 {
     uint_fast8_t res;
     uint_fast16_t target_pos = devices[device].read_pos + offset;
-    if(endPos < target_pos)
+    if((devices[device].size_receive_buffer -1) < target_pos)
     {
-        target_pos = target_pos - endPos;
+        target_pos = target_pos - (devices[device].size_receive_buffer -1);
     }
     res = devices[device].receive_buffer[target_pos];
     return res;
@@ -65,7 +73,7 @@ uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device)
         }
         else
         {
-            res = (endPos + 1) - devices[device].read_pos + (0 - devices[device].write_pos);
+            res = devices[device].size_receive_buffer - devices[device].read_pos + (0 - devices[device].write_pos);
         }
     }
     // else res = 0;
@@ -75,15 +83,25 @@ uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device)
 void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many)
 {
     uint_fast16_t target_pos = devices[device].read_pos + how_many;
-    if(endPos < target_pos)
+    if((devices[device].size_receive_buffer -1) < target_pos)
     {
-        target_pos = target_pos - endPos;
+        target_pos = target_pos - (devices[device].size_receive_buffer -1);
     }
     devices[device].read_pos = target_pos;
 }
 
 void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
+    if(1 > length)
+    {
+        // no data
+        return;
+    }
+    // TODO add timeout 1ms for each byte of the send buffer size
+    while(true == devices[device].is_sending)
+    {
+        ; // wait
+    }
     uint_fast16_t bytesSend = 0;
     while(bytesSend < length)
     {
@@ -104,7 +122,6 @@ void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t len
         {
             ; // wait
         }
-        // TODO check if we had a timeout or not
         // send one Byte
         devices[device].port->DR = (uint16_t)frame[bytesSend];
         bytesSend++;
@@ -155,19 +172,155 @@ void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t len
     */
 }
 
+static void check_if_we_can_send(uint_fast8_t device)
+{
+    uint32_t timeout = hal_time_get_ms_tick() + UART_BYTE_TIMEOUT_MS;
+    if(timeout < hal_time_get_ms_tick())
+    {
+        // wrap around
+        // wait for TX to be ready for the next Byte
+        while(   (timeout < hal_time_get_ms_tick())
+              && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
+        {
+            ; // wait
+        }
+    }
+    // wait for TX to be ready for the next Byte
+    while(   (timeout > hal_time_get_ms_tick())
+          && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
+    {
+        ; // wait
+    }
+}
+
+void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
+{
+    if(1 > length)
+    {
+        // no data
+        return;
+    }
+    // can we copy the data ?
+    if(devices[device].send_end_pos < devices[device].send_pos)
+    {
+        // buffer already wrapped
+        if(length < (devices[device].send_pos - devices[device].send_end_pos))
+        {
+            // but this still fits in
+            // copy data
+            uint_fast16_t i;
+            for(i = 0; i < length; i++)
+            {
+                devices[device].send_buffer[i+ devices[device].send_end_pos] = frame[i];
+            }
+            devices[device].send_end_pos = devices[device].send_end_pos + length;
+        }
+        else
+        {
+            // already wrapped and not fitting -> blocking
+            hal_uart_send_frame(device, frame, length);
+            return;
+        }
+    }
+    else
+    {
+        // not wrapped yet
+        if(length < (devices[device].send_end_pos - devices[device].send_end_pos))
+        {
+            // and we can put it in without wrapping
+            // copy data
+            uint_fast16_t i;
+            for(i = 0; i < length; i++)
+            {
+                devices[device].send_buffer[i + devices[device].send_end_pos] = frame[i];
+            }
+            devices[device].send_end_pos = devices[device].send_end_pos + length;
+        }
+        else
+        {
+            uint_fast16_t new_end_position;
+            new_end_position = length - (devices[device].size_send_buffer - devices[device].send_end_pos);
+            if(new_end_position < devices[device].send_pos)
+            {
+                // it fits wrapped
+                // copy data
+                uint_fast16_t data_before_wrap = length - new_end_position;
+                uint_fast16_t i;
+                for(i = 0; i < data_before_wrap; i++)
+                {
+                    devices[device].send_buffer[i + devices[device].send_end_pos] = frame[i];
+                }
+                for(; i < new_end_position; i++)
+                {
+                    devices[device].send_buffer[i - data_before_wrap] = frame[i];
+                }
+                devices[device].send_end_pos = new_end_position;
+            }
+            else
+            {
+                // doesn't fit -> blocking !
+                hal_uart_send_frame(device, frame, length);
+                return;
+            }
+        }
+    }
+
+    // are we already sending or do we need to start sending
+    if(true == devices[device].is_sending)
+    {
+        // nothing to do here
+    }
+    else
+    {
+        // start sending now
+        check_if_we_can_send(device);
+        devices[device].is_sending = true;
+        devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_pos];
+        devices[device].send_pos++;
+        if(devices[device].send_pos < devices[device].size_send_buffer)
+        {
+            // ok
+        }
+        else
+        {
+            // wrap around
+            devices[device].send_pos = 0;
+        }
+    }
+}
+
 void UART_0_IRQ_HANDLER(void)
 {
-    hal_led_toggle_debug_led();
     if(USART_SR_RXNE == (USART_SR_RXNE & UART_0->SR))
     {
-        // hal_led_toggle_debug_led();
-        uint8_t received_byte = (UART_0->DR & 0xff);
+        uint32_t reg = UART_0->DR;
+        uint8_t received_byte = (reg & 0xff);
+        UART_0->SR &= ~USART_SR_RXNE;
         devices[0].receive_buffer[devices[0].write_pos] = received_byte;
         devices[0].write_pos ++;
-        if(RECEIVE_BUFFER_SIZE_BYTES ==devices[0]. write_pos)
+        if(devices[0].size_receive_buffer == devices[0]. write_pos)
         {
             devices[0].write_pos = 0;
         }
+    }
+    if(USART_SR_TXE == (USART_SR_TXE & UART_0->SR))
+    {
+        if(true == devices[0].is_sending)
+        {
+            devices[0].port->DR = (uint16_t)devices[0].send_buffer[devices[0].send_pos];
+            devices[0].send_pos++;
+            if(devices[0].send_pos < devices[0].size_send_buffer)
+            {
+                // ok
+            }
+            else
+            {
+                // wrap around
+                devices[0].send_pos = 0;
+            }
+        }
+        // else nothing to do;
+        UART_0->SR &= ~USART_SR_TXE;
     }
 }
 
@@ -177,15 +330,32 @@ void UART_1_IRQ_HANDLER(void)
     {
         uint32_t reg = UART_1->DR;
         uint8_t received_byte = (reg & 0xff);
-        UART_1->SR &= ~0x20;
-        hal_led_toggle_debug_led();
-
+        UART_1->SR &= ~USART_SR_RXNE;
         devices[1].receive_buffer[devices[1].write_pos] = received_byte;
         devices[1].write_pos ++;
-        if(RECEIVE_BUFFER_SIZE_BYTES == devices[1].write_pos)
+        if(devices[1].size_receive_buffer == devices[1].write_pos)
         {
             devices[1]. write_pos = 0;
         }
+    }
+    if(USART_SR_TXE == (USART_SR_TXE & UART_1->SR))
+    {
+        if(true == devices[1].is_sending)
+        {
+            devices[1].port->DR = (uint16_t)devices[1].send_buffer[devices[1].send_pos];
+            devices[1].send_pos++;
+            if(devices[1].send_pos < devices[1].size_send_buffer)
+            {
+                // ok
+            }
+            else
+            {
+                // wrap around
+                devices[1].send_pos = 0;
+            }
+        }
+        // else nothing to do;
+        UART_1->SR &= ~USART_SR_TXE;
     }
 }
 
@@ -226,10 +396,44 @@ void print_uart_configuration(uint_fast8_t device)
     }
 }
 
-bool hal_uart_init(uint_fast8_t device)
+bool hal_uart_init(uint_fast8_t device, uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size)
 {
+    uint8_t * mal_hlp;
     devices[device].read_pos = 0;
     devices[device].write_pos = 0;
+    devices[device].is_sending = false;
+    // create receive Buffer
+    if(1 > rec_buf_size)
+    {
+        // sending only on this interface ?
+        devices[device].receive_buffer = NULL;
+    }
+    else
+    {
+        mal_hlp = (uint8_t *) malloc(rec_buf_size);
+        if(NULL == mal_hlp)
+        {
+            return false;
+        }
+        devices[device].receive_buffer = mal_hlp;
+    }
+    // create send Buffer
+    if(1 > send_buf_size)
+    {
+        // nothing to send ?
+        devices[device].send_buffer = NULL;
+    }
+    else
+    {
+        mal_hlp = (uint8_t *) malloc(send_buf_size);
+        if(NULL == mal_hlp)
+        {
+            return false;
+        }
+        devices[device].send_buffer = mal_hlp;
+    }
+    devices[device].size_receive_buffer = rec_buf_size;
+    devices[device].size_send_buffer = send_buf_size;
 
     switch(device)
     {

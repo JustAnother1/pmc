@@ -19,7 +19,8 @@
 #include "hal_uart.h"
 #include "hal_cfg.h"
 
-
+#define RECEIVE_BUFFER_SIZE  512
+#define SEND_BUFFER_SIZE     100
 
 static bool crc_is_valid(void);
 
@@ -33,7 +34,7 @@ static uint_fast8_t length;
 
 bool start_uart(void)
 {
-    return hal_uart_init(GCODE_UART);
+    return hal_uart_init(GCODE_UART, RECEIVE_BUFFER_SIZE, SEND_BUFFER_SIZE);
 }
 
 void uart_send_frame(uint8_t * frame, uint_fast16_t length)
