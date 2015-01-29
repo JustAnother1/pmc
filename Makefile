@@ -40,6 +40,7 @@ help:
 	@echo "make doxygen                - create Documentation"
 	@echo "make all BOARD=linux        - build project to run on Linux"
 	@echo "make all BOARD=stm407disco  - build project to run on STM32F4 Discovery Board"
+	@echo "make burn BOARD=stm407disco - programm the created file to STM32F4 Discovery Board"
 	@echo "  "
 
 all: directories $(OBJS) $(BIN_FOLDER)$(PROJECT).elf $(OBJS) $(BIN_FOLDER)$(PROJECT).bin
