@@ -259,7 +259,7 @@ void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint
                 {
                     devices[device].send_buffer[i + devices[device].send_end_pos] = frame[i];
                 }
-                for(; i < new_end_position; i++)
+                for(; i < length; i++)
                 {
                     devices[device].send_buffer[i - data_before_wrap] = frame[i];
                 }
