@@ -20,6 +20,11 @@ void hal_spi_init(uint_fast8_t device)
 
 }
 
+void hal_spi_print_configuration(uint_fast8_t device)
+{
+
+}
+
 void hal_spi_do_transaction(uint_fast8_t device,
                             uint8_t      *data_to_send,
                             uint_fast8_t idx_of_first_byte,

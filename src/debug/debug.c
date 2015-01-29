@@ -17,6 +17,7 @@
 #include <stdarg.h>
 #include "hal_cfg.h"
 #include "hal_uart.h"
+#include "hal_spi.h"
 #include "hal_time.h"
 #include "error.h"
 #include "debug.h"
@@ -169,30 +170,57 @@ static void parse_order(int length)
     pos_in_buf = get_next_word(pos_in_buf, length, &cmd_buf[0]);
     switch(cmd_buf[0])
     {
+    case 'H':
     case 'h': // help - list available commands
         debug_line("available commands:");
-        debug_line("h        : print this information");
-        debug_line("l        : list recorded debug information");
-        debug_line("d        : die - stops the processor");
-        debug_line("r        : reset the processor");
-        debug_line("t        : show current time");
+        debug_line("h               : print this information");
+        debug_line("l               : list recorded debug information");
+        debug_line("d               : die - stops the processor");
+        debug_line("r               : reset the processor");
+        debug_line("t               : show current time");
+        debug_line("pu<device num>  : print UART configuration");
+        debug_line("ps<device num>  : print SPI configuration");
         break;
 
+    case 'D':
     case 'd': // die
         hal_cpu_die();
         break;
 
+    case 'R':
     case 'r': // reset the CPU
         hal_cpu_do_software_reset();
         break;
 
+    case 'L':
     case 'l': // list - list the available debug information
         debug_line("current status:");
         debug_line("ticks per ms: max=%d, min=%d", tick_max, tick_min);
         break;
 
+    case 'T':
     case 't': // show current time
         debug_line("now : %d", hal_time_get_ms_tick());
+        break;
+
+    case 'P':
+    case 'p': // print configuration
+        switch (cmd_buf[1])
+        {
+        case 'U':
+        case 'u':
+            hal_uart_print_configuration(cmd_buf[2] - '0'); // quick and dirty a2i()
+            break;
+
+        case 'S':
+        case 's':
+            hal_spi_print_configuration(cmd_buf[2] - '0'); // quick and dirty a2i()
+            break;
+
+        default:
+            debug_line("Invalid command ! try h for help");
+            break;
+        }
         break;
 
     default: // invalid command

@@ -212,8 +212,46 @@ void hal_spi_init(uint_fast8_t device)
         hal_cpu_die();
         return;
     }
+}
 
+void hal_spi_print_configuration(uint_fast8_t device)
+{
+    debug_line("Configuration of SPI_%d :", device);
+    // Clock
+    debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
+    debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
+    debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
+    // Uart
+    debug_line("SPI->CR1      = 0x%08x", devices[device].bus->CR1);
+    debug_line("SPI->CR2      = 0x%08x", devices[device].bus->CR2);
+    // GPIO
+    switch(device)
+    {
+    case 0 :
+        debug_line("MISO Pin:");
+        print_gpio_configuration(SPI_0_MISO_GPIO_PORT);
+        debug_line("MOSI Pin:");
+        print_gpio_configuration(SPI_0_MOSI_GPIO_PORT);
+        debug_line("SCK Pin:");
+        print_gpio_configuration(SPI_0_NSS_GPIO_PORT);
+        debug_line("NSS Pin:");
+        print_gpio_configuration(SPI_0_SCK_GPIO_PORT);
+        break;
 
+    case 1 :
+        debug_line("MISO Pin:");
+        print_gpio_configuration(SPI_1_MISO_GPIO_PORT);
+        debug_line("MOSI Pin:");
+        print_gpio_configuration(SPI_1_MOSI_GPIO_PORT);
+        debug_line("SCK Pin:");
+        print_gpio_configuration(SPI_1_NSS_GPIO_PORT);
+        debug_line("NSS Pin:");
+        print_gpio_configuration(SPI_1_SCK_GPIO_PORT);
+        break;
+
+    default:
+        break;
+    }
 }
 
 void hal_spi_do_transaction(uint_fast8_t device,

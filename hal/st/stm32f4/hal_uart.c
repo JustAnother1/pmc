@@ -25,6 +25,7 @@
 #include "util.h"
 #include "hal_debug.h"
 #include "hal_common.h"
+#include "hal_led.h"
 
 // Baudrate is 115200 so a byte should transfere in less than one ms
 #define UART_BYTE_TIMEOUT_MS      5
@@ -350,7 +351,7 @@ void UART_1_IRQ_HANDLER(void)
     device_IRQ_handler(1);
 }
 
-void print_uart_configuration(uint_fast8_t device)
+void hal_uart_print_configuration(uint_fast8_t device)
 {
     debug_line("Configuration of UART_%d :", device);
     // Clock

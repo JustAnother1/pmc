@@ -59,7 +59,7 @@ static uart_device_typ devices[MAX_UART + 1]; // +1 as MAX_UART is the highest i
 static void* uart_task(void * dev_ptr);
 static void* uart_std_task(void * dev_ptr);
 
-void print_uart_configuration(uint_fast8_t device)
+void hal_uart_print_configuration(uint_fast8_t device)
 {
     debug_line("Configuration of UART_%d :", device);
     if(true == devices[device].is_std_io)
