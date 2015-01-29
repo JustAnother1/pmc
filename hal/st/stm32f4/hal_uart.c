@@ -126,50 +126,6 @@ void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t len
         devices[device].port->DR = (uint16_t)frame[bytesSend];
         bytesSend++;
     }
-
-
-    /*
-    // DMA:
-    // ====
-    // TC flag goes high after last byte has been send
-
-    // page 319 of Ref manual
-    // 1 check that EN bit is 0 else wait for it
-    // 1.1 clear all statis bits in DMA_LISR and DMA_HISR
-    // 2 write DMA_SxPAR
-    // 3 write DMA_SxMAOR
-    // 4 write num bytes to DMA_SxNDTR
-    // 5 select channel n DMA_SxCR , flow contoller, stream priority
-    // 8 cfg fifo
-    // 9 cfg direction
-    // activate En in SxCR
-
-
-    // page 986 of Ref Manual:
-
-    // 1. USART_DR is destination
-    // 2. configure DMA source
-    // 3. cfg num bytes
-    // 4. cfg dma channel prio
-    // 5. cfg dma irq
-    // 6. clear TC bin in SR Register by writing it 0
-    // 7. activate dma channel in register
-
-
-    // 6
-    switch(device)
-    {
-    case 0 :
-        UART_0->SR &= ~USART_SR_TC;  // TODO
-        break;
-    case 1:
-        UART_1->SR &= ~USART_SR_TC;  // TODO
-        break;
-    default:
-        // invalid Device
-        return;
-    }
-    */
 }
 
 static void check_if_we_can_send(uint_fast8_t device)
@@ -192,6 +148,50 @@ static void check_if_we_can_send(uint_fast8_t device)
         ; // wait
     }
 }
+
+// TODO non blocking using DMA
+/*
+// DMA:
+// ====
+// TC flag goes high after last byte has been send
+
+// page 319 of Ref manual
+// 1 check that EN bit is 0 else wait for it
+// 1.1 clear all statis bits in DMA_LISR and DMA_HISR
+// 2 write DMA_SxPAR
+// 3 write DMA_SxMAOR
+// 4 write num bytes to DMA_SxNDTR
+// 5 select channel n DMA_SxCR , flow contoller, stream priority
+// 8 cfg fifo
+// 9 cfg direction
+// activate En in SxCR
+
+
+// page 986 of Ref Manual:
+
+// 1. USART_DR is destination
+// 2. configure DMA source
+// 3. cfg num bytes
+// 4. cfg dma channel prio
+// 5. cfg dma irq
+// 6. clear TC bin in SR Register by writing it 0
+// 7. activate dma channel in register
+
+
+// 6
+switch(device)
+{
+case 0 :
+    UART_0->SR &= ~USART_SR_TC;  // TODO
+    break;
+case 1:
+    UART_1->SR &= ~USART_SR_TC;  // TODO
+    break;
+default:
+    // invalid Device
+    return;
+}
+*/
 
 void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
@@ -298,86 +298,56 @@ void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint
     }
 }
 
-void UART_0_IRQ_HANDLER(void)
+static void device_IRQ_handler(uint_fast8_t device)
 {
-    hal_led_toggle_debug_led();
-    if(USART_SR_RXNE == (USART_SR_RXNE & UART_0->SR))
+    if(USART_SR_RXNE == (USART_SR_RXNE & devices[device].port->SR))
     {
-        uint32_t reg = UART_0->DR;
+        uint32_t reg = devices[device].port->DR;
         uint8_t received_byte = (reg & 0xff);
-        UART_0->SR &= ~USART_SR_RXNE;
-        devices[0].receive_buffer[devices[0].write_pos] = received_byte;
-        devices[0].write_pos ++;
-        if(devices[0].size_receive_buffer == devices[0]. write_pos)
+        devices[device].port->SR &= ~USART_SR_RXNE;
+        devices[device].receive_buffer[devices[device].write_pos] = received_byte;
+        devices[device].write_pos ++;
+        if(devices[device].size_receive_buffer == devices[device]. write_pos)
         {
-            devices[0].write_pos = 0;
+            devices[device].write_pos = 0;
         }
     }
-    if(USART_SR_TXE == (USART_SR_TXE & UART_0->SR))
+    if(USART_SR_TXE == (USART_SR_TXE & devices[device].port->SR))
     {
-        if(true == devices[0].is_sending)
+        if(true == devices[device].is_sending)
         {
-            devices[0].port->DR = (uint16_t)devices[0].send_buffer[devices[0].send_pos];
-            devices[0].send_pos++;
-            if(devices[0].send_pos < devices[0].size_send_buffer)
+            devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_pos];
+            devices[device].send_pos++;
+            if(devices[device].send_pos < devices[device].size_send_buffer)
             {
                 // ok
             }
             else
             {
                 // wrap around
-                devices[0].send_pos = 0;
+                devices[device].send_pos = 0;
             }
-            if(devices[0].send_pos == devices[0].send_end_pos)
+            if(devices[device].send_pos == devices[device].send_end_pos)
             {
-                devices[0].is_sending = false;
-                UART_0->CR1 &= ~USART_CR1_TXEIE;
+                devices[device].is_sending = false;
+                devices[device].port->CR1 &= ~USART_CR1_TXEIE;
             }
         }
         // else nothing to do;
-        UART_0->SR &= ~USART_SR_TXE;
+        devices[device].port->SR &= ~USART_SR_TXE;
     }
+}
+
+void UART_0_IRQ_HANDLER(void)
+{
+    hal_led_toggle_debug_led();
+    device_IRQ_handler(0);
 }
 
 void UART_1_IRQ_HANDLER(void)
 {
     hal_led_toggle_debug_led();
-    if(USART_SR_RXNE == (USART_SR_RXNE & UART_1->SR))
-    {
-        uint32_t reg = UART_1->DR;
-        uint8_t received_byte = (reg & 0xff);
-        UART_1->SR &= ~USART_SR_RXNE;
-        devices[1].receive_buffer[devices[1].write_pos] = received_byte;
-        devices[1].write_pos ++;
-        if(devices[1].size_receive_buffer == devices[1].write_pos)
-        {
-            devices[1]. write_pos = 0;
-        }
-    }
-    if(USART_SR_TXE == (USART_SR_TXE & UART_1->SR))
-    {
-        if(true == devices[1].is_sending)
-        {
-            devices[1].port->DR = (uint16_t)devices[1].send_buffer[devices[1].send_pos];
-            devices[1].send_pos++;
-            if(devices[1].send_pos < devices[1].size_send_buffer)
-            {
-                // ok
-            }
-            else
-            {
-                // wrap around
-                devices[1].send_pos = 0;
-            }
-            if(devices[1].send_pos == devices[1].send_end_pos)
-            {
-                devices[1].is_sending = false;
-                UART_1->CR1 &= ~USART_CR1_TXEIE;
-            }
-        }
-        // else nothing to do;
-        UART_1->SR &= ~USART_SR_TXE;
-    }
+    device_IRQ_handler(1);
 }
 
 void print_uart_configuration(uint_fast8_t device)
