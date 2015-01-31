@@ -189,6 +189,7 @@ void hal_cpu_die(void)
     bool direction_is_increment = true;
     // Disable all System Tick( = 1ms) services
     tick_list = NULL;
+    hal_led_set_error_led(true);
     for(;;)
     {
         if((i <HEART_BEAT_FAST_LIMIT) && (false == direction_is_increment))
@@ -209,7 +210,6 @@ void hal_cpu_die(void)
         {
             i = i - HEART_BEAT_STEP_SIZE;
         }
-        hal_led_toggle_debug_led();
         hal_time_ms_sleep(i);
     }
 }

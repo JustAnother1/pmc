@@ -21,46 +21,45 @@
 #include "rcc.h"
 #include "gpio.h"
 #include "board_cfg.h"
-
-// 20 bit per stepper in Bytes
-//(1 Stepper =  3 Bytes; ( 4 bits unused)
-// 2 Stepper =  5 Bytes;
-// 4 Stepper = 10 Bytes
-// 6 Stepper = 15 Bytes
-// 8 Stepper = 20 Bytes)
-// #define SPI_BUFFER_LENGTH           20
+#include "hal_debug.h"
+#include "util.h"
+#include "hal_led.h"
 
 // On the Wire : Most Significant Bit First (CR1)
 // When a master is communicating with SPI slaves which need to be de-selected between
 // transmissions, the NSS pin must be configured as GPIO or another GPIO must be used and
 // toggled by software.- Note on Page 866 Reference Manual
+// -> NSS is GPIO controlled by software
 
 static void start_spi_transaction(uint_fast8_t device,
                                   uint8_t *data_to_send,
-                                  uint_fast8_t idx_of_first_byte,
                                   uint_fast8_t num_bytes_to_send,
                                   uint8_t *data_received);
 
 
 typedef struct {
-    // The index of the byte in the current buffer that will be send next,
-    // will be decremented to 0 - end of message
-    uint_fast8_t spi_offset;
+    uint_fast8_t send_pos;
+    uint_fast8_t rec_pos;
+    uint_fast8_t length;
     // pointer to Bytes to send
-    uint8_t *spi_send_buffer;
-    uint8_t *spi_receive_buffer;
+    uint8_t *send_buffer;
+    uint8_t *receive_buffer;
     // SPI is idle
-    bool spi_idle;
+    bool idle;
     SPI_TypeDef * bus;
 }spi_device_typ;
 
-static spi_device_typ devices[MAX_SPI + 1]; // +1 as MAX_SPI is the highest index into this array
+static void slave_select_start(uint_fast8_t device);
+static void slave_select_end(uint_fast8_t device);
+static void device_IRQ_handler(uint_fast8_t device);
+
+static volatile spi_device_typ devices[MAX_SPI + 1]; // +1 as MAX_SPI is the highest index into this array
 
 
 void hal_spi_init(uint_fast8_t device)
 {
     // initialize SPI Hardware
-    devices[device].spi_idle = true;
+    devices[device].idle = true;
 
     switch(device)
     {
@@ -74,6 +73,16 @@ void hal_spi_init(uint_fast8_t device)
         // enable clock for interface
         RCC->APB1ENR |= SPI_0_APB1ENR;
         RCC->APB2ENR |= SPI_0_APB2ENR;
+
+        // configure SPI parameters
+        // CPOL = 1 CPHA = 1
+        SPI_0->CR1 = 0x037f;
+        SPI_0->CR2 = 0x0040;
+
+        // Enable Interrupt
+        NVIC_SetPriority(SPI_0_IRQ_NUMBER, SPI_0_IRQ_PRIORITY);
+        NVIC_EnableIRQ(SPI_0_IRQ_NUMBER);
+
         // configure Pins
         // MISO
         SPI_0_MISO_GPIO_PORT->MODER   |=  SPI_0_MISO_GPIO_MODER_1;
@@ -110,10 +119,6 @@ void hal_spi_init(uint_fast8_t device)
         SPI_0_NSS_GPIO_PORT->OSPEEDR &= ~SPI_0_NSS_GPIO_OSPEEDR_0;
         SPI_0_NSS_GPIO_PORT->PUPDR   |=  SPI_0_NSS_GPIO_PUPD_1;
         SPI_0_NSS_GPIO_PORT->PUPDR   &= ~SPI_0_NSS_GPIO_PUPD_0;
-        SPI_0_NSS_GPIO_PORT->AFR[0]  |=  SPI_0_NSS_GPIO_AFR_0_1;
-        SPI_0_NSS_GPIO_PORT->AFR[0]  &= ~SPI_0_NSS_GPIO_AFR_0_0;
-        SPI_0_NSS_GPIO_PORT->AFR[1]  |=  SPI_0_NSS_GPIO_AFR_1_1;
-        SPI_0_NSS_GPIO_PORT->AFR[1]  &= ~SPI_0_NSS_GPIO_AFR_1_0;
         // SCK
         SPI_0_SCK_GPIO_PORT->MODER   |=  SPI_0_SCK_GPIO_MODER_1;
         SPI_0_SCK_GPIO_PORT->MODER   &= ~SPI_0_SCK_GPIO_MODER_0;
@@ -128,11 +133,6 @@ void hal_spi_init(uint_fast8_t device)
         SPI_0_SCK_GPIO_PORT->AFR[1]  |=  SPI_0_SCK_GPIO_AFR_1_1;
         SPI_0_SCK_GPIO_PORT->AFR[1]  &= ~SPI_0_SCK_GPIO_AFR_1_0;
 
-        // configure SPI parameters
-        // CPOL = 1 CPHA = 1
-        SPI_0->CR1 = 0x0047;
-        // No interrupts, TI Frame, no DMA  // TODO
-        SPI_0->CR2 = 0x0014;
         devices[device].bus = SPI_0;
         break;
 
@@ -145,6 +145,16 @@ void hal_spi_init(uint_fast8_t device)
         // enable clock for interface
         RCC->APB1ENR |= SPI_1_APB1ENR;
         RCC->APB2ENR |= SPI_1_APB2ENR;
+
+        // configure SPI parameters
+        // CPOL = 1 CPHA = 1
+        SPI_1->CR1 = 0x037f;
+        SPI_1->CR2 = 0x0040;
+
+        // Enable Interrupt
+        NVIC_SetPriority(SPI_1_IRQ_NUMBER, SPI_1_IRQ_PRIORITY);
+        NVIC_EnableIRQ(SPI_1_IRQ_NUMBER);
+
         // configure Pins
         // MISO
         SPI_1_MISO_GPIO_PORT->MODER   |=  SPI_1_MISO_GPIO_MODER_1;
@@ -181,10 +191,6 @@ void hal_spi_init(uint_fast8_t device)
         SPI_1_NSS_GPIO_PORT->OSPEEDR &= ~SPI_1_NSS_GPIO_OSPEEDR_0;
         SPI_1_NSS_GPIO_PORT->PUPDR   |=  SPI_1_NSS_GPIO_PUPD_1;
         SPI_1_NSS_GPIO_PORT->PUPDR   &= ~SPI_1_NSS_GPIO_PUPD_0;
-        SPI_1_NSS_GPIO_PORT->AFR[0]  |=  SPI_1_NSS_GPIO_AFR_0_1;
-        SPI_1_NSS_GPIO_PORT->AFR[0]  &= ~SPI_1_NSS_GPIO_AFR_0_0;
-        SPI_1_NSS_GPIO_PORT->AFR[1]  |=  SPI_1_NSS_GPIO_AFR_1_1;
-        SPI_1_NSS_GPIO_PORT->AFR[1]  &= ~SPI_1_NSS_GPIO_AFR_1_0;
         // SCK
         SPI_1_SCK_GPIO_PORT->MODER   |=  SPI_1_SCK_GPIO_MODER_1;
         SPI_1_SCK_GPIO_PORT->MODER   &= ~SPI_1_SCK_GPIO_MODER_0;
@@ -199,11 +205,6 @@ void hal_spi_init(uint_fast8_t device)
         SPI_1_SCK_GPIO_PORT->AFR[1]  |=  SPI_1_SCK_GPIO_AFR_1_1;
         SPI_1_SCK_GPIO_PORT->AFR[1]  &= ~SPI_1_SCK_GPIO_AFR_1_0;
 
-        // configure SPI parameters
-        // CPOL = 1 CPHA = 1
-        SPI_1->CR1 = 0x0047;
-        // No interrupts, TI Frame, no DMA  // TODO
-        SPI_1->CR2 = 0x0014;
         devices[device].bus = SPI_1;
         break;
 
@@ -254,58 +255,103 @@ void hal_spi_print_configuration(uint_fast8_t device)
     }
 }
 
+void SPI_0_IRQ_HANDLER(void)
+{
+    hal_led_toggle_debug_led();
+    device_IRQ_handler(0);
+}
+
+void SPI_1_IRQ_HANDLER(void)
+{
+    hal_led_toggle_debug_led();
+    device_IRQ_handler(1);
+}
+
+static void device_IRQ_handler(uint_fast8_t device)
+{
+    if(SPI_SR_RXNE == (SPI_SR_RXNE & devices[device].bus->SR))
+    {
+        // we received a byte
+        devices[device].receive_buffer[devices[device].rec_pos] = (uint8_t)devices[device].bus->DR;
+        devices[device].rec_pos++;
+        if(devices[device].length == devices[device].rec_pos)
+        {
+            // we received the last byte
+            slave_select_end(device);
+            devices[device].idle = true;
+        }
+    }
+    if(SPI_SR_TXE == (SPI_SR_TXE & devices[device].bus->SR))
+    {
+        // send the next byte
+        if(devices[device].length > devices[device].send_pos)
+        {
+            devices[device].bus->DR = devices[device].send_buffer[devices[device].send_pos];
+            devices[device].send_pos++;
+        }
+        if(devices[device].length == devices[device].send_pos)
+        {
+            // we send the last byte
+            devices[device].bus->CR2 &= ~SPI_CR2_TXEIE;
+        }
+        devices[device].bus->SR &= ~SPI_SR_TXE;
+    }
+}
+
 void hal_spi_do_transaction(uint_fast8_t device,
                             uint8_t *data_to_send,
-                            uint_fast8_t idx_of_first_byte,
                             uint_fast8_t num_bytes_to_send,
                             uint8_t *data_received)
 {
+    while(false == devices[device].idle)
+    {
+        ; // wait until we can send the data out
+    }
     start_spi_transaction(device,
                           data_to_send,
-                          idx_of_first_byte,
                           num_bytes_to_send,
                           data_received);
-    /*
-    while(false == spi_idle)
+
+    while(false == devices[device].idle)
     {
-        ; // wait until we have the data back;
+        ; // wait until we have the data back
     }
-    */
+}
+
+static void slave_select_start(uint_fast8_t device)
+{
+    // NSS -> LOW
+    switch(device)
+    {
+    case 0 : SPI_0_NSS_GPIO_PORT->BSRR_RESET = SPI_0_NSS_GPIO_BSRR; break;
+    case 1 : SPI_1_NSS_GPIO_PORT->BSRR_RESET = SPI_1_NSS_GPIO_BSRR; break;
+    default: break;
+    }
+}
+
+static void slave_select_end(uint_fast8_t device)
+{
+    // NSS -> HIGH
+    switch(device)
+    {
+    case 0 : SPI_0_NSS_GPIO_PORT->BSRR_SET = SPI_0_NSS_GPIO_BSRR; break;
+    case 1 : SPI_1_NSS_GPIO_PORT->BSRR_SET = SPI_1_NSS_GPIO_BSRR; break;
+    default: break;
+    }
 }
 
 static void start_spi_transaction(uint_fast8_t device,
                                   uint8_t *data_to_send,
-                                  uint_fast8_t idx_of_first_byte,
                                   uint_fast8_t num_bytes_to_send,
                                   uint8_t *data_received)
 {
-    devices[device].spi_send_buffer = data_to_send;
-    devices[device].spi_receive_buffer = data_received;
-    devices[device].spi_idle = false;
-    devices[device].spi_offset = idx_of_first_byte;
-    devices[device].bus->DR = devices[device].spi_send_buffer[idx_of_first_byte];
-    //TODO
+    slave_select_start(device);
+    devices[device].send_buffer = data_to_send;
+    devices[device].receive_buffer = data_received;
+    devices[device].idle = false;
+    devices[device].send_pos = 1;
+    devices[device].rec_pos = 0;
+    devices[device].length = num_bytes_to_send;
+    devices[device].bus->DR = devices[device].send_buffer[0];
+    devices[device].bus->CR2 |= SPI_CR2_TXEIE;
 }
-
-/*
-INTERRUPT(spi_isr, INTERRUPT_SPI0)
-{
-
-    SPI0CN &= ~0x80; // reset Interrupt Flag
-    if(0 == spi_offset)
-    {
-        spi_receive_buffer[0] = SPI0DAT;
-        NSS = 1;
-        spi_idle = TRUE;
-        return;
-    }
-    else
-    {
-        spi_receive_buffer[spi_offset] = SPI0DAT;
-        spi_offset--;
-        SPI0DAT = spi_send_buffer[spi_offset];
-        return;
-    }
-
-}
-*/

@@ -25,18 +25,26 @@ void hal_din_init(void)
     if(D_IN_NUM_PINS > 0)
     {
         RCC->AHB1ENR |= D_IN_0_RCC_GPIO_ENABLE;
-        D_IN_0_GPIO_PORT->MODER |= D_IN_0_MODER;
-        D_IN_0_GPIO_PORT->OTYPER &= ~D_IN_0_OTYPER;
-        D_IN_0_GPIO_PORT->OSPEEDR &= ~D_IN_0_OSPEEDR;
-        D_IN_0_GPIO_PORT->PUPDR &= ~ D_IN_0_PUPD;
+        D_IN_0_GPIO_PORT->MODER   &= ~D_IN_0_MODER_0;
+        D_IN_0_GPIO_PORT->MODER   |=  D_IN_0_MODER_1;
+        D_IN_0_GPIO_PORT->OTYPER  &= ~D_IN_0_OTYPER_0;
+        D_IN_0_GPIO_PORT->OTYPER  |=  D_IN_0_OTYPER_1;
+        D_IN_0_GPIO_PORT->OSPEEDR &= ~D_IN_0_OSPEEDR_0;
+        D_IN_0_GPIO_PORT->OSPEEDR |=  D_IN_0_OSPEEDR_1;
+        D_IN_0_GPIO_PORT->PUPDR   &= ~D_IN_0_PUPD_0;
+        D_IN_0_GPIO_PORT->PUPDR   |=  D_IN_0_PUPD_1;
     }
     if(D_IN_NUM_PINS > 1)
     {
         RCC->AHB1ENR |= D_IN_1_RCC_GPIO_ENABLE;
-        D_IN_1_GPIO_PORT->MODER |= D_IN_1_MODER;
-        D_IN_1_GPIO_PORT->OTYPER &= ~D_IN_1_OTYPER;
-        D_IN_1_GPIO_PORT->OSPEEDR &= ~D_IN_1_OSPEEDR;
-        D_IN_1_GPIO_PORT->PUPDR &= ~ D_IN_1_PUPD;
+        D_IN_1_GPIO_PORT->MODER   &= ~D_IN_1_MODER_0;
+        D_IN_1_GPIO_PORT->MODER   |=  D_IN_1_MODER_1;
+        D_IN_1_GPIO_PORT->OTYPER  &= ~D_IN_1_OTYPER_0;
+        D_IN_1_GPIO_PORT->OTYPER  |=  D_IN_1_OTYPER_1;
+        D_IN_1_GPIO_PORT->OSPEEDR &= ~D_IN_1_OSPEEDR_0;
+        D_IN_1_GPIO_PORT->OSPEEDR |=  D_IN_1_OSPEEDR_1;
+        D_IN_1_GPIO_PORT->PUPDR   &= ~D_IN_1_PUPD_0;
+        D_IN_1_GPIO_PORT->PUPDR   |=  D_IN_1_PUPD_1;
     }
 }
 

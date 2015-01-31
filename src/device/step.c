@@ -32,8 +32,13 @@
 // Timer runs on 12 MHz clock.
 #define STEP_TIME_ONE_MS            12000
 #ifdef HAS_SPI
-// 20 bit per stepper in Bytes (1 Stepper = 3 Bytes; 2 Stepper = 5 Bytes; 4 Stepper = 10 Bytes)
-#define SPI_BUFFER_LENGTH           5
+// 20 bit per stepper in Bytes
+//(1 Stepper =  3 Bytes; ( 4 bits unused)
+// 2 Stepper =  5 Bytes;
+// 4 Stepper = 10 Bytes
+// 6 Stepper = 15 Bytes
+// 8 Stepper = 20 Bytes)
+#define SPI_BUFFER_LENGTH           20
 #endif
 
 static void calculate_conmstant_speed_reloads(void);
@@ -655,15 +660,18 @@ bool step_has_reached_tag(void)
 uint_fast8_t step_detect_number_of_steppers(void)
 {
 #ifdef HAS_SPI
-    /*
-    uint_fast8_t detect_data[5];
+    uint8_t detect_data[5];
     uint_fast8_t i;
     uint_fast8_t count = 0;
     for(i = 0; i < 5; i++)
     {
         detect_data[i] = 0;
     }
-    hal_spi_do_transaction(&detect_data[0], 4, 5, &spi_receive_buffer);
+    hal_spi_do_transaction(STEPPER_SPI, // device
+                           &detect_data[0], // data to send
+                           5, // number of bytes to send
+                           &spi_receive_buffer[0] // where to put the response
+                           );
     // last Stepper:
     if( (   (0xff == spi_receive_buffer[0])
          && (0xff == spi_receive_buffer[1])
@@ -694,12 +702,10 @@ uint_fast8_t step_detect_number_of_steppers(void)
     {
         count ++;
     }
-    // TODO
+    // TODO detect more than 2
     return count;
-    */
-    return 1;
 #else
-    return 1;
+    return 8;
 #endif
 }
 
@@ -707,6 +713,9 @@ void step_configure_steppers(uint_fast8_t num_steppers)
 {
 #ifdef HAS_SPI
     uint8_t cfg_data[5];
+
+    // for testing
+    return;
 
     if(0 == num_steppers)
     {
@@ -743,7 +752,8 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0x29;
     cfg_data[3] = 0x9f;
     cfg_data[4] = 0x9a;
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 4, 5, &spi_receive_buffer[0]);
+    // TODO ? revert bytes?
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 5, &spi_receive_buffer[0]);
 
     // SGCSCONF
     //
@@ -764,7 +774,8 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0xfc;
     cfg_data[3] = 0x41;
     cfg_data[4] = 0xc0;
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 4, 5, &spi_receive_buffer[0]);
+    // TODO ? revert bytes?
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 5, &spi_receive_buffer[0]);
 
 
     // DRVCONF
@@ -790,7 +801,8 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0x0e;
     cfg_data[3] = 0x4e;
     cfg_data[4] = 0xef;
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 4, 5, &spi_receive_buffer[0]);
+    // TODO ? revert bytes?
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 5, &spi_receive_buffer[0]);
 
 
     // SMARTEN
@@ -817,7 +829,8 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     cfg_data[2] = 0x0a;
     cfg_data[3] = 0x00;
     cfg_data[4] = 0xa0;
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 4, 5, &spi_receive_buffer[0]);
+    // TODO ? revert bytes?
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 5, &spi_receive_buffer[0]);
 
     // TODO
 

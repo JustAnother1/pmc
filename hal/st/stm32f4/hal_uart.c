@@ -47,6 +47,8 @@ typedef struct {
     USART_TypeDef * port;
 }uart_device_typ;
 
+static void device_IRQ_handler(uint_fast8_t device);
+static void check_if_we_can_send(uint_fast8_t device);
 
 static volatile uart_device_typ devices[MAX_UART + 1]; // +1 as MAX_UART is the highest index into this array
 
@@ -341,13 +343,11 @@ static void device_IRQ_handler(uint_fast8_t device)
 
 void UART_0_IRQ_HANDLER(void)
 {
-    hal_led_toggle_debug_led();
     device_IRQ_handler(0);
 }
 
 void UART_1_IRQ_HANDLER(void)
 {
-    hal_led_toggle_debug_led();
     device_IRQ_handler(1);
 }
 

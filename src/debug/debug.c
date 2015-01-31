@@ -23,6 +23,7 @@
 #include "debug.h"
 #include "hal_cpu.h"
 #include "hal_debug.h"
+#include "device_stepper.h"
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
@@ -196,6 +197,7 @@ static void parse_order(int length)
     case 'l': // list - list the available debug information
         debug_line("current status:");
         debug_line("ticks per ms: max=%d, min=%d", tick_max, tick_min);
+        debug_line("number of detected steppers: %d", dev_stepper_get_count());
         break;
 
     case 'T':
