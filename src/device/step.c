@@ -54,14 +54,14 @@ static void calculate_step_chunk(uint_fast8_t num_slots);
 
 static uint_fast8_t step_pos = 0;
 static uint_fast8_t stop_pos = 0;
-#ifdef USE_STEP_DIR
-static uint_fast8_t next_step[256];
-static uint_fast8_t next_direction[256];
-#endif
 
 #ifdef HAS_SPI
 static uint8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
 
+#ifdef USE_STEP_DIR
+static uint_fast8_t next_step[256];
+static uint_fast8_t next_direction[256];
+#else
 // DRVCTRL in SPI Mode:
 //
 // Bit     |Range  |Meaning
@@ -106,6 +106,7 @@ static uint8_t DRVCONTROL_Buffer[32][3] = {
         {0x5f, 0xcb, 0x01}, // 30
         {0x30, 0xe7, 0x01}, // 31
 };
+#endif
 uint_fast8_t cur_step = 0;
 bool direction_is_increasing = true;
 bool is_a_move[256];
@@ -240,7 +241,10 @@ void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 #else
         if(true == is_a_move[step_pos])
         {
-            start_spi_transaction(&DRVCONTROL_Buffer[cur_step][0], 2);
+            hal_spi_do_transaction(STEPPER_SPI,
+                                   &DRVCONTROL_Buffer[cur_step][0],
+                                   3,
+                                   &spi_receive_buffer[0]);
             if(true == direction_is_increasing)
             {
                 cur_step++;
@@ -660,49 +664,50 @@ bool step_has_reached_tag(void)
 uint_fast8_t step_detect_number_of_steppers(void)
 {
 #ifdef HAS_SPI
-    uint8_t detect_data[5];
+    uint8_t detect_data[SPI_BUFFER_LENGTH];
     uint_fast8_t i;
     uint_fast8_t count = 0;
-    for(i = 0; i < 5; i++)
+    for(i = 0; i < SPI_BUFFER_LENGTH; i++)
     {
-        detect_data[i] = 0;
+        // there is no save(invalid) value for detection.
+        // Each value send does some configuration in the stepper driver.
+        // The value send will also be send back if the SPI Loop is closed.
+        // 0x00000 was chosen for these reasons:
+        // 0xfffff will be send back if the loop is open (No SPI Device connected)
+        // 0x00000 will be send back for each missing stepper
+        // any other value is the current status of a stepper.
+        detect_data[i] = 0x0;
     }
+
     hal_spi_do_transaction(STEPPER_SPI, // device
                            &detect_data[0], // data to send
-                           5, // number of bytes to send
+                           SPI_BUFFER_LENGTH, // number of bytes to send
                            &spi_receive_buffer[0] // where to put the response
                            );
-    // last Stepper:
-    if( (   (0xff == spi_receive_buffer[0])
-         && (0xff == spi_receive_buffer[1])
-         && (0xf0 == (0xf0 & spi_receive_buffer[2])) )
-            ||
-        (   (0 == spi_receive_buffer[0])
-         && (0 == spi_receive_buffer[1])
-         && (0 == (0xf0 & spi_receive_buffer[2])) ) )
+    for(i = 0; i < ((SPI_BUFFER_LENGTH/5)* 2); i++)
     {
-        // stepper not available
+        // 20 bits = 2.5 byte per stepper,..
+        //  first Stepper is in bytes 0, 1, 2
+        // second stepper is in bytes 2, 3, 4
+        //  third stepper is in bytes 5, 6, 7
+        // fourth stepper is in bytes 7, 8, 9
+        // ...
+        int start = (i * 25)/10;
+        if( (   (0xff == spi_receive_buffer[start + i + 0])
+             && (0xff == spi_receive_buffer[start + i + 1])
+             && (0xf0 == (0xf0 & spi_receive_buffer[start + i + 2])) )
+                ||
+            (   (0 == spi_receive_buffer[start + i + 0])
+             && (0 == spi_receive_buffer[start + i + 1])
+             && (0 == (0xf0 & spi_receive_buffer[start + i + 2])) ) )
+        {
+            // stepper not available
+        }
+        else
+        {
+            count ++;
+        }
     }
-    else
-    {
-        count ++;
-    }
-    // Stepper before last stepper:
-    if( (   (0x0f == (0x0f & spi_receive_buffer[2]))
-         && (0xff == spi_receive_buffer[3])
-         && (0xff == spi_receive_buffer[4]) )
-            ||
-        (   (0 == (0x0f & spi_receive_buffer[2]))
-         && (0 == spi_receive_buffer[3])
-         && (0 == spi_receive_buffer[4]) ) )
-    {
-        // stepper not available
-    }
-    else
-    {
-        count ++;
-    }
-    // TODO detect more than 2
     return count;
 #else
     return 8;
@@ -712,19 +717,12 @@ uint_fast8_t step_detect_number_of_steppers(void)
 void step_configure_steppers(uint_fast8_t num_steppers)
 {
 #ifdef HAS_SPI
-    uint8_t cfg_data[5];
-
-    // for testing
-    return;
+    uint8_t cfg_data[SPI_BUFFER_LENGTH];
+    uint_fast8_t num_bytes =((num_steppers+1)/2)*5;
 
     if(0 == num_steppers)
     {
         // TODO Event?
-        return;
-    }
-    if(2 < num_steppers)
-    {
-        // TODO needs to be implemented
         return;
     }
 
@@ -745,15 +743,16 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     //         |       | random Toff  : lsbs of fast decay time 0..15 *32 clocks.
     // 0..3    |0..15  | Toff ( 0 = free rotate; 1 = needs Blanking time of minimum 24 clocks 2..15: duration of slow decay = 12 + (32 * toff) clocks)
 
-    // 9a9f2
-    // f2 a9 09
-    cfg_data[0] = 0xf2;
-    cfg_data[1] = 0xa9;
-    cfg_data[2] = 0x29;
-    cfg_data[3] = 0x9f;
-    cfg_data[4] = 0x9a;
-    // TODO ? revert bytes?
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 5, &spi_receive_buffer[0]);
+    // -> 9a9f2
+    for(int i= 0; i < num_bytes; )
+    {
+        cfg_data[i++] = 0x9a;
+        cfg_data[i++] = 0x9f;
+        cfg_data[i++] = 0x29;
+        cfg_data[i++] = 0xa9;
+        cfg_data[i++] = 0xf2;
+    }
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], num_bytes, &spi_receive_buffer[0]);
 
     // SGCSCONF
     //
@@ -767,15 +766,16 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     // 5..7    |0      |
     // 0..4    |0..31  | CS current scale 0..31 -> 1/32 .. 32/32
 
-    // c041f
-    // 1f 04 0c
-    cfg_data[0] = 0x1f;
-    cfg_data[1] = 0x04;
-    cfg_data[2] = 0xfc;
-    cfg_data[3] = 0x41;
-    cfg_data[4] = 0xc0;
-    // TODO ? revert bytes?
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 5, &spi_receive_buffer[0]);
+    // -> c041f
+    for(int i= 0; i < num_bytes; )
+    {
+        cfg_data[i++] = 0xc0;
+        cfg_data[i++] = 0x41;
+        cfg_data[i++] = 0xfc;
+        cfg_data[i++] = 0x04;
+        cfg_data[i++] = 0x1f;
+    }
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], num_bytes, &spi_receive_buffer[0]);
 
 
     // DRVCONF
@@ -794,15 +794,16 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     // 4 + 5   |0..3   |Response frame format (0=microstep position; 1=SG; 2=SG+cool Step; 3=do not use)
     // 0..3    |0      |
 
-    // ef4e0
-    // e0 f4 0e
-    cfg_data[0] = 0xe0;
-    cfg_data[1] = 0xf4;
-    cfg_data[2] = 0x0e;
-    cfg_data[3] = 0x4e;
-    cfg_data[4] = 0xef;
-    // TODO ? revert bytes?
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 5, &spi_receive_buffer[0]);
+    // -> ef4e0
+    for(int i= 0; i < num_bytes; )
+    {
+        cfg_data[i++] = 0xef;
+        cfg_data[i++] = 0x4e;
+        cfg_data[i++] = 0x0e;
+        cfg_data[i++] = 0xf4;
+        cfg_data[i++] = 0xe0;
+    }
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], num_bytes, &spi_receive_buffer[0]);
 
 
     // SMARTEN
@@ -822,17 +823,16 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     // 4       |0      |
     // 0..3    |0..15  |SEMIN lower threshold
 
-    // a0000
-    // 00 00 0a
-    cfg_data[0] = 0x00;
-    cfg_data[1] = 0x00;
-    cfg_data[2] = 0x0a;
-    cfg_data[3] = 0x00;
-    cfg_data[4] = 0xa0;
-    // TODO ? revert bytes?
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], 5, &spi_receive_buffer[0]);
-
-    // TODO
+    // -> a0000
+    for(int i= 0; i < num_bytes; )
+    {
+        cfg_data[i++] = 0xa0;
+        cfg_data[i++] = 0x00;
+        cfg_data[i++] = 0x0a;
+        cfg_data[i++] = 0x00;
+        cfg_data[i++] = 0x00;
+    }
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], num_bytes, &spi_receive_buffer[0]);
 
 #ifdef USE_STEP_DIR
 

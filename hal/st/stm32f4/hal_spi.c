@@ -60,6 +60,7 @@ void hal_spi_init(uint_fast8_t device)
 {
     // initialize SPI Hardware
     devices[device].idle = true;
+    slave_select_end(device);
 
     switch(device)
     {
