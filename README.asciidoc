@@ -20,6 +20,11 @@ The firmware can be build using make. The generated Files will be placed in the 
 
 +make help+
 
+for this to work you (obviously) need to have make installed.
+Depending on the target you are building for you might need to have additionaltools installed:
+
+- For linux (Posix systems) you need pthreads and gcc.
+- To build for ARM Cortex-M Targets you need https://launchpad.net/gcc-arm-embedded
 
 License
 -------
