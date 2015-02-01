@@ -24,12 +24,16 @@ SRC += $(SRC_FOLDER)device/device_temperature_sensor.c
 SRC += $(SRC_FOLDER)device/step.c
 SRC += $(SRC_FOLDER)order/command_queue.c
 SRC += $(SRC_FOLDER)order/orderhandler.c
-SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_led.c
+# Hardware abstraction layer - used peripherals
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_adc.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_buzzer.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_cpu.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_din.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_dout.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_led.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_pwm.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_time.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_watchdog.c
-SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_dout.c
-SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_din.c
 
 # source files for specific features - only compiled if feature is activated
 ifeq ($(USE_UART), yes)
