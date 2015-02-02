@@ -16,9 +16,7 @@
 #include "step.h"
 #include "error.h"
 #include "hal_cfg.h"
-#ifdef HAS_SPI
 #include "hal_spi.h"
-#endif
 
 #define STEP_CHUNK_SIZE             10
 
@@ -31,7 +29,6 @@
 #define MOVE_PHASE_DECELLERATE      2
 // Timer runs on 12 MHz clock.
 #define STEP_TIME_ONE_MS            12000
-#ifdef HAS_SPI
 // 20 bit per stepper in Bytes
 //(1 Stepper =  3 Bytes; ( 4 bits unused)
 // 2 Stepper =  5 Bytes;
@@ -39,7 +36,6 @@
 // 6 Stepper = 15 Bytes
 // 8 Stepper = 20 Bytes)
 #define SPI_BUFFER_LENGTH           20
-#endif
 
 static void calculate_conmstant_speed_reloads(void);
 static void calculate_chunk_constant_speed(void);
@@ -48,14 +44,10 @@ static void calculate_chunk_decellerate(void);
 static void get_steps_for_this_phase(float factor);
 static void calculate_step_chunk(uint_fast8_t num_slots);
 
-#if !defined(USE_STEP_DIR) && !defined(HAS_SPI)
-#error "Can not do steps! Need either SPI or STEP + DIR or both !"
-#endif
-
 static uint_fast8_t step_pos = 0;
 static uint_fast8_t stop_pos = 0;
 
-#ifdef HAS_SPI
+
 static uint8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
 
 #ifdef USE_STEP_DIR
@@ -110,7 +102,6 @@ static uint8_t DRVCONTROL_Buffer[32][3] = {
 uint_fast8_t cur_step = 0;
 bool direction_is_increasing = true;
 bool is_a_move[256];
-#endif
 
 static uint_fast16_t next_reload[256];
 
@@ -188,9 +179,7 @@ void step_init(void)
     }
     start_speed = 0;
 
-#ifdef HAS_SPI
     hal_spi_init(STEPPER_SPI);
-#endif
 }
 
 /*
@@ -663,7 +652,6 @@ bool step_has_reached_tag(void)
 
 uint_fast8_t step_detect_number_of_steppers(void)
 {
-#ifdef HAS_SPI
     uint8_t detect_data[SPI_BUFFER_LENGTH];
     uint_fast8_t i;
     uint_fast8_t count = 0;
@@ -709,14 +697,10 @@ uint_fast8_t step_detect_number_of_steppers(void)
         }
     }
     return count;
-#else
-    return 8;
-#endif
 }
 
 void step_configure_steppers(uint_fast8_t num_steppers)
 {
-#ifdef HAS_SPI
     uint8_t cfg_data[SPI_BUFFER_LENGTH];
     uint_fast8_t num_bytes =((num_steppers+1)/2)*5;
 
@@ -838,7 +822,6 @@ void step_configure_steppers(uint_fast8_t num_steppers)
 
 #else
 
-#endif
 #endif
 }
 

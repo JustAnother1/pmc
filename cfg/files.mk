@@ -33,6 +33,7 @@ SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_din.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_dout.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_led.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_pwm.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_spi.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_time.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_watchdog.c
 
@@ -45,11 +46,6 @@ endif
 ifeq ($(USE_USB), yes)
 	SRC += $(SRC_FOLDER)com/usb.c
 	DDEFS += -DHAS_USB
-endif
-
-ifeq ($(USE_SPI), yes)
-	DDEFS += -DHAS_SPI
-	SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_spi.c
 endif
 
 ifeq ($(USE_STEP_DIR), yes)
