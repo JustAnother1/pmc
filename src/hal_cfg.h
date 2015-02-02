@@ -19,15 +19,19 @@
 // SPI
 #define STEPPER_SPI   0
 #define EXPANSION_SPI 1
-#define MAX_SPI       1
+#define MAX_SPI       2
 
 // UART
 #define GCODE_UART  0
 #define DEBUG_UART  1
-#define MAX_UART    1
+#define MAX_UART    2
 
 // Heaters
 #define NUMBER_OF_HEATERS 6
 
+// LEDs
+#define DEBUG_LED  0
+#define ERROR_LED  1
+#define MAX_LED    2
 
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */

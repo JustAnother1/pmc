@@ -32,11 +32,11 @@ uint_fast16_t hal_adc_get_value(uint_fast8_t device)
     return 0;
 }
 
-uint_fast8_t hal_adc_get_name(uint_fast8_t number, uint8_t *position)
+uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
 {
-    if(number < ADC_NUM_PINS)
+    if(device < ADC_NUM_PINS)
     {
-        switch(number)
+        switch(device)
         {
         case  0: return copy_string(ADC_0_NAME, position);
         case  1: return copy_string(ADC_1_NAME, position);

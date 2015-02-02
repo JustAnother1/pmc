@@ -53,11 +53,11 @@ uint_fast8_t hal_din_get_amount(void)
     return D_IN_NUM_PINS;
 }
 
-uint_fast8_t hal_din_get_name(uint_fast8_t number, uint8_t *position)
+uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position)
 {
-    if(number < D_OUT_NUM_PINS)
+    if(device < D_OUT_NUM_PINS)
     {
-        switch(number)
+        switch(device)
         {
         case 0: return copy_string(D_IN_0_NAME, position);
         case 1: return copy_string(D_IN_1_NAME, position);
@@ -71,22 +71,22 @@ uint_fast8_t hal_din_get_name(uint_fast8_t number, uint8_t *position)
     }
 }
 
-uint_fast8_t hal_din_get_switch_state(uint_fast8_t number)
+uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
 {
-    if(number < D_OUT_NUM_PINS)
+    if(device < D_OUT_NUM_PINS)
     {
-        switch(number)
+        switch(device)
         {
         case 0: if(0 !=(D_IN_0_GPIO_PORT->IDR & D_IN_0_IDR)) {return 1;} else {return 0;} break;
         case 1: if(0 !=(D_IN_1_GPIO_PORT->IDR & D_IN_1_IDR)) {return 1;} else {return 0;} break;
         default:
-            debug_line("dout pin(%d) not available!", number);
+            debug_line("dout pin(%d) not available!", device);
             break;
         }
     }
     else
     {
-        debug_line("dout pin(%d) not available!", number);
+        debug_line("dout pin(%d) not available!", device);
     }
     return 0;
 }

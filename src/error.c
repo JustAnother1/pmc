@@ -18,6 +18,7 @@
 #include "com.h"
 #include "hal_cpu.h"
 #include "hal_led.h"
+#include "hal_cfg.h"
 
 void error_fatal_error(char* msg)
 {
@@ -28,7 +29,7 @@ void error_fatal_error(char* msg)
 
 void error_signal_error_and_die(void)
 {
-    hal_led_set_error_led(true);
+    hal_led_set_led(DEBUG_LED, true);
     hal_cpu_die();
 }
 

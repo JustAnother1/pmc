@@ -25,12 +25,12 @@ uint_fast8_t hal_pwm_get_amount(void)
     return 0;
 }
 
-void hal_pwm_set_on_time(uint_fast8_t number, uint_fast16_t on_time)
+void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)
 {
 
 }
 
-uint_fast8_t hal_pwm_get_name(uint_fast8_t number, uint8_t *position)
+uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position)
 {
     return 0;
 }

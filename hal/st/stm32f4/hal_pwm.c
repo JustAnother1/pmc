@@ -27,16 +27,16 @@ uint_fast8_t hal_pwm_get_amount(void)
     return PWM_NUM_PINS;
 }
 
-void hal_pwm_set_on_time(uint_fast8_t number, uint_fast16_t on_time)
+void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)
 {
 
 }
 
-uint_fast8_t hal_pwm_get_name(uint_fast8_t number, uint8_t *position)
+uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position)
 {
-    if(number < PWM_NUM_PINS)
+    if(device < PWM_NUM_PINS)
     {
-        switch(number)
+        switch(device)
         {
         case  0: return copy_string(PWM_0_NAME, position);
         case  1: return copy_string(PWM_1_NAME, position);

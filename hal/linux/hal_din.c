@@ -25,12 +25,12 @@ uint_fast8_t hal_din_get_amount(void)
     return 0;
 }
 
-uint_fast8_t hal_din_get_name(uint_fast8_t number, uint8_t *position)
+uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position)
 {
     return 0;
 }
 
-uint_fast8_t hal_din_get_switch_state(uint_fast8_t number)
+uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
 {
     return 0;
 }

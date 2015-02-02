@@ -54,71 +54,83 @@ typedef struct {
 }uart_device_typ;
 
 
-static uart_device_typ devices[MAX_UART + 1]; // +1 as MAX_UART is the highest index into this array
+static uart_device_typ devices[MAX_UART];
 
 static void* uart_task(void * dev_ptr);
 static void* uart_std_task(void * dev_ptr);
 
 void hal_uart_print_configuration(uint_fast8_t device)
 {
-    debug_line("Configuration of UART_%d :", device);
-    if(true == devices[device].is_std_io)
+    if(device < MAX_UART)
     {
-        debug_line(" is a standard io interface");
+        debug_line("Configuration of UART_%d :", device);
+        if(true == devices[device].is_std_io)
+        {
+            debug_line(" is a standard io interface");
+        }
+        else
+        {
+            debug_line(" is a telnet interface");
+        }
     }
-    else
-    {
-        debug_line(" is a telnet interface");
-    }
+    // else invalid Interface Specified
 }
 
 bool hal_uart_init(uint_fast8_t device, uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size)
 {
-    int ret = 0;
-    if((0 > device) || (MAX_UART < device))
+    if(device < MAX_UART)
     {
-        fprintf(stderr,"Device number out of range! Device number: %d\n", device);
-        return false;
-    }
-    fprintf(stdout,"Initializing the Device number: %d\n", device);
-    switch(device)
-    {
-    case 0: devices[device].is_std_io = UART_0_IS_STD_IO; break;
-    case 1: devices[device].is_std_io = UART_1_IS_STD_IO; break;
-    case 2: devices[device].is_std_io = UART_2_IS_STD_IO; break;
-    case 3: devices[device].is_std_io = UART_3_IS_STD_IO; break;
-    case 4: devices[device].is_std_io = UART_4_IS_STD_IO; break;
-    default: devices[device].is_std_io = false;
-    }
-    devices[device].port = PORT + device;
-    devices[device].read_pos = 0;
-    devices[device].write_pos = 0;
-    devices[device].i_want_to_send = false;
-    pthread_mutex_init(&devices[device].receive_mutex, NULL);
-    pthread_mutex_init(&devices[device].send_mutex, NULL);
-    pthread_cond_init(&devices[device].sending_done, NULL);
-    if(false == devices[device].is_std_io)
-    {
-        // listen to TCP connection
-        ret = pthread_create(&devices[device].uart_thread,
-                             NULL,
-                             uart_task,
-                             &devices[device]);
+        int ret = 0;
+        if((0 > device) || (MAX_UART <= device))
+        {
+            fprintf(stderr,"Device number out of range! Device number: %d\n", device);
+            return false;
+        }
+        fprintf(stdout,"Initializing the Device number: %d\n", device);
+        switch(device)
+        {
+        case 0: devices[device].is_std_io = UART_0_IS_STD_IO; break;
+        case 1: devices[device].is_std_io = UART_1_IS_STD_IO; break;
+        case 2: devices[device].is_std_io = UART_2_IS_STD_IO; break;
+        case 3: devices[device].is_std_io = UART_3_IS_STD_IO; break;
+        case 4: devices[device].is_std_io = UART_4_IS_STD_IO; break;
+        default: devices[device].is_std_io = false;
+        }
+        devices[device].port = PORT + device;
+        devices[device].read_pos = 0;
+        devices[device].write_pos = 0;
+        devices[device].i_want_to_send = false;
+        pthread_mutex_init(&devices[device].receive_mutex, NULL);
+        pthread_mutex_init(&devices[device].send_mutex, NULL);
+        pthread_cond_init(&devices[device].sending_done, NULL);
+        if(false == devices[device].is_std_io)
+        {
+            // listen to TCP connection
+            ret = pthread_create(&devices[device].uart_thread,
+                                 NULL,
+                                 uart_task,
+                                 &devices[device]);
+        }
+        else
+        {
+            // use std streams
+            ret = pthread_create(&devices[device].uart_thread,
+                                 NULL,
+                                 uart_std_task,
+                                 &devices[device]);
+        }
+        if(ret)
+        {
+            fprintf(stderr,"Error - pthread_create() return code: %d\n",ret);
+            return false;
+        }
+        return true;
     }
     else
     {
-        // use std streams
-        ret = pthread_create(&devices[device].uart_thread,
-                             NULL,
-                             uart_std_task,
-                             &devices[device]);
-    }
-    if(ret)
-    {
-        fprintf(stderr,"Error - pthread_create() return code: %d\n",ret);
+        // invalid Interface Specified
         return false;
     }
-    return true;
 }
 
 static void* uart_std_task(void * dev_ptr)
@@ -290,48 +302,68 @@ static void* uart_task(void * dev_ptr)
 
 uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16_t offset)
 {
-    uint_fast8_t res;
-    pthread_mutex_lock(&devices[device].receive_mutex);
-    uint_fast16_t target_pos = devices[device].read_pos + offset;
-    if(endPos < target_pos)
+    if(device < MAX_UART)
     {
-        target_pos = target_pos - endPos;
+        uint_fast8_t res;
+        pthread_mutex_lock(&devices[device].receive_mutex);
+        uint_fast16_t target_pos = devices[device].read_pos + offset;
+        if(endPos < target_pos)
+        {
+            target_pos = target_pos - endPos;
+        }
+        res = devices[device].receive_buffer[target_pos];
+        pthread_mutex_unlock(&devices[device].receive_mutex);
+        return res;
     }
-    res = devices[device].receive_buffer[target_pos];
-    pthread_mutex_unlock(&devices[device].receive_mutex);
-    return res;
+    else
+    {
+        // invalid Interface Specified
+        return ' ';
+    }
 }
 
 uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device)
 {
-    uint_fast16_t res = 0;
-    pthread_mutex_lock(&devices[device].receive_mutex);
-    if(devices[device].read_pos != devices[device].write_pos)
+    if(device < MAX_UART)
     {
-        if(devices[device].write_pos > devices[device].read_pos)
+        uint_fast16_t res = 0;
+        pthread_mutex_lock(&devices[device].receive_mutex);
+        if(devices[device].read_pos != devices[device].write_pos)
         {
-            res = devices[device].write_pos - devices[device].read_pos;
+            if(devices[device].write_pos > devices[device].read_pos)
+            {
+                res = devices[device].write_pos - devices[device].read_pos;
+            }
+            else
+            {
+                res = (endPos + 1) - devices[device].read_pos + (0 - devices[device].write_pos);
+            }
         }
-        else
-        {
-            res = (endPos + 1) - devices[device].read_pos + (0 - devices[device].write_pos);
-        }
+        // else res = 0;
+        pthread_mutex_unlock(&devices[device].receive_mutex);
+        return res;
     }
-    // else res = 0;
-    pthread_mutex_unlock(&devices[device].receive_mutex);
-    return res;
+    else
+    {
+        // invalid Interface Specified
+        return 0;
+    }
 }
 
 void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many)
 {
-    pthread_mutex_lock(&devices[device].receive_mutex);
-    uint_fast16_t target_pos = devices[device].read_pos + how_many;
-    if(endPos < target_pos)
+    if(device < MAX_UART)
     {
-        target_pos = target_pos - endPos;
+        pthread_mutex_lock(&devices[device].receive_mutex);
+        uint_fast16_t target_pos = devices[device].read_pos + how_many;
+        if(endPos < target_pos)
+        {
+            target_pos = target_pos - endPos;
+        }
+        devices[device].read_pos = target_pos;
+        pthread_mutex_unlock(&devices[device].receive_mutex);
     }
-    devices[device].read_pos = target_pos;
-    pthread_mutex_unlock(&devices[device].receive_mutex);
+    // else invalid Interface Specified
 }
 
 void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
@@ -341,29 +373,33 @@ void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint
 
 void hal_uart_send_frame(uint_fast8_t device, uint_fast8_t * frame, uint_fast16_t length)
 {
-    if(false == devices[device].is_std_io)
+    if(device < MAX_UART)
     {
-        // prepare to send
-        devices[device].send_frame = frame;
-        devices[device].send_length = length;
-        pthread_mutex_lock(&devices[device].send_mutex);
-        devices[device].i_want_to_send = true;
-        pthread_mutex_unlock(&devices[device].send_mutex);
-        // wait until data has been send
-        /* not working if no client connected
-        pthread_mutex_lock(&devices[device].send_mutex);
-        pthread_cond_wait(&devices[device].sending_done, &devices[device].send_mutex);
-        pthread_mutex_unlock(&devices[device].send_mutex);
-        */
-    }
-    else
-    {
-        // just write it to stdout
-        uint_fast16_t i;
-        for(i = 0; i < length; i++)
+        if(false == devices[device].is_std_io)
         {
-            char c = frame[i];
-            printf("%c",c);
+            // prepare to send
+            devices[device].send_frame = frame;
+            devices[device].send_length = length;
+            pthread_mutex_lock(&devices[device].send_mutex);
+            devices[device].i_want_to_send = true;
+            pthread_mutex_unlock(&devices[device].send_mutex);
+            // wait until data has been send
+            /* not working if no client connected
+            pthread_mutex_lock(&devices[device].send_mutex);
+            pthread_cond_wait(&devices[device].sending_done, &devices[device].send_mutex);
+            pthread_mutex_unlock(&devices[device].send_mutex);
+            */
+        }
+        else
+        {
+            // just write it to stdout
+            uint_fast16_t i;
+            for(i = 0; i < length; i++)
+            {
+                char c = frame[i];
+                printf("%c",c);
+            }
         }
     }
+    // else invalid Interface Specified
 }

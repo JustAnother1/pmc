@@ -17,8 +17,15 @@
 #include "gpio.h"
 #include "board_cfg.h"
 #include "hal_led.h"
+#include "hal_cfg.h"
 
-static bool debugLedIsOn = false;
+typedef struct {
+    GPIO_TypeDef * port;
+    uint16_t mask;
+    bool is_on;
+}led_device_typ;
+
+static volatile led_device_typ devices[MAX_LED];
 
 void hal_led_init(void)
 {
@@ -38,6 +45,9 @@ void hal_led_init(void)
     DEBUG_LED_GPIO_PORT->PUPDR |=  DEBUG_LED_PUPD_1;
     // start with output = 0
     DEBUG_LED_GPIO_PORT->ODR &= DEBUG_LED_ODR;
+    devices[DEBUG_LED].port = DEBUG_LED_GPIO_PORT;
+    devices[DEBUG_LED].mask = DEBUG_LED_BSRR;
+    devices[DEBUG_LED].is_on = false;
 
 // Error LED
     RCC->AHB1ENR |= ERROR_LED_RCC_GPIO_ENABLE;
@@ -55,33 +65,44 @@ void hal_led_init(void)
     ERROR_LED_GPIO_PORT->PUPDR |=  ERROR_LED_PUPD_1;
     // start with output = 0
     ERROR_LED_GPIO_PORT->ODR &= ERROR_LED_ODR;
+    devices[ERROR_LED].port = ERROR_LED_GPIO_PORT;
+    devices[ERROR_LED].mask = ERROR_LED_BSRR;
+    devices[ERROR_LED].is_on = false;
 }
 
-void hal_led_toggle_debug_led(void)
+void hal_led_toggle_led(uint_fast8_t device)
 {
-    if(true == debugLedIsOn)
+    if(device < MAX_LED)
     {
-        DEBUG_LED_GPIO_PORT->BSRR_RESET = DEBUG_LED_BSRR;
-        debugLedIsOn = false;
+        if(true == devices[device].is_on)
+        {
+            devices[device].port->BSRR_RESET = devices[device].mask;
+            devices[device].is_on = false;
+        }
+        else
+        {
+            devices[device].port->BSRR_SET = devices[device].mask;
+            devices[device].is_on = true;
+        }
     }
-    else
-    {
-        DEBUG_LED_GPIO_PORT->BSRR_SET = DEBUG_LED_BSRR;
-        debugLedIsOn = true;
-    }
+    // else invalid LED specified
 }
 
-void hal_led_set_error_led(bool on)
+void hal_led_set_led(uint_fast8_t device, bool on)
 {
-    if(true == on)
+    if(device < MAX_LED)
     {
-        // led on
-        ERROR_LED_GPIO_PORT->BSRR_SET = ERROR_LED_BSRR;
+        if(false == on)
+        {
+            devices[device].port->BSRR_RESET = devices[device].mask;
+            devices[device].is_on = false;
+        }
+        else
+        {
+            devices[device].port->BSRR_SET = devices[device].mask;
+            devices[device].is_on = true;
+        }
     }
-    else
-    {
-        // led off
-        ERROR_LED_GPIO_PORT->BSRR_RESET = ERROR_LED_BSRR;
-    }
+    // else invalid LED specified
 }
 

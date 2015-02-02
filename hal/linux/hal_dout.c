@@ -24,17 +24,17 @@ uint_fast8_t hal_dout_get_amount(void)
     return 0;
 }
 
-void hal_dout_set_pin_high(uint_fast8_t number)
+void hal_dout_set_pin_high(uint_fast8_t device)
 {
 
 }
 
-void hal_dout_set_pin_low(uint_fast8_t number)
+void hal_dout_set_pin_low(uint_fast8_t device)
 {
 
 }
 
-uint_fast8_t hal_dout_get_name(uint_fast8_t number, uint8_t *position)
+uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position)
 {
     return 0;
 }

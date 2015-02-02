@@ -20,7 +20,7 @@
 
 void hal_din_init(void);
 uint_fast8_t hal_din_get_amount(void);
-uint_fast8_t hal_din_get_name(uint_fast8_t number, uint8_t *position);
-uint_fast8_t hal_din_get_switch_state(uint_fast8_t number);
+uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position);
+uint_fast8_t hal_din_get_switch_state(uint_fast8_t device);
 
 #endif /* HAL_INCLUDE_HAL_DIN_H_ */

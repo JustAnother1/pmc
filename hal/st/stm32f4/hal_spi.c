@@ -23,19 +23,12 @@
 #include "board_cfg.h"
 #include "hal_debug.h"
 #include "util.h"
-#include "hal_led.h"
 
 // On the Wire : Most Significant Bit First (CR1)
 // When a master is communicating with SPI slaves which need to be de-selected between
 // transmissions, the NSS pin must be configured as GPIO or another GPIO must be used and
 // toggled by software.- Note on Page 866 Reference Manual
 // -> NSS is GPIO controlled by software
-
-static void start_spi_transaction(uint_fast8_t device,
-                                  uint8_t *data_to_send,
-                                  uint_fast8_t num_bytes_to_send,
-                                  uint8_t *data_received);
-
 
 typedef struct {
     uint_fast8_t send_pos;
@@ -49,222 +42,233 @@ typedef struct {
     SPI_TypeDef * bus;
 }spi_device_typ;
 
+
+static void start_spi_transaction(uint_fast8_t device,
+                                  uint8_t *data_to_send,
+                                  uint_fast8_t num_bytes_to_send,
+                                  uint8_t *data_received);
 static void slave_select_start(uint_fast8_t device);
 static void slave_select_end(uint_fast8_t device);
 static void device_IRQ_handler(uint_fast8_t device);
 
-static volatile spi_device_typ devices[MAX_SPI + 1]; // +1 as MAX_SPI is the highest index into this array
+static volatile spi_device_typ devices[MAX_SPI];
 
 
 void hal_spi_init(uint_fast8_t device)
 {
-    // initialize SPI Hardware
-    devices[device].idle = true;
-    slave_select_end(device);
-
-    switch(device)
+    if(device < MAX_SPI)
     {
-    // PINS: MISO, MOSI. NSS, SCK
-    case 0 :
-        // enable clock for GPIO Port
-        RCC->AHB1ENR |= SPI_0_MISO_GPIO_PORT_RCC;
-        RCC->AHB1ENR |= SPI_0_MOSI_GPIO_PORT_RCC;
-        RCC->AHB1ENR |= SPI_0_NSS_GPIO_PORT_RCC;
-        RCC->AHB1ENR |= SPI_0_SCK_GPIO_PORT_RCC;
-        // enable clock for interface
-        RCC->APB1ENR |= SPI_0_APB1ENR;
-        RCC->APB2ENR |= SPI_0_APB2ENR;
+        // initialize SPI Hardware
+        devices[device].idle = true;
+        slave_select_end(device);
 
-        // configure SPI parameters
-        // CPOL = 1 CPHA = 1
-        SPI_0->CR1 = 0x037f;
-        SPI_0->CR2 = 0x0040;
+        switch(device)
+        {
+        // PINS: MISO, MOSI. NSS, SCK
+        case 0 :
+            // enable clock for GPIO Port
+            RCC->AHB1ENR |= SPI_0_MISO_GPIO_PORT_RCC;
+            RCC->AHB1ENR |= SPI_0_MOSI_GPIO_PORT_RCC;
+            RCC->AHB1ENR |= SPI_0_NSS_GPIO_PORT_RCC;
+            RCC->AHB1ENR |= SPI_0_SCK_GPIO_PORT_RCC;
+            // enable clock for interface
+            RCC->APB1ENR |= SPI_0_APB1ENR;
+            RCC->APB2ENR |= SPI_0_APB2ENR;
 
-        // Enable Interrupt
-        NVIC_SetPriority(SPI_0_IRQ_NUMBER, SPI_0_IRQ_PRIORITY);
-        NVIC_EnableIRQ(SPI_0_IRQ_NUMBER);
+            // configure SPI parameters
+            // CPOL = 1 CPHA = 1
+            SPI_0->CR1 = 0x037f;
+            SPI_0->CR2 = 0x0040;
 
-        // configure Pins
-        // MISO
-        SPI_0_MISO_GPIO_PORT->MODER   |=  SPI_0_MISO_GPIO_MODER_1;
-        SPI_0_MISO_GPIO_PORT->MODER   &= ~SPI_0_MISO_GPIO_MODER_0;
-        SPI_0_MISO_GPIO_PORT->OTYPER  |=  SPI_0_MISO_GPIO_OTYPER_1;
-        SPI_0_MISO_GPIO_PORT->OTYPER  &= ~SPI_0_MISO_GPIO_OTYPER_0;
-        SPI_0_MISO_GPIO_PORT->OSPEEDR |=  SPI_0_MISO_GPIO_OSPEEDR_1;
-        SPI_0_MISO_GPIO_PORT->OSPEEDR &= ~SPI_0_MISO_GPIO_OSPEEDR_0;
-        SPI_0_MISO_GPIO_PORT->PUPDR   |=  SPI_0_MISO_GPIO_PUPD_1;
-        SPI_0_MISO_GPIO_PORT->PUPDR   &= ~SPI_0_MISO_GPIO_PUPD_0;
-        SPI_0_MISO_GPIO_PORT->AFR[0]  |=  SPI_0_MISO_GPIO_AFR_0_1;
-        SPI_0_MISO_GPIO_PORT->AFR[0]  &= ~SPI_0_MISO_GPIO_AFR_0_0;
-        SPI_0_MISO_GPIO_PORT->AFR[1]  |=  SPI_0_MISO_GPIO_AFR_1_1;
-        SPI_0_MISO_GPIO_PORT->AFR[1]  &= ~SPI_0_MISO_GPIO_AFR_1_0;
-        // MOSI
-        SPI_0_MOSI_GPIO_PORT->MODER   |=  SPI_0_MOSI_GPIO_MODER_1;
-        SPI_0_MOSI_GPIO_PORT->MODER   &= ~SPI_0_MOSI_GPIO_MODER_0;
-        SPI_0_MOSI_GPIO_PORT->OTYPER  |=  SPI_0_MOSI_GPIO_OTYPER_1;
-        SPI_0_MOSI_GPIO_PORT->OTYPER  &= ~SPI_0_MOSI_GPIO_OTYPER_0;
-        SPI_0_MOSI_GPIO_PORT->OSPEEDR |=  SPI_0_MOSI_GPIO_OSPEEDR_1;
-        SPI_0_MOSI_GPIO_PORT->OSPEEDR &= ~SPI_0_MOSI_GPIO_OSPEEDR_0;
-        SPI_0_MOSI_GPIO_PORT->PUPDR   |=  SPI_0_MOSI_GPIO_PUPD_1;
-        SPI_0_MOSI_GPIO_PORT->PUPDR   &= ~SPI_0_MOSI_GPIO_PUPD_0;
-        SPI_0_MOSI_GPIO_PORT->AFR[0]  |=  SPI_0_MOSI_GPIO_AFR_0_1;
-        SPI_0_MOSI_GPIO_PORT->AFR[0]  &= ~SPI_0_MOSI_GPIO_AFR_0_0;
-        SPI_0_MOSI_GPIO_PORT->AFR[1]  |=  SPI_0_MOSI_GPIO_AFR_1_1;
-        SPI_0_MOSI_GPIO_PORT->AFR[1]  &= ~SPI_0_MOSI_GPIO_AFR_1_0;
-        // NSS
-        SPI_0_NSS_GPIO_PORT->MODER   |=  SPI_0_NSS_GPIO_MODER_1;
-        SPI_0_NSS_GPIO_PORT->MODER   &= ~SPI_0_NSS_GPIO_MODER_0;
-        SPI_0_NSS_GPIO_PORT->OTYPER  |=  SPI_0_NSS_GPIO_OTYPER_1;
-        SPI_0_NSS_GPIO_PORT->OTYPER  &= ~SPI_0_NSS_GPIO_OTYPER_0;
-        SPI_0_NSS_GPIO_PORT->OSPEEDR |=  SPI_0_NSS_GPIO_OSPEEDR_1;
-        SPI_0_NSS_GPIO_PORT->OSPEEDR &= ~SPI_0_NSS_GPIO_OSPEEDR_0;
-        SPI_0_NSS_GPIO_PORT->PUPDR   |=  SPI_0_NSS_GPIO_PUPD_1;
-        SPI_0_NSS_GPIO_PORT->PUPDR   &= ~SPI_0_NSS_GPIO_PUPD_0;
-        // SCK
-        SPI_0_SCK_GPIO_PORT->MODER   |=  SPI_0_SCK_GPIO_MODER_1;
-        SPI_0_SCK_GPIO_PORT->MODER   &= ~SPI_0_SCK_GPIO_MODER_0;
-        SPI_0_SCK_GPIO_PORT->OTYPER  |=  SPI_0_SCK_GPIO_OTYPER_1;
-        SPI_0_SCK_GPIO_PORT->OTYPER  &= ~SPI_0_SCK_GPIO_OTYPER_0;
-        SPI_0_SCK_GPIO_PORT->OSPEEDR |=  SPI_0_SCK_GPIO_OSPEEDR_1;
-        SPI_0_SCK_GPIO_PORT->OSPEEDR &= ~SPI_0_SCK_GPIO_OSPEEDR_0;
-        SPI_0_SCK_GPIO_PORT->PUPDR   |=  SPI_0_SCK_GPIO_PUPD_1;
-        SPI_0_SCK_GPIO_PORT->PUPDR   &= ~SPI_0_SCK_GPIO_PUPD_0;
-        SPI_0_SCK_GPIO_PORT->AFR[0]  |=  SPI_0_SCK_GPIO_AFR_0_1;
-        SPI_0_SCK_GPIO_PORT->AFR[0]  &= ~SPI_0_SCK_GPIO_AFR_0_0;
-        SPI_0_SCK_GPIO_PORT->AFR[1]  |=  SPI_0_SCK_GPIO_AFR_1_1;
-        SPI_0_SCK_GPIO_PORT->AFR[1]  &= ~SPI_0_SCK_GPIO_AFR_1_0;
+            // Enable Interrupt
+            NVIC_SetPriority(SPI_0_IRQ_NUMBER, SPI_0_IRQ_PRIORITY);
+            NVIC_EnableIRQ(SPI_0_IRQ_NUMBER);
 
-        devices[device].bus = SPI_0;
-        break;
+            // configure Pins
+            // MISO
+            SPI_0_MISO_GPIO_PORT->MODER   |=  SPI_0_MISO_GPIO_MODER_1;
+            SPI_0_MISO_GPIO_PORT->MODER   &= ~SPI_0_MISO_GPIO_MODER_0;
+            SPI_0_MISO_GPIO_PORT->OTYPER  |=  SPI_0_MISO_GPIO_OTYPER_1;
+            SPI_0_MISO_GPIO_PORT->OTYPER  &= ~SPI_0_MISO_GPIO_OTYPER_0;
+            SPI_0_MISO_GPIO_PORT->OSPEEDR |=  SPI_0_MISO_GPIO_OSPEEDR_1;
+            SPI_0_MISO_GPIO_PORT->OSPEEDR &= ~SPI_0_MISO_GPIO_OSPEEDR_0;
+            SPI_0_MISO_GPIO_PORT->PUPDR   |=  SPI_0_MISO_GPIO_PUPD_1;
+            SPI_0_MISO_GPIO_PORT->PUPDR   &= ~SPI_0_MISO_GPIO_PUPD_0;
+            SPI_0_MISO_GPIO_PORT->AFR[0]  |=  SPI_0_MISO_GPIO_AFR_0_1;
+            SPI_0_MISO_GPIO_PORT->AFR[0]  &= ~SPI_0_MISO_GPIO_AFR_0_0;
+            SPI_0_MISO_GPIO_PORT->AFR[1]  |=  SPI_0_MISO_GPIO_AFR_1_1;
+            SPI_0_MISO_GPIO_PORT->AFR[1]  &= ~SPI_0_MISO_GPIO_AFR_1_0;
+            // MOSI
+            SPI_0_MOSI_GPIO_PORT->MODER   |=  SPI_0_MOSI_GPIO_MODER_1;
+            SPI_0_MOSI_GPIO_PORT->MODER   &= ~SPI_0_MOSI_GPIO_MODER_0;
+            SPI_0_MOSI_GPIO_PORT->OTYPER  |=  SPI_0_MOSI_GPIO_OTYPER_1;
+            SPI_0_MOSI_GPIO_PORT->OTYPER  &= ~SPI_0_MOSI_GPIO_OTYPER_0;
+            SPI_0_MOSI_GPIO_PORT->OSPEEDR |=  SPI_0_MOSI_GPIO_OSPEEDR_1;
+            SPI_0_MOSI_GPIO_PORT->OSPEEDR &= ~SPI_0_MOSI_GPIO_OSPEEDR_0;
+            SPI_0_MOSI_GPIO_PORT->PUPDR   |=  SPI_0_MOSI_GPIO_PUPD_1;
+            SPI_0_MOSI_GPIO_PORT->PUPDR   &= ~SPI_0_MOSI_GPIO_PUPD_0;
+            SPI_0_MOSI_GPIO_PORT->AFR[0]  |=  SPI_0_MOSI_GPIO_AFR_0_1;
+            SPI_0_MOSI_GPIO_PORT->AFR[0]  &= ~SPI_0_MOSI_GPIO_AFR_0_0;
+            SPI_0_MOSI_GPIO_PORT->AFR[1]  |=  SPI_0_MOSI_GPIO_AFR_1_1;
+            SPI_0_MOSI_GPIO_PORT->AFR[1]  &= ~SPI_0_MOSI_GPIO_AFR_1_0;
+            // NSS
+            SPI_0_NSS_GPIO_PORT->MODER   |=  SPI_0_NSS_GPIO_MODER_1;
+            SPI_0_NSS_GPIO_PORT->MODER   &= ~SPI_0_NSS_GPIO_MODER_0;
+            SPI_0_NSS_GPIO_PORT->OTYPER  |=  SPI_0_NSS_GPIO_OTYPER_1;
+            SPI_0_NSS_GPIO_PORT->OTYPER  &= ~SPI_0_NSS_GPIO_OTYPER_0;
+            SPI_0_NSS_GPIO_PORT->OSPEEDR |=  SPI_0_NSS_GPIO_OSPEEDR_1;
+            SPI_0_NSS_GPIO_PORT->OSPEEDR &= ~SPI_0_NSS_GPIO_OSPEEDR_0;
+            SPI_0_NSS_GPIO_PORT->PUPDR   |=  SPI_0_NSS_GPIO_PUPD_1;
+            SPI_0_NSS_GPIO_PORT->PUPDR   &= ~SPI_0_NSS_GPIO_PUPD_0;
+            // SCK
+            SPI_0_SCK_GPIO_PORT->MODER   |=  SPI_0_SCK_GPIO_MODER_1;
+            SPI_0_SCK_GPIO_PORT->MODER   &= ~SPI_0_SCK_GPIO_MODER_0;
+            SPI_0_SCK_GPIO_PORT->OTYPER  |=  SPI_0_SCK_GPIO_OTYPER_1;
+            SPI_0_SCK_GPIO_PORT->OTYPER  &= ~SPI_0_SCK_GPIO_OTYPER_0;
+            SPI_0_SCK_GPIO_PORT->OSPEEDR |=  SPI_0_SCK_GPIO_OSPEEDR_1;
+            SPI_0_SCK_GPIO_PORT->OSPEEDR &= ~SPI_0_SCK_GPIO_OSPEEDR_0;
+            SPI_0_SCK_GPIO_PORT->PUPDR   |=  SPI_0_SCK_GPIO_PUPD_1;
+            SPI_0_SCK_GPIO_PORT->PUPDR   &= ~SPI_0_SCK_GPIO_PUPD_0;
+            SPI_0_SCK_GPIO_PORT->AFR[0]  |=  SPI_0_SCK_GPIO_AFR_0_1;
+            SPI_0_SCK_GPIO_PORT->AFR[0]  &= ~SPI_0_SCK_GPIO_AFR_0_0;
+            SPI_0_SCK_GPIO_PORT->AFR[1]  |=  SPI_0_SCK_GPIO_AFR_1_1;
+            SPI_0_SCK_GPIO_PORT->AFR[1]  &= ~SPI_0_SCK_GPIO_AFR_1_0;
 
-    case 1:
-        // enable clock for GPIO Port
-        RCC->AHB1ENR |= SPI_1_MISO_GPIO_PORT_RCC;
-        RCC->AHB1ENR |= SPI_1_MOSI_GPIO_PORT_RCC;
-        RCC->AHB1ENR |= SPI_1_NSS_GPIO_PORT_RCC;
-        RCC->AHB1ENR |= SPI_1_SCK_GPIO_PORT_RCC;
-        // enable clock for interface
-        RCC->APB1ENR |= SPI_1_APB1ENR;
-        RCC->APB2ENR |= SPI_1_APB2ENR;
+            devices[device].bus = SPI_0;
+            break;
 
-        // configure SPI parameters
-        // CPOL = 1 CPHA = 1
-        SPI_1->CR1 = 0x037f;
-        SPI_1->CR2 = 0x0040;
+        case 1:
+            // enable clock for GPIO Port
+            RCC->AHB1ENR |= SPI_1_MISO_GPIO_PORT_RCC;
+            RCC->AHB1ENR |= SPI_1_MOSI_GPIO_PORT_RCC;
+            RCC->AHB1ENR |= SPI_1_NSS_GPIO_PORT_RCC;
+            RCC->AHB1ENR |= SPI_1_SCK_GPIO_PORT_RCC;
+            // enable clock for interface
+            RCC->APB1ENR |= SPI_1_APB1ENR;
+            RCC->APB2ENR |= SPI_1_APB2ENR;
 
-        // Enable Interrupt
-        NVIC_SetPriority(SPI_1_IRQ_NUMBER, SPI_1_IRQ_PRIORITY);
-        NVIC_EnableIRQ(SPI_1_IRQ_NUMBER);
+            // configure SPI parameters
+            // CPOL = 1 CPHA = 1
+            SPI_1->CR1 = 0x037f;
+            SPI_1->CR2 = 0x0040;
 
-        // configure Pins
-        // MISO
-        SPI_1_MISO_GPIO_PORT->MODER   |=  SPI_1_MISO_GPIO_MODER_1;
-        SPI_1_MISO_GPIO_PORT->MODER   &= ~SPI_1_MISO_GPIO_MODER_0;
-        SPI_1_MISO_GPIO_PORT->OTYPER  |=  SPI_1_MISO_GPIO_OTYPER_1;
-        SPI_1_MISO_GPIO_PORT->OTYPER  &= ~SPI_1_MISO_GPIO_OTYPER_0;
-        SPI_1_MISO_GPIO_PORT->OSPEEDR |=  SPI_1_MISO_GPIO_OSPEEDR_1;
-        SPI_1_MISO_GPIO_PORT->OSPEEDR &= ~SPI_1_MISO_GPIO_OSPEEDR_0;
-        SPI_1_MISO_GPIO_PORT->PUPDR   |=  SPI_1_MISO_GPIO_PUPD_1;
-        SPI_1_MISO_GPIO_PORT->PUPDR   &= ~SPI_1_MISO_GPIO_PUPD_0;
-        SPI_1_MISO_GPIO_PORT->AFR[0]  |=  SPI_1_MISO_GPIO_AFR_0_1;
-        SPI_1_MISO_GPIO_PORT->AFR[0]  &= ~SPI_1_MISO_GPIO_AFR_0_0;
-        SPI_1_MISO_GPIO_PORT->AFR[1]  |=  SPI_1_MISO_GPIO_AFR_1_1;
-        SPI_1_MISO_GPIO_PORT->AFR[1]  &= ~SPI_1_MISO_GPIO_AFR_1_0;
-        // MOSI
-        SPI_1_MOSI_GPIO_PORT->MODER   |=  SPI_1_MOSI_GPIO_MODER_1;
-        SPI_1_MOSI_GPIO_PORT->MODER   &= ~SPI_1_MOSI_GPIO_MODER_0;
-        SPI_1_MOSI_GPIO_PORT->OTYPER  |=  SPI_1_MOSI_GPIO_OTYPER_1;
-        SPI_1_MOSI_GPIO_PORT->OTYPER  &= ~SPI_1_MOSI_GPIO_OTYPER_0;
-        SPI_1_MOSI_GPIO_PORT->OSPEEDR |=  SPI_1_MOSI_GPIO_OSPEEDR_1;
-        SPI_1_MOSI_GPIO_PORT->OSPEEDR &= ~SPI_1_MOSI_GPIO_OSPEEDR_0;
-        SPI_1_MOSI_GPIO_PORT->PUPDR   |=  SPI_1_MOSI_GPIO_PUPD_1;
-        SPI_1_MOSI_GPIO_PORT->PUPDR   &= ~SPI_1_MOSI_GPIO_PUPD_0;
-        SPI_1_MOSI_GPIO_PORT->AFR[0]  |=  SPI_1_MOSI_GPIO_AFR_0_1;
-        SPI_1_MOSI_GPIO_PORT->AFR[0]  &= ~SPI_1_MOSI_GPIO_AFR_0_0;
-        SPI_1_MOSI_GPIO_PORT->AFR[1]  |=  SPI_1_MOSI_GPIO_AFR_1_1;
-        SPI_1_MOSI_GPIO_PORT->AFR[1]  &= ~SPI_1_MOSI_GPIO_AFR_1_0;
-        // NSS
-        SPI_1_NSS_GPIO_PORT->MODER   |=  SPI_1_NSS_GPIO_MODER_1;
-        SPI_1_NSS_GPIO_PORT->MODER   &= ~SPI_1_NSS_GPIO_MODER_0;
-        SPI_1_NSS_GPIO_PORT->OTYPER  |=  SPI_1_NSS_GPIO_OTYPER_1;
-        SPI_1_NSS_GPIO_PORT->OTYPER  &= ~SPI_1_NSS_GPIO_OTYPER_0;
-        SPI_1_NSS_GPIO_PORT->OSPEEDR |=  SPI_1_NSS_GPIO_OSPEEDR_1;
-        SPI_1_NSS_GPIO_PORT->OSPEEDR &= ~SPI_1_NSS_GPIO_OSPEEDR_0;
-        SPI_1_NSS_GPIO_PORT->PUPDR   |=  SPI_1_NSS_GPIO_PUPD_1;
-        SPI_1_NSS_GPIO_PORT->PUPDR   &= ~SPI_1_NSS_GPIO_PUPD_0;
-        // SCK
-        SPI_1_SCK_GPIO_PORT->MODER   |=  SPI_1_SCK_GPIO_MODER_1;
-        SPI_1_SCK_GPIO_PORT->MODER   &= ~SPI_1_SCK_GPIO_MODER_0;
-        SPI_1_SCK_GPIO_PORT->OTYPER  |=  SPI_1_SCK_GPIO_OTYPER_1;
-        SPI_1_SCK_GPIO_PORT->OTYPER  &= ~SPI_1_SCK_GPIO_OTYPER_0;
-        SPI_1_SCK_GPIO_PORT->OSPEEDR |=  SPI_1_SCK_GPIO_OSPEEDR_1;
-        SPI_1_SCK_GPIO_PORT->OSPEEDR &= ~SPI_1_SCK_GPIO_OSPEEDR_0;
-        SPI_1_SCK_GPIO_PORT->PUPDR   |=  SPI_1_SCK_GPIO_PUPD_1;
-        SPI_1_SCK_GPIO_PORT->PUPDR   &= ~SPI_1_SCK_GPIO_PUPD_0;
-        SPI_1_SCK_GPIO_PORT->AFR[0]  |=  SPI_1_SCK_GPIO_AFR_0_1;
-        SPI_1_SCK_GPIO_PORT->AFR[0]  &= ~SPI_1_SCK_GPIO_AFR_0_0;
-        SPI_1_SCK_GPIO_PORT->AFR[1]  |=  SPI_1_SCK_GPIO_AFR_1_1;
-        SPI_1_SCK_GPIO_PORT->AFR[1]  &= ~SPI_1_SCK_GPIO_AFR_1_0;
+            // Enable Interrupt
+            NVIC_SetPriority(SPI_1_IRQ_NUMBER, SPI_1_IRQ_PRIORITY);
+            NVIC_EnableIRQ(SPI_1_IRQ_NUMBER);
 
-        devices[device].bus = SPI_1;
-        break;
+            // configure Pins
+            // MISO
+            SPI_1_MISO_GPIO_PORT->MODER   |=  SPI_1_MISO_GPIO_MODER_1;
+            SPI_1_MISO_GPIO_PORT->MODER   &= ~SPI_1_MISO_GPIO_MODER_0;
+            SPI_1_MISO_GPIO_PORT->OTYPER  |=  SPI_1_MISO_GPIO_OTYPER_1;
+            SPI_1_MISO_GPIO_PORT->OTYPER  &= ~SPI_1_MISO_GPIO_OTYPER_0;
+            SPI_1_MISO_GPIO_PORT->OSPEEDR |=  SPI_1_MISO_GPIO_OSPEEDR_1;
+            SPI_1_MISO_GPIO_PORT->OSPEEDR &= ~SPI_1_MISO_GPIO_OSPEEDR_0;
+            SPI_1_MISO_GPIO_PORT->PUPDR   |=  SPI_1_MISO_GPIO_PUPD_1;
+            SPI_1_MISO_GPIO_PORT->PUPDR   &= ~SPI_1_MISO_GPIO_PUPD_0;
+            SPI_1_MISO_GPIO_PORT->AFR[0]  |=  SPI_1_MISO_GPIO_AFR_0_1;
+            SPI_1_MISO_GPIO_PORT->AFR[0]  &= ~SPI_1_MISO_GPIO_AFR_0_0;
+            SPI_1_MISO_GPIO_PORT->AFR[1]  |=  SPI_1_MISO_GPIO_AFR_1_1;
+            SPI_1_MISO_GPIO_PORT->AFR[1]  &= ~SPI_1_MISO_GPIO_AFR_1_0;
+            // MOSI
+            SPI_1_MOSI_GPIO_PORT->MODER   |=  SPI_1_MOSI_GPIO_MODER_1;
+            SPI_1_MOSI_GPIO_PORT->MODER   &= ~SPI_1_MOSI_GPIO_MODER_0;
+            SPI_1_MOSI_GPIO_PORT->OTYPER  |=  SPI_1_MOSI_GPIO_OTYPER_1;
+            SPI_1_MOSI_GPIO_PORT->OTYPER  &= ~SPI_1_MOSI_GPIO_OTYPER_0;
+            SPI_1_MOSI_GPIO_PORT->OSPEEDR |=  SPI_1_MOSI_GPIO_OSPEEDR_1;
+            SPI_1_MOSI_GPIO_PORT->OSPEEDR &= ~SPI_1_MOSI_GPIO_OSPEEDR_0;
+            SPI_1_MOSI_GPIO_PORT->PUPDR   |=  SPI_1_MOSI_GPIO_PUPD_1;
+            SPI_1_MOSI_GPIO_PORT->PUPDR   &= ~SPI_1_MOSI_GPIO_PUPD_0;
+            SPI_1_MOSI_GPIO_PORT->AFR[0]  |=  SPI_1_MOSI_GPIO_AFR_0_1;
+            SPI_1_MOSI_GPIO_PORT->AFR[0]  &= ~SPI_1_MOSI_GPIO_AFR_0_0;
+            SPI_1_MOSI_GPIO_PORT->AFR[1]  |=  SPI_1_MOSI_GPIO_AFR_1_1;
+            SPI_1_MOSI_GPIO_PORT->AFR[1]  &= ~SPI_1_MOSI_GPIO_AFR_1_0;
+            // NSS
+            SPI_1_NSS_GPIO_PORT->MODER   |=  SPI_1_NSS_GPIO_MODER_1;
+            SPI_1_NSS_GPIO_PORT->MODER   &= ~SPI_1_NSS_GPIO_MODER_0;
+            SPI_1_NSS_GPIO_PORT->OTYPER  |=  SPI_1_NSS_GPIO_OTYPER_1;
+            SPI_1_NSS_GPIO_PORT->OTYPER  &= ~SPI_1_NSS_GPIO_OTYPER_0;
+            SPI_1_NSS_GPIO_PORT->OSPEEDR |=  SPI_1_NSS_GPIO_OSPEEDR_1;
+            SPI_1_NSS_GPIO_PORT->OSPEEDR &= ~SPI_1_NSS_GPIO_OSPEEDR_0;
+            SPI_1_NSS_GPIO_PORT->PUPDR   |=  SPI_1_NSS_GPIO_PUPD_1;
+            SPI_1_NSS_GPIO_PORT->PUPDR   &= ~SPI_1_NSS_GPIO_PUPD_0;
+            // SCK
+            SPI_1_SCK_GPIO_PORT->MODER   |=  SPI_1_SCK_GPIO_MODER_1;
+            SPI_1_SCK_GPIO_PORT->MODER   &= ~SPI_1_SCK_GPIO_MODER_0;
+            SPI_1_SCK_GPIO_PORT->OTYPER  |=  SPI_1_SCK_GPIO_OTYPER_1;
+            SPI_1_SCK_GPIO_PORT->OTYPER  &= ~SPI_1_SCK_GPIO_OTYPER_0;
+            SPI_1_SCK_GPIO_PORT->OSPEEDR |=  SPI_1_SCK_GPIO_OSPEEDR_1;
+            SPI_1_SCK_GPIO_PORT->OSPEEDR &= ~SPI_1_SCK_GPIO_OSPEEDR_0;
+            SPI_1_SCK_GPIO_PORT->PUPDR   |=  SPI_1_SCK_GPIO_PUPD_1;
+            SPI_1_SCK_GPIO_PORT->PUPDR   &= ~SPI_1_SCK_GPIO_PUPD_0;
+            SPI_1_SCK_GPIO_PORT->AFR[0]  |=  SPI_1_SCK_GPIO_AFR_0_1;
+            SPI_1_SCK_GPIO_PORT->AFR[0]  &= ~SPI_1_SCK_GPIO_AFR_0_0;
+            SPI_1_SCK_GPIO_PORT->AFR[1]  |=  SPI_1_SCK_GPIO_AFR_1_1;
+            SPI_1_SCK_GPIO_PORT->AFR[1]  &= ~SPI_1_SCK_GPIO_AFR_1_0;
 
-    default:
-        // specified an unavailable Interface
-        hal_cpu_die();
-        return;
+            devices[device].bus = SPI_1;
+            break;
+
+        default:
+            // specified an unavailable Interface
+            hal_cpu_die();
+            return;
+        }
     }
+    // else invalid Interface Specified
 }
 
 void hal_spi_print_configuration(uint_fast8_t device)
 {
-    debug_line("Configuration of SPI_%d :", device);
-    // Clock
-    debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
-    debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
-    debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
-    // Uart
-    debug_line("SPI->CR1      = 0x%08x", devices[device].bus->CR1);
-    debug_line("SPI->CR2      = 0x%08x", devices[device].bus->CR2);
-    // GPIO
-    switch(device)
+    if(device < MAX_SPI)
     {
-    case 0 :
-        debug_line("MISO Pin:");
-        print_gpio_configuration(SPI_0_MISO_GPIO_PORT);
-        debug_line("MOSI Pin:");
-        print_gpio_configuration(SPI_0_MOSI_GPIO_PORT);
-        debug_line("SCK Pin:");
-        print_gpio_configuration(SPI_0_NSS_GPIO_PORT);
-        debug_line("NSS Pin:");
-        print_gpio_configuration(SPI_0_SCK_GPIO_PORT);
-        break;
+        debug_line("Configuration of SPI_%d :", device);
+        // Clock
+        debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
+        debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
+        debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
+        // Uart
+        debug_line("SPI->CR1      = 0x%08x", devices[device].bus->CR1);
+        debug_line("SPI->CR2      = 0x%08x", devices[device].bus->CR2);
+        // GPIO
+        switch(device)
+        {
+        case 0 :
+            debug_line("MISO Pin:");
+            print_gpio_configuration(SPI_0_MISO_GPIO_PORT);
+            debug_line("MOSI Pin:");
+            print_gpio_configuration(SPI_0_MOSI_GPIO_PORT);
+            debug_line("SCK Pin:");
+            print_gpio_configuration(SPI_0_NSS_GPIO_PORT);
+            debug_line("NSS Pin:");
+            print_gpio_configuration(SPI_0_SCK_GPIO_PORT);
+            break;
 
-    case 1 :
-        debug_line("MISO Pin:");
-        print_gpio_configuration(SPI_1_MISO_GPIO_PORT);
-        debug_line("MOSI Pin:");
-        print_gpio_configuration(SPI_1_MOSI_GPIO_PORT);
-        debug_line("SCK Pin:");
-        print_gpio_configuration(SPI_1_NSS_GPIO_PORT);
-        debug_line("NSS Pin:");
-        print_gpio_configuration(SPI_1_SCK_GPIO_PORT);
-        break;
+        case 1 :
+            debug_line("MISO Pin:");
+            print_gpio_configuration(SPI_1_MISO_GPIO_PORT);
+            debug_line("MOSI Pin:");
+            print_gpio_configuration(SPI_1_MOSI_GPIO_PORT);
+            debug_line("SCK Pin:");
+            print_gpio_configuration(SPI_1_NSS_GPIO_PORT);
+            debug_line("NSS Pin:");
+            print_gpio_configuration(SPI_1_SCK_GPIO_PORT);
+            break;
 
-    default:
-        break;
+        default:
+            break;
+        }
     }
+    // else invalid Interface Specified
 }
 
 void SPI_0_IRQ_HANDLER(void)
 {
-    hal_led_toggle_debug_led();
     device_IRQ_handler(0);
 }
 
 void SPI_1_IRQ_HANDLER(void)
 {
-    hal_led_toggle_debug_led();
     device_IRQ_handler(1);
 }
 
@@ -304,19 +308,23 @@ void hal_spi_do_transaction(uint_fast8_t device,
                             uint_fast8_t num_bytes_to_send,
                             uint8_t *data_received)
 {
-    while(false == devices[device].idle)
+    if(device < MAX_SPI)
     {
-        ; // wait until we can send the data out
-    }
-    start_spi_transaction(device,
-                          data_to_send,
-                          num_bytes_to_send,
-                          data_received);
+        while(false == devices[device].idle)
+        {
+            ; // wait until we can send the data out
+        }
+        start_spi_transaction(device,
+                              data_to_send,
+                              num_bytes_to_send,
+                              data_received);
 
-    while(false == devices[device].idle)
-    {
-        ; // wait until we have the data back
+        while(false == devices[device].idle)
+        {
+            ; // wait until we have the data back
+        }
     }
+    // else invalid Interface Specified
 }
 
 static void slave_select_start(uint_fast8_t device)

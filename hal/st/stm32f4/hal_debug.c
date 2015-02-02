@@ -37,7 +37,7 @@ void hal_debug_init(void)
     res = hal_uart_init(DEBUG_UART, RECEIVE_BUFFER_SIZE, SEND_BUFFER_SIZE);
     if(false == res)
     {
-        hal_led_set_error_led(true);
+        hal_led_set_led(ERROR_LED, true);
         hal_cpu_die();
     }
 }

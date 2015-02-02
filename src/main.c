@@ -31,6 +31,7 @@
 #include "hal_cpu.h"
 #include "hal_led.h"
 #include "hal_time.h"
+#include "hal_cfg.h"
 
 
 int main (void)
@@ -59,7 +60,7 @@ int main (void)
     debug_line("Reached end of initialization!");
     for(;;)
     {
-        hal_led_set_error_led(on);
+        hal_led_set_led(DEBUG_LED, on);
         on = !on;
         com_tick();
         cmd_queue_tick();

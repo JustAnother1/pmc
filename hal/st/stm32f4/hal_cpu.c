@@ -22,6 +22,7 @@
 #include "rcc.h"
 #include <stddef.h>
 #include <stdlib.h>
+#include "hal_cfg.h"
 
 #define HEART_BEAT_FAST_LIMIT 5
 #define HEART_BEAT_SLOW_LIMIT 500
@@ -189,7 +190,7 @@ void hal_cpu_die(void)
     bool direction_is_increment = true;
     // Disable all System Tick( = 1ms) services
     tick_list = NULL;
-    hal_led_set_error_led(true);
+    hal_led_set_led(ERROR_LED, true);
     for(;;)
     {
         if((i <HEART_BEAT_FAST_LIMIT) && (false == direction_is_increment))

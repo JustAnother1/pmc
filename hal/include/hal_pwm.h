@@ -20,8 +20,8 @@
 
 void hal_pwm_init(void);
 uint_fast8_t hal_pwm_get_amount(void);
-void hal_pwm_set_on_time(uint_fast8_t number, uint_fast16_t on_time);
-uint_fast8_t hal_pwm_get_name(uint_fast8_t number, uint8_t *position);
+void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time);
+uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position);
 
 
 #endif /* HAL_INCLUDE_HAL_PWM_H_ */
