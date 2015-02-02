@@ -46,3 +46,13 @@ void hal_time_ms_sleep(uint_fast32_t ms)
         curtick = hal_time_get_ms_tick();
     }
 }
+
+bool hal_time_start_timer(uint_fast8_t device, TimerFkt function)
+{
+    // TODO
+    return false;
+}
+void hal_time_stop_timer(uint_fast8_t device)
+{
+
+}

@@ -60,3 +60,13 @@ uint32_t hal_time_get_ms_tick(void)
     return now;
 }
 
+bool hal_time_start_timer(uint_fast8_t device, TimerFkt function)
+{
+    // TODO
+    return false;
+}
+void hal_time_stop_timer(uint_fast8_t device)
+{
+
+}
+

@@ -17,9 +17,15 @@
 #define HAL_TIME_H_
 
 #include <inttypes.h>
+#include <stdbool.h>
+
+typedef void (*TimerFkt)(void);
 
 void hal_time_init(void);
 uint32_t hal_time_get_ms_tick(void);
 void hal_time_ms_sleep(uint_fast32_t ms);
+
+bool hal_time_start_timer(uint_fast8_t device, TimerFkt function);
+void hal_time_stop_timer(uint_fast8_t device);
 
 #endif /* HAL_TIME_H_ */
