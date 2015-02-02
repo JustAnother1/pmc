@@ -17,6 +17,7 @@
 #define HAL_LED_H_
 
 #include <stdbool.h>
+#include <inttypes.h>
 
 void hal_led_init(void);
 
