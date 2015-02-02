@@ -13,20 +13,16 @@
  *
  */
 
-#ifndef STEP_H_
-#define STEP_H_
+#ifndef SRC_STEPPER_TRINAMIC_H_
+#define SRC_STEPPER_TRINAMIC_H_
 
 #include <inttypes.h>
-#include <stdbool.h>
 
-void step_init(void);
-// returns TRUE wile execution a Move.
-// returns FALSE when ready for the next move
-bool step_is_busy(void);
+uint_fast8_t step_detect_number_of_steppers(void);
+void step_configure_steppers(uint_fast8_t num_steppers);
+#ifdef USE_STEP_DIR
+#else
+void make_step_using_SPI(void);
+#endif
 
-bool step_add_basic_linear_move(uint_fast8_t *move_data);
-bool step_add_delay(uint_fast8_t msb,uint_fast8_t lsb);
-void step_request_tag(void);
-bool step_has_reached_tag(void);
-
-#endif /* STEP_H_ */
+#endif /* SRC_STEPPER_TRINAMIC_H_ */

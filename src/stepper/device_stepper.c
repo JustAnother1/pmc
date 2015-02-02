@@ -17,6 +17,7 @@
 #include "com.h"
 #include "step.h"
 #include "device_input.h"
+#include "trinamic.h"
 
 // max allowed number of steppers
 #define MAX_NUMBER 2

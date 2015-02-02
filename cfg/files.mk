@@ -23,6 +23,7 @@ SRC += $(SRC_FOLDER)device/device_pwm.c
 SRC += $(SRC_FOLDER)device/device_temperature_sensor.c
 SRC += $(SRC_FOLDER)stepper/device_stepper.c
 SRC += $(SRC_FOLDER)stepper/step.c
+SRC += $(SRC_FOLDER)stepper/trinamic.c
 SRC += $(SRC_FOLDER)order/command_queue.c
 SRC += $(SRC_FOLDER)order/orderhandler.c
 # Hardware abstraction layer - used peripherals
