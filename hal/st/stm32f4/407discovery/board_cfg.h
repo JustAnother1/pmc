@@ -63,6 +63,51 @@
 
 /******************************************************************************/
 /*                                                                            */
+/*         A D C                                                              */
+/*                                                                            */
+/******************************************************************************/
+
+#define ADC_NUM_PINS               6
+#define ADC_0_NAME                 "Temp_0"
+#define ADC_1_NAME                 "Temp_1"
+#define ADC_2_NAME                 "Temp_2"
+#define ADC_3_NAME                 "Temp_3"
+#define ADC_4_NAME                 "Temp_4"
+#define ADC_5_NAME                 "Temp_5"
+
+/******************************************************************************/
+/*                                                                            */
+/*         Buzzer - Tone Generator                                            */
+/*                                                                            */
+/******************************************************************************/
+
+#define BUZZER_NUM_PINS            1
+#define BUZZER_0_NAME              "Buzzer_0"
+
+/******************************************************************************/
+/*                                                                            */
+/*         P W M                                                              */
+/*                                                                            */
+/******************************************************************************/
+
+#define PWM_NUM_PINS               14
+#define PWM_0_NAME                 "PWM 1"
+#define PWM_1_NAME                 "PWM 2"
+#define PWM_2_NAME                 "PWM 3"
+#define PWM_3_NAME                 "PWM 4"
+#define PWM_4_NAME                 "PWM 5"
+#define PWM_5_NAME                 "PWM 6"
+#define PWM_6_NAME                 "PWM 7"
+#define PWM_7_NAME                 "PWM 8"
+#define PWM_8_NAME                 "PWM 9"
+#define PWM_9_NAME                 "PWM 10"
+#define PWM_10_NAME                "PWM 11"
+#define PWM_11_NAME                "PWM 12"
+#define PWM_12_NAME                "PWM 13"
+#define PWM_13_NAME                "PWM 14"
+
+/******************************************************************************/
+/*                                                                            */
 /*         L E D                                                              */
 /*                                                                            */
 /******************************************************************************/

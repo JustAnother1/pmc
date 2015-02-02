@@ -15,30 +15,38 @@
 
 #include "device_buzzer.h"
 #include "protocol.h"
+#include "hal_adc.h"
 
 void dev_temperature_sensor_init(void)
 {
-
+    hal_adc_init();
 }
 
 uint_fast8_t dev_temperature_sensor_get_count(void)
 {
-    return 0;
+    return hal_adc_get_amount();
 }
 
 uint_fast8_t dev_temperature_sensor_get_name(uint_fast8_t number, uint8_t *position)
 {
-    return 0;
+    return hal_adc_get_name(number, position);
 }
 
 uint_fast8_t dev_temperature_sensor_get_status(uint_fast8_t number)
 {
-    return DEVICE_STATUS_FAULT;
+    if(number < hal_adc_get_amount())
+    {
+        return DEVICE_STATUS_ACTIVE;
+    }
+    else
+    {
+        return DEVICE_STATUS_FAULT;
+    }
 }
 
 uint_fast16_t dev_temperature_sensor_get_temperature(uint_fast8_t number)
 {
-    return 0x7FFF;
+    return hal_adc_get_value(number);
 }
 
 // end of File

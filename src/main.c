@@ -47,10 +47,10 @@ int main (void)
     // initialize Pacemaker Client Firmware
     events_init();
     fw_cfg_init();
-    dev_buzzer_init();
     dev_stepper_init();
-    dev_heater_init();
     dev_temperature_sensor_init();
+    dev_heater_init();
+    dev_buzzer_init();
     dev_pwm_init();
     dev_input_init();
     dev_output_init();

@@ -15,35 +15,44 @@
 
 #include "device_buzzer.h"
 #include "protocol.h"
+#include "hal_pwm.h"
+#include "hal_cfg.h"
 
 void dev_pwm_init(void)
 {
-
+    hal_pwm_init();
 }
 
 uint_fast8_t dev_pwm_get_count(void)
 {
-    return 0;
+    return hal_pwm_get_amount() - NUMBER_OF_HEATERS;
 }
 
 uint_fast8_t dev_pwm_get_name(uint_fast8_t number, uint8_t *position)
 {
-    return 0;
+    return hal_pwm_get_name(number + NUMBER_OF_HEATERS, position);
 }
 
 uint_fast8_t dev_pwm_get_status(uint_fast8_t number)
 {
-    return DEVICE_STATUS_FAULT;
+    if(number + NUMBER_OF_HEATERS < hal_pwm_get_amount())
+    {
+        return DEVICE_STATUS_ACTIVE;
+    }
+    else
+    {
+        return DEVICE_STATUS_FAULT;
+    }
 }
 
 void dev_pwm_set_pwm(uint_fast8_t number, uint_fast16_t pwm)
 {
-
+    hal_pwm_set_on_time(number + NUMBER_OF_HEATERS, pwm);
 }
 
 void dev_pwm_set_frequency(uint_fast8_t number, uint_fast16_t frequency)
 {
-
+    // TODO: Really ?
 }
 
 // end of File

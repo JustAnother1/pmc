@@ -26,5 +26,8 @@
 #define DEBUG_UART  1
 #define MAX_UART    1
 
+// Heaters
+#define NUMBER_OF_HEATERS 6
+
 
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */

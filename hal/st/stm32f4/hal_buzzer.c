@@ -14,6 +14,8 @@
  */
 
 #include "hal_buzzer.h"
+#include "board_cfg.h"
+#include "util.h"
 
 void hal_buzzer_init(void)
 {
@@ -22,7 +24,7 @@ void hal_buzzer_init(void)
 
 uint_fast8_t hal_buzzer_get_amount(void)
 {
-    return 0;
+    return BUZZER_NUM_PINS;
 }
 
 void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency)
@@ -32,6 +34,18 @@ void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency)
 
 uint_fast8_t hal_buzzer_get_name(uint_fast8_t number, uint8_t *position)
 {
-    return 0;
+    if(number < BUZZER_NUM_PINS)
+    {
+        switch(number)
+        {
+        case  0: return copy_string(BUZZER_0_NAME, position);
+        default:
+            return 0;
+        }
+    }
+    else
+    {
+        return 0;
+    }
 }
 

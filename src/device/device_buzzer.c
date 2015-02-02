@@ -15,35 +15,43 @@
 
 #include "device_buzzer.h"
 #include "protocol.h"
+#include "hal_buzzer.h"
 
 void dev_buzzer_init(void)
 {
-
+    hal_buzzer_init();
 }
 
 uint_fast8_t dev_buzzer_get_count(void)
 {
-    return 0;
+    return hal_buzzer_get_amount();
 }
 
 uint_fast8_t dev_buzzer_get_name(uint_fast8_t number, uint8_t *position)
 {
-    return 0;
+    return hal_buzzer_get_name(number, position);
 }
 
 uint_fast8_t dev_buzzer_get_status(uint_fast8_t number)
 {
-    return DEVICE_STATUS_FAULT;
+    if(number < hal_buzzer_get_amount())
+    {
+        return DEVICE_STATUS_ACTIVE;
+    }
+    else
+    {
+        return DEVICE_STATUS_FAULT;
+    }
 }
 
 void dev_buzzer_set_pwm(uint_fast8_t number, uint_fast16_t pwm)
 {
-
+    // TODO. Really ?
 }
 
 void dev_buzzer_set_frequency(uint_fast8_t number, uint_fast16_t frequency)
 {
-
+    hal_buzzer_set_frequency(number, frequency);
 }
 
 // end of File
