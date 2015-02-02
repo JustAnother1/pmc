@@ -5,6 +5,7 @@ INCDIRS +=$(SRC_FOLDER)com/
 INCDIRS +=$(SRC_FOLDER)device/
 INCDIRS +=$(SRC_FOLDER)order/
 INCDIRS +=$(SRC_FOLDER)debug/
+INCDIRS +=$(SRC_FOLDER)stepper/
 INCDIRS +=$(HAL_FOLDER)include/
 INCDIRS +=$(HAL_FOLDER)$(BOARD_FOLDER)/
 
@@ -19,9 +20,9 @@ SRC += $(SRC_FOLDER)device/device_heater.c
 SRC += $(SRC_FOLDER)device/device_input.c
 SRC += $(SRC_FOLDER)device/device_output.c
 SRC += $(SRC_FOLDER)device/device_pwm.c
-SRC += $(SRC_FOLDER)device/device_stepper.c
 SRC += $(SRC_FOLDER)device/device_temperature_sensor.c
-SRC += $(SRC_FOLDER)device/step.c
+SRC += $(SRC_FOLDER)stepper/device_stepper.c
+SRC += $(SRC_FOLDER)stepper/step.c
 SRC += $(SRC_FOLDER)order/command_queue.c
 SRC += $(SRC_FOLDER)order/orderhandler.c
 # Hardware abstraction layer - used peripherals
