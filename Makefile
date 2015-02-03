@@ -77,7 +77,6 @@ directories:
 	@echo "Board = $(BOARD)"
 	@echo "Architecture = $(ARCHITECTURE)"
 	@echo "Board Folder = $(BOARD_FOLDER)" 
-	@echo " $(HAL_FOLDER)$(BOARD_FOLDER)/hal_led.c"
 	@$(MKDIR_P) $(BIN_FOLDER)
 
 clean:

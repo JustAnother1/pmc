@@ -1,8 +1,8 @@
 # components used 
 #  enable a component: component=yes
 # disable a component: component=no
-USE_UART = yes
-USE_USB = no
+USE_UART = no
+USE_USB = yes
 USE_STEP_DIR = no
 # enables / disables the debug console and debug_msg()
 ACTIVATE_DEBUG = yes

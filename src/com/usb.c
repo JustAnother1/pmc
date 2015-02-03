@@ -13,12 +13,14 @@
  *
  */
 
+#include <inttypes.h>
 #include "usb.h"
+#include "hal_usb_device_cdc.h"
 
 
 bool start_usb(void)
 {
-    return false;
+    return hal_usb_device_cdc_init();
 }
 
 bool usb_has_next_frame(void) // this is usb_tick()
@@ -46,7 +48,7 @@ uint_fast8_t usb_get_control(void)
     return 0;
 }
 
-void usb_send_frame(uint_fast8_t * frame, uint_fast16_t length)
+void usb_send_frame(uint8_t * frame, uint_fast16_t length)
 {
 
 }

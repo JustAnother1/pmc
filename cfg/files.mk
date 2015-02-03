@@ -43,9 +43,17 @@ ifeq ($(USE_UART), yes)
 	SRC += $(SRC_FOLDER)com/uart.c
 	SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_uart.c
 	DDEFS += -DHAS_UART
+else
+# TODO this can probably be done in a better way,...
+	ifeq ($(ACTIVATE_DEBUG), yes)
+		SRC += $(SRC_FOLDER)com/uart.c
+		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_uart.c
+	endif
 endif
+
 ifeq ($(USE_USB), yes)
 	SRC += $(SRC_FOLDER)com/usb.c
+	SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_usb_device_cdc.c
 	DDEFS += -DHAS_USB
 endif
 
