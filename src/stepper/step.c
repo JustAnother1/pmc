@@ -18,6 +18,7 @@
 #include "hal_cfg.h"
 #include "hal_spi.h"
 #include "trinamic.h"
+#include "hal_time.h"
 
 #define STEP_CHUNK_SIZE             10
 
@@ -58,7 +59,7 @@ static bool busy = false;
 // to handle delays:
 static uint_fast16_t delay_ms = 0;
 // to handle Basic Linear Move:
-static uint_fast16_t steps_on_axis[8];
+static uint_fast16_t steps_on_axis[MAX_NUMBER];
 static uint_fast8_t inverted_axis = 0; // each inverted Axis has a 1 in this bitmap
 static uint_fast8_t direction_for_move;
 static bool is_a_homing_move;
@@ -70,9 +71,10 @@ static uint_fast8_t nominal_speed;
 static uint_fast8_t end_speed;
 static uint_fast16_t acceleration_steps;
 static uint_fast16_t decelleration_steps;
-static uint_fast16_t steps_in_this_phase_on_axis[8];
-static uint_fast16_t reload_for_axis[8];
-static uint_fast16_t next_move_on_axis_in[8];
+static uint_fast16_t steps_in_this_phase_on_axis[MAX_NUMBER];
+static uint_fast16_t reload_for_axis[MAX_NUMBER];
+static uint_fast16_t next_move_on_axis_in[MAX_NUMBER];
+static uint_fast8_t available_steppers;
 
 bool enabled[MAX_NUMBER];
 
@@ -386,19 +388,18 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
 
 // public functions
 
-void step_init(void)
+void step_init(uint_fast8_t num_stepper)
 {
     uint_fast8_t i;
-    for(i = 0; i < 8; i++)
+    for(i = 0; i < MAX_NUMBER; i++)
     {
         steps_on_axis[i] = 0;
         steps_in_this_phase_on_axis[i] = 0;
         reload_for_axis[i] = 0;
+        enabled[i] = false;
     }
     start_speed = 0;
-
-    hal_spi_init(STEPPER_SPI);
-
+    available_steppers = num_stepper;
 }
 
 bool step_add_basic_linear_move(uint_fast8_t *move_data)
@@ -412,17 +413,17 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
     }
     active_axes_map = 0;
     primary_axis = 0;
-    if(0x80 == (0x80 & *(move_data + 1)))
+    if(0x80 == (0x80 & move_data[1]))
     {
         // two bytes per axis
         // active Axes
-        active_axes_map = *(move_data + 2);
+        active_axes_map = move_data[2];
         // Directions of Axis are in that byte. The XOR takes care of the inverted axes
-        direction_for_move = inverted_axis ^ *(move_data + 4);
+        direction_for_move = inverted_axis ^ move_data[4];
         // primary Axis
-        primary_axis = (0x0f & *(move_data + 5));
+        primary_axis = (0x0f & move_data[5]);
         // Homing ?
-        if(0x10 == (0x10 & *(move_data + 5)))
+        if(0x10 == (0x10 & move_data[5]))
         {
             is_a_homing_move = true;
         }
@@ -430,10 +431,10 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         {
             is_a_homing_move = false;
         }
-        nominal_speed = *(move_data + 6);
-        end_speed = *(move_data + 7);
+        nominal_speed = move_data[6];
+        end_speed = move_data[7];
         // 1 or 2 Bytes for Steps?
-        if(0x80 == (0x80 & *(move_data + 3)))
+        if(0x80 == (0x80 & move_data[3]))
         {
             // bytes for Steps = 2;
             eight_Bit_Steps = false;
@@ -449,13 +450,13 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
     {
         // one byte per axis
         // active Axes
-        active_axes_map = (0x7f & *(move_data + 1));
+        active_axes_map = (0x7f & move_data[1]);
         // Directions of Axis are in that byte. The XOR takes care of the inverted axes
-        direction_for_move = inverted_axis ^ (0x7f & *(move_data + 2));
+        direction_for_move = inverted_axis ^ (0x7f & move_data[2]);
         // primary Axis
-        primary_axis = (0x0f & *(move_data + 3));
+        primary_axis = (0x0f & move_data[3]);
         // Homing ?
-        if(0x10 == (0x10 & *(move_data + 3)))
+        if(0x10 == (0x10 & move_data[3]))
         {
             is_a_homing_move = true;
         }
@@ -463,10 +464,10 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         {
             is_a_homing_move = false;
         }
-        nominal_speed = *(move_data + 4);
-        end_speed = *(move_data + 5);
+        nominal_speed = move_data[4];
+        end_speed = move_data[5];
         // 1 or 2 Bytes for Steps?
-        if(0x80 == (0x80 & *(move_data + 2)))
+        if(0x80 == (0x80 & move_data[2]))
         {
             // bytes for Steps = 2;
             eight_Bit_Steps = false;
@@ -481,23 +482,23 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
     // acceleration Steps
     if(true == eight_Bit_Steps)
     {
-        acceleration_steps = *(move_data + offset);
+        acceleration_steps = move_data[offset];
         offset++;
     }
     else
     {
-        acceleration_steps = *(move_data + offset) * 256 + *(move_data + offset + 1);
+        acceleration_steps = move_data[offset] * 256 + move_data[offset + 1];
         offset = offset + 2;
     }
     // Deceleration Steps
     if(true == eight_Bit_Steps)
     {
-        decelleration_steps = *(move_data + offset);
+        decelleration_steps = move_data[offset];
         offset++;
     }
     else
     {
-        decelleration_steps = *(move_data + offset) * 256 + *(move_data + offset + 1);
+        decelleration_steps = move_data[offset] * 256 + move_data[offset + 1];
         offset = offset + 2;
     }
     for(i = 0; i < 8; i++)
@@ -511,12 +512,12 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         {
             if(true == eight_Bit_Steps)
             {
-                steps_on_axis[i] = *(move_data + offset);
+                steps_on_axis[i] = move_data[offset];
                 offset++;
             }
             else
             {
-                steps_on_axis[i] = *(move_data + offset) * 256 + *(move_data + offset + 1);
+                steps_on_axis[i] = move_data[offset] * 256 + move_data[offset + 1];
                 offset = offset + 2;
             }
         }

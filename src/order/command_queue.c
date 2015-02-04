@@ -282,18 +282,18 @@ static void send_queue_failed_response(uint_fast8_t cause, uint_fast8_t enqueued
     }
     slots_available = MAX_QUEUE_ELEMENTS - slots_taken;
 
-    *(para_start + 0) = (uint8_t)cause;
-    *(para_start + 1) = (uint8_t)enqueued_commands;
+    para_start[0] = (uint8_t)cause;
+    para_start[1] = (uint8_t)enqueued_commands;
 
-    *(para_start + 2) = (uint8_t)(slots_available >> 8) & 0xff;
-    *(para_start + 3) = (uint8_t)slots_available  & 0xff;
+    para_start[2] = (uint8_t)(slots_available >> 8) & 0xff;
+    para_start[3] = (uint8_t)slots_available  & 0xff;
 
-    *(para_start + 4) = (uint8_t)(slots_taken >> 8) & 0xff;
-    *(para_start + 5) = (uint8_t)slots_taken & 0xff;
+    para_start[4] = (uint8_t)(slots_taken >> 8) & 0xff;
+    para_start[5] = (uint8_t)slots_taken & 0xff;
 
-    *(para_start + 6) = (uint8_t)(finished_blocks >> 8) & 0xff;
-    *(para_start + 7) = (uint8_t)finished_blocks & 0xff;
-    *(para_start + 8) = (uint8_t)0xff;
+    para_start[6] = (uint8_t)(finished_blocks >> 8) & 0xff;
+    para_start[7] = (uint8_t)finished_blocks & 0xff;
+    para_start[8] = (uint8_t)0xff;
     com_send_order_specific_error_with_prefilled_parameter(9);
 }
 
@@ -312,14 +312,14 @@ static void send_queue_ok_response(void)
     }
     slots_available = MAX_QUEUE_ELEMENTS - slots_taken;
 
-    *(para_start + 0) = (uint8_t)(slots_available >> 8) & 0xff;
-    *(para_start + 1) = (uint8_t)slots_available  & 0xff;
+    para_start[0] = (uint8_t)(slots_available >> 8) & 0xff;
+    para_start[1] = (uint8_t)slots_available  & 0xff;
 
-    *(para_start + 2) = (uint8_t)(slots_taken >> 8) & 0xff;
-    *(para_start + 3) = (uint8_t)slots_taken & 0xff;
+    para_start[2] = (uint8_t)(slots_taken >> 8) & 0xff;
+    para_start[3] = (uint8_t)slots_taken & 0xff;
 
-    *(para_start + 2) = (uint8_t)(finished_blocks >> 8) & 0xff;
-    *(para_start + 3) = (uint8_t)finished_blocks & 0xff;
+    para_start[2] = (uint8_t)(finished_blocks >> 8) & 0xff;
+    para_start[3] = (uint8_t)finished_blocks & 0xff;
     com_send_ok_with_prefilled_parameter(6);
 }
 
@@ -400,6 +400,7 @@ void cmd_queue_tick(void)
 
             case MOVEMENT_BLOCK_TYPE_SET_ACTIVE_TOOLHEAD:
                 move_since_last_tag = true;
+                // TODO
                 // This is an extension point if a Firmware needs to do something
                 // every time the Print head changes. This can then be implemented here.
                 // Right now there is nothing to do here
@@ -408,6 +409,7 @@ void cmd_queue_tick(void)
 
             case MOVEMENT_BLOCK_TYPE_MOVEMENT_CHECKPOINT:
                 move_since_last_tag = true;
+                // TODO
                 // This is an extension point if a Firmware needs to do something
                 // every time the Print head changes. This can then be implemented here.
                 // Right now there is nothing to do here

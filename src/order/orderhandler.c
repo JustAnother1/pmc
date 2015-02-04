@@ -65,10 +65,10 @@ void oh_handle_request_information(uint_fast8_t parameter)
     case 6: // list of supported protocol extensions
     {
         uint8_t *para_start = com_get_start_parameter();
-        *(para_start + 0) = 0; // Stepper Control
-        *(para_start + 1) = 1; // Queued Command
-        *(para_start + 2) = 2; // Basic Move
-        *(para_start + 3) = 3; // Event Reporting
+        para_start[0] = 0; // Stepper Control
+        para_start[1] = 1; // Queued Command
+        para_start[2] = 2; // Basic Move
+        para_start[3] = 3; // Event Reporting
         com_send_ok_with_prefilled_parameter(4);
     }
         break;
@@ -97,10 +97,10 @@ void oh_handle_request_information(uint_fast8_t parameter)
     case 12: // maximum supported Step rate
     {
         uint8_t *para_start = com_get_start_parameter();
-        *(para_start + 0) = (uint8_t)(MAX_STEP_RATE >> 24) & 0xff;
-        *(para_start + 1) = (uint8_t)(MAX_STEP_RATE >> 16) & 0xff;
-        *(para_start + 2) = (uint8_t)(MAX_STEP_RATE >> 8)  & 0xff;
-        *(para_start + 3) = (uint8_t) MAX_STEP_RATE        & 0xff;
+        para_start[0] = (uint8_t)(MAX_STEP_RATE >> 24) & 0xff;
+        para_start[1] = (uint8_t)(MAX_STEP_RATE >> 16) & 0xff;
+        para_start[2] = (uint8_t)(MAX_STEP_RATE >> 8)  & 0xff;
+        para_start[3] = (uint8_t) MAX_STEP_RATE        & 0xff;
         com_send_ok_with_prefilled_parameter(4);
     }
         break;

@@ -22,7 +22,7 @@
 // max allowed number of steppers
 #define MAX_NUMBER 8
 
-void step_init(void);
+void step_init(uint_fast8_t num_stepper);
 // returns TRUE wile execution a Move.
 // returns FALSE when ready for the next move
 bool step_is_busy(void);

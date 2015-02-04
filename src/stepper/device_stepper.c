@@ -18,6 +18,7 @@
 #include "step.h"
 #include "device_input.h"
 #include "trinamic.h"
+#include "hal_cfg.h"
 
 //End Stops:
 #define MAX_END  1
@@ -41,14 +42,14 @@ void dev_stepper_init(void)
         state[i] = DEVICE_STATUS_FAULT;
         max_end_stop[i] = 0;
         min_end_stop[i] = 0;
-        enabled[i] = false;
     }
-    step_init();
+    hal_spi_init(STEPPER_SPI);
     available_steppers = trinamic_detect_number_of_steppers();
     if((0 < available_steppers) && (MAX_NUMBER+1 > available_steppers))
     {
         trinamic_configure_steppers(available_steppers);
     }
+    step_init(available_steppers);
     for(i = 0; i < available_steppers; i++)
     {
         state[i] = DEVICE_STATUS_ACTIVE;
