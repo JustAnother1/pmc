@@ -47,7 +47,8 @@ static uint_fast8_t next_step[256];
 static uint_fast8_t next_direction[256];
 #else
 #endif
-bool is_a_move[256];
+
+static bool is_a_move[256];
 
 static uint_fast16_t next_reload[256];
 
@@ -73,10 +74,11 @@ static uint_fast16_t steps_in_this_phase_on_axis[8];
 static uint_fast16_t reload_for_axis[8];
 static uint_fast16_t next_move_on_axis_in[8];
 
+bool enabled[MAX_NUMBER];
 
 // 16bit Timer running at 12MHz
 static uint_fast16_t speed_reloads[256] ={
-           0,/*?*/0, 38250, 25500, 19125, 15300, 12750, 10929,
+           0,/*TODO?*/0, 38250, 25500, 19125, 15300, 12750, 10929,
         9563,  8500,  7650,  6955,  6373,  5885,  5464,  5100,
         4781,  4500,  4250,  4026,  3825,  3643,  3477,  3326,
         3188,  3060,  2942,  2833,  2732,  2638,  2550,  2468,
@@ -114,20 +116,6 @@ static uint_fast16_t speed_reloads[256] ={
 };
 
 
-void step_init(void)
-{
-    uint_fast8_t i;
-    for(i = 0; i < 8; i++)
-    {
-        steps_on_axis[i] = 0;
-        steps_in_this_phase_on_axis[i] = 0;
-        reload_for_axis[i] = 0;
-    }
-    start_speed = 0;
-
-    hal_spi_init(STEPPER_SPI);
-}
-
 /*
 
  How this works:
@@ -160,7 +148,7 @@ void step_init(void)
  writing the calculated values out to the port pins.
 
  */
-void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
+static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 {
     if(step_pos == stop_pos)
     {
@@ -176,7 +164,7 @@ void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 #else
         if(true == is_a_move[step_pos])
         {
-            make_step_using_SPI();
+            trinamic_make_step_using_SPI();
         }
         // else is a Delay -> we are done
 #endif
@@ -396,6 +384,23 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
     // else invalid Slot Type -> TODO Event
 }
 
+// public functions
+
+void step_init(void)
+{
+    uint_fast8_t i;
+    for(i = 0; i < 8; i++)
+    {
+        steps_on_axis[i] = 0;
+        steps_in_this_phase_on_axis[i] = 0;
+        reload_for_axis[i] = 0;
+    }
+    start_speed = 0;
+
+    hal_spi_init(STEPPER_SPI);
+
+}
+
 bool step_add_basic_linear_move(uint_fast8_t *move_data)
 {
     bool eight_Bit_Steps;
@@ -572,6 +577,44 @@ void step_request_tag(void)
 bool step_has_reached_tag(void)
 {
     return reached_tag;
+}
+
+void step_disable_all_motors(void)
+{
+    uint_fast8_t i;
+    for(i = 0 ; i < available_steppers; i++)
+    {
+        if(true == enabled[i])
+        {
+            trinamic_disable_stepper(i);
+        }
+        // else already disabled
+    }
+}
+
+void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
+{
+    if(stepper_number < available_steppers)
+    {
+        if(1 == on_off)
+        {
+            if(false == enabled[stepper_number])
+            {
+                trinamic_enable_stepper(stepper_number);
+            }
+            // already enabled
+        }
+        else if(0 == on_off)
+        {
+            if(true == enabled[stepper_number])
+            {
+                trinamic_disable_stepper(stepper_number);
+            }
+            // already disabled
+        }
+        // else invalid state
+    }
+    // else invalid stepper
 }
 
 // end of File

@@ -23,7 +23,7 @@ uint_fast8_t dev_stepper_get_count(void);
 uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint8_t *position);
 uint_fast8_t dev_stepper_get_status(uint_fast8_t number);
 void dev_stepper_activate(uint_fast8_t on_off);
-void dev_stepper_enable_all_motors(void);
+void dev_stepper_disable_all_motors(void);
 void dev_stepper_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off);
 void dev_stepper_configure_end_stops(uint_fast8_t StepperNumber, uint_fast8_t switch_number, uint_fast8_t min_Max);
 void dev_stepper_configure_both_end_stops(uint_fast8_t stepper_number, uint_fast8_t switch_number, uint_fast8_t min_max,

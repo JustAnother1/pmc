@@ -503,7 +503,7 @@ static void handle_wrapped_command(void)
         }
         else if(0 == queue[read_pos][POS_OF_LENGTH])
         {
-            dev_stepper_enable_all_motors();
+            dev_stepper_disable_all_motors();
         }
         else
         {

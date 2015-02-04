@@ -362,7 +362,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             }
             else if(0 == parameter_length)
             {
-                dev_stepper_enable_all_motors();
+                dev_stepper_disable_all_motors();
             }
             else
             {

@@ -18,11 +18,13 @@
 
 #include <inttypes.h>
 
-uint_fast8_t step_detect_number_of_steppers(void);
-void step_configure_steppers(uint_fast8_t num_steppers);
+uint_fast8_t trinamic_detect_number_of_steppers(void);
+void trinamic_configure_steppers(uint_fast8_t num_steppers);
+void trinamic_enable_stepper(uint_fast8_t stepper_num);
+void trinamic_disable_stepper(uint_fast8_t stepper_num);
 #ifdef USE_STEP_DIR
 #else
-void make_step_using_SPI(void);
+void trinamic_make_step_using_SPI(void);
 #endif
 
 #endif /* SRC_STEPPER_TRINAMIC_H_ */

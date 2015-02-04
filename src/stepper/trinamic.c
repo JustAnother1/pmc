@@ -26,6 +26,15 @@
 // 8 Stepper = 20 Bytes)
 #define SPI_BUFFER_LENGTH           20
 
+// configuration buffer
+static uint8_t drvctrl_data[SPI_BUFFER_LENGTH];
+static uint8_t chopconf_data[SPI_BUFFER_LENGTH];
+static uint8_t smarten_data[SPI_BUFFER_LENGTH];
+static uint8_t sgcsconf_data[SPI_BUFFER_LENGTH];
+static uint8_t drvconf_data[SPI_BUFFER_LENGTH];
+static uint_fast8_t num_bytes_used;
+
+
 #ifdef USE_STEP_DIR
 #else
 // DRVCTRL in SPI Mode:
@@ -37,40 +46,40 @@
 // 9-16    |0..255 |Current in coil A
 // 8       |0/1    |Polarity B
 // 0..7    |0..255 |Current in coil B
-static uint8_t DRVCONTROL_Buffer[32][3] = {
+static const uint8_t DRVCONTROL_Buffer[32][3] = {
         //  0,    1,    2
-        {0x00, 0xf0, 0x01}, // 0
-        {0x30, 0xe6, 0x01}, // 1
-        {0x5f, 0xca, 0x01}, // 2
-        {0x89, 0x9c, 0x01}, // 3
-        {0xaf, 0x5e, 0x01}, // 4
-        {0xce, 0x12, 0x01}, // 5
-        {0xe5, 0xbe, 0x00}, // 6
-        {0xf3, 0x60, 0x00}, // 7
-        {0xf8, 0x00, 0x02}, // 8
-        {0xf3, 0x60, 0x02}, // 9
-        {0xe5, 0xbe, 0x02}, // 10
-        {0xce, 0x12, 0x03}, // 11
-        {0xaf, 0x5e, 0x03}, // 12
-        {0x89, 0x9c, 0x03}, // 13
-        {0x5f, 0xca, 0x03}, // 14
-        {0x30, 0xe6, 0x03}, // 15
-        {0x00, 0xf0, 0x03}, // 16
-        {0x30, 0xe7, 0x03}, // 17
-        {0x5f, 0xcb, 0x03}, // 18
-        {0x89, 0x9d, 0x03}, // 19
-        {0xaf, 0x5f, 0x03}, // 20
-        {0xce, 0x13, 0x03}, // 21
-        {0x5e, 0xbf, 0x02}, // 22
-        {0xf3, 0x61, 0x02}, // 23
-        {0xf8, 0x01, 0x00}, // 24
-        {0xf3, 0x61, 0x00}, // 25
-        {0xe5, 0xbf, 0x00}, // 26
-        {0xce, 0x13, 0x01}, // 27
-        {0xaf, 0x5f, 0x01}, // 28
-        {0x89, 0x9d, 0x01}, // 29
-        {0x5f, 0xcb, 0x01}, // 30
-        {0x30, 0xe7, 0x01}, // 31
+        {0x01, 0xf0, 0x00}, // 0
+        {0x01, 0xe6, 0x30}, // 1
+        {0x01, 0xca, 0x5f}, // 2
+        {0x01, 0x9c, 0x89}, // 3
+        {0x01, 0x5e, 0xaf}, // 4
+        {0x01, 0x12, 0xce}, // 5
+        {0x00, 0xbe, 0xe5}, // 6
+        {0x00, 0x60, 0xf3}, // 7
+        {0x02, 0x00, 0xf8}, // 8
+        {0x02, 0x60, 0xf3}, // 9
+        {0x02, 0xbe, 0xe5}, // 10
+        {0x03, 0x12, 0xce}, // 11
+        {0x03, 0x5e, 0xaf}, // 12
+        {0x03, 0x9c, 0x89}, // 13
+        {0x03, 0xca, 0x5f}, // 14
+        {0x03, 0xe6, 0x30}, // 15
+        {0x03, 0xf0, 0x00}, // 16
+        {0x03, 0xe7, 0x30}, // 17
+        {0x03, 0xcb, 0x5f}, // 18
+        {0x03, 0x9d, 0x89}, // 19
+        {0x03, 0x5f, 0xaf}, // 20
+        {0x03, 0x13, 0xce}, // 21
+        {0x02, 0xbf, 0x5e}, // 22
+        {0x02, 0x61, 0xf3}, // 23
+        {0x00, 0x01, 0xf8}, // 24
+        {0x00, 0x61, 0xf3}, // 25
+        {0x00, 0xbf, 0xe5}, // 26
+        {0x01, 0x13, 0xce}, // 27
+        {0x01, 0x5f, 0xaf}, // 28
+        {0x01, 0x9d, 0x89}, // 29
+        {0x01, 0xcb, 0x5f}, // 30
+        {0x01, 0xe7, 0x30}  // 31
 };
 #endif
 
@@ -78,7 +87,7 @@ uint_fast8_t cur_step = 0;
 bool direction_is_increasing = true;
 static uint8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
 
-uint_fast8_t step_detect_number_of_steppers(void)
+uint_fast8_t trinamic_detect_number_of_steppers(void)
 {
     uint8_t detect_data[SPI_BUFFER_LENGTH];
     uint_fast8_t i;
@@ -127,10 +136,44 @@ uint_fast8_t step_detect_number_of_steppers(void)
     return count;
 }
 
-void step_configure_steppers(uint_fast8_t num_steppers)
+void trinamic_enable_stepper(uint_fast8_t stepper_num)
 {
-    uint8_t cfg_data[SPI_BUFFER_LENGTH];
-    uint_fast8_t num_bytes =((num_steppers+1)/2)*5;
+    switch(stepper_num)
+    {
+    case 0: chopconf_data[2]  |= 0x02; break;
+    case 1: chopconf_data[4]  |= 0x20; break;
+    case 2: chopconf_data[7]  |= 0x02; break;
+    case 3: chopconf_data[9]  |= 0x20; break;
+    case 4: chopconf_data[12] |= 0x02; break;
+    case 5: chopconf_data[14] |= 0x20; break;
+    case 6: chopconf_data[17] |= 0x02; break;
+    case 7: chopconf_data[19] |= 0x20; break;
+    default: return;
+    }
+    hal_spi_do_transaction(STEPPER_SPI, &chopconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
+}
+
+void trinamic_disable_stepper(uint_fast8_t stepper_num)
+{
+    switch(stepper_num)
+    {
+    case 0: chopconf_data[2]  &= 0x0f; break;
+    case 1: chopconf_data[4]  &= 0xf0; break;
+    case 2: chopconf_data[7]  &= 0x0f; break;
+    case 3: chopconf_data[9]  &= 0xf0; break;
+    case 4: chopconf_data[12] &= 0x0f; break;
+    case 5: chopconf_data[14] &= 0xf0; break;
+    case 6: chopconf_data[17] &= 0x0f; break;
+    case 7: chopconf_data[19] &= 0xf0; break;
+    default: return;
+    }
+    hal_spi_do_transaction(STEPPER_SPI, &chopconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
+}
+
+void trinamic_configure_steppers(uint_fast8_t num_steppers)
+{
+
+    uint_fast8_t num_bytes_used =((num_steppers+1)/2)*5;
 
     if(0 == num_steppers)
     {
@@ -155,16 +198,18 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     //         |       | random Toff  : lsbs of fast decay time 0..15 *32 clocks.
     // 0..3    |0..15  | Toff ( 0 = free rotate; 1 = needs Blanking time of minimum 24 clocks 2..15: duration of slow decay = 12 + (32 * toff) clocks)
 
-    // -> 9a9f2
-    for(int i= 0; i < num_bytes; )
+    // stepper disabled -> 9a9f0
+    // stepper enabled  -> 9a9f2
+    // stepper are initially disabled !
+    for(int i= 0; i < num_bytes_used; )
     {
-        cfg_data[i++] = 0x9a;
-        cfg_data[i++] = 0x9f;
-        cfg_data[i++] = 0x29;
-        cfg_data[i++] = 0xa9;
-        cfg_data[i++] = 0xf2;
+        chopconf_data[i++] = 0x9a;
+        chopconf_data[i++] = 0x9f;
+        chopconf_data[i++] = 0x09;
+        chopconf_data[i++] = 0xa9;
+        chopconf_data[i++] = 0xf0;
     }
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], num_bytes, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &chopconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
 
     // SGCSCONF
     //
@@ -179,16 +224,15 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     // 0..4    |0..31  | CS current scale 0..31 -> 1/32 .. 32/32
 
     // -> c041f
-    for(int i= 0; i < num_bytes; )
+    for(int i= 0; i < num_bytes_used; )
     {
-        cfg_data[i++] = 0xc0;
-        cfg_data[i++] = 0x41;
-        cfg_data[i++] = 0xfc;
-        cfg_data[i++] = 0x04;
-        cfg_data[i++] = 0x1f;
+        sgcsconf_data[i++] = 0xc0;
+        sgcsconf_data[i++] = 0x41;
+        sgcsconf_data[i++] = 0xfc;
+        sgcsconf_data[i++] = 0x04;
+        sgcsconf_data[i++] = 0x1f;
     }
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], num_bytes, &spi_receive_buffer[0]);
-
+    hal_spi_do_transaction(STEPPER_SPI, &sgcsconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
 
     // DRVCONF
     //
@@ -205,18 +249,28 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     // 6       |0/1    |Sense Resistor full scale(0=305mV 1=165mV)
     // 4 + 5   |0..3   |Response frame format (0=microstep position; 1=SG; 2=SG+cool Step; 3=do not use)
     // 0..3    |0      |
-
-    // -> ef4e0
-    for(int i= 0; i < num_bytes; )
+#ifdef USE_STEP_DIR
+    // -> ef460
+    for(int i= 0; i < num_bytes_used; )
     {
-        cfg_data[i++] = 0xef;
-        cfg_data[i++] = 0x4e;
-        cfg_data[i++] = 0x0e;
-        cfg_data[i++] = 0xf4;
-        cfg_data[i++] = 0xe0;
+        drvconf_data[i++] = 0xef;
+        drvconf_data[i++] = 0x46;
+        drvconf_data[i++] = 0x0e;
+        drvconf_data[i++] = 0xf4;
+        drvconf_data[i++] = 0x60;
     }
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], num_bytes, &spi_receive_buffer[0]);
-
+#else
+    // -> ef4e0
+    for(int i= 0; i < num_bytes_used; )
+    {
+        drvconf_data[i++] = 0xef;
+        drvconf_data[i++] = 0x4e;
+        drvconf_data[i++] = 0x0e;
+        drvconf_data[i++] = 0xf4;
+        drvconf_data[i++] = 0xe0;
+    }
+#endif
+    hal_spi_do_transaction(STEPPER_SPI, &drvconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
 
     // SMARTEN
     //
@@ -236,26 +290,49 @@ void step_configure_steppers(uint_fast8_t num_steppers)
     // 0..3    |0..15  |SEMIN lower threshold
 
     // -> a0000
-    for(int i= 0; i < num_bytes; )
+    // new : a2a63
+    for(int i= 0; i < num_bytes_used; )
     {
-        cfg_data[i++] = 0xa0;
-        cfg_data[i++] = 0x00;
-        cfg_data[i++] = 0x0a;
-        cfg_data[i++] = 0x00;
-        cfg_data[i++] = 0x00;
+        smarten_data[i++] = 0xa2;
+        smarten_data[i++] = 0xa6;
+        smarten_data[i++] = 0x3a;
+        smarten_data[i++] = 0x2a;
+        smarten_data[i++] = 0x63;
     }
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[0], num_bytes, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &smarten_data[0], num_bytes_used, &spi_receive_buffer[0]);
 
 #ifdef USE_STEP_DIR
+    // DRVCTRL in STEP/DIR Mode:
+    //
+    // Bit     |Range  |Meaning
+    //---------+-------+------------------
+    //TODO
+    for(int i= 0; i < num_bytes_used; )
+    {
+        smarten_data[i++] = 0x00;
+        smarten_data[i++] = 0x00;
+        smarten_data[i++] = 0x00;
+        smarten_data[i++] = 0x00;
+        smarten_data[i++] = 0x00;
+    }
 
 #else
-
+    // TODO
+    for(int i= 0; i < num_bytes_used; )
+    {
+        smarten_data[i++] = 0x00;
+        smarten_data[i++] = 0x00;
+        smarten_data[i++] = 0x00;
+        smarten_data[i++] = 0x00;
+        smarten_data[i++] = 0x00;
+    }
 #endif
+    hal_spi_do_transaction(STEPPER_SPI, &drvctrl_data[0], num_bytes_used, &spi_receive_buffer[0]);
 }
 
 #ifdef USE_STEP_DIR
 #else
-void make_step_using_SPI(void)
+void trinamic_make_step_using_SPI(void)
 {
     hal_spi_do_transaction(STEPPER_SPI,
                            &DRVCONTROL_Buffer[cur_step][0],

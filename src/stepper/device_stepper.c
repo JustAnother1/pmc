@@ -19,8 +19,6 @@
 #include "device_input.h"
 #include "trinamic.h"
 
-// max allowed number of steppers
-#define MAX_NUMBER 2
 //End Stops:
 #define MAX_END  1
 #define MIN_END  0
@@ -43,12 +41,13 @@ void dev_stepper_init(void)
         state[i] = DEVICE_STATUS_FAULT;
         max_end_stop[i] = 0;
         min_end_stop[i] = 0;
+        enabled[i] = false;
     }
     step_init();
-    available_steppers = step_detect_number_of_steppers();
-    if(0 < available_steppers)
+    available_steppers = trinamic_detect_number_of_steppers();
+    if((0 < available_steppers) && (MAX_NUMBER+1 > available_steppers))
     {
-        step_configure_steppers(available_steppers);
+        trinamic_configure_steppers(available_steppers);
     }
     for(i = 0; i < available_steppers; i++)
     {
@@ -109,14 +108,14 @@ void dev_stepper_activate(uint_fast8_t on_off)
     }
 }
 
-void dev_stepper_enable_all_motors(void)
+void dev_stepper_disable_all_motors(void)
 {
-
+    step_disable_all_motors();
 }
 
 void dev_stepper_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 {
-
+    dev_stepper_enable_motor(stepper_number, on_off);
 }
 
 void dev_stepper_configure_end_stops(uint_fast8_t stepper_number, uint_fast8_t switch_number, uint_fast8_t min_max)
