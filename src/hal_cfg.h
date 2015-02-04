@@ -34,4 +34,10 @@
 #define ERROR_LED  1
 #define MAX_LED    2
 
+
+// Timer
+// Step creation
+#define STEP_TIMER        0
+#define STEP_BUFFER_TIMER 1
+
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */

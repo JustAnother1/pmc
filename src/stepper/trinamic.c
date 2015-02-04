@@ -15,7 +15,6 @@
 
 #include "trinamic.h"
 #include "hal_cfg.h"
-#include <stdbool.h>
 #include "hal_spi.h"
 
 // 20 bit per stepper in Bytes
@@ -46,7 +45,42 @@ static uint_fast8_t num_bytes_used;
 // 9-16    |0..255 |Current in coil A
 // 8       |0/1    |Polarity B
 // 0..7    |0..255 |Current in coil B
-static const uint8_t DRVCONTROL_Buffer[32][3] = {
+static const uint8_t DRVCONTROL_Buffer_1[32][3] = {
+        //  0,    1,    2
+        {0x1f, 0x00, 0x00}, // 0
+        {0x1e, 0x63, 0x00}, // 1
+        {0x1c, 0xa5, 0xf0}, // 2
+        {0x19, 0xc8, 0x90}, // 3
+        {0x15, 0xea, 0xf0}, // 4
+        {0x11, 0x2c, 0xe0}, // 5
+        {0x0b, 0xee, 0x50}, // 6
+        {0x06, 0x0f, 0x30}, // 7
+        {0x20, 0x0f, 0x80}, // 8
+        {0x26, 0x0f, 0x30}, // 9
+        {0x2b, 0xee, 0x50}, // 10
+        {0x31, 0x2c, 0xe0}, // 11
+        {0x35, 0xea, 0xf0}, // 12
+        {0x39, 0xc8, 0x90}, // 13
+        {0x3c, 0xa5, 0xf0}, // 14
+        {0x3e, 0x63, 0x00}, // 15
+        {0x3f, 0x00, 0x00}, // 16
+        {0x3e, 0x73, 0x00}, // 17
+        {0x3c, 0xb5, 0xf0}, // 18
+        {0x39, 0xd8, 0x90}, // 19
+        {0x35, 0xfa, 0xf0}, // 20
+        {0x31, 0x3c, 0xe0}, // 21
+        {0x2b, 0xf5, 0xe0}, // 22
+        {0x26, 0x1f, 0x30}, // 23
+        {0x00, 0x1f, 0x80}, // 24
+        {0x06, 0x1f, 0x30}, // 25
+        {0x0b, 0xfe, 0x50}, // 26
+        {0x11, 0x3c, 0xe0}, // 27
+        {0x15, 0xfa, 0xf0}, // 28
+        {0x19, 0xd8, 0x90}, // 29
+        {0x1c, 0xb5, 0xf0}, // 30
+        {0x1e, 0x73, 0x00}  // 31
+};
+static const uint8_t DRVCONTROL_Buffer_2[32][3] = {
         //  0,    1,    2
         {0x01, 0xf0, 0x00}, // 0
         {0x01, 0xe6, 0x30}, // 1
@@ -83,8 +117,7 @@ static const uint8_t DRVCONTROL_Buffer[32][3] = {
 };
 #endif
 
-uint_fast8_t cur_step = 0;
-bool direction_is_increasing = true;
+uint_fast8_t cur_step[8];
 static uint8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
 
 uint_fast8_t trinamic_detect_number_of_steppers(void)
@@ -172,13 +205,18 @@ void trinamic_disable_stepper(uint_fast8_t stepper_num)
 
 void trinamic_configure_steppers(uint_fast8_t num_steppers)
 {
-
+    int i;
     uint_fast8_t num_bytes_used =((num_steppers+1)/2)*5;
 
     if(0 == num_steppers)
     {
         // TODO Event?
         return;
+    }
+
+    for(i = 0; i < 8; i++)
+    {
+        cur_step[i] = 0;
     }
 
     // CHOPCONF
@@ -201,7 +239,7 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
     // stepper disabled -> 9a9f0
     // stepper enabled  -> 9a9f2
     // stepper are initially disabled !
-    for(int i= 0; i < num_bytes_used; )
+    for(i= 0; i < num_bytes_used; )
     {
         chopconf_data[i++] = 0x9a;
         chopconf_data[i++] = 0x9f;
@@ -224,7 +262,7 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
     // 0..4    |0..31  | CS current scale 0..31 -> 1/32 .. 32/32
 
     // -> c041f
-    for(int i= 0; i < num_bytes_used; )
+    for(i= 0; i < num_bytes_used; )
     {
         sgcsconf_data[i++] = 0xc0;
         sgcsconf_data[i++] = 0x41;
@@ -251,7 +289,7 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
     // 0..3    |0      |
 #ifdef USE_STEP_DIR
     // -> ef460
-    for(int i= 0; i < num_bytes_used; )
+    for(i= 0; i < num_bytes_used; )
     {
         drvconf_data[i++] = 0xef;
         drvconf_data[i++] = 0x46;
@@ -261,7 +299,7 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
     }
 #else
     // -> ef4e0
-    for(int i= 0; i < num_bytes_used; )
+    for(i= 0; i < num_bytes_used; )
     {
         drvconf_data[i++] = 0xef;
         drvconf_data[i++] = 0x4e;
@@ -291,7 +329,7 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
 
     // -> a0000
     // new : a2a63
-    for(int i= 0; i < num_bytes_used; )
+    for(i= 0; i < num_bytes_used; )
     {
         smarten_data[i++] = 0xa2;
         smarten_data[i++] = 0xa6;
@@ -307,24 +345,24 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
     // Bit     |Range  |Meaning
     //---------+-------+------------------
     //TODO
-    for(int i= 0; i < num_bytes_used; )
+    for(i= 0; i < num_bytes_used; )
     {
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
     }
 
 #else
     // TODO
-    for(int i= 0; i < num_bytes_used; )
+    for(i= 0; i < num_bytes_used; )
     {
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
+        drvctrl_data[i++] = 0x00;
     }
 #endif
     hal_spi_do_transaction(STEPPER_SPI, &drvctrl_data[0], num_bytes_used, &spi_receive_buffer[0]);
@@ -332,29 +370,82 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
 
 #ifdef USE_STEP_DIR
 #else
-void trinamic_make_step_using_SPI(void)
+void trinamic_make_step_using_SPI(uint_fast8_t stepper_num, bool direction_is_increasing)
 {
+    switch(stepper_num)
+    {
+    case 0:
+        drvctrl_data[0]  = DRVCONTROL_Buffer_1[cur_step[stepper_num]][0];
+        drvctrl_data[1]  = DRVCONTROL_Buffer_1[cur_step[stepper_num]][1];
+        drvctrl_data[2] |= DRVCONTROL_Buffer_1[cur_step[stepper_num]][2]; // the |= (x &0xf0) is not needed as the lower bits are always 0 !
+        break;
+
+    case 1:
+        drvctrl_data[2] |= DRVCONTROL_Buffer_2[cur_step[stepper_num]][0];// the |= (x &0x0f) is not needed as the upper bits are always 0 !
+        drvctrl_data[3]  = DRVCONTROL_Buffer_2[cur_step[stepper_num]][1];
+        drvctrl_data[4]  = DRVCONTROL_Buffer_2[cur_step[stepper_num]][2];
+        break;
+
+    case 2:
+        drvctrl_data[5]  = DRVCONTROL_Buffer_1[cur_step[stepper_num]][0];
+        drvctrl_data[6]  = DRVCONTROL_Buffer_1[cur_step[stepper_num]][1];
+        drvctrl_data[7] |= DRVCONTROL_Buffer_1[cur_step[stepper_num]][2];
+        break;
+
+    case 3:
+        drvctrl_data[7] |= DRVCONTROL_Buffer_2[cur_step[stepper_num]][0];
+        drvctrl_data[8]  = DRVCONTROL_Buffer_2[cur_step[stepper_num]][1];
+        drvctrl_data[9]  = DRVCONTROL_Buffer_2[cur_step[stepper_num]][2];
+        break;
+
+    case 4:
+        drvctrl_data[10]  = DRVCONTROL_Buffer_1[cur_step[stepper_num]][0];
+        drvctrl_data[11]  = DRVCONTROL_Buffer_1[cur_step[stepper_num]][1];
+        drvctrl_data[12] |= DRVCONTROL_Buffer_1[cur_step[stepper_num]][2];
+        break;
+
+    case 5:
+        drvctrl_data[12] |= DRVCONTROL_Buffer_2[cur_step[stepper_num]][0];
+        drvctrl_data[13]  = DRVCONTROL_Buffer_2[cur_step[stepper_num]][1];
+        drvctrl_data[14]  = DRVCONTROL_Buffer_2[cur_step[stepper_num]][2];
+        break;
+
+    case 6:
+        drvctrl_data[15]  = DRVCONTROL_Buffer_1[cur_step[stepper_num]][0];
+        drvctrl_data[16]  = DRVCONTROL_Buffer_1[cur_step[stepper_num]][1];
+        drvctrl_data[17] |= DRVCONTROL_Buffer_1[cur_step[stepper_num]][2];
+        break;
+
+    case 7:
+        drvctrl_data[17] |= DRVCONTROL_Buffer_2[cur_step[stepper_num]][0];
+        drvctrl_data[18]  = DRVCONTROL_Buffer_2[cur_step[stepper_num]][1];
+        drvctrl_data[19]  = DRVCONTROL_Buffer_2[cur_step[stepper_num]][2];
+        break;
+
+    default: return;
+    }
+
     hal_spi_do_transaction(STEPPER_SPI,
-                           &DRVCONTROL_Buffer[cur_step][0],
-                           3,
+                           &drvctrl_data[0],
+                           num_bytes_used,
                            &spi_receive_buffer[0]);
     if(true == direction_is_increasing)
     {
-        cur_step++;
-        if(32 == cur_step)
+        cur_step[stepper_num]++;
+        if(32 == cur_step[stepper_num])
         {
-            cur_step = 0;
+            cur_step[stepper_num] = 0;
         }
     }
     else
     {
-        if(0 == cur_step)
+        if(0 == cur_step[stepper_num])
         {
-            cur_step = 32;
+            cur_step[stepper_num] = 32;
         }
         else
         {
-            cur_step--;
+            cur_step[stepper_num]--;
         }
     }
 }

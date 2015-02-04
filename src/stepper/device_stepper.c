@@ -19,6 +19,7 @@
 #include "device_input.h"
 #include "trinamic.h"
 #include "hal_cfg.h"
+#include "hal_spi.h"
 
 //End Stops:
 #define MAX_END  1

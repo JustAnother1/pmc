@@ -17,6 +17,7 @@
 #define SRC_STEPPER_TRINAMIC_H_
 
 #include <inttypes.h>
+#include <stdbool.h>
 
 uint_fast8_t trinamic_detect_number_of_steppers(void);
 void trinamic_configure_steppers(uint_fast8_t num_steppers);
@@ -24,7 +25,7 @@ void trinamic_enable_stepper(uint_fast8_t stepper_num);
 void trinamic_disable_stepper(uint_fast8_t stepper_num);
 #ifdef USE_STEP_DIR
 #else
-void trinamic_make_step_using_SPI(void);
+void trinamic_make_step_using_SPI(uint_fast8_t stepper_num, bool direction_is_increasing);
 #endif
 
 #endif /* SRC_STEPPER_TRINAMIC_H_ */

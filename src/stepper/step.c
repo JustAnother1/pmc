@@ -19,6 +19,7 @@
 #include "hal_spi.h"
 #include "trinamic.h"
 #include "hal_time.h"
+#include "hal_cfg.h"
 
 #define STEP_CHUNK_SIZE             10
 
@@ -32,8 +33,11 @@
 // Timer runs on 12 MHz clock.
 #define STEP_TIME_ONE_MS            12000
 
+// Timer:
+static void step_isr(void);
+static void refill_step_buffer(void);
 
-static void calculate_conmstant_speed_reloads(void);
+// static void calculate_conmstant_speed_reloads(void);
 static void calculate_chunk_constant_speed(void);
 static void calculate_chunk_accellerate(void);
 static void calculate_chunk_decellerate(void);
@@ -53,14 +57,17 @@ static bool is_a_move[256];
 
 static uint_fast16_t next_reload[256];
 
-static bool reached_tag = false;
-static uint_fast8_t cur_slot_type = SLOT_TYPE_EMPTY;
-static bool busy = false;
+static bool reached_tag;
+static uint_fast8_t cur_slot_type;
+static bool busy;
+static bool buffer_timer_running;
+static bool step_timer_running;
+
 // to handle delays:
-static uint_fast16_t delay_ms = 0;
+static uint_fast16_t delay_ms;
 // to handle Basic Linear Move:
 static uint_fast16_t steps_on_axis[MAX_NUMBER];
-static uint_fast8_t inverted_axis = 0; // each inverted Axis has a 1 in this bitmap
+static uint_fast8_t inverted_axis; // each inverted Axis has a 1 in this bitmap
 static uint_fast8_t direction_for_move;
 static bool is_a_homing_move;
 static uint_fast8_t phase_of_move;
@@ -75,8 +82,7 @@ static uint_fast16_t steps_in_this_phase_on_axis[MAX_NUMBER];
 static uint_fast16_t reload_for_axis[MAX_NUMBER];
 static uint_fast16_t next_move_on_axis_in[MAX_NUMBER];
 static uint_fast8_t available_steppers;
-
-bool enabled[MAX_NUMBER];
+static bool enabled[MAX_NUMBER];
 
 // 16bit Timer running at 12MHz
 static uint_fast16_t speed_reloads[256] ={
@@ -154,9 +160,11 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 {
     if(step_pos == stop_pos)
     {
+        //TODO check if the queue is really empty
         // we are done nothing more to do
         // -> disable Interrupt Stop Timer
-        // TODO
+        hal_time_stop_timer(STEP_TIMER);
+        step_timer_running = false;
     }
     else
     {
@@ -166,7 +174,8 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 #else
         if(true == is_a_move[step_pos])
         {
-            trinamic_make_step_using_SPI();
+            //TODO
+            trinamic_make_step_using_SPI(0, true);
         }
         // else is a Delay -> we are done
 #endif
@@ -216,6 +225,25 @@ static void refill_step_buffer(void)
         calculate_step_chunk(STEP_CHUNK_SIZE);
         // TODO check if we need to restart the step timer
         // TODO stop this timer if we have nothing to do
+        hal_time_stop_timer(STEP_BUFFER_TIMER);
+    }
+    if(false == buffer_timer_running)
+    {
+        if(false == hal_time_start_timer(STEP_BUFFER_TIMER, 0, refill_step_buffer))
+        {
+            error_fatal_error("Failed to start Timer !");
+        }
+        buffer_timer_running = true;
+    }
+    // else nothing to do
+    // if we have some steps then
+    if(false == step_timer_running)
+    {
+        if(false == hal_time_start_timer(STEP_TIMER, 0, step_isr))
+        {
+            error_fatal_error("Failed to start Timer !");
+        }
+        step_timer_running = true;
     }
 }
 
@@ -240,6 +268,7 @@ static void get_steps_for_this_phase(float factor)
     }
 }
 
+/*
 static void calculate_conmstant_speed_reloads(void)
 {
     uint_fast8_t i;
@@ -261,6 +290,7 @@ static void calculate_conmstant_speed_reloads(void)
         }
     }
 }
+*/
 
 static void calculate_chunk_constant_speed(void)
 {
@@ -305,6 +335,7 @@ static void calculate_chunk_constant_speed(void)
             // no deceleration Phase, This move is done
             cur_slot_type = SLOT_TYPE_EMPTY;
             busy = false;
+            reached_tag = true;
             return;
         }
     }
@@ -366,6 +397,7 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
             {
                 // Finished to add the delay
                 busy = false;
+                reached_tag = true;
                 cur_slot_type = SLOT_TYPE_EMPTY;
                 return;
             }
@@ -386,6 +418,9 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
     // else invalid Slot Type -> TODO Event
 }
 
+// ok below here - TODO above
+
+
 // public functions
 
 void step_init(uint_fast8_t num_stepper)
@@ -399,7 +434,14 @@ void step_init(uint_fast8_t num_stepper)
         enabled[i] = false;
     }
     start_speed = 0;
+    reached_tag = true;
+    cur_slot_type = SLOT_TYPE_EMPTY;
+    busy = false;
+    delay_ms = 0;
+    inverted_axis = 0; // each inverted Axis has a 1 in this bitmap
     available_steppers = num_stepper;
+    buffer_timer_running = false;
+    step_timer_running = false;
 }
 
 bool step_add_basic_linear_move(uint_fast8_t *move_data)
@@ -537,16 +579,17 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         {
             phase_of_move = MOVE_PHASE_CONSTANT_SPEED;
             get_steps_for_this_phase(constant_speed_steps / steps_on_axis[primary_axis]);
-            calculate_conmstant_speed_reloads();
         }
         else
         {
             // this move is decelerating only
             phase_of_move = MOVE_PHASE_DECELLERATE;
+            get_steps_for_this_phase(1);
         }
     }
     cur_slot_type = SLOT_TYPE_BASIC_LINEAR_MOVE;
     busy = true;
+    refill_step_buffer();
     return true;
 }
 
@@ -559,6 +602,7 @@ bool step_add_delay(uint_fast8_t msb,uint_fast8_t lsb)
     delay_ms = msb * 256 + lsb;
     cur_slot_type = SLOT_TYPE_DELAY;
     busy = true;
+    refill_step_buffer();
     return true;
 }
 
@@ -572,7 +616,8 @@ void step_request_tag(void)
     // TODO current position in the local queue gets marked
     // and once the moves until that position are executed
     // the variable reachedTag becomes true.
-    reached_tag = true;
+    // currently the Queue has only one element.
+    reached_tag = false;
 }
 
 bool step_has_reached_tag(void)
