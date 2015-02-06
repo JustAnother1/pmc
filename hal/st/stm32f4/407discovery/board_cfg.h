@@ -400,7 +400,7 @@
 
 /******************************************************************************/
 /*                                                                            */
-/*         Digital Input Pin                                                 */
+/*         Digital Input Pin                                                  */
 /*                                                                            */
 /******************************************************************************/
 
@@ -443,5 +443,19 @@
 #define D_IN_2_PUPD_0              GPIO_PUPDR_12_NONE_0
 #define D_IN_2_PUPD_1              GPIO_PUPDR_12_NONE_1
 #define D_IN_2_IDR                 GPIO_IDR_12
+
+
+/******************************************************************************/
+/*                                                                            */
+/*         GPIO Port used for Stepper Step and Dir Signals                    */
+/*                                                                            */
+/******************************************************************************/
+#define STEPPER_PORT_RCC_GPIO_ENABLE  RCC_AHB1ENR_GPIODEN
+#define STEPPER_PORT_GPIO_PORT        GPIOD
+#define STEPPER_PORT_MODER            0x55555555
+#define STEPPER_PORT_OTYPER           0x00000000
+#define STEPPER_PORT_OSPEEDR          0x00000000
+#define STEPPER_PORT_PUPD             0x00000000
+#define STEPPER_PORT_ODR              0x00000000
 
 #endif /* CPU_CFG_H_ */

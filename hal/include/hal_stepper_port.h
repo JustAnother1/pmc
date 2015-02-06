@@ -13,19 +13,13 @@
  *
  */
 
-#ifndef HAL_TIME_H_
-#define HAL_TIME_H_
+#ifndef HAL_INCLUDE_HAL_STEPPER_PORT_H_
+#define HAL_INCLUDE_HAL_STEPPER_PORT_H_
 
 #include <inttypes.h>
-#include <stdbool.h>
 
-typedef void (*TimerFkt)(void);
+void hal_stepper_port_init(void);
+inline void hal_stepper_set_Output(uint32_t value);
 
-void hal_time_init(void);
-uint32_t hal_time_get_ms_tick(void);
-void hal_time_ms_sleep(uint_fast32_t ms);
-bool hal_time_start_timer(uint_fast8_t device, uint16_t reload_value, TimerFkt function);
-bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value);
-void hal_time_stop_timer(uint_fast8_t device);
 
-#endif /* HAL_TIME_H_ */
+#endif /* HAL_INCLUDE_HAL_STEPPER_PORT_H_ */

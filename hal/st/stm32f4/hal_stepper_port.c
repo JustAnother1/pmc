@@ -13,19 +13,22 @@
  *
  */
 
-#ifndef HAL_TIME_H_
-#define HAL_TIME_H_
+#include "hal_stepper_port.h"
+#include "rcc.h"
+#include "gpio.h"
+#include "board_cfg.h"
 
-#include <inttypes.h>
-#include <stdbool.h>
+void hal_stepper_port_init(void)
+{
+    RCC->AHB1ENR |= STEPPER_PORT_RCC_GPIO_ENABLE;
+    STEPPER_PORT_GPIO_PORT->MODER   = STEPPER_PORT_MODER;
+    STEPPER_PORT_GPIO_PORT->OTYPER  = STEPPER_PORT_OTYPER;
+    STEPPER_PORT_GPIO_PORT->OSPEEDR = STEPPER_PORT_OSPEEDR;
+    STEPPER_PORT_GPIO_PORT->PUPDR   = STEPPER_PORT_PUPD;
+    STEPPER_PORT_GPIO_PORT->ODR     = STEPPER_PORT_ODR;
+}
 
-typedef void (*TimerFkt)(void);
-
-void hal_time_init(void);
-uint32_t hal_time_get_ms_tick(void);
-void hal_time_ms_sleep(uint_fast32_t ms);
-bool hal_time_start_timer(uint_fast8_t device, uint16_t reload_value, TimerFkt function);
-bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value);
-void hal_time_stop_timer(uint_fast8_t device);
-
-#endif /* HAL_TIME_H_ */
+inline void hal_stepper_set_Output(uint32_t value)
+{
+    STEPPER_PORT_GPIO_PORT->ODR = value;
+}

@@ -70,3 +70,8 @@ void hal_time_stop_timer(uint_fast8_t device)
 
 }
 
+bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
+{
+    return false;
+}
+
