@@ -18,6 +18,10 @@
 
 #include <stdbool.h>
 
+/// cut USB connection to host - unplug USB cable
+void hal_usb_device_disconnect(void);
+
 bool hal_usb_device_cdc_init(void);
+
 
 #endif /* HAL_INCLUDE_HAL_USB_DEVICE_CDC_H_ */

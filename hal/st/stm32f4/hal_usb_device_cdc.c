@@ -15,6 +15,10 @@
 
 #include "hal_usb_device_cdc.h"
 
+void hal_usb_device_disconnect(void)
+{
+    // do soft disconnect
+}
 
 bool hal_usb_device_cdc_init(void)
 {

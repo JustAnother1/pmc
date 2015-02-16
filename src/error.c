@@ -19,6 +19,7 @@
 #include "hal_cpu.h"
 #include "hal_led.h"
 #include "hal_cfg.h"
+#include "hal_usb_device_cdc.h"
 
 void error_fatal_error(char* msg)
 {
@@ -30,6 +31,9 @@ void error_fatal_error(char* msg)
 void error_signal_error_and_die(void)
 {
     hal_led_set_led(DEBUG_LED, true);
+#ifdef HAS_USB
+    hal_usb_device_disconnect();
+#endif
     hal_cpu_die();
 }
 

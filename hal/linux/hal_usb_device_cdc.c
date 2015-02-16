@@ -15,6 +15,11 @@
 
 #include "hal_usb_device_cdc.h"
 
+void hal_usb_device_disconnect(void)
+{
+
+}
+
 bool hal_usb_device_cdc_init(void)
 {
     return false;
