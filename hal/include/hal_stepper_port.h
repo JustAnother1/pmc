@@ -19,7 +19,7 @@
 #include <inttypes.h>
 
 void hal_stepper_port_init(void);
-inline void hal_stepper_set_Output(uint32_t value);
+void hal_stepper_set_Output(uint32_t value);
 
 
 #endif /* HAL_INCLUDE_HAL_STEPPER_PORT_H_ */

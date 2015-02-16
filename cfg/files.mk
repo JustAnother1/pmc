@@ -51,6 +51,7 @@ endif
 
 ifeq ($(USE_STEP_DIR), yes)
 	DDEFS += -DUSE_STEP_DIR
+	SRC +=  $(HAL_FOLDER)$(BOARD_FOLDER)/hal_stepper_port.c
 endif
 
 ifeq ($(ACTIVATE_DEBUG), yes)

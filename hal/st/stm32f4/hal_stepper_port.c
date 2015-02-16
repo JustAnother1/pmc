@@ -28,7 +28,7 @@ void hal_stepper_port_init(void)
     STEPPER_PORT_GPIO_PORT->ODR     = STEPPER_PORT_ODR;
 }
 
-inline void hal_stepper_set_Output(uint32_t value)
+void hal_stepper_set_Output(uint32_t value)
 {
     STEPPER_PORT_GPIO_PORT->ODR = value;
 }
