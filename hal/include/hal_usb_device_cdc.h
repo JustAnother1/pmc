@@ -30,6 +30,7 @@ typedef struct
 bool hal_usb_device_cdc_init(cdc_call_back_api_typ* client);
 void hal_usb_device_cdc_send_data(uint8_t * data, uint_fast16_t length);
 void hal_usb_device_cdc_disconnect(void);/// cut USB connection to host - unplug USB cable
+void hal_usb_print_configuration(void);
 
 
 #endif /* HAL_INCLUDE_HAL_USB_DEVICE_CDC_H_ */

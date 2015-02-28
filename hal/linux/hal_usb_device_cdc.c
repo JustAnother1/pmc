@@ -25,3 +25,8 @@ bool hal_usb_device_cdc_init(void)
     return false;
 }
 
+void hal_usb_print_configuration(void)
+{
+
+}
+

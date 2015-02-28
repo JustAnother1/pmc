@@ -24,6 +24,7 @@
 #include "hal_cpu.h"
 #include "hal_debug.h"
 #include "device_stepper.h"
+#include "hal_usb_device_cdc.h"
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
@@ -181,6 +182,9 @@ static void parse_order(int length)
         debug_line("t               : show current time");
         debug_line("pu<device num>  : print UART configuration");
         debug_line("ps<device num>  : print SPI configuration");
+#ifdef HAS_USB
+        debug_line("pb              : print USB configuration");
+#endif
         break;
 
     case 'D':
@@ -218,6 +222,12 @@ static void parse_order(int length)
         case 's':
             hal_spi_print_configuration(cmd_buf[2] - '0'); // quick and dirty a2i()
             break;
+#ifdef HAS_USB
+        case 'B':
+        case 'b':
+            hal_usb_print_configuration();
+            break;
+#endif
 
         default:
             debug_line("Invalid command ! try h for help");

@@ -19,6 +19,7 @@
 #include "util.h"
 #include "usb_descriptor.h"
 #include "usb_std.h"
+#include "hal_debug.h"
 
 extern void set_config_descriptor(uint8_t* cfg_desc);
 static void HandleInEP_ISR(void);
@@ -242,6 +243,40 @@ uint8_t get_device_status(void)
 {
     return device_status;
 }
+
+void usb_device_print_configuration(void)
+{
+    debug_line("USB_FS->GREGS          = 0x%08x", USB_FS->GREGS);
+    debug_line("USB_FS->DREGS          = 0x%08x", USB_FS->DREGS);
+    debug_line("USB_FS->INEP_REGS[0]   = 0x%08x", USB_FS->INEP_REGS[0]);
+    debug_line("USB_FS->INEP_REGS[1]   = 0x%08x", USB_FS->INEP_REGS[1]);
+    debug_line("USB_FS->INEP_REGS[2]   = 0x%08x", USB_FS->INEP_REGS[2]);
+    debug_line("USB_FS->INEP_REGS[3]   = 0x%08x", USB_FS->INEP_REGS[3]);
+    debug_line("USB_FS->OUTEP_REGS[0]  = 0x%08x", USB_FS->OUTEP_REGS[0]);
+    debug_line("USB_FS->OUTEP_REGS[1]  = 0x%08x", USB_FS->OUTEP_REGS[1]);
+    debug_line("USB_FS->OUTEP_REGS[2]  = 0x%08x", USB_FS->OUTEP_REGS[2]);
+    debug_line("USB_FS->OUTEP_REGS[3]  = 0x%08x", USB_FS->OUTEP_REGS[3]);
+    debug_line("USB_FS->HREGS          = 0x%08x", USB_FS->HREGS);
+    debug_line("USB_FS->HPRT0          = 0x%08x", USB_FS->HPRT0);
+    debug_line("USB_FS->HC_REGS[0]     = 0x%08x", USB_FS->HC_REGS[0]);
+    debug_line("USB_FS->HC_REGS[1]     = 0x%08x", USB_FS->HC_REGS[1]);
+    debug_line("USB_FS->HC_REGS[2]     = 0x%08x", USB_FS->HC_REGS[2]);
+    debug_line("USB_FS->HC_REGS[3]     = 0x%08x", USB_FS->HC_REGS[3]);
+    debug_line("USB_FS->HC_REGS[4]     = 0x%08x", USB_FS->HC_REGS[4]);
+    debug_line("USB_FS->HC_REGS[5]     = 0x%08x", USB_FS->HC_REGS[5]);
+    debug_line("USB_FS->HC_REGS[6]     = 0x%08x", USB_FS->HC_REGS[6]);
+    debug_line("USB_FS->HC_REGS[7]     = 0x%08x", USB_FS->HC_REGS[7]);
+    debug_line("USB_FS->DFIFO[0]       = 0x%08x", USB_FS->DFIFO[0]);
+    debug_line("USB_FS->DFIFO[1]       = 0x%08x", USB_FS->DFIFO[1]);
+    debug_line("USB_FS->DFIFO[2]       = 0x%08x", USB_FS->DFIFO[2]);
+    debug_line("USB_FS->DFIFO[3]       = 0x%08x", USB_FS->DFIFO[3]);
+    debug_line("USB_FS->DFIFO[4]       = 0x%08x", USB_FS->DFIFO[4]);
+    debug_line("USB_FS->DFIFO[5]       = 0x%08x", USB_FS->DFIFO[5]);
+    debug_line("USB_FS->DFIFO[6]       = 0x%08x", USB_FS->DFIFO[6]);
+    debug_line("USB_FS->DFIFO[7]       = 0x%08x", USB_FS->DFIFO[7]);
+    debug_line("USB_FS->PCGCCTL        = 0x%08x", USB_FS->PCGCCTL);
+}
+
 
 bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb)
 {

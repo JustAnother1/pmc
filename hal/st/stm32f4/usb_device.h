@@ -20,6 +20,7 @@
 #include "usb.h"
 
 bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb);
+void usb_device_print_configuration(void);
 
 uint8_t get_device_status(void);
 void set_device_state(uint8_t state);
