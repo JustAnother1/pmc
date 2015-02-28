@@ -32,7 +32,7 @@ void error_signal_error_and_die(void)
 {
     hal_led_set_led(DEBUG_LED, true);
 #ifdef HAS_USB
-    hal_usb_device_disconnect();
+    hal_usb_device_cdc_disconnect();
 #endif
     hal_cpu_die();
 }

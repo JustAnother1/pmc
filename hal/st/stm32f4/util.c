@@ -41,3 +41,23 @@ void print_gpio_configuration(GPIO_TypeDef * gpio)
     debug_line("GPIO->OTYPER  = 0x%08x", gpio->OTYPER);
     debug_line("GPIO->PUPDR   = 0x%08x", gpio->PUPDR);
 }
+
+void uDelay(const uint32_t usec)
+{
+  uint32_t count = 0;
+  const uint32_t utime = (120 * usec / 7);
+  do
+  {
+    if ( ++count > utime )
+    {
+      return ;
+    }
+  }
+  while(1);
+}
+
+void mDelay(const uint32_t msec)
+{
+  uDelay(msec * 1000);
+}
+

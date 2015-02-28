@@ -17,6 +17,10 @@ ifeq ($(BOARD), stm407disco)
 	CFLAGS += -fverbose-asm -Wa,-ahlms=$(addprefix $(BIN_FOLDER),$(<:.c=.lst))
 	LDFLAGS += -flto -fsingle-precision-constant --specs=nano.specs -lgcc -lc -lnosys -gdwarf-2 $(LINKER_SCRIPT)
 	LDFLAGS += -Wl,-Map=$(BIN_FOLDER)$(PROJECT).map,--gc-sections,--cref
+	ifeq ($(USE_USB), yes)
+		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/usb_device.c
+		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/usb_descriptor.c
+	endif
 endif
 
 # Target is Linux 

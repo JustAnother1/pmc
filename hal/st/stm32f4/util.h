@@ -21,6 +21,7 @@
 
 uint_fast8_t copy_string(char * str, uint8_t *position);
 void print_gpio_configuration(GPIO_TypeDef * gpio);
-
+void uDelay(const uint32_t usec);
+void mDelay(const uint32_t msec);
 
 #endif /* HAL_ST_STM32F4_UTIL_H_ */
