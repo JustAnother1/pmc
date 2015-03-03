@@ -189,15 +189,6 @@ static uint8_t* pConfig_descriptor;
 void hal_usb_print_configuration(void)
 {
     debug_line("Configuration of USB :");
-    // Clock
-    debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
-    debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
-    // pins
-    debug_line("D- Pin:");
-    print_gpio_configuration(USB_FS_DM_GPIO_PORT);
-    debug_line("D+ Pin:");
-    // usb
-    print_gpio_configuration(USB_FS_DP_GPIO_PORT);
     usb_device_print_configuration();
 }
 
@@ -208,7 +199,7 @@ void set_config_descriptor(uint8_t* cfg_desc)
 
 void hal_usb_device_cdc_disconnect(void)
 {
-    //TODO do soft disconnect
+    //TODO do soft disconnect -> SDIS bit in OTG_FS_DCTL
 }
 
 void hal_usb_device_cdc_send_data(uint8_t * data, uint_fast16_t length)
@@ -233,40 +224,6 @@ bool hal_usb_device_cdc_init(cdc_call_back_api_typ* client)
         return false;
     }
     client_cb = client;
-    // enable clock for GPIO Port of D- and D+
-    RCC->AHB1ENR |= USB_FS_DP_GPIO_PORT_RCC;
-    RCC->AHB1ENR |= USB_FS_DP_GPIO_PORT_RCC;
-    // enable clock for interface
-    RCC->APB2ENR |= USB_FS_APB2ENR;
-
-    // configure Pins
-    // D-
-    USB_FS_DM_GPIO_PORT->MODER   |=  USB_FS_DM_GPIO_MODER_1;
-    USB_FS_DM_GPIO_PORT->MODER   &= ~USB_FS_DM_GPIO_MODER_0;
-    USB_FS_DM_GPIO_PORT->AFR[0]  |=  USB_FS_DM_GPIO_AFR_0_1;
-    USB_FS_DM_GPIO_PORT->AFR[0]  &= ~USB_FS_DM_GPIO_AFR_0_0;
-    USB_FS_DM_GPIO_PORT->AFR[1]  |=  USB_FS_DM_GPIO_AFR_1_1;
-    USB_FS_DM_GPIO_PORT->AFR[1]  &= ~USB_FS_DM_GPIO_AFR_1_0;
-    USB_FS_DM_GPIO_PORT->OTYPER  |=  USB_FS_DM_GPIO_OTYPER_1;
-    USB_FS_DM_GPIO_PORT->OTYPER  &= ~USB_FS_DM_GPIO_OTYPER_0;
-    USB_FS_DM_GPIO_PORT->PUPDR   |=  USB_FS_DM_GPIO_PUPD_1;
-    USB_FS_DM_GPIO_PORT->PUPDR   &= ~USB_FS_DM_GPIO_PUPD_0;
-    USB_FS_DM_GPIO_PORT->OSPEEDR |=  USB_FS_DM_GPIO_OSPEEDR_1;
-    USB_FS_DM_GPIO_PORT->OSPEEDR &= ~USB_FS_DM_GPIO_OSPEEDR_0;
-    // D+
-    USB_FS_DP_GPIO_PORT->MODER   |=  USB_FS_DP_GPIO_MODER_1;
-    USB_FS_DP_GPIO_PORT->MODER   &= ~USB_FS_DP_GPIO_MODER_0;
-    USB_FS_DP_GPIO_PORT->AFR[0]  |=  USB_FS_DP_GPIO_AFR_0_1;
-    USB_FS_DP_GPIO_PORT->AFR[0]  &= ~USB_FS_DP_GPIO_AFR_0_0;
-    USB_FS_DP_GPIO_PORT->AFR[1]  |=  USB_FS_DP_GPIO_AFR_1_1;
-    USB_FS_DP_GPIO_PORT->AFR[1]  &= ~USB_FS_DP_GPIO_AFR_1_0;
-    USB_FS_DP_GPIO_PORT->OTYPER  |=  USB_FS_DP_GPIO_OTYPER_1;
-    USB_FS_DP_GPIO_PORT->OTYPER  &= ~USB_FS_DP_GPIO_OTYPER_0;
-    USB_FS_DP_GPIO_PORT->PUPDR   |=  USB_FS_DP_GPIO_PUPD_1;
-    USB_FS_DP_GPIO_PORT->PUPDR   &= ~USB_FS_DP_GPIO_PUPD_0;
-    USB_FS_DP_GPIO_PORT->OSPEEDR |=  USB_FS_DP_GPIO_OSPEEDR_1;
-    USB_FS_DP_GPIO_PORT->OSPEEDR &= ~USB_FS_DP_GPIO_OSPEEDR_0;
-
     return usb_device_init(&USBD_CDC_cb);
 }
 
