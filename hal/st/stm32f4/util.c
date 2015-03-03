@@ -31,6 +31,16 @@ uint_fast8_t copy_string(char * str, uint8_t *position)
 
 void print_gpio_configuration(GPIO_TypeDef * gpio)
 {
+    if(gpio == GPIOA) { debug_line("Port A:"); }
+    if(gpio == GPIOB) { debug_line("Port B:"); }
+    if(gpio == GPIOC) { debug_line("Port C:"); }
+    if(gpio == GPIOD) { debug_line("Port D:"); }
+    if(gpio == GPIOE) { debug_line("Port E:"); }
+    if(gpio == GPIOF) { debug_line("Port F:"); }
+    if(gpio == GPIOG) { debug_line("Port G:"); }
+    if(gpio == GPIOH) { debug_line("Port H:"); }
+    if(gpio == GPIOI) { debug_line("Port I:"); }
+
     debug_line("GPIO->AFRL    = 0x%08x", gpio->AFR[0]);
     debug_line("GPIO->AFRH    = 0x%08x", gpio->AFR[1]);
     debug_line("GPIO->IDR     = 0x%08x", gpio->IDR);
