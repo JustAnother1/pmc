@@ -211,7 +211,7 @@ void hal_cpu_die(void)
         {
             i = i - HEART_BEAT_STEP_SIZE;
         }
-        hal_time_ms_sleep(i);
+        mDelay(i);
     }
 }
 
