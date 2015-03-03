@@ -25,7 +25,7 @@
 #define USB_INTERFACE_FS_STRING                  "VCP Interface"
 
 #define USB_VID                                  0x0483
-#define USB_PID                                  0x5740
+#define USB_PID                                  0x7270
 #define LANGID_STRING                            0x409
 #define MAX_STR_DESC_SIZ                         50
 
