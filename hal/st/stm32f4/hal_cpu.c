@@ -23,6 +23,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "hal_cfg.h"
+#include "util.h"
 
 #define HEART_BEAT_FAST_LIMIT 5
 #define HEART_BEAT_SLOW_LIMIT 500
