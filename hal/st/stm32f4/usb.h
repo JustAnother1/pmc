@@ -834,14 +834,6 @@
 #define HIBYTE(x)              ((uint8_t)((x & 0xFF00) >>8))
 #define  MIN(a, b)             (((a) < (b)) ? (a) : (b))
 
-#define USB_OTG_READ_REG32(reg)  (*(__IO uint32_t *)reg)
-#define USB_OTG_WRITE_REG32(reg,value) (*(__IO uint32_t *)reg = value)
-#define USB_OTG_MODIFY_REG32(reg,clear_mask,set_mask) \
-  USB_OTG_WRITE_REG32(reg, (((USB_OTG_READ_REG32(reg)) & ~clear_mask) | set_mask ) )
-
-
-
-
 
 /**
   * @brief __USB_OTG_Core_register

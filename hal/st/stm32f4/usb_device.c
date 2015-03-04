@@ -35,7 +35,7 @@ static uint32_t usb_ReadDevAllInEPItr(void);
 static void usb_EP0_OutStart(void);
 static uint32_t usb_ReadDevAllOutEp_itr(void);
 static uint32_t usb_ReadDevOutEP_itr(uint8_t epnum);
-static void* usb_ReadPacket(uint8_t *dest, uint16_t len);
+static void usb_ReadPacket(uint8_t *dest, uint16_t len);
 static void usb_FlushTxFifo(uint32_t num );
 static void usb_EP0Activate(void);
 static void usb_SetEPStatus(USB_OTG_EP *ep , uint32_t Status);
@@ -421,14 +421,14 @@ bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb)
         ep->xfer_len = 0;
     }
     // disable global Interrupt
-    USB_OTG_MODIFY_REG32(&USB_FS->GREGS->GAHBCFG, USB_OTG_GAHBCFG_GINT, 0);
+    USB_FS->GREGS->GAHBCFG &= ~USB_OTG_GAHBCFG_GINT;
     /*Init the Core (common init.) */
     usb_CoreInit();
     /* Force Device Mode*/
-    usbcfg = USB_OTG_READ_REG32(&USB_FS->GREGS->GUSBCFG);
+    usbcfg = USB_FS->GREGS->GUSBCFG;
     usbcfg &= ~USB_OTG_GUSBCFG_FHMOD;
     usbcfg |= USB_OTG_GUSBCFG_FDMOD;
-    USB_OTG_WRITE_REG32(&USB_FS->GREGS->GUSBCFG, usbcfg);
+    USB_FS->GREGS->GUSBCFG = usbcfg;
     mDelay(50);
     /* Init Device */
     usb_CoreInitDev();
@@ -436,7 +436,7 @@ bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb)
     NVIC_SetPriority(USB_FS_IRQ_NUMBER, USB_FS_IRQ_PRIORITY);
     NVIC_EnableIRQ(USB_FS_IRQ_NUMBER);
     /* Enable USB Global interrupt */
-    USB_OTG_MODIFY_REG32(&USB_FS->GREGS->GAHBCFG, 0, USB_OTG_GAHBCFG_GINT);
+    USB_FS->GREGS->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
     return true;
 }
 
@@ -468,11 +468,9 @@ void USB_FS_IRQ_HANDLER(void)
     if(0 != (irqs & USB_OTG_GINTSTS_WKUINT))
     {
         uint32_t devctl;
-
         /* Clear the Remote Wake-up Signaling */
         devctl = USB_OTG_DCTL_RWUSIG;
-        USB_OTG_MODIFY_REG32(&USB_FS->DREGS->DCTL, devctl, 0);
-
+        USB_FS->DREGS->DCTL &= ~devctl;
         /* Inform upper layer by the Resume Event */
         device_status = USB_OTG_CONFIGURED;
         /* Clear interrupt */
@@ -551,8 +549,8 @@ void USB_FS_IRQ_HANDLER(void)
 static  uint32_t usb_ReadDevAllInEPItr(void)
 {
     uint32_t v;
-    v = USB_OTG_READ_REG32(&USB_FS->DREGS->DAINT);
-    v &= USB_OTG_READ_REG32(&USB_FS->DREGS->DAINTMSK);
+    v = USB_FS->DREGS->DAINT;
+    v &= USB_FS->DREGS->DAINTMSK;
     return (v & 0xffff);
 }
 
@@ -565,7 +563,7 @@ static void usb_EP0_OutStart(void)
     doeptsize0 = (3<<DEP0XFRSIZ_SUPCNT_OFFSET)
                + (1<<DEP0XFRSIZ_PKTCNT_OFFSET)
                + 8 * 3;
-    USB_OTG_WRITE_REG32(&USB_FS->OUTEP_REGS[0]->DOEPTSIZ, doeptsize0);
+    USB_FS->OUTEP_REGS[0]->DOEPTSIZ = doeptsize0;
 }
 
 /*
@@ -586,31 +584,31 @@ static void HandleInEP_ISR(void)
             if(0 != (diepint & USB_OTG_DIEPINT_XFRC))
             {
                 fifoemptymsk = 0x1 << epnum;
-                USB_OTG_MODIFY_REG32(&USB_FS->DREGS->DIEPEMPMSK, fifoemptymsk, 0);
-                USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[epnum]->DIEPINT,USB_OTG_DIEPINT_XFRC);
+                USB_FS->DREGS->DIEPEMPMSK &= ~fifoemptymsk;
+                USB_FS->INEP_REGS[epnum]->DIEPINT = USB_OTG_DIEPINT_XFRC;
                 /* TX COMPLETE */
                 DataInStage(epnum);
             }
             if(0 != (diepint & USB_OTG_DIEPINT_TOC))
             {
-                USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[epnum]->DIEPINT,USB_OTG_DIEPINT_TOC);
+                USB_FS->INEP_REGS[epnum]->DIEPINT = USB_OTG_DIEPINT_TOC;
             }
             if(0 != (diepint & USB_OTG_DIEPINT_ITTXFE))
             {
-                USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[epnum]->DIEPINT,USB_OTG_DIEPINT_ITTXFE);
+                USB_FS->INEP_REGS[epnum]->DIEPINT = USB_OTG_DIEPINT_ITTXFE;
             }
             if(0 != (diepint & USB_OTG_DIEPINT_INEPNE))
             {
-                USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[epnum]->DIEPINT,USB_OTG_DIEPINT_INEPNE);
+                USB_FS->INEP_REGS[epnum]->DIEPINT = USB_OTG_DIEPINT_INEPNE;
             }
             if(0 != (diepint & USB_OTG_DIEPINT_EPDISD))
             {
-                USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[epnum]->DIEPINT,USB_OTG_DIEPINT_EPDISD);
+                USB_FS->INEP_REGS[epnum]->DIEPINT = USB_OTG_DIEPINT_EPDISD;
             }
             if(0 != (diepint & USB_OTG_DIEPINT_TXFE))
             {
                 WriteEmptyTxFifo(epnum);
-                USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[epnum]->DIEPINT,USB_OTG_DIEPINT_TXFE);
+                USB_FS->INEP_REGS[epnum]->DIEPINT = USB_OTG_DIEPINT_TXFE;
             }
         }
         epnum++;
@@ -624,8 +622,8 @@ static void HandleInEP_ISR(void)
 static uint32_t usb_ReadDevAllOutEp_itr(void)
 {
     uint32_t v;
-    v  = USB_OTG_READ_REG32(&USB_FS->DREGS->DAINT);
-    v &= USB_OTG_READ_REG32(&USB_FS->DREGS->DAINTMSK);
+    v  = USB_FS->DREGS->DAINT;
+    v &= USB_FS->DREGS->DAINTMSK;
     return ((v & 0xffff0000) >> 16);
 }
 
@@ -637,8 +635,8 @@ static uint32_t usb_ReadDevAllOutEp_itr(void)
 static uint32_t usb_ReadDevOutEP_itr(uint8_t epnum)
 {
     uint32_t v;
-    v  = USB_OTG_READ_REG32(&USB_FS->OUTEP_REGS[epnum]->DOEPINT);
-    v &= USB_OTG_READ_REG32(&USB_FS->DREGS->DOEPMSK);
+    v  = USB_FS->OUTEP_REGS[epnum]->DOEPINT;
+    v &= USB_FS->DREGS->DOEPMSK;
     return v;
 }
 
@@ -691,19 +689,17 @@ static void HandleOutEP_ISR(void)
  *   dest : Destination Pointer
  *   len : No. of bytes
  */
-static void* usb_ReadPacket(uint8_t *dest,
+static void usb_ReadPacket(uint8_t *dest8,
                          uint16_t len)
 {
     uint32_t i=0;
     uint32_t count32b = (len + 3) / 4;
-    __IO uint32_t *fifo = USB_FS->DFIFO[0];
+    __IO uint32_t* dest = (uint32_t *)dest8;
 
     for ( i = 0; i < count32b; i++, dest += 4 )
     {
-        *(__attribute__ ((__packed__)) uint32_t *)dest = USB_OTG_READ_REG32(fifo);
-
+        dest = USB_FS->DFIFO[0];
     }
-    return ((void *)dest);
 }
 
 /*
@@ -716,9 +712,9 @@ static void HandleRxStatusQueueLevel_ISR(void)
     USB_OTG_EP *ep;
     /* Disable the Rx Status Queue Level interrupt */
     int_mask = USB_OTG_GINTMSK_RXFLVLM;
-    USB_OTG_MODIFY_REG32(&USB_FS->GREGS->GINTMSK, int_mask, 0);
+    USB_FS->GREGS->GINTMSK &= ~int_mask;
     /* Get the Status from the top of the FIFO */
-    status = USB_OTG_READ_REG32(&USB_FS->GREGS->GRXSTSP );
+    status = USB_FS->GREGS->GRXSTSP;
     ep = &out_ep[status & USB_OTG_GRXSTSP_EPNUM];
     switch((status & USB_OTG_GRXSTSP_PKTSTS)>>USB_OTG_GRXSTSP_PKTSTS_OFFSET)
     {
@@ -749,7 +745,7 @@ static void HandleRxStatusQueueLevel_ISR(void)
         break;
     }
     /* Enable the Rx Status Queue Level interrupt */
-    USB_OTG_MODIFY_REG32(&USB_FS->GREGS->GINTMSK, 0, int_mask);
+    USB_FS->GREGS->GINTMSK |= int_mask;
 }
 
 /*
@@ -761,10 +757,10 @@ static void usb_FlushTxFifo(uint32_t num )
     uint32_t  greset;
     uint32_t count = 0;
     greset = USB_OTG_GRSTCTL_TXFFLSH | (num<<USB_OTG_GRSTCTL_TXFNUM_OFFSET);
-    USB_OTG_WRITE_REG32(&USB_FS->GREGS->GRSTCTL, greset);
+    USB_FS->GREGS->GRSTCTL = greset;
     do
     {
-        greset = USB_OTG_READ_REG32(&USB_FS->GREGS->GRSTCTL);
+        greset = USB_FS->GREGS->GRSTCTL;
         if (++count > 200000)
         {
             break;
@@ -820,30 +816,30 @@ static void HandleUsbReset_ISR(void)
     uint32_t i;
     /* Clear the Remote Wake-up Signaling */
     dctl = USB_OTG_DCTL_RWUSIG;
-    USB_OTG_MODIFY_REG32(&USB_FS->DREGS->DCTL, dctl, 0 );
+    USB_FS->DREGS->DCTL &= ~dctl;
     /* Flush the Tx FIFO */
     usb_FlushTxFifo(0);
     for (i = 0; i < MAX_DEVICE_ENDPOINTS; i++)
     {
-        USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[i]->DIEPINT, 0xFF);
-        USB_OTG_WRITE_REG32(&USB_FS->OUTEP_REGS[i]->DOEPINT, 0xFF);
+        USB_FS->INEP_REGS[i]->DIEPINT = 0xFF;
+        USB_FS->OUTEP_REGS[i]->DOEPINT = 0xFF;
     }
-    USB_OTG_WRITE_REG32(&USB_FS->DREGS->DAINT, 0xFFFFFFFF );
+    USB_FS->DREGS->DAINT = 0xFFFFFFFF;
     daintmsk = 0x00010001;
-    USB_OTG_WRITE_REG32(&USB_FS->DREGS->DAINTMSK, daintmsk);
+    USB_FS->DREGS->DAINTMSK = daintmsk;
     doepmsk =  USB_OTG_DOEPMSK_XFRCM
              | USB_OTG_DOEPMSK_EPDM
              | USB_OTG_DOEPMSK_STUPM;
-    USB_OTG_WRITE_REG32(&USB_FS->DREGS->DOEPMSK, doepmsk);
+    USB_FS->DREGS->DOEPMSK = doepmsk;
     diepmsk =  USB_OTG_DIEPMSK_XFRCM
              | USB_OTG_DIEPMSK_EPDM
              | USB_OTG_DIEPMSK_TOM
              | USB_OTG_DIEPMSK_INEPNMM;
-    USB_OTG_WRITE_REG32(&USB_FS->DREGS->DIEPMSK, diepmsk);
+    USB_FS->DREGS->DIEPMSK = diepmsk;
     /* Reset Device Address */
-    dcfg = USB_OTG_READ_REG32(&USB_FS->DREGS->DCFG);
+    dcfg = USB_FS->DREGS->DCFG;
     dcfg &= ~USB_OTG_DCFG_DAD_BITMASK; // Device Address = 0;
-    USB_OTG_WRITE_REG32(&USB_FS->DREGS->DCFG, dcfg);
+    USB_FS->DREGS->DCFG = dcfg;
     /* setup EP0 to receive SETUP packets */
     usb_EP0_OutStart();
     /*Reset internal state machine */
@@ -868,8 +864,8 @@ static void usb_EP0Activate(void)
     uint32_t diepctl;
     uint32_t dctl;
     /* Read the Device Status and Endpoint 0 Control registers */
-    dsts = USB_OTG_READ_REG32(&USB_FS->DREGS->DSTS);
-    diepctl = USB_OTG_READ_REG32(&USB_FS->INEP_REGS[0]->DIEPCTL);
+    dsts = USB_FS->DREGS->DSTS;
+    diepctl = USB_FS->INEP_REGS[0]->DIEPCTL;
     /* Set the MPS of the IN EP based on the enumeration speed */
     dsts = (dsts & USB_OTG_DSTS_ENUMSPD)>>USB_OTG_DSTS_ENUMSPD_OFFSET;
     switch (dsts)
@@ -885,9 +881,9 @@ static void usb_EP0Activate(void)
         diepctl |= DEP0CTL_MPS_8;
         break;
     }
-    USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[0]->DIEPCTL, diepctl);
+    USB_FS->INEP_REGS[0]->DIEPCTL = diepctl;
     dctl = USB_OTG_DCTL_CGINAK;
-    USB_OTG_MODIFY_REG32(&USB_FS->DREGS->DCTL, dctl, dctl);
+    USB_FS->DREGS->DCTL |= dctl;
 }
 
 /*
@@ -898,10 +894,10 @@ static void HandleEnumDone_ISR(void)
     uint32_t gusbcfg;
     usb_EP0Activate();
     /* Set USB turn-around time based on device speed and PHY interface. */
-    gusbcfg = USB_OTG_READ_REG32(&USB_FS->GREGS->GUSBCFG);
+    gusbcfg = USB_FS->GREGS->GUSBCFG;
     gusbcfg &= ~USB_OTG_GUSBCFG_TRDT_BITMASK;
     gusbcfg |= 5<<USB_OTG_GUSBCFG_TRDT_OFFSET;
-    USB_OTG_WRITE_REG32(&USB_FS->GREGS->GUSBCFG, gusbcfg);
+    USB_FS->GREGS->GUSBCFG = gusbcfg;
 }
 
 /*
@@ -912,13 +908,10 @@ static void HandleEnumDone_ISR(void)
 static void usb_SetEPStatus(USB_OTG_EP *ep , uint32_t Status)
 {
     uint32_t  depctl;
-    __IO uint32_t *depctl_addr;
     /* Process for IN endpoint */
     if (ep->is_in == 1)
     {
-        depctl_addr = &(USB_FS->INEP_REGS[ep->num]->DIEPCTL);
-        depctl = USB_OTG_READ_REG32(depctl_addr);
-
+        depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
         if (Status == USB_OTG_EP_TX_STALL)
         {
             usb_EPSetStall(ep); return;
@@ -943,12 +936,11 @@ static void usb_SetEPStatus(USB_OTG_EP *ep , uint32_t Status)
         {
             depctl &= ~USB_OTG_DIEPCTL_USBAEP;
         }
+        USB_FS->INEP_REGS[ep->num]->DIEPCTL = depctl;
     }
     else /* Process for OUT endpoint */
     {
-        depctl_addr = &(USB_FS->OUTEP_REGS[ep->num]->DOEPCTL);
-        depctl = USB_OTG_READ_REG32(depctl_addr);
-
+        depctl = USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
         if (Status == USB_OTG_EP_RX_STALL)
         {
             depctl |= USB_OTG_DIEPCTL_STALL;
@@ -973,8 +965,8 @@ static void usb_SetEPStatus(USB_OTG_EP *ep , uint32_t Status)
         {
             depctl &= ~USB_OTG_DIEPCTL_USBAEP;
         }
+        USB_FS->OUTEP_REGS[ep->num]->DOEPCTL = depctl;
     }
-    USB_OTG_WRITE_REG32(depctl_addr, depctl);
 }
 
 /*
@@ -985,12 +977,10 @@ static void usb_SetEPStatus(USB_OTG_EP *ep , uint32_t Status)
 static uint32_t usb_GetEPStatus(USB_OTG_EP *ep)
 {
     uint32_t  depctl;
-    __IO uint32_t *depctl_addr;
     uint32_t Status = 0;
     if (ep->is_in == 1)
     {
-        depctl_addr = &(USB_FS->INEP_REGS[ep->num]->DIEPCTL);
-        depctl = USB_OTG_READ_REG32(depctl_addr);
+        depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
         if(0 != (depctl & USB_OTG_DIEPCTL_STALL))
         {
             Status = USB_OTG_EP_TX_STALL;
@@ -1006,8 +996,7 @@ static uint32_t usb_GetEPStatus(USB_OTG_EP *ep)
     }
     else
     {
-        depctl_addr = &(USB_FS->OUTEP_REGS[ep->num]->DOEPCTL);
-        depctl = USB_OTG_READ_REG32(depctl_addr);
+        depctl = USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
         if(0 != (depctl & USB_OTG_DIEPCTL_STALL))
         {
             Status = USB_OTG_EP_RX_STALL;
@@ -1031,23 +1020,28 @@ static uint32_t usb_GetEPStatus(USB_OTG_EP *ep)
 static void usb_EPClearStall(USB_OTG_EP *ep)
 {
     uint32_t  depctl;
-    __IO uint32_t *depctl_addr;
-    if (ep->is_in == 1)
+    if(ep->is_in == 1)
     {
-        depctl_addr = &(USB_FS->INEP_REGS[ep->num]->DIEPCTL);
+        depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
     }
     else
     {
-        depctl_addr = &(USB_FS->OUTEP_REGS[ep->num]->DOEPCTL);
+        depctl = USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
     }
-    depctl = USB_OTG_READ_REG32(depctl_addr);
     /* clear the stall bits */
     depctl &= ~USB_OTG_DIEPCTL_STALL;
     if (ep->type == EP_TYPE_INTR || ep->type == EP_TYPE_BULK)
     {
         depctl |= USB_OTG_DIEPCTL_SD0PID_SEVNFRM;
     }
-    USB_OTG_WRITE_REG32(depctl_addr, depctl);
+    if(ep->is_in == 1)
+    {
+        USB_FS->INEP_REGS[ep->num]->DIEPCTL = depctl;
+    }
+    else
+    {
+        USB_FS->OUTEP_REGS[ep->num]->DOEPCTL = depctl;
+    }
 }
 
 /*
@@ -1056,26 +1050,23 @@ static void usb_EPClearStall(USB_OTG_EP *ep)
 static void usb_EPSetStall(USB_OTG_EP *ep)
 {
     uint32_t  depctl;
-    __IO uint32_t *depctl_addr;
     if (ep->is_in == 1)
     {
-        depctl_addr = &(USB_FS->INEP_REGS[ep->num]->DIEPCTL);
-        depctl = USB_OTG_READ_REG32(depctl_addr);
+        depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
         /* set the disable and stall bits */
         if(0 != (depctl & USB_OTG_DIEPCTL_EPENA))
         {
             depctl |= USB_OTG_DIEPCTL_EPDIS;
         }
         depctl |= USB_OTG_DIEPCTL_STALL;
-        USB_OTG_WRITE_REG32(depctl_addr, depctl);
+        USB_FS->INEP_REGS[ep->num]->DIEPCTL = depctl;
     }
     else
     {
-        depctl_addr = &(USB_FS->OUTEP_REGS[ep->num]->DOEPCTL);
-        depctl = USB_OTG_READ_REG32(depctl_addr);
+        depctl = USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
         /* set the stall bit */
         depctl |= USB_OTG_DIEPCTL_STALL;
-        USB_OTG_WRITE_REG32(depctl_addr, depctl);
+        USB_FS->OUTEP_REGS[ep->num]->DOEPCTL = depctl;
     }
 }
 
@@ -1092,8 +1083,8 @@ static void usb_EP0StartXfer(USB_OTG_EP *ep)
     if (ep->is_in == 1)
     {
         in_regs = USB_FS->INEP_REGS[0];
-        depctl  = USB_OTG_READ_REG32(&in_regs->DIEPCTL);
-        deptsiz = USB_OTG_READ_REG32(&in_regs->DIEPTSIZ);
+        depctl  = in_regs->DIEPCTL;
+        deptsiz = in_regs->DIEPTSIZ;
         /* Zero Length Packet? */
         deptsiz &= ~BITMASK_DEP0XFRSIZ_XFRSIZ;
         if (ep->xfer_len == 0)
@@ -1114,25 +1105,22 @@ static void usb_EP0StartXfer(USB_OTG_EP *ep)
         }
         deptsiz &= ~BITMASK_DEP0XFRSIZ_PKTCNT;
         deptsiz |= (1<<DEP0XFRSIZ_PKTCNT_OFFSET);
-        USB_OTG_WRITE_REG32(&in_regs->DIEPTSIZ, deptsiz);
-
+        in_regs->DIEPTSIZ = deptsiz;
         /* EP enable, IN data in FIFO */
         depctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
-        USB_OTG_WRITE_REG32(&in_regs->DIEPCTL, depctl);
-
-
-            /* Enable the Tx FIFO Empty Interrupt for this EP */
-            if (ep->xfer_len > 0)
-            {
-                fifoemptymsk |= 1 << ep->num;
-                USB_OTG_MODIFY_REG32(&USB_FS->DREGS->DIEPEMPMSK, 0, fifoemptymsk);
-            }
+        in_regs->DIEPCTL = depctl;
+        /* Enable the Tx FIFO Empty Interrupt for this EP */
+        if (ep->xfer_len > 0)
+        {
+            fifoemptymsk |= 1 << ep->num;
+            USB_FS->DREGS->DIEPEMPMSK |= fifoemptymsk;
+        }
     }
     else
     {
         /* OUT endpoint */
-        depctl = USB_OTG_READ_REG32(&USB_FS->OUTEP_REGS[ep->num]->DOEPCTL);
-        deptsiz = USB_OTG_READ_REG32(&USB_FS->OUTEP_REGS[ep->num]->DOEPTSIZ);
+        depctl = USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
+        deptsiz = USB_FS->OUTEP_REGS[ep->num]->DOEPTSIZ;
         /* Program the transfer size and packet count as follows:
         * xfersize = N * (maxpacket + 4 - (maxpacket % 4))
         * pktcnt = N           */
@@ -1147,10 +1135,10 @@ static void usb_EP0StartXfer(USB_OTG_EP *ep)
         deptsiz |= ep->maxpacket;
         deptsiz &= ~BITMASK_DEP0XFRSIZ_PKTCNT;
         deptsiz |= (1<<DEP0XFRSIZ_PKTCNT_OFFSET);
-        USB_OTG_WRITE_REG32(&USB_FS->OUTEP_REGS[ep->num]->DOEPTSIZ, deptsiz);
+        USB_FS->OUTEP_REGS[ep->num]->DOEPTSIZ = deptsiz;
         /* EP enable */
         depctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
-        USB_OTG_WRITE_REG32 (&(USB_FS->OUTEP_REGS[ep->num]->DOEPCTL), depctl);
+        USB_FS->OUTEP_REGS[ep->num]->DOEPCTL = depctl;
     }
 }
 
@@ -1166,8 +1154,8 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
     /* IN endpoint */
     if (ep->is_in == 1)
     {
-        depctl = USB_OTG_READ_REG32(&(USB_FS->INEP_REGS[ep->num]->DIEPCTL));
-        deptsiz = USB_OTG_READ_REG32(&(USB_FS->INEP_REGS[ep->num]->DIEPTSIZ));
+        depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
+        deptsiz = USB_FS->INEP_REGS[ep->num]->DIEPTSIZ;
         /* Zero Length Packet? */
         if (ep->xfer_len == 0)
         {
@@ -1192,19 +1180,19 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
                 deptsiz |= (1 << DOEPTSIZ_RXDPID_STUPCNT_OFFSET);
             }
         }
-        USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[ep->num]->DIEPTSIZ, deptsiz);
+        USB_FS->INEP_REGS[ep->num]->DIEPTSIZ = deptsiz;
             if (ep->type != EP_TYPE_ISOC)
             {
                 /* Enable the Tx FIFO Empty Interrupt for this EP */
                 if (ep->xfer_len > 0)
                 {
                     fifoemptymsk = 1 << ep->num;
-                    USB_OTG_MODIFY_REG32(&USB_FS->DREGS->DIEPEMPMSK, 0, fifoemptymsk);
+                    USB_FS->DREGS->DIEPEMPMSK |= fifoemptymsk;
                 }
             }
         if (ep->type == EP_TYPE_ISOC)
         {
-            dsts = USB_OTG_READ_REG32(&USB_FS->DREGS->DSTS);
+            dsts = USB_FS->DREGS->DSTS;
             if((dsts & USB_OTG_DSTS_FNSOF_0) == 0)
             {
                 depctl |= USB_OTG_DIEPCTL_SODDFRM;
@@ -1216,7 +1204,7 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
         }
         /* EP enable, IN data in FIFO */
         depctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
-        USB_OTG_WRITE_REG32(&USB_FS->INEP_REGS[ep->num]->DIEPCTL, depctl);
+        USB_FS->INEP_REGS[ep->num]->DIEPCTL = depctl;
         if (ep->type == EP_TYPE_ISOC)
         {
             usb_WritePacket(ep->xfer_buff, ep->num, ep->xfer_len);
@@ -1225,8 +1213,8 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
     else
     {
         /* OUT endpoint */
-        depctl = USB_OTG_READ_REG32(&(USB_FS->OUTEP_REGS[ep->num]->DOEPCTL));
-        deptsiz = USB_OTG_READ_REG32(&(USB_FS->OUTEP_REGS[ep->num]->DOEPTSIZ));
+        depctl = USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
+        deptsiz = USB_FS->OUTEP_REGS[ep->num]->DOEPTSIZ;
         /* Program the transfer size and packet count as follows:
         * pktcnt = N
         * xfersize = N * maxpacket
@@ -1246,7 +1234,7 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
             deptsiz &= ~USB_OTG_DOEPTSIZ_XFRSIZ;
             deptsiz |= pktcnt * ep->maxpacket;
         }
-        USB_OTG_WRITE_REG32(&USB_FS->OUTEP_REGS[ep->num]->DOEPTSIZ, deptsiz);
+        USB_FS->OUTEP_REGS[ep->num]->DOEPTSIZ = deptsiz;
 
         if (ep->type == EP_TYPE_ISOC)
         {
@@ -1261,7 +1249,7 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
         }
         /* EP enable */
         depctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
-        USB_OTG_WRITE_REG32(&USB_FS->OUTEP_REGS[ep->num]->DOEPCTL, depctl);
+        USB_FS->OUTEP_REGS[ep->num]->DOEPCTL = depctl;
     }
 }
 
@@ -1272,21 +1260,19 @@ static void usb_EPActivate(USB_OTG_EP *ep)
 {
     uint32_t depctl;
     uint32_t daintmsk;
-    __IO uint32_t *addr;
     /* Read DEPCTLn register */
     if (ep->is_in == 1)
     {
-        addr = &USB_FS->INEP_REGS[ep->num]->DIEPCTL;
+        depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
         daintmsk = 1 << ep->num;
     }
     else
     {
-        addr = &USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
+        depctl = USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
         daintmsk = 1 << (ep->num + 16);
     }
     /* If the EP is already active don't change the EP Control
     * register. */
-    depctl = USB_OTG_READ_REG32(addr);
     if(0 == (depctl & USB_OTG_DIEPCTL_USBAEP))
     {
         depctl &= ~USB_OTG_DIEPCTL_MPSIZ;
@@ -1297,10 +1283,17 @@ static void usb_EPActivate(USB_OTG_EP *ep)
         depctl |= ep->tx_fifo_num<<USB_OTG_DIEPCTL_TXFNUM_OFFSET;
         depctl |= USB_OTG_DIEPCTL_SD0PID_SEVNFRM;
         depctl |= USB_OTG_DIEPCTL_USBAEP;
-        USB_OTG_WRITE_REG32(addr, depctl);
+        if (ep->is_in == 1)
+        {
+            USB_FS->INEP_REGS[ep->num]->DIEPCTL = depctl;
+        }
+        else
+        {
+            USB_FS->OUTEP_REGS[ep->num]->DOEPCTL = depctl;
+        }
     }
     /* Enable the Interrupt for this EP */
-    USB_OTG_MODIFY_REG32(&USB_FS->DREGS->DAINTMSK, 0, daintmsk);
+    USB_FS->DREGS->DAINTMSK |= daintmsk;
 }
 
 /*
@@ -1310,22 +1303,21 @@ static void USB_OTG_EPDeactivate(USB_OTG_EP *ep)
 {
     uint32_t depctl;
     uint32_t daintmsk;
-    __IO uint32_t *addr;
     /* Read DEPCTLn register */
     if (ep->is_in == 1)
     {
-        addr = &USB_FS->INEP_REGS[ep->num]->DIEPCTL;
         daintmsk = 1 << ep->num;
+        depctl = USB_OTG_DIEPCTL_USBAEP;
+        USB_FS->INEP_REGS[ep->num]->DIEPCTL = depctl;
     }
     else
     {
-        addr = &USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
         daintmsk = 1 << (ep->num + 16);
+        depctl = USB_OTG_DIEPCTL_USBAEP;
+        USB_FS->OUTEP_REGS[ep->num]->DOEPCTL = depctl;
     }
-    depctl = USB_OTG_DIEPCTL_USBAEP;
-    USB_OTG_WRITE_REG32(addr, depctl);
     /* Disable the Interrupt for this EP */
-    USB_OTG_MODIFY_REG32(&USB_FS->DREGS->DAINTMSK, daintmsk, 0);
+    USB_FS->DREGS->DAINTMSK &= ~daintmsk;
 }
 
 /*
@@ -1335,9 +1327,9 @@ static void usb_EnableDevInt(void)
 {
     uint32_t intmsk;
     /* Disable all interrupts. */
-    USB_OTG_WRITE_REG32( &USB_FS->GREGS->GINTMSK, 0);
+    USB_FS->GREGS->GINTMSK = 0;
     /* Clear any pending interrupts */
-    USB_OTG_WRITE_REG32( &USB_FS->GREGS->GINTSTS, 0xFFFFFFFF);
+    USB_FS->GREGS->GINTSTS = 0xFFFFFFFF;
     /* Enable the common interrupts */
     usb_EnableCommonInt();
     /* Enable interrupts matching to the Device mode ONLY */
@@ -1350,7 +1342,7 @@ static void usb_EnableDevInt(void)
             | USB_OTG_GINTMSK_SOFM
             | USB_OTG_GINTMSK_IISOIXFRM
             | USB_OTG_GINTMSK_PXFRM_IISOOXFRM;
-    USB_OTG_MODIFY_REG32( &USB_FS->GREGS->GINTMSK, intmsk, intmsk);
+    USB_FS->GREGS->GINTMSK |= intmsk;
 }
 
 /*
@@ -1364,43 +1356,43 @@ static void usb_CoreInitDev(void)
     uint32_t fifo_reg = 0;
     uint32_t fifo_start = 0;
     /* Restart the Phy Clock */
-    USB_OTG_WRITE_REG32(USB_FS->PCGCCTL, 0);
+    USB_FS->PCGCCTL = 0;
     /* Device configuration register */
-    dcfg = USB_OTG_READ_REG32( &USB_FS->DREGS->DCFG);
+    dcfg = USB_FS->DREGS->DCFG;
     dcfg &= ~USB_OTG_DCFG_PFIVL_BITMASK;
     dcfg |= DCFG_FRAME_INTERVAL_80<<USB_OTG_DCFG_PFIVL_OFFSET;
-    USB_OTG_WRITE_REG32( &USB_FS->DREGS->DCFG, dcfg);
+    USB_FS->DREGS->DCFG = dcfg;
     /* Set Full speed phy */
     usb_InitDevSpeed();
     /* set Rx FIFO size */
-    USB_OTG_WRITE_REG32(&USB_FS->GREGS->GRXFSIZ, RX_FIFO_FS_SIZE);
+    USB_FS->GREGS->GRXFSIZ = RX_FIFO_FS_SIZE;
     /* EP0 TX*/
     fifo_start = RX_FIFO_FS_SIZE;
     fifo_reg = (TX0_FIFO_FS_SIZE<<16) + fifo_start;
-    USB_OTG_WRITE_REG32(&USB_FS->GREGS->DIEPTXF0_HNPTXFSIZ, fifo_reg);
+    USB_FS->GREGS->DIEPTXF0_HNPTXFSIZ = fifo_reg;
     /* EP1 TX*/
     fifo_start = fifo_start + TX0_FIFO_FS_SIZE;
     fifo_reg = (TX1_FIFO_FS_SIZE<<16) + fifo_start;
-    USB_OTG_WRITE_REG32(&USB_FS->GREGS->DIEPTXF[0], fifo_reg);
+    USB_FS->GREGS->DIEPTXF[0] = fifo_reg;
     /* EP2 TX*/
     fifo_start += TX1_FIFO_FS_SIZE;
     fifo_reg = (TX2_FIFO_FS_SIZE<<16) + fifo_start;
-    USB_OTG_WRITE_REG32(&USB_FS->GREGS->DIEPTXF[1], fifo_reg);
+    USB_FS->GREGS->DIEPTXF[1] = fifo_reg;
     /* EP3 TX*/
     fifo_start += TX2_FIFO_FS_SIZE;
     fifo_reg = (TX3_FIFO_FS_SIZE<<16) + fifo_start;
-    USB_OTG_WRITE_REG32(&USB_FS->GREGS->DIEPTXF[2], fifo_reg);
+    USB_FS->GREGS->DIEPTXF[2] = fifo_reg;
     /* Flush the FIFOs */
     usb_FlushTxFifo(0x10); /* all Tx FIFOs */
     usb_FlushRxFifo();
     /* Clear all pending Device Interrupts */
-    USB_OTG_WRITE_REG32( &USB_FS->DREGS->DIEPMSK, 0 );
-    USB_OTG_WRITE_REG32( &USB_FS->DREGS->DOEPMSK, 0 );
-    USB_OTG_WRITE_REG32( &USB_FS->DREGS->DAINT, 0xFFFFFFFF );
-    USB_OTG_WRITE_REG32( &USB_FS->DREGS->DAINTMSK, 0 );
+    USB_FS->DREGS->DIEPMSK = 0 ;
+    USB_FS->DREGS->DOEPMSK = 0;
+    USB_FS->DREGS->DAINT = 0xFFFFFFFF;
+    USB_FS->DREGS->DAINTMSK = 0;
     for (i = 0; i < MAX_DEVICE_ENDPOINTS; i++)
     {
-        depctl = USB_OTG_READ_REG32(&USB_FS->INEP_REGS[i]->DIEPCTL);
+        depctl = USB_FS->INEP_REGS[i]->DIEPCTL;
         if(0 != (depctl & USB_OTG_DIEPCTL_EPENA))
         {
             depctl = USB_OTG_DIEPCTL_SNAK | USB_OTG_DIEPCTL_EPDIS;
@@ -1409,13 +1401,13 @@ static void usb_CoreInitDev(void)
         {
             depctl = 0;
         }
-        USB_OTG_WRITE_REG32( &USB_FS->INEP_REGS[i]->DIEPCTL, depctl);
-        USB_OTG_WRITE_REG32( &USB_FS->INEP_REGS[i]->DIEPTSIZ, 0);
-        USB_OTG_WRITE_REG32( &USB_FS->INEP_REGS[i]->DIEPINT, 0xFF);
+        USB_FS->INEP_REGS[i]->DIEPCTL = depctl;
+        USB_FS->INEP_REGS[i]->DIEPTSIZ = 0;
+        USB_FS->INEP_REGS[i]->DIEPINT = 0xFF;
     }
     for (i = 0; i <  MAX_DEVICE_ENDPOINTS; i++)
     {
-        depctl = USB_OTG_READ_REG32(&USB_FS->OUTEP_REGS[i]->DOEPCTL);
+        depctl = USB_FS->OUTEP_REGS[i]->DOEPCTL;
         if(0 != (depctl & USB_OTG_DIEPCTL_EPENA))
         {
             depctl = USB_OTG_DIEPCTL_SNAK | USB_OTG_DIEPCTL_EPDIS;
@@ -1424,9 +1416,9 @@ static void usb_CoreInitDev(void)
         {
             depctl = 0;
         }
-        USB_OTG_WRITE_REG32( &USB_FS->OUTEP_REGS[i]->DOEPCTL, depctl);
-        USB_OTG_WRITE_REG32( &USB_FS->OUTEP_REGS[i]->DOEPTSIZ, 0);
-        USB_OTG_WRITE_REG32( &USB_FS->OUTEP_REGS[i]->DOEPINT, 0xFF);
+        USB_FS->OUTEP_REGS[i]->DOEPCTL = depctl;
+        USB_FS->OUTEP_REGS[i]->DOEPTSIZ = 0;
+        USB_FS->OUTEP_REGS[i]->DOEPINT = 0xFF;
     }
     usb_EnableDevInt();
 }
@@ -1438,9 +1430,9 @@ static void usb_CoreInitDev(void)
 static void usb_InitDevSpeed(void)
 {
     uint32_t dcfg;
-    dcfg = USB_OTG_READ_REG32(&USB_FS->DREGS->DCFG);
+    dcfg = USB_FS->DREGS->DCFG;
     dcfg |= USB_OTG_DCFG_DSPD;
-    USB_OTG_WRITE_REG32(&USB_FS->DREGS->DCFG, dcfg);
+    USB_FS->DREGS->DCFG = dcfg;
 }
 
 /*
@@ -1451,10 +1443,10 @@ static void usb_FlushRxFifo(void)
     uint32_t greset;
     uint32_t count = 0;
     greset = USB_OTG_GRSTCTL_RXFFLSH;
-    USB_OTG_WRITE_REG32( &USB_FS->GREGS->GRSTCTL, greset );
+    USB_FS->GREGS->GRSTCTL = greset;
     do
     {
-        greset = USB_OTG_READ_REG32( &USB_FS->GREGS->GRSTCTL);
+        greset = USB_FS->GREGS->GRSTCTL;
         if (++count > 200000)
         {
             break;
@@ -1472,18 +1464,18 @@ static void usb_CoreInit(void)
 {
     uint32_t usbcfg;
     uint32_t gccfg;
-    usbcfg = USB_OTG_READ_REG32(&USB_FS->GREGS->GUSBCFG);
+    usbcfg = USB_FS->GREGS->GUSBCFG;
     usbcfg |= USB_OTG_GUSBCFG_PHYSEL; /* FS Interface */
-    USB_OTG_WRITE_REG32 (&USB_FS->GREGS->GUSBCFG, usbcfg);
+    USB_FS->GREGS->GUSBCFG = usbcfg;
     /* Reset after a PHY select and set Host mode */
     usb_CoreReset();
     /* Enable the I2C interface and deactivate the power down*/
     gccfg = USB_OTG_GCCFG_PWRDWN | USB_OTG_GCCFG_VBUSASEN | USB_OTG_GCCFG_VBUSBSEN;
-    USB_OTG_WRITE_REG32 (&USB_FS->GREGS->GCCFG, gccfg);
+    USB_FS->GREGS->GCCFG = gccfg;
     mDelay(20);
     /* Program GUSBCFG.OtgUtmifsSel to I2C*/
-    usbcfg = USB_OTG_READ_REG32(&USB_FS->GREGS->GUSBCFG);
-    USB_OTG_WRITE_REG32 (&USB_FS->GREGS->GUSBCFG, usbcfg);
+    usbcfg = USB_FS->GREGS->GUSBCFG;
+    USB_FS->GREGS->GUSBCFG = usbcfg;
 }
 
 /*
@@ -1493,10 +1485,10 @@ static void usb_EnableCommonInt(void)
 {
     uint32_t int_mask;
     /* Clear any pending interrupts */
-    USB_OTG_WRITE_REG32( &USB_FS->GREGS->GINTSTS, 0xFFFFFFFF);
+    USB_FS->GREGS->GINTSTS = 0xFFFFFFFF;
     /* Enable the interrupts in the INTMSK */
     int_mask = USB_OTG_GINTMSK_WUIM | USB_OTG_GINTMSK_USBSUSPM;
-    USB_OTG_WRITE_REG32( &USB_FS->GREGS->GINTMSK, int_mask);
+    USB_FS->GREGS->GINTMSK = int_mask;
 }
 
 /*
@@ -1510,7 +1502,7 @@ static void usb_CoreReset(void)
     do
     {
         uDelay(3);
-        greset = USB_OTG_READ_REG32(&USB_FS->GREGS->GRSTCTL);
+        greset = USB_FS->GREGS->GRSTCTL;
         if (++count > 200000)
         {
             return;
@@ -1519,10 +1511,10 @@ static void usb_CoreReset(void)
     /* Core Soft Reset */
     count = 0;
     greset |= USB_OTG_GRSTCTL_CSRST;
-    USB_OTG_WRITE_REG32(&USB_FS->GREGS->GRSTCTL, greset);
+    USB_FS->GREGS->GRSTCTL = greset;
     do
     {
-        greset = USB_OTG_READ_REG32(&USB_FS->GREGS->GRSTCTL);
+        greset = USB_FS->GREGS->GRSTCTL;
         if (++count > 200000)
         {
             break;
@@ -1942,7 +1934,7 @@ static void usb_SetFeature(USB_SETUP_REQ *req)
     else if(  (req->wValue == USB_FEATURE_TEST_MODE)
             &&((req->wIndex & 0xFF) == 0) )
     {
-        dctl = USB_OTG_READ_REG32(&USB_FS->DREGS->DCTL);
+        dctl = USB_FS->DREGS->DCTL;
         test_mode = req->wIndex >> 8;
         dctl &= ~USB_OTG_DCTL_TCTL;
         switch (test_mode)
@@ -1963,7 +1955,7 @@ static void usb_SetFeature(USB_SETUP_REQ *req)
             dctl |= 5<<USB_OTG_DCTL_TCTL_OFFSET;
             break;
         }
-        USB_OTG_WRITE_REG32(&USB_FS->DREGS->DCTL, dctl);
+        USB_FS->DREGS->DCTL = dctl;
         usb_CtlSendStatus();
     }
 }
@@ -2090,7 +2082,7 @@ static void  EP_SetAddress(uint8_t address)
 {
     uint32_t dcfg;
     dcfg = address<<USB_OTG_DCFG_DAD_OFFSET;
-    USB_OTG_MODIFY_REG32( &USB_FS->DREGS->DCFG, 0, dcfg);
+    USB_FS->DREGS->DCFG |= dcfg;
 }
 
 /*
@@ -2250,10 +2242,10 @@ static void DataInStage(uint8_t epnum)
 static uint32_t ReadDevInEP(uint8_t epnum)
 {
     uint32_t v, msk, emp;
-    msk = USB_OTG_READ_REG32(&USB_FS->DREGS->DIEPMSK);
-    emp = USB_OTG_READ_REG32(&USB_FS->DREGS->DIEPEMPMSK);
+    msk = USB_FS->DREGS->DIEPMSK;
+    emp = USB_FS->DREGS->DIEPEMPMSK;
     msk |= ((emp >> epnum) & 0x1) << 7;
-    v = USB_OTG_READ_REG32(&USB_FS->INEP_REGS[epnum]->DIEPINT) & msk;
+    v = USB_FS->INEP_REGS[epnum]->DIEPINT & msk;
     return v;
 }
 
@@ -2266,12 +2258,10 @@ static uint32_t ReadDevInEP(uint8_t epnum)
 static void usb_WritePacket(uint8_t *src, uint8_t ch_ep_num, uint16_t len)
 {
     uint32_t count32b= 0 , i= 0;
-    __IO uint32_t *fifo;
     count32b =  (len + 3) / 4;
-    fifo = USB_FS->DFIFO[ch_ep_num];
     for (i = 0; i < count32b; i++, src+=4)
     {
-        USB_OTG_WRITE_REG32( fifo, *((__attribute__ ((__packed__)) uint32_t *)src) );
+        USB_FS->DFIFO[ch_ep_num] = ((uint32_t *)src);
     }
 }
 
@@ -2291,7 +2281,7 @@ static void WriteEmptyTxFifo(uint32_t epnum)
         len = ep->maxpacket;
     }
     len32b = (len + 3) / 4;
-    txstatus = (0x0000ffff & USB_OTG_READ_REG32( &USB_FS->INEP_REGS[epnum]->DTXFSTS));
+    txstatus = (0x0000ffff & USB_FS->INEP_REGS[epnum]->DTXFSTS);
     while  (txstatus > len32b && ep->xfer_count < ep->xfer_len && ep->xfer_len != 0)
     {
         /* Write the FIFO */
@@ -2304,7 +2294,7 @@ static void WriteEmptyTxFifo(uint32_t epnum)
         usb_WritePacket(ep->xfer_buff, epnum, len);
         ep->xfer_buff  += len;
         ep->xfer_count += len;
-        txstatus = (0x0000ffff & USB_OTG_READ_REG32(&USB_FS->INEP_REGS[epnum]->DTXFSTS));
+        txstatus = (0x0000ffff & USB_FS->INEP_REGS[epnum]->DTXFSTS);
     }
 }
 
