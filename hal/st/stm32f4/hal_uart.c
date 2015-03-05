@@ -48,7 +48,8 @@ typedef struct {
 }uart_device_typ;
 
 static void device_IRQ_handler(uint_fast8_t device);
-static void check_if_we_can_send(uint_fast8_t device);
+static void make_sure_that_we_can_send(uint_fast8_t device);
+static void copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
 
 static volatile uart_device_typ devices[MAX_UART];
 
@@ -155,29 +156,25 @@ void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t len
     // else invalid Interface Specified
 }
 
-static void check_if_we_can_send(uint_fast8_t device)
+static void make_sure_that_we_can_send(uint_fast8_t device)
 {
-    if(device < MAX_UART)
+    uint32_t timeout = hal_time_get_ms_tick() + UART_BYTE_TIMEOUT_MS;
+    if(timeout < hal_time_get_ms_tick())
     {
-        uint32_t timeout = hal_time_get_ms_tick() + UART_BYTE_TIMEOUT_MS;
-        if(timeout < hal_time_get_ms_tick())
-        {
-            // wrap around
-            // wait for TX to be ready for the next Byte
-            while(   (timeout < hal_time_get_ms_tick())
-                  && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
-            {
-                ; // wait
-            }
-        }
+        // wrap around
         // wait for TX to be ready for the next Byte
-        while(   (timeout > hal_time_get_ms_tick())
+        while(   (timeout < hal_time_get_ms_tick())
               && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
         {
             ; // wait
         }
     }
-    // else invalid Interface Specified
+    // wait for TX to be ready for the next Byte
+    while(   (timeout > hal_time_get_ms_tick())
+          && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
+    {
+        ; // wait
+    }
 }
 
 // TODO non blocking using DMA
@@ -224,113 +221,121 @@ default:
 }
 */
 
-void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
+static void copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
-    if(device < MAX_UART)
+    if(devices[device].send_end_pos < devices[device].send_pos)
     {
-        if(1 > length)
+        // buffer already wrapped
+        if(length < (devices[device].send_pos - devices[device].send_end_pos))
         {
-            // no data
-            return;
+            // but this still fits in
+            // copy data
+            uint_fast16_t i;
+            for(i = 0; i < length; i++)
+            {
+                devices[device].send_buffer[i+ devices[device].send_end_pos] = frame[i];
+            }
+            devices[device].send_end_pos = devices[device].send_end_pos + length;
         }
-        if(NULL == devices[device].send_buffer)
+        else
         {
-            devices[device].is_sending = false; // for safety
-            devices[device].port->CR1 &= ~USART_CR1_TXEIE;
-            // no sendbuffer -> blocking
+            // already wrapped and not fitting -> blocking
             hal_uart_send_frame(device, frame, length);
             return;
         }
-        // can we copy the data ?
-        if(devices[device].send_end_pos < devices[device].send_pos)
+    }
+    else
+    {
+        // not wrapped yet
+        if(length < (devices[device].size_send_buffer - devices[device].send_end_pos))
         {
-            // buffer already wrapped
-            if(length < (devices[device].send_pos - devices[device].send_end_pos))
+            // and we can put it in without wrapping
+            // copy data
+            uint_fast16_t i;
+            for(i = 0; i < length; i++)
             {
-                // but this still fits in
+                devices[device].send_buffer[i + devices[device].send_end_pos] = frame[i];
+            }
+            devices[device].send_end_pos = devices[device].send_end_pos + length;
+        }
+        else
+        {
+            uint_fast16_t new_end_position;
+            new_end_position = length - (devices[device].size_send_buffer - devices[device].send_end_pos);
+            if(new_end_position < devices[device].send_pos)
+            {
+                // it fits wrapped
                 // copy data
+                uint_fast16_t data_before_wrap = length - new_end_position;
                 uint_fast16_t i;
-                for(i = 0; i < length; i++)
+                for(i = 0; i < data_before_wrap; i++)
                 {
-                    devices[device].send_buffer[i+ devices[device].send_end_pos] = frame[i];
+                    devices[device].send_buffer[i + devices[device].send_end_pos] = frame[i];
                 }
-                devices[device].send_end_pos = devices[device].send_end_pos + length;
+                for(; i < length; i++)
+                {
+                    devices[device].send_buffer[i - data_before_wrap] = frame[i];
+                }
+                devices[device].send_end_pos = new_end_position;
             }
             else
             {
-                // already wrapped and not fitting -> blocking
+                // doesn't fit -> blocking !
                 hal_uart_send_frame(device, frame, length);
                 return;
             }
         }
-        else
-        {
-            // not wrapped yet
-            if(length < (devices[device].size_send_buffer - devices[device].send_end_pos))
-            {
-                // and we can put it in without wrapping
-                // copy data
-                uint_fast16_t i;
-                for(i = 0; i < length; i++)
-                {
-                    devices[device].send_buffer[i + devices[device].send_end_pos] = frame[i];
-                }
-                devices[device].send_end_pos = devices[device].send_end_pos + length;
-            }
-            else
-            {
-                uint_fast16_t new_end_position;
-                new_end_position = length - (devices[device].size_send_buffer - devices[device].send_end_pos);
-                if(new_end_position < devices[device].send_pos)
-                {
-                    // it fits wrapped
-                    // copy data
-                    uint_fast16_t data_before_wrap = length - new_end_position;
-                    uint_fast16_t i;
-                    for(i = 0; i < data_before_wrap; i++)
-                    {
-                        devices[device].send_buffer[i + devices[device].send_end_pos] = frame[i];
-                    }
-                    for(; i < length; i++)
-                    {
-                        devices[device].send_buffer[i - data_before_wrap] = frame[i];
-                    }
-                    devices[device].send_end_pos = new_end_position;
-                }
-                else
-                {
-                    // doesn't fit -> blocking !
-                    hal_uart_send_frame(device, frame, length);
-                    return;
-                }
-            }
-        }
-
-        // are we already sending or do we need to start sending
-        if(true == devices[device].is_sending)
-        {
-            // nothing to do here
-        }
-        else
-        {
-            // start sending now
-            check_if_we_can_send(device);
-            devices[device].is_sending = true;
-            devices[device].port->CR1 |= USART_CR1_TXEIE;
-            devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_pos];
-            devices[device].send_pos++;
-            if(devices[device].send_pos < devices[device].size_send_buffer)
-            {
-                // ok
-            }
-            else
-            {
-                // wrap around
-                devices[device].send_pos = 0;
-            }
-        }
     }
-    // else invalid Interface Specified
+}
+
+void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
+{
+    if( !(device < MAX_UART) || (1 > length) )
+    {
+        // invalid Interface Specified or
+        // no data
+        return;
+    }
+
+    if(NULL == devices[device].send_buffer)
+    {
+        // send_buffer is generated in hal_uart_init() !
+        // So this only happens if sending on a Device that has not been initialized.
+        devices[device].is_sending = false; // for safety
+        devices[device].port->CR1 &= ~USART_CR1_TXEIE;
+        // no sendbuffer -> blocking
+        hal_uart_send_frame(device, frame, length);
+        return;
+    }
+
+    // can we copy the data ?
+    copy_data_to_send(device, frame, length);
+
+    // are we already sending or do we need to start sending
+    if(true == devices[device].is_sending)
+    {
+        // nothing to do here
+    }
+    else
+    {
+        // start sending now
+        make_sure_that_we_can_send(device);
+        devices[device].is_sending = true;
+        devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_pos];
+        devices[device].send_pos++;
+        if(devices[device].send_pos < devices[device].size_send_buffer)
+        {
+            // ok
+        }
+        else
+        {
+            // wrap around
+            devices[device].send_pos = 0;
+        }
+        // The next line activates the Interrupt. The Interrupt may become
+        // active immediately. It therefore must be the last line !
+        devices[device].port->CR1 |= USART_CR1_TXEIE;
+    }
 }
 
 static void device_IRQ_handler(uint_fast8_t device)

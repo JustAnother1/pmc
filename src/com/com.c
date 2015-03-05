@@ -694,7 +694,7 @@ void com_send_stepper_error_event(uint_fast8_t cur_errors)
 static void send_firmware_id_frame(void)
 {
     send_buffer[REPLY_FRAME_POS_OF_LENGTH] = 4;
-    send_buffer[REPLY_FRAME_POS_OF_CONTROL] = cur_sequence_number | REPLY_CONTROL_FLAG_DEBUG;
+    send_buffer[REPLY_FRAME_POS_OF_CONTROL] = REPLY_CONTROL_FLAG_DEBUG;
     send_buffer[REPLY_FRAME_POS_OF_REPLY_CODE] = REPLY_CODE_DEBUG;
     send_buffer[REPLY_FRAME_START_OF_PARAMETER] = FIRMWARE_REVISION_MAJOR;
     send_buffer[REPLY_FRAME_START_OF_PARAMETER + 1] = FIRMWARE_REVISION_MINOR;
