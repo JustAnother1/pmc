@@ -21,6 +21,8 @@
 #include "usb_std.h"
 #include "hal_debug.h"
 #include "rcc.h"
+#include "hal_led.h"
+#include "hal_cfg.h"
 
 extern void set_config_descriptor(uint8_t* cfg_desc);
 static void HandleInEP_ISR(void);
@@ -38,8 +40,10 @@ static uint32_t usb_ReadDevOutEP_itr(uint8_t epnum);
 static void usb_ReadPacket(uint8_t *dest, uint16_t len);
 static void usb_FlushTxFifo(uint32_t num );
 static void usb_EP0Activate(void);
+/*
 static void usb_SetEPStatus(USB_OTG_EP *ep , uint32_t Status);
 static uint32_t usb_GetEPStatus(USB_OTG_EP *ep);
+*/
 static void usb_EPClearStall(USB_OTG_EP *ep);
 static void usb_EPSetStall(USB_OTG_EP *ep);
 static void usb_EP0StartXfer(USB_OTG_EP *ep);
@@ -57,9 +61,9 @@ static void EP_Stall(uint8_t   epnum);
 static void SetupStage(void);
 static void usb_ParseSetupRequest(USB_SETUP_REQ *req);
 static void EP_ClrStall(uint8_t epnum);
-static void usb_StdEPReq(USB_SETUP_REQ  *req);
-static void usb_StdItfReq(USB_SETUP_REQ  *req);
-static void usb_StdDevReq(USB_SETUP_REQ  *req);
+static void usb_Std_EndPoint_Req(USB_SETUP_REQ  *req);
+static void usb_Std_Interface_Req(USB_SETUP_REQ  *req);
+static void usb_Std_Device_Req(USB_SETUP_REQ  *req);
 static void usb_ClrFeature(USB_SETUP_REQ *req);
 static void usb_SetFeature(USB_SETUP_REQ *req);
 static void usb_GetStatus(USB_SETUP_REQ *req);
@@ -320,13 +324,12 @@ bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb)
     uint32_t i;
     USB_OTG_EP *ep;
     uint32_t  usbcfg;
-    debug_line("ub_device_init()");
 
     // enable clock for GPIO Port of D- and D+
     RCC->AHB1ENR |= USB_FS_DP_GPIO_PORT_RCC;
     RCC->AHB1ENR |= USB_FS_DP_GPIO_PORT_RCC;
     // enable clock for interface
-    RCC->APB2ENR |= USB_FS_APB2ENR;
+    RCC->AHB2ENR |= USB_FS_AHB2ENR;
 
     // configure Pins
     // D-
@@ -443,7 +446,6 @@ bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb)
 void USB_FS_IRQ_HANDLER(void)
 {
     uint32_t irqs = USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK;
-
     if(0 == irqs) /* avoid spurious interrupt */
     {
         return;
@@ -650,16 +652,16 @@ static void HandleOutEP_ISR(void)
     uint32_t epnum = 0;
     /* Read in the device interrupt bits */
     ep_intr = usb_ReadDevAllOutEp_itr();
-    while ( ep_intr )
+    while(0 != ep_intr)
     {
-        if (ep_intr&0x1)
+        if(0 != (ep_intr & 0x1))
         {
             doepint = usb_ReadDevOutEP_itr(epnum);
             /* Transfer complete */
             if(0 != (doepint & USB_OTG_DOEPINT_XFRC))
             {
                 /* Clear the bit in DOEPINTn for this interrupt */
-                (*(volatile uint32_t *)&USB_FS->OUTEP_REGS[epnum]->DOEPINT = USB_OTG_DOEPINT_XFRC);
+                USB_FS->OUTEP_REGS[epnum]->DOEPINT = USB_OTG_DOEPINT_XFRC;
                 /* Inform upper layer: data ready */
                 /* RX COMPLETE */
                 DataOutStage(epnum);
@@ -668,7 +670,7 @@ static void HandleOutEP_ISR(void)
             if(0 != (doepint & USB_OTG_DOEPINT_EPDISD))
             {
                 /* Clear the bit in DOEPINTn for this interrupt */
-                (*(volatile uint32_t *)&USB_FS->OUTEP_REGS[epnum]->DOEPINT = USB_OTG_DOEPINT_EPDISD);
+                USB_FS->OUTEP_REGS[epnum]->DOEPINT = USB_OTG_DOEPINT_EPDISD;
             }
             /* Setup Phase Done (control EPs) */
             if(0 != (doepint & USB_OTG_DOEPINT_STUP))
@@ -676,7 +678,7 @@ static void HandleOutEP_ISR(void)
                 /* inform the upper layer that a setup packet is available */
                 /* SETUP COMPLETE */
                 SetupStage();
-                (*(volatile uint32_t *)&USB_FS->OUTEP_REGS[epnum]->DOEPINT = USB_OTG_DOEPINT_STUP);
+                USB_FS->OUTEP_REGS[epnum]->DOEPINT = USB_OTG_DOEPINT_STUP;
             }
         }
         epnum++;
@@ -689,16 +691,16 @@ static void HandleOutEP_ISR(void)
  *   dest : Destination Pointer
  *   len : No. of bytes
  */
-static void usb_ReadPacket(uint8_t *dest8,
-                         uint16_t len)
+static void usb_ReadPacket(uint8_t *dest8, uint16_t len)
 {
-    uint32_t i=0;
+    uint32_t i;
     uint32_t count32b = (len + 3) / 4;
-    __IO uint32_t* dest = (uint32_t *)dest8;
+    uint32_t* dest = (uint32_t *)dest8;
 
-    for ( i = 0; i < count32b; i++, dest += 4 )
+    for(i = 0; i < count32b; i++)
     {
-        dest = USB_FS->DFIFO[0];
+        *dest = *(USB_FS->DFIFO[0]);
+        dest += 4;
     }
 }
 
@@ -737,6 +739,7 @@ static void HandleRxStatusQueueLevel_ISR(void)
     {
         uint32_t bcnt = (status & USB_OTG_GRXSTSP_BCNT)>>USB_OTG_GRXSTSP_BCNT_OFFSET;
         /* Copy the setup packet received in FIFO into the setup buffer in RAM */
+        hal_led_toggle_led(ERROR_LED);
         usb_ReadPacket(setup_packet, 8);
         ep->xfer_count += bcnt;
         break;
@@ -904,13 +907,12 @@ static void HandleEnumDone_ISR(void)
  * Set the EP Status
  *   Status : new Status
  *       ep : EP structure
- */
+ * /
 static void usb_SetEPStatus(USB_OTG_EP *ep , uint32_t Status)
 {
     uint32_t  depctl;
-    /* Process for IN endpoint */
     if (ep->is_in == 1)
-    {
+    {   // Process for IN endpoint
         depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
         if (Status == USB_OTG_EP_TX_STALL)
         {
@@ -938,8 +940,8 @@ static void usb_SetEPStatus(USB_OTG_EP *ep , uint32_t Status)
         }
         USB_FS->INEP_REGS[ep->num]->DIEPCTL = depctl;
     }
-    else /* Process for OUT endpoint */
-    {
+    else
+    {   // Process for OUT endpoint
         depctl = USB_FS->OUTEP_REGS[ep->num]->DOEPCTL;
         if (Status == USB_OTG_EP_RX_STALL)
         {
@@ -969,11 +971,11 @@ static void usb_SetEPStatus(USB_OTG_EP *ep , uint32_t Status)
     }
 }
 
-/*
+/ *
  * returns the EP Status
  *         ep : endpoint structure
  * returns : EP status
- */
+ * /
 static uint32_t usb_GetEPStatus(USB_OTG_EP *ep)
 {
     uint32_t  depctl;
@@ -1010,9 +1012,9 @@ static uint32_t usb_GetEPStatus(USB_OTG_EP *ep)
             Status = USB_OTG_EP_RX_VALID;
         }
     }
-    /* Return the current status */
     return Status;
 }
+*/
 
 /*
  * Clear the EP STALL
@@ -1604,18 +1606,20 @@ static void SetupStage(void)
 {
     USB_SETUP_REQ req;
     usb_ParseSetupRequest(&req);
-    switch (req.bmRequest & 0x1F)
+    debug_line("Received: bmRequest=0x%02x,bRequest=0x%02x,wValue=0x%04x,wIndex=0x%04x,wLength=0x%04x",
+            req.bmRequest, req.bRequest, req.wValue, req.wIndex, req.wLength);
+    switch(req.bmRequest & 0x1F)
     {
     case USB_REQ_RECIPIENT_DEVICE:
-        usb_StdDevReq(&req);
+        usb_Std_Device_Req(&req);
         break;
 
     case USB_REQ_RECIPIENT_INTERFACE:
-        usb_StdItfReq(&req);
+        usb_Std_Interface_Req(&req);
         break;
 
     case USB_REQ_RECIPIENT_ENDPOINT:
-        usb_StdEPReq(&req);
+        usb_Std_EndPoint_Req(&req);
         break;
 
     default:
@@ -1706,7 +1710,7 @@ static void EP_ClrStall(uint8_t epnum)
 /*
  * Handle standard usb endpoint requests
  */
-static void usb_StdEPReq(USB_SETUP_REQ  *req)
+static void usb_Std_EndPoint_Req(USB_SETUP_REQ  *req)
 {
     uint8_t   ep_addr;
     ep_addr  = LOBYTE(req->wIndex);
@@ -1818,7 +1822,7 @@ static void usb_StdEPReq(USB_SETUP_REQ  *req)
 /*
  *  Handle standard usb interface requests
  */
-static void usb_StdItfReq(USB_SETUP_REQ  *req)
+static void usb_Std_Interface_Req(USB_SETUP_REQ  *req)
 {
     switch(device_status)
     {
@@ -1846,9 +1850,9 @@ static void usb_StdItfReq(USB_SETUP_REQ  *req)
 /**
  * Handle standard usb device requests
  */
-static void usb_StdDevReq(USB_SETUP_REQ  *req)
+static void usb_Std_Device_Req(USB_SETUP_REQ  *req)
 {
-    switch (req->bRequest)
+    switch(req->bRequest)
     {
     case USB_REQ_GET_DESCRIPTOR:
         if(USB_DESC_TYPE_CONFIGURATION == (req->wValue >> 8))

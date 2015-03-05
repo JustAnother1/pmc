@@ -30,7 +30,7 @@ void error_fatal_error(char* msg)
 
 void error_signal_error_and_die(void)
 {
-    hal_led_set_led(DEBUG_LED, true);
+    hal_led_set_led(ERROR_LED, true);
 #ifdef HAS_USB
     hal_usb_device_cdc_disconnect();
 #endif

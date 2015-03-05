@@ -17,6 +17,8 @@
 #include <stddef.h>
 #include "usb_device.h"
 #include "usb_std.h"
+#include "hal_led.h"
+#include "hal_cfg.h"
 
 #define USB_MANUFACTURER_STRING                  "nomagic.de"
 #define USB_PRODUCT_FS_STRING                    "Virtual ComPort"
@@ -82,7 +84,7 @@ void GetDescriptor(USB_SETUP_REQ *req)
     uint16_t len;
     uint8_t *pbuf;
 
-    switch (req->wValue >> 8)
+    switch(req->wValue >> 8)
     {
     case USB_DESC_TYPE_DEVICE:
         pbuf = GetDeviceDescriptor(&len);
