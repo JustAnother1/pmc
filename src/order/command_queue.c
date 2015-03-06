@@ -23,7 +23,7 @@
 #include "device_stepper.h"
 #include "device_input.h"
 
-#define MAX_QUEUE_ELEMENTS                10
+#define MAX_QUEUE_ELEMENTS                50
 // Block Envelope is Length and Type -> 2 Bytes
 #define BLOCK_ENVELOPE_SIZE               2
 // biggest block is a Basic Linear Move with 14 Axis, 2 Bytes for Steps, 2 Bytes Axis selection -> 40 Bytes
@@ -50,15 +50,15 @@ static void send_queue_failed_response(uint_fast8_t cause,
 static void handle_wrapped_command(void);
 static void finished_current_stacked_block(void);
 
-uint_fast8_t queue[MAX_QUEUE_ELEMENTS][MAX_BLOCK_LENGTH];
-uint_fast8_t queue_type[MAX_QUEUE_ELEMENTS];
+static uint_fast8_t queue[MAX_QUEUE_ELEMENTS][MAX_BLOCK_LENGTH];
+static uint_fast8_t queue_type[MAX_QUEUE_ELEMENTS];
 // Index to Queue for:
-uint_fast8_t read_pos; // reading
-uint_fast8_t write_pos; // writing
-uint_fast8_t stacked_pos; // start position of skipped and not executed commands
-uint_fast8_t stacked_non_move_orders = 0; // number of commands that have been skipped
-uint_fast16_t finished_blocks =0; // number of successfully executed Blocks
-bool move_since_last_tag = false;
+static uint_fast8_t read_pos; // reading
+static uint_fast8_t write_pos; // writing
+static uint_fast8_t stacked_pos; // start position of skipped and not executed commands
+static uint_fast8_t stacked_non_move_orders = 0; // number of commands that have been skipped
+static uint_fast16_t finished_blocks = 0; // number of successfully executed Blocks
+static bool move_since_last_tag = false;
 
 void cmd_queue_init(void)
 {
@@ -87,7 +87,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
     uint_fast8_t cur_type;
     uint_fast8_t next_write_position;
     // Empty Parameter sends an OK reply. This is used by the host to check the Queue status.
-    while(received_bytes - cur_position > 0)
+    while(received_bytes > cur_position)
     {
         // check if we have another Block
         if(BLOCK_ENVELOPE_SIZE > received_bytes - cur_position)
@@ -192,9 +192,8 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             uint_fast8_t num_active_axis;
             uint_fast8_t bytes_per_axis;
             uint_fast8_t start_of_axis_steps;
-            cur_position++;
             queue_type[write_pos] = cur_type;
-            queue[write_pos][0] = block_bytes -1;
+            queue[write_pos][0] = block_bytes - 1;
             for(i = 1; i < block_bytes ; i++)
             {
                 queue[write_pos][i] = com_get_parameter_byte(cur_position + i);
@@ -277,7 +276,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             write_pos = next_write_position;
             successfull_enqueued_commands++;
         }
-        cur_position = cur_position + block_bytes - 1;
+        cur_position = cur_position + block_bytes + 1;
     }
     send_queue_ok_response();
 }
