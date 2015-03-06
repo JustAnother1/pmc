@@ -223,6 +223,7 @@ default:
 
 static void copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
+    // TODO simplify
     if(devices[device].send_end_pos < devices[device].send_pos)
     {
         // buffer already wrapped
