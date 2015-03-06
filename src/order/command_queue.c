@@ -343,8 +343,8 @@ static void send_queue_ok_response(void)
     para_start[2] = (uint8_t)(slots_taken >> 8) & 0xff;
     para_start[3] = (uint8_t)slots_taken & 0xff;
 
-    para_start[2] = (uint8_t)(finished_blocks >> 8) & 0xff;
-    para_start[3] = (uint8_t)finished_blocks & 0xff;
+    para_start[4] = (uint8_t)(finished_blocks >> 8) & 0xff;
+    para_start[5] = (uint8_t)finished_blocks & 0xff;
     com_send_ok_with_prefilled_parameter(6);
 }
 
@@ -359,6 +359,7 @@ void cmd_queue_tick(void)
         {
             // execute all stacked Orders
             uint_fast8_t i;
+            // TODO better only once command at a time?
             for(i = 0; i < stacked_non_move_orders; i++)
             {
                 // Queue has something -> execute that

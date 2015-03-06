@@ -34,8 +34,9 @@
 #define MOVE_PHASE_CONSTANT_SPEED   1
 #define MOVE_PHASE_DECELERATE       2
 // Timer runs on 12 MHz clock.
-#define TICKS_PER_SECOND            12000000
+#define TICKS_PER_SECOND            12*1000*1000
 #define STEP_TIME_ONE_MS            (TICKS_PER_SECOND/1000)
+#define REFILL_BUFFER_RELOAD        3000
 
 
 // Timer:
@@ -309,7 +310,7 @@ static void refill_step_buffer(void)
         // if we have some steps then start the timer
         if(step_pos != stop_pos)
         {
-            if(false == hal_time_start_timer(STEP_TIMER, 0, step_isr))
+            if(false == hal_time_start_timer(STEP_TIMER, TICKS_PER_SECOND, 1, step_isr))
             {
                 error_fatal_error("Failed to start Timer !");
             }
@@ -324,7 +325,10 @@ static void refill_step_buffer(void)
         // but only if we have something to do
         if(SLOT_TYPE_EMPTY != cur_slot_type)
         {
-            if(false == hal_time_start_timer(STEP_BUFFER_TIMER, 0, refill_step_buffer))
+            if(false == hal_time_start_timer(STEP_BUFFER_TIMER,
+                                             TICKS_PER_SECOND,
+                                             REFILL_BUFFER_RELOAD,
+                                             refill_step_buffer))
             {
                 error_fatal_error("Failed to start Timer !");
             }

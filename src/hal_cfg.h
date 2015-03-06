@@ -37,7 +37,7 @@
 
 // Timer
 // Step creation
-#define STEP_TIMER        0
-#define STEP_BUFFER_TIMER 1
+#define STEP_TIMER        6
+#define STEP_BUFFER_TIMER 7
 
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */

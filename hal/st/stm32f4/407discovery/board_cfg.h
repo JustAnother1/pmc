@@ -21,7 +21,8 @@
 /*         Clock Configuration                                                */
 /*                                                                            */
 /******************************************************************************/
-
+// CPU Clock = 168 MHz
+#define FREQUENCY_OF_CPU_CLK 168000000
 // frequency the cpu runs with AHB / HCLK = 84MHz
 #define FREQUENCY_OF_HCLK    ((uint32_t)84000000)
 
@@ -52,6 +53,8 @@
 /*         I R Q                                                              */
 /*                                                                            */
 /******************************************************************************/
+// The Interrupt with the lowest Priority Number is the most important
+// priority values can be 0..15
 #define UART_0_IRQ_NUMBER          USART1_IRQn
 #define UART_0_IRQ_PRIORITY        5
 #define UART_1_IRQ_NUMBER          USART6_IRQn
@@ -60,6 +63,41 @@
 #define SPI_0_IRQ_PRIORITY         8
 #define SPI_1_IRQ_NUMBER           SPI2_IRQn
 #define SPI_1_IRQ_PRIORITY         12
+
+/******************************************************************************/
+/*                                                                            */
+/*         T i m e r                                                          */
+/*                                                                            */
+/******************************************************************************/
+
+#define TIM_1_IRQ_NUMBER           TIM1_CC_IRQn
+#define TIM_1_IRQ_PRIORITY         4
+#define TIM_2_IRQ_NUMBER           TIM2_IRQn
+#define TIM_2_IRQ_PRIORITY         4
+#define TIM_3_IRQ_NUMBER           TIM3_IRQn
+#define TIM_3_IRQ_PRIORITY         4
+#define TIM_4_IRQ_NUMBER           TIM4_IRQn
+#define TIM_4_IRQ_PRIORITY         4
+#define TIM_5_IRQ_NUMBER           TIM5_IRQn
+#define TIM_5_IRQ_PRIORITY         4
+#define TIM_6_IRQ_NUMBER           TIM6_DAC_IRQn
+#define TIM_6_IRQ_PRIORITY         2
+#define TIM_7_IRQ_NUMBER           TIM7_IRQn
+#define TIM_7_IRQ_PRIORITY         4
+#define TIM_8_IRQ_NUMBER           TIM8_CC_IRQn
+#define TIM_8_IRQ_PRIORITY         4
+#define TIM_9_IRQ_NUMBER           TIM1_BRK_TIM9_IRQn
+#define TIM_9_IRQ_PRIORITY         4
+#define TIM_10_IRQ_NUMBER          TIM1_UP_TIM10_IRQn
+#define TIM_10_IRQ_PRIORITY        4
+#define TIM_11_IRQ_NUMBER          TIM1_TRG_COM_TIM11_IRQn
+#define TIM_11_IRQ_PRIORITY        4
+#define TIM_12_IRQ_NUMBER          TIM8_BRK_TIM12_IRQn
+#define TIM_12_IRQ_PRIORITY        4
+#define TIM_13_IRQ_NUMBER          TIM8_UP_TIM13_IRQn
+#define TIM_13_IRQ_PRIORITY        4
+#define TIM_14_IRQ_NUMBER          TIM8_TRG_COM_TIM14_IRQn
+#define TIM_14_IRQ_PRIORITY        4
 
 /******************************************************************************/
 /*                                                                            */
