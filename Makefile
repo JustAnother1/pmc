@@ -18,8 +18,8 @@ include cfg/features.mk
 include cfg/system.mk
 include cfg/files.mk
 
-# Define optimisation level here
-OPT += -O3 -ffunction-sections -fdata-sections
+# Define optimisation level here -O3
+OPT += -O0 -ffunction-sections -fdata-sections
 CFLAGS += $(OPT) -g -Wall -pedantic -std=gnu99
 LDFLAGS +=  -g -Wall -fwhole-program $(LIB)
 

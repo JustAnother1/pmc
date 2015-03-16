@@ -18,6 +18,22 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#ifdef USE_STEP_DIR
+#define MICROSTEP_1_1_STEP      8
+#define MICROSTEP_1_2_STEP      7
+#define MICROSTEP_1_4_STEP      6
+#define MICROSTEP_1_8_STEP      5
+#define MICROSTEP_1_16_STEP     4
+#define MICROSTEP_1_32_STEP     3
+#define MICROSTEP_1_64_STEP     2
+#define MICROSTEP_1_128_STEP    1
+#define MICROSTEP_1_256_STEP    0
+#else
+#define STEP_MODE_FULL_WAVE                 0
+#define STEP_MODE_FULL_TWO_COILS_ACTIVE     1
+#define STEP_MODE_HALF_STEP                 2
+#endif
+
 
 uint_fast8_t trinamic_detect_number_of_steppers(void);
 void trinamic_configure_steppers(uint_fast8_t num_steppers);

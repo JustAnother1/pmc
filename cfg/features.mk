@@ -3,7 +3,7 @@
 # disable a component: component=no
 USE_UART = yes
 USE_USB = no
-USE_STEP_DIR = no
+USE_STEP_DIR = yes
 # enables / disables the debug console and debug_msg()
 ACTIVATE_DEBUG = yes
 

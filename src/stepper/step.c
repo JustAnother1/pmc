@@ -21,6 +21,7 @@
 #include "hal_time.h"
 #include "hal_cfg.h"
 #include "hal_stepper_port.h"
+#include "hal_led.h"
 
 
 #define STEP_CHUNK_SIZE             10
@@ -34,14 +35,10 @@
 #define MOVE_PHASE_CONSTANT_SPEED   1
 #define MOVE_PHASE_DECELERATE       2
 // Timer runs on 12 MHz clock.
-#define TICKS_PER_SECOND            12*1000*1000
+#define TICKS_PER_SECOND            (12*1000*1000)
 #define STEP_TIME_ONE_MS            (TICKS_PER_SECOND/1000)
 #define REFILL_BUFFER_RELOAD        3000
 
-
-// Timer:
-static void step_isr(void);
-static void refill_step_buffer(void);
 
 static void caclculate_basic_move_chunk(uint_fast8_t num_slots);
 static uint_fast16_t get_reload_primary_axis(void);
@@ -52,43 +49,48 @@ static void finished_cur_slot(void);
 static void make_the_needed_steps(void);
 static void do_step_on_axis(uint_fast8_t i);
 static void auto_activate_usedAxis(void);
+static void step_isr(void);
+static void refill_step_buffer(void);
+#ifdef USE_STEP_DIR
+static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value);
+#else
+#endif
 
 // Step Timer
-static bool step_timer_running;
-static uint_fast8_t step_pos = 0;
-static uint_fast8_t stop_pos = 0;
+static volatile bool step_timer_running;
+static volatile uint_fast8_t step_pos = 0;
+static volatile uint_fast8_t stop_pos = 0;
 
 // step buffer timer
-static bool buffer_timer_running;
+static volatile bool buffer_timer_running;
 
 // step queue
-static bool busy;
-static bool reached_tag;
-static uint_fast8_t cur_slot_type;
+static volatile bool busy;
+static volatile bool reached_tag;
+static volatile uint_fast8_t cur_slot_type;
 // to handle delays:
-static uint_fast16_t delay_ms;
+static volatile uint_fast16_t delay_ms;
 // to handle Basic Linear Move:
-static uint_fast16_t active_axes_map;
-static uint_fast8_t primary_axis;
+static volatile uint_fast16_t active_axes_map;
+static volatile uint_fast8_t primary_axis;
 static bool is_a_homing_move;
 static uint_fast8_t direction_for_move;
-static uint_fast8_t start_speed;
-static uint_fast8_t nominal_speed;
-static uint_fast8_t end_speed;
-static uint_fast16_t acceleration_steps;
-static uint_fast16_t decelleration_steps;
-static uint_fast16_t steps_on_axis[MAX_NUMBER];
-static uint_fast8_t phase_of_move;
-static uint_fast16_t steps_in_this_phase_on_axis[MAX_NUMBER];
-static uint_fast16_t steps_already_made[MAX_NUMBER];
-static uint_fast32_t curTime;
-static float start_speed_ticks;
-static float nominal_speed_ticks;
-static float curSpeed;
-static float speed_increse_acc_tick;
-static float speed_decrese_decel_tick;
-static float average_speed_acceleration;
-static float average_speed_deceleration;
+static volatile uint_fast8_t start_speed;
+static volatile float start_speed_ticks;
+static volatile uint_fast8_t nominal_speed;
+static volatile float nominal_speed_ticks;
+static volatile uint_fast8_t end_speed;
+static volatile float end_speed_ticks;
+static volatile uint_fast16_t acceleration_steps;
+static volatile uint_fast16_t decelleration_steps;
+static volatile uint_fast16_t steps_on_axis[MAX_NUMBER];
+static volatile uint_fast8_t phase_of_move;
+static volatile uint_fast16_t steps_in_this_phase_on_axis[MAX_NUMBER];
+static volatile uint_fast16_t steps_already_made[MAX_NUMBER];
+static volatile uint_fast32_t curTime;
+static volatile float speed_increse_acc_tick;
+static volatile float speed_decrese_decel_tick;
+
 
 
 // enable / disable Stepper
@@ -98,13 +100,13 @@ static bool enabled[MAX_NUMBER];
 
 
 #ifdef USE_STEP_DIR
-static uint32_t next_step[STEP_BUFFER_SIZE];
-static uint32_t cur_step;
+static volatile uint32_t next_step[STEP_BUFFER_SIZE];
+static volatile uint32_t cur_step;
 #else
-static uint_fast8_t move_on_axis[STEP_BUFFER_SIZE];
-static uint_fast8_t next_direction[STEP_BUFFER_SIZE];
+static volatile uint_fast8_t move_on_axis[STEP_BUFFER_SIZE];
+static volatile uint_fast8_t next_direction[STEP_BUFFER_SIZE];
 #endif
-static uint_fast16_t next_reload[STEP_BUFFER_SIZE];
+static volatile uint_fast16_t next_reload[STEP_BUFFER_SIZE];
 
 /*
 static uint_fast8_t start_speed;
@@ -328,7 +330,7 @@ static void refill_step_buffer(void)
             if(false == hal_time_start_timer(STEP_BUFFER_TIMER,
                                              TICKS_PER_SECOND,
                                              REFILL_BUFFER_RELOAD,
-                                             refill_step_buffer))
+                                             &refill_step_buffer))
             {
                 error_fatal_error("Failed to start Timer !");
             }
@@ -339,7 +341,7 @@ static void refill_step_buffer(void)
     else
     {
         // stop this timer if we have nothing to do
-        if(SLOT_TYPE_EMPTY != cur_slot_type)
+        if(SLOT_TYPE_EMPTY == cur_slot_type)
         {
             hal_time_stop_timer(STEP_BUFFER_TIMER);
             buffer_timer_running = false;
@@ -394,7 +396,7 @@ static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
     int i;
     for(i = 0; i < num_slots; i++)
     {
-        // check if we have more steps int this move / this phase
+        // check if we have more steps in this move / this phase
         if(steps_already_made[primary_axis] < steps_in_this_phase_on_axis[primary_axis])
         {
             // more steps to do in this phase
@@ -412,6 +414,11 @@ static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
         }
         else
         {
+            int n;
+            for(n = 0; n < MAX_NUMBER; n++)
+            {
+                steps_already_made[n] = 0;
+            }
             // switch phase / end move
             switch(phase_of_move)
             {
@@ -421,12 +428,14 @@ static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
                 if(0 < constant_speed_steps)
                 {
                     phase_of_move = MOVE_PHASE_CONSTANT_SPEED;
-                    get_steps_for_this_phase(constant_speed_steps / steps_on_axis[primary_axis]);
+                    get_steps_for_this_phase((float)constant_speed_steps / (float)steps_on_axis[primary_axis]);
                 }
                 else if(0 < decelleration_steps)
                 {
                     // switch to decelerate
                     phase_of_move = MOVE_PHASE_DECELERATE ;
+                    curTime = 0;
+                    hal_led_set_led(ERROR_LED, true);
                     get_steps_for_this_phase(1);
                 }
                 else
@@ -443,6 +452,7 @@ static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
                 {
                     // switch to decelerate
                     phase_of_move = MOVE_PHASE_DECELERATE ;
+                    hal_led_set_led(ERROR_LED, true);
                     curTime = 0;
                     get_steps_for_this_phase(1);
                 }
@@ -463,35 +473,42 @@ static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
     }
 }
 
+
 static uint_fast16_t get_reload_primary_axis(void)
 {
+    uint_fast16_t curReload;
+    float curSpeed;
     switch(phase_of_move)
     {
     case MOVE_PHASE_ACCELLERATE:
-    {
-        uint_fast16_t curReload;
         curSpeed = start_speed_ticks + (speed_increse_acc_tick * curTime);
-        curReload = (uint_fast16_t)((1/curSpeed) + 0.5);
+        curReload = (uint_fast16_t)(((1/curSpeed) * (float)TICKS_PER_SECOND) + 0.5);
+        if(curReload < speed_reloads[nominal_speed])
+        {
+            curReload = speed_reloads[nominal_speed];
+        }
         curTime = curTime + curReload;
         return curReload;
-    }
 
     case MOVE_PHASE_CONSTANT_SPEED:
         return speed_reloads[nominal_speed];
 
     case MOVE_PHASE_DECELERATE :
-    {
-        uint_fast16_t curReload;
         curSpeed = nominal_speed_ticks - (speed_decrese_decel_tick * curTime);
-        curReload = (uint_fast16_t)((1/curSpeed) + 0.5);
+        curReload = (uint_fast16_t)(((1/curSpeed) * (float)TICKS_PER_SECOND) + 0.5);
+        if(curReload > speed_reloads[end_speed])
+        {
+            curReload = speed_reloads[end_speed];
+        }
         curTime = curTime + curReload;
         return curReload;
-    }
 
     }
+    // default:
     // should never happen:
-    return 1;
+    return 0xfffd;
 }
+
 
 static void make_the_needed_steps(void)
 {
@@ -515,23 +532,29 @@ static void make_the_needed_steps(void)
     }
 }
 
-static void do_step_on_axis(uint_fast8_t i)
-{
 #ifdef USE_STEP_DIR
-    uint32_t axis_mask = 0;
-    switch(i)
+static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value)
+{
+    uint32_t mask = 1<<bit;
+    if(0 == (value & mask))
     {
-
-    }
-    if(0 == (axis_mask & cur_step))
-    {
-        cur_step |= axis_mask;
+        value |= mask;
     }
     else
     {
-        cur_step &= ~axis_mask;
+        value &= ~mask;
     }
+    return value;
+}
+#else
+#endif
+
+static void do_step_on_axis(uint_fast8_t i)
+{
+#ifdef USE_STEP_DIR
+    cur_step = toggle_bit(i, cur_step);
     next_step[stop_pos] = cur_step;
+    //TODO Direction
 #else
     uint_fast8_t axis_mask = 0;
     switch(i)
@@ -584,7 +607,7 @@ static void get_steps_for_this_phase(float factor)
 
 void step_init(uint_fast8_t num_stepper)
 {
-    uint_fast8_t i;
+    int i;
     for(i = 0; i < MAX_NUMBER; i++)
     {
         steps_on_axis[i] = 0;
@@ -600,16 +623,15 @@ void step_init(uint_fast8_t num_stepper)
     available_steppers = num_stepper;
     buffer_timer_running = false;
     step_timer_running = false;
-#ifdef USE_STEP_DIR
-    hal_stepper_port_init();
-    for(i = 0; i < MAX_NUMBER; i++)
+    for(i = 0; i < STEP_BUFFER_SIZE; i++)
     {
+        next_reload[i] = 0xfffe;
+#ifdef USE_STEP_DIR
         next_step[i] = 0;
     }
     cur_step = 0;
+    hal_stepper_port_init();
 #else
-    for(i = 0; i < MAX_NUMBER; i++)
-    {
         move_on_axis[i] = 0;
         next_direction[i] = 0;
     }
@@ -776,41 +798,50 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
     // TODO test if length of packet matches
 
     curTime = 0;
-    nominal_speed_ticks = (float)1/(float)speed_reloads[nominal_speed];
+    nominal_speed_ticks = (float)TICKS_PER_SECOND/(float)speed_reloads[nominal_speed];
 
     if(0 < acceleration_steps)
     {
         phase_of_move = MOVE_PHASE_ACCELLERATE;
-        get_steps_for_this_phase(acceleration_steps /steps_on_axis[primary_axis]);
-        start_speed_ticks = (float)1/(float)speed_reloads[start_speed];
-        curSpeed = start_speed_ticks;
+        get_steps_for_this_phase((float)acceleration_steps / (float)steps_on_axis[primary_axis]);
+        start_speed_ticks = (float)((float)TICKS_PER_SECOND/(float)speed_reloads[start_speed]);
+        // curTime = 0.5 * speed_reloads[start_speed];
     }
     else
     {
-        curSpeed = nominal_speed_ticks;
         // we already know that accelerationSteps is 0 !
         uint_fast16_t constant_speed_steps= steps_on_axis[primary_axis] - decelleration_steps;
         if(0 < constant_speed_steps)
         {
             phase_of_move = MOVE_PHASE_CONSTANT_SPEED;
-            get_steps_for_this_phase(constant_speed_steps / steps_on_axis[primary_axis]);
+            get_steps_for_this_phase((float)constant_speed_steps / (float)steps_on_axis[primary_axis]);
         }
         else
         {
             // this move is decelerating only
             phase_of_move = MOVE_PHASE_DECELERATE ;
+            hal_led_set_led(ERROR_LED, true);
             get_steps_for_this_phase(1);
         }
     }
 
-    average_speed_acceleration = speed_reloads[start_speed] + (speed_reloads[nominal_speed] - speed_reloads[start_speed])/2;
-    average_speed_deceleration = speed_reloads[nominal_speed] + (speed_reloads[nominal_speed] - speed_reloads[end_speed])/2;
-    speed_increse_acc_tick = (float)1
-            /(float)(speed_reloads[end_speed] - speed_reloads[start_speed])
-    /(steps_in_this_phase_on_axis[primary_axis] * average_speed_acceleration);
-    speed_decrese_decel_tick = (float)1
-            /(float)(speed_reloads[nominal_speed] - speed_reloads[end_speed])
-    /(steps_in_this_phase_on_axis[primary_axis]/average_speed_deceleration);
+    if(0 < acceleration_steps)
+    {
+        float average_speed = (nominal_speed_ticks + start_speed_ticks) / 2;
+        float speed_increase = nominal_speed_ticks - start_speed_ticks;
+        float time_ticks = (float)acceleration_steps/average_speed * TICKS_PER_SECOND;
+        speed_increse_acc_tick = speed_increase/time_ticks;
+    }
+
+    if(0 < decelleration_steps)
+    {
+        end_speed_ticks = (float)((float)TICKS_PER_SECOND/(float)speed_reloads[end_speed]);
+        float average_speed = (nominal_speed_ticks + end_speed_ticks) / 2;
+        float speed_decrease = nominal_speed_ticks - end_speed_ticks;
+        float time_ticks = (float)decelleration_steps/average_speed * TICKS_PER_SECOND;
+        speed_decrese_decel_tick = speed_decrease/time_ticks;
+    }
+
     cur_slot_type = SLOT_TYPE_BASIC_LINEAR_MOVE;
     busy = true;
     refill_step_buffer();
