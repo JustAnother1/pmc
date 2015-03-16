@@ -216,7 +216,7 @@ void dev_stepper_configure_axis_movement_rate(uint_fast8_t stepper_number, uint_
     }
     else
     {
-        if((0 < max_steps) && ( MAX_STEP_RATE > max_steps))
+        if((0 < max_steps) && ( MAX_STEP_RATE+1 > max_steps))
         {
             max_steps_per_second[stepper_number -1] = max_steps;
             com_send_ok_response();
@@ -238,7 +238,7 @@ void dev_stepper_configure_mvmnt_unrun_avoid_para(uint_fast8_t stepper_number,
     }
     else
     {
-        if((0 < max_steps) && ( MAX_STEP_RATE > max_steps))
+        if((0 < max_steps) && ( MAX_STEP_RATE+1 > max_steps))
         {
             if(0 < max_decelleration)
             {
