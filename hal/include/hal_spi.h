@@ -17,12 +17,17 @@
 #define HAL_SPI_H_
 
 #include <inttypes.h>
-#include "hal_cfg.h"
+#include <stdbool.h>
 
 void hal_spi_init(uint_fast8_t device);
 void hal_spi_print_configuration(uint_fast8_t device);
-void hal_spi_do_transaction(uint_fast8_t device,
+bool hal_spi_do_transaction(uint_fast8_t device,
                             uint8_t      *data_to_send,
                             uint_fast8_t num_bytes_to_send,
                             uint8_t      *data_received);
+void hal_spi_start_spi_transaction(uint_fast8_t device,
+                                   uint8_t *data_to_send,
+                                   uint_fast8_t num_bytes_to_send,
+                                   uint8_t *data_received);
+bool hal_spi_is_idle(uint_fast8_t device);
 #endif /* HAL_SPI_H_ */

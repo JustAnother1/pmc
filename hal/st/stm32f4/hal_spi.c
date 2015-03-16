@@ -14,7 +14,6 @@
  */
 
 #include "hal_spi.h"
-#include "hal_cfg.h"
 #include "hal_cpu.h"
 #include <stdbool.h>
 #include "spi.h"
@@ -23,6 +22,7 @@
 #include "board_cfg.h"
 #include "hal_debug.h"
 #include "util.h"
+#include "hal_cfg.h"
 
 // On the Wire : Most Significant Bit First (CR1)
 // When a master is communicating with SPI slaves which need to be de-selected between
@@ -31,22 +31,18 @@
 // -> NSS is GPIO controlled by software
 
 typedef struct {
-    uint_fast8_t send_pos;
-    uint_fast8_t rec_pos;
-    uint_fast8_t length;
+    volatile uint_fast8_t send_pos;
+    volatile uint_fast8_t rec_pos;
+    volatile uint_fast8_t length;
     // pointer to Bytes to send
-    uint8_t *send_buffer;
-    uint8_t *receive_buffer;
+    volatile uint8_t *send_buffer;
+    volatile uint8_t *receive_buffer;
     // SPI is idle
-    bool idle;
-    SPI_TypeDef * bus;
+    volatile bool idle;
+    volatile bool successfully_received;
+    volatile SPI_TypeDef * bus;
 }spi_device_typ;
 
-
-static void start_spi_transaction(uint_fast8_t device,
-                                  uint8_t *data_to_send,
-                                  uint_fast8_t num_bytes_to_send,
-                                  uint8_t *data_received);
 static void slave_select_start(uint_fast8_t device);
 static void slave_select_end(uint_fast8_t device);
 static void device_IRQ_handler(uint_fast8_t device);
@@ -77,7 +73,7 @@ void hal_spi_init(uint_fast8_t device)
 
             // configure SPI parameters
             // CPOL = 1 CPHA = 1
-            SPI_0->CR1 = 0x037f;
+            SPI_0->CR1 = 0x0367;
             SPI_0->CR2 = 0x0040;
 
             // Enable Interrupt
@@ -149,7 +145,7 @@ void hal_spi_init(uint_fast8_t device)
 
             // configure SPI parameters
             // CPOL = 1 CPHA = 1
-            SPI_1->CR1 = 0x037f;
+            SPI_1->CR1 = 0x0367;
             SPI_1->CR2 = 0x0040;
 
             // Enable Interrupt
@@ -274,11 +270,22 @@ void SPI_1_IRQ_HANDLER(void)
 
 static void device_IRQ_handler(uint_fast8_t device)
 {
-    if(SPI_SR_RXNE == (SPI_SR_RXNE & devices[device].bus->SR))
+    uint32_t sr = devices[device].bus->SR;
+
+    if(SPI_SR_RXNE == (SPI_SR_RXNE & sr))
     {
         // we received a byte
         devices[device].receive_buffer[devices[device].rec_pos] = (uint8_t)devices[device].bus->DR;
         devices[device].rec_pos++;
+        if(0 != (SPI_SR_OVR & devices[device].bus->SR))
+        {
+            // we had an overrun!
+            // as we are master the only thing that could have happened is
+            // that we did not service the RXNE Interrupt fast enough.
+            // We have one byte in queue when sending so one byte has been lost.
+            devices[device].successfully_received = false;
+            devices[device].rec_pos++;
+        }
         if(devices[device].length == devices[device].rec_pos)
         {
             // we received the last byte
@@ -286,7 +293,7 @@ static void device_IRQ_handler(uint_fast8_t device)
             devices[device].idle = true;
         }
     }
-    if(SPI_SR_TXE == (SPI_SR_TXE & devices[device].bus->SR))
+    if(SPI_SR_TXE == (SPI_SR_TXE & sr))
     {
         // send the next byte
         if(devices[device].length > devices[device].send_pos)
@@ -294,16 +301,15 @@ static void device_IRQ_handler(uint_fast8_t device)
             devices[device].bus->DR = devices[device].send_buffer[devices[device].send_pos];
             devices[device].send_pos++;
         }
-        if(devices[device].length == devices[device].send_pos)
+        else if(devices[device].length == devices[device].send_pos)
         {
             // we send the last byte
             devices[device].bus->CR2 &= ~SPI_CR2_TXEIE;
         }
-        devices[device].bus->SR &= ~SPI_SR_TXE;
     }
 }
 
-void hal_spi_do_transaction(uint_fast8_t device,
+bool hal_spi_do_transaction(uint_fast8_t device,
                             uint8_t *data_to_send,
                             uint_fast8_t num_bytes_to_send,
                             uint8_t *data_received)
@@ -314,17 +320,19 @@ void hal_spi_do_transaction(uint_fast8_t device,
         {
             ; // wait until we can send the data out
         }
-        start_spi_transaction(device,
-                              data_to_send,
-                              num_bytes_to_send,
-                              data_received);
+        hal_spi_start_spi_transaction(device,
+                                      data_to_send,
+                                      num_bytes_to_send,
+                                      data_received);
 
         while(false == devices[device].idle)
         {
             ; // wait until we have the data back
         }
+        return devices[device].successfully_received;
     }
     // else invalid Interface Specified
+    return false;
 }
 
 static void slave_select_start(uint_fast8_t device)
@@ -349,15 +357,25 @@ static void slave_select_end(uint_fast8_t device)
     }
 }
 
-static void start_spi_transaction(uint_fast8_t device,
-                                  uint8_t *data_to_send,
-                                  uint_fast8_t num_bytes_to_send,
-                                  uint8_t *data_received)
+bool hal_spi_is_idle(uint_fast8_t device)
 {
+    return devices[device].idle;
+}
+
+void hal_spi_start_spi_transaction(uint_fast8_t device,
+                                   uint8_t *data_to_send,
+                                   uint_fast8_t num_bytes_to_send,
+                                   uint8_t *data_received)
+{
+    if(false == devices[device].idle)
+    {
+        // TODO report the error
+    }
+    devices[device].idle = false;
     slave_select_start(device);
+    devices[device].successfully_received = true;
     devices[device].send_buffer = data_to_send;
     devices[device].receive_buffer = data_received;
-    devices[device].idle = false;
     devices[device].send_pos = 1;
     devices[device].rec_pos = 0;
     devices[device].length = num_bytes_to_send;
