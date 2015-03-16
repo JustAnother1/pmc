@@ -83,7 +83,7 @@
 #define TIM_6_IRQ_NUMBER           TIM6_DAC_IRQn
 #define TIM_6_IRQ_PRIORITY         2
 #define TIM_7_IRQ_NUMBER           TIM7_IRQn
-#define TIM_7_IRQ_PRIORITY         4
+#define TIM_7_IRQ_PRIORITY         10
 #define TIM_8_IRQ_NUMBER           TIM8_CC_IRQn
 #define TIM_8_IRQ_PRIORITY         4
 #define TIM_9_IRQ_NUMBER           TIM1_BRK_TIM9_IRQn
@@ -150,31 +150,59 @@
 /*                                                                            */
 /******************************************************************************/
 
-#define DEBUG_LED_GPIO_PORT        GPIOD
-#define DEBUG_LED_RCC_GPIO_ENABLE  RCC_AHB1ENR_GPIODEN
-#define DEBUG_LED_MODER_0          GPIO_MODER_12_OUTPUT_0
-#define DEBUG_LED_MODER_1          GPIO_MODER_12_OUTPUT_1
-#define DEBUG_LED_OTYPER_0         GPIO_OTYPER_12_PUSH_PULL_0
-#define DEBUG_LED_OTYPER_1         GPIO_OTYPER_12_PUSH_PULL_1
-#define DEBUG_LED_OSPEEDR_0        GPIO_OSPEEDER_12_LOW_SPEED_0
-#define DEBUG_LED_OSPEEDR_1        GPIO_OSPEEDER_12_LOW_SPEED_1
-#define DEBUG_LED_PUPD_0           GPIO_PUPDR_12_NONE_0
-#define DEBUG_LED_PUPD_1           GPIO_PUPDR_12_NONE_1
-#define DEBUG_LED_ODR              GPIO_ODR_12
-#define DEBUG_LED_BSRR             GPIO_BSRR_12
-
-#define ERROR_LED_GPIO_PORT        GPIOD
-#define ERROR_LED_RCC_GPIO_ENABLE  RCC_AHB1ENR_GPIODEN
-#define ERROR_LED_MODER_0          GPIO_MODER_14_OUTPUT_0
-#define ERROR_LED_MODER_1          GPIO_MODER_14_OUTPUT_1
-#define ERROR_LED_OTYPER_0         GPIO_OTYPER_14_PUSH_PULL_0
-#define ERROR_LED_OTYPER_1         GPIO_OTYPER_14_PUSH_PULL_1
-#define ERROR_LED_OSPEEDR_0        GPIO_OSPEEDER_12_LOW_SPEED_0
-#define ERROR_LED_OSPEEDR_1        GPIO_OSPEEDER_12_LOW_SPEED_1
-#define ERROR_LED_PUPD_0           GPIO_PUPDR_14_NONE_0
-#define ERROR_LED_PUPD_1           GPIO_PUPDR_14_NONE_1
-#define ERROR_LED_ODR              GPIO_ODR_14
-#define ERROR_LED_BSRR             GPIO_BSRR_14
+#define NUMBER_OF_LED              4
+// green
+#define LED_0_GPIO_PORT            GPIOD
+#define LED_0_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIODEN
+#define LED_0_MODER_0              GPIO_MODER_12_OUTPUT_0
+#define LED_0_MODER_1              GPIO_MODER_12_OUTPUT_1
+#define LED_0_OTYPER_0             GPIO_OTYPER_12_PUSH_PULL_0
+#define LED_0_OTYPER_1             GPIO_OTYPER_12_PUSH_PULL_1
+#define LED_0_OSPEEDR_0            GPIO_OSPEEDER_12_LOW_SPEED_0
+#define LED_0_OSPEEDR_1            GPIO_OSPEEDER_12_LOW_SPEED_1
+#define LED_0_PUPD_0               GPIO_PUPDR_12_NONE_0
+#define LED_0_PUPD_1               GPIO_PUPDR_12_NONE_1
+#define LED_0_ODR                  GPIO_ODR_12
+#define LED_0_BSRR                 GPIO_BSRR_12
+// orange
+#define LED_1_GPIO_PORT            GPIOD
+#define LED_1_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIODEN
+#define LED_1_MODER_0              GPIO_MODER_13_OUTPUT_0
+#define LED_1_MODER_1              GPIO_MODER_13_OUTPUT_1
+#define LED_1_OTYPER_0             GPIO_OTYPER_13_PUSH_PULL_0
+#define LED_1_OTYPER_1             GPIO_OTYPER_13_PUSH_PULL_1
+#define LED_1_OSPEEDR_0            GPIO_OSPEEDER_13_LOW_SPEED_0
+#define LED_1_OSPEEDR_1            GPIO_OSPEEDER_13_LOW_SPEED_1
+#define LED_1_PUPD_0               GPIO_PUPDR_13_NONE_0
+#define LED_1_PUPD_1               GPIO_PUPDR_13_NONE_1
+#define LED_1_ODR                  GPIO_ODR_13
+#define LED_1_BSRR                 GPIO_BSRR_13
+// red
+#define LED_2_GPIO_PORT            GPIOD
+#define LED_2_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIODEN
+#define LED_2_MODER_0              GPIO_MODER_14_OUTPUT_0
+#define LED_2_MODER_1              GPIO_MODER_14_OUTPUT_1
+#define LED_2_OTYPER_0             GPIO_OTYPER_14_PUSH_PULL_0
+#define LED_2_OTYPER_1             GPIO_OTYPER_14_PUSH_PULL_1
+#define LED_2_OSPEEDR_0            GPIO_OSPEEDER_14_LOW_SPEED_0
+#define LED_2_OSPEEDR_1            GPIO_OSPEEDER_14_LOW_SPEED_1
+#define LED_2_PUPD_0               GPIO_PUPDR_14_NONE_0
+#define LED_2_PUPD_1               GPIO_PUPDR_14_NONE_1
+#define LED_2_ODR                  GPIO_ODR_14
+#define LED_2_BSRR                 GPIO_BSRR_14
+// blue
+#define LED_3_GPIO_PORT            GPIOD
+#define LED_3_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIODEN
+#define LED_3_MODER_0              GPIO_MODER_15_OUTPUT_0
+#define LED_3_MODER_1              GPIO_MODER_15_OUTPUT_1
+#define LED_3_OTYPER_0             GPIO_OTYPER_15_PUSH_PULL_0
+#define LED_3_OTYPER_1             GPIO_OTYPER_15_PUSH_PULL_1
+#define LED_3_OSPEEDR_0            GPIO_OSPEEDER_15_LOW_SPEED_0
+#define LED_3_OSPEEDR_1            GPIO_OSPEEDER_15_LOW_SPEED_1
+#define LED_3_PUPD_0               GPIO_PUPDR_15_NONE_0
+#define LED_3_PUPD_1               GPIO_PUPDR_15_NONE_1
+#define LED_3_ODR                  GPIO_ODR_15
+#define LED_3_BSRR                 GPIO_BSRR_15
 
 /******************************************************************************/
 /*                                                                            */

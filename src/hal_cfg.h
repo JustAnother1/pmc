@@ -31,8 +31,10 @@
 
 // LEDs
 #define DEBUG_LED  0
-#define ERROR_LED  1
-#define MAX_LED    2
+#define ISR_1_LED  1
+#define ERROR_LED  2
+#define ISR_2_LED  3
+#define MAX_LED    4
 
 
 // Timer
