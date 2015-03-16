@@ -22,29 +22,44 @@
 #include "rcc.h"
 #include "board_cfg.h"
 
-
 static void hal_time_ISR(void);
 static TIM_TypeDef* get_timer_register_for(uint_fast8_t device);
 static void enable_clock_for_timer(uint_fast8_t device);
 static void disable_clock_for_timer(uint_fast8_t device);
+static void error_isr_on_stopped_timer(void);
 
 static volatile uint32_t now = 0;
-static TimerFkt isrs[15];
+static volatile TimerFkt tim_1_isr;
+static volatile TimerFkt tim_2_isr;
+static volatile TimerFkt tim_3_isr;
+static volatile TimerFkt tim_4_isr;
+static volatile TimerFkt tim_5_isr;
+static volatile TimerFkt tim_6_isr;
+static volatile TimerFkt tim_7_isr;
+static volatile TimerFkt tim_8_isr;
+static volatile TimerFkt tim_9_isr;
+static volatile TimerFkt tim_10_isr;
+static volatile TimerFkt tim_11_isr;
+static volatile TimerFkt tim_12_isr;
+static volatile TimerFkt tim_13_isr;
+static volatile TimerFkt tim_14_isr;
 
 void hal_time_init(void)
 {
-    int i;
-    // Timers that are not active will not have interrupts. But if they do then
-    // there is something wrong.
-    // All pointers get initialized with a Error Function. This Error function
-    // pointer is also in the otherwise not used field 0.
-    // this makes sure that the function pointer is never NULL. And if the Timer
-    // is stopped the function pointer can be reset with the error function from
-    // field 0.
-    for(i = 0; i < 15; i++)
-    {
-        isrs[i] = &hal_cpu_die;
-    }
+    tim_1_isr =  &error_isr_on_stopped_timer;
+    tim_2_isr =  &error_isr_on_stopped_timer;
+    tim_3_isr =  &error_isr_on_stopped_timer;
+    tim_4_isr =  &error_isr_on_stopped_timer;
+    tim_5_isr =  &error_isr_on_stopped_timer;
+    tim_6_isr =  &error_isr_on_stopped_timer;
+    tim_7_isr =  &error_isr_on_stopped_timer;
+    tim_8_isr =  &error_isr_on_stopped_timer;
+    tim_9_isr =  &error_isr_on_stopped_timer;
+    tim_10_isr =  &error_isr_on_stopped_timer;
+    tim_11_isr =  &error_isr_on_stopped_timer;
+    tim_12_isr =  &error_isr_on_stopped_timer;
+    tim_13_isr =  &error_isr_on_stopped_timer;
+    tim_14_isr =  &error_isr_on_stopped_timer;
     hal_cpu_add_ms_tick_function(&hal_time_ISR);
 }
 
@@ -56,6 +71,11 @@ static void hal_time_ISR(void)
 uint32_t hal_time_get_ms_tick(void)
 {
     return now;
+}
+
+static void error_isr_on_stopped_timer(void)
+{
+    // TODO ???
 }
 
 void hal_time_ms_sleep(uint_fast32_t ms)
@@ -199,85 +219,85 @@ static void set_irq_priority(uint_fast8_t device)
 
 void TIM1_CC_IRQHandler(void)
 {
-    isrs[1]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_1_isr();
+    TIM1->SR &= ~TIM_SR_UIF;
 }
 
 void TIM2_IRQHandler(void)
 {
-    isrs[2]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_2_isr();
+    TIM2->SR &= ~TIM_SR_UIF;
 }
 
 void TIM3_IRQHandler(void)
 {
-    isrs[3]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_3_isr();
+    TIM3->SR &= ~TIM_SR_UIF;
 }
 
 void TIM4_IRQHandler(void)
 {
-    isrs[4]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_4_isr();
+    TIM4->SR &= ~TIM_SR_UIF;
 }
 
 void TIM5_IRQHandler(void)
 {
-    isrs[5]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_5_isr();
+    TIM5->SR &= ~TIM_SR_UIF;
 }
 
 void TIM6_DAC_IRQHandler(void)
 {
-    isrs[6]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_6_isr();
+    TIM6->SR &= ~TIM_SR_UIF;
 }
 
 void TIM7_IRQHandler(void)
 {
-    isrs[7]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_7_isr();
+    TIM7->SR &= ~TIM_SR_UIF;
 }
 
 void TIM8_CC_IRQHandler(void)
 {
-    isrs[8]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_8_isr();
+    TIM8->SR &= ~TIM_SR_UIF;
 }
 
 void TIM1_BRK_TIM9_IRQHandler(void)
 {
-    isrs[9]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_9_isr();
+    TIM9->SR &= ~TIM_SR_UIF;
 }
 
 void TIM1_UP_TIM10_IRQHandler(void)
 {
-    isrs[10]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_10_isr();
+    TIM10->SR &= ~TIM_SR_UIF;
 }
 
 void TIM1_TRG_COM_TIM11_IRQHandler(void)
 {
-    isrs[11]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_11_isr();
+    TIM11->SR &= ~TIM_SR_UIF;
 }
 
 void TIM8_BRK_TIM12_IRQHandler(void)
 {
-    isrs[12]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_12_isr();
+    TIM12->SR &= ~TIM_SR_UIF;
 }
 
 void TIM8_UP_TIM13_IRQHandler(void)
 {
-    isrs[13]();
-    TIM14->SR &= ~TIM_SR_UIF;
+    tim_13_isr();
+    TIM13->SR &= ~TIM_SR_UIF;
 }
 
 void TIM8_TRG_COM_TIM14_IRQHandler(void)
 {
-    isrs[14]();
+    tim_14_isr();
     TIM14->SR &= ~TIM_SR_UIF;
 }
 
@@ -291,9 +311,25 @@ bool hal_time_start_timer(uint_fast8_t device,
     {
         return false;
     }
+    switch(device)
+    {
+    case  1: tim_1_isr =  function; break;
+    case  2: tim_2_isr =  function; break;
+    case  3: tim_3_isr =  function; break;
+    case  4: tim_4_isr =  function; break;
+    case  5: tim_5_isr =  function; break;
+    case  6: tim_6_isr =  function; break;
+    case  7: tim_7_isr =  function; break;
+    case  8: tim_8_isr =  function; break;
+    case  9: tim_9_isr =  function; break;
+    case 10: tim_10_isr = function; break;
+    case 11: tim_11_isr = function; break;
+    case 12: tim_12_isr = function; break;
+    case 13: tim_13_isr = function; break;
+    case 14: tim_14_isr = function; break;
+    }
     enable_clock_for_timer(device);
     set_irq_priority(device);
-    isrs[device] = function;
     timer->PSC = (uint16_t)(0xffff & ((FREQUENCY_OF_CPU_CLK / clock) - 1));
     timer->ARR = reload_value;
     timer->CNT = 0; // start counting at 0
@@ -308,9 +344,27 @@ void hal_time_stop_timer(uint_fast8_t device)
     {
         return;
     }
-    timer->CR1 &= ~TIM_CR1_CEN;
+    timer->CR1 = 0;
+    timer->DIER = 0;
+    timer->CNT = 0;
     disable_clock_for_timer(device);
-    isrs[device] = isrs[0];
+    switch(device)
+    {
+    case  1: tim_1_isr =  &error_isr_on_stopped_timer; break;
+    case  2: tim_2_isr =  &error_isr_on_stopped_timer; break;
+    case  3: tim_3_isr =  &error_isr_on_stopped_timer; break;
+    case  4: tim_4_isr =  &error_isr_on_stopped_timer; break;
+    case  5: tim_5_isr =  &error_isr_on_stopped_timer; break;
+    case  6: tim_6_isr =  &error_isr_on_stopped_timer; break;
+    case  7: tim_7_isr =  &error_isr_on_stopped_timer; break;
+    case  8: tim_8_isr =  &error_isr_on_stopped_timer; break;
+    case  9: tim_9_isr =  &error_isr_on_stopped_timer; break;
+    case 10: tim_10_isr = &error_isr_on_stopped_timer; break;
+    case 11: tim_11_isr = &error_isr_on_stopped_timer; break;
+    case 12: tim_12_isr = &error_isr_on_stopped_timer; break;
+    case 13: tim_13_isr = &error_isr_on_stopped_timer; break;
+    case 14: tim_14_isr = &error_isr_on_stopped_timer; break;
+    }
 }
 
 bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
