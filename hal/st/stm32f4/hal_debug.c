@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <stdarg.h>
-#include "hal_cfg.h"
 #include "hal_uart.h"
 #include "hal_led.h"
 #include "hal_cpu.h"

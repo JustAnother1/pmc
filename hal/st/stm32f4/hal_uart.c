@@ -18,7 +18,6 @@
 #include "hal_uart.h"
 #include "hal_time.h"
 #include "rcc.h"
-#include "hal_cfg.h"
 #include "board_cfg.h"
 #include "usart.h"
 #include "gpio.h"

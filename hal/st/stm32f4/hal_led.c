@@ -17,7 +17,6 @@
 #include "gpio.h"
 #include "board_cfg.h"
 #include "hal_led.h"
-#include "hal_cfg.h"
 
 typedef struct {
     GPIO_TypeDef * port;
@@ -25,54 +24,90 @@ typedef struct {
     bool is_on;
 }led_device_typ;
 
-static volatile led_device_typ devices[MAX_LED];
+static volatile led_device_typ devices[NUMBER_OF_LED];
 
 void hal_led_init(void)
 {
-// Debug LED
-    RCC->AHB1ENR |= DEBUG_LED_RCC_GPIO_ENABLE;
+    RCC->AHB1ENR |= LED_0_RCC_GPIO_ENABLE;
     // LEDS are general purpose outputs
-    DEBUG_LED_GPIO_PORT->MODER &= ~DEBUG_LED_MODER_0;
-    DEBUG_LED_GPIO_PORT->MODER |=  DEBUG_LED_MODER_1;
+    LED_0_GPIO_PORT->MODER &= ~LED_0_MODER_0;
+    LED_0_GPIO_PORT->MODER |=  LED_0_MODER_1;
     // LEDS are push pull
-    DEBUG_LED_GPIO_PORT->OTYPER &= ~DEBUG_LED_OTYPER_0;
-    DEBUG_LED_GPIO_PORT->OTYPER |=  DEBUG_LED_OTYPER_1;
+    LED_0_GPIO_PORT->OTYPER &= ~LED_0_OTYPER_0;
+    LED_0_GPIO_PORT->OTYPER |=  LED_0_OTYPER_1;
     // LEDS are low speed (= max 2MHz) but high current
-    DEBUG_LED_GPIO_PORT->OSPEEDR &= ~DEBUG_LED_OSPEEDR_0;
-    DEBUG_LED_GPIO_PORT->OSPEEDR |=  DEBUG_LED_OSPEEDR_1;
+    LED_0_GPIO_PORT->OSPEEDR &= ~LED_0_OSPEEDR_0;
+    LED_0_GPIO_PORT->OSPEEDR |=  LED_0_OSPEEDR_1;
     // No pull ups or pull downs
-    DEBUG_LED_GPIO_PORT->PUPDR &= ~DEBUG_LED_PUPD_0;
-    DEBUG_LED_GPIO_PORT->PUPDR |=  DEBUG_LED_PUPD_1;
+    LED_0_GPIO_PORT->PUPDR &= ~LED_0_PUPD_0;
+    LED_0_GPIO_PORT->PUPDR |=  LED_0_PUPD_1;
     // start with output = 0
-    DEBUG_LED_GPIO_PORT->ODR &= DEBUG_LED_ODR;
-    devices[DEBUG_LED].port = DEBUG_LED_GPIO_PORT;
-    devices[DEBUG_LED].mask = DEBUG_LED_BSRR;
-    devices[DEBUG_LED].is_on = false;
+    LED_0_GPIO_PORT->ODR &= LED_0_ODR;
+    devices[0].port = LED_0_GPIO_PORT;
+    devices[0].mask = LED_0_BSRR;
+    devices[0].is_on = false;
 
-// Error LED
-    RCC->AHB1ENR |= ERROR_LED_RCC_GPIO_ENABLE;
+    RCC->AHB1ENR |= LED_1_RCC_GPIO_ENABLE;
     // LEDS are general purpose outputs
-    ERROR_LED_GPIO_PORT->MODER &= ~ERROR_LED_MODER_0;
-    ERROR_LED_GPIO_PORT->MODER |=  ERROR_LED_MODER_1;
+    LED_1_GPIO_PORT->MODER &= ~LED_1_MODER_0;
+    LED_1_GPIO_PORT->MODER |=  LED_1_MODER_1;
     // LEDS are push pull
-    ERROR_LED_GPIO_PORT->OTYPER &= ~ERROR_LED_OTYPER_0;
-    ERROR_LED_GPIO_PORT->OTYPER |=  ERROR_LED_OTYPER_1;
-    // LEDS are high speed
-    ERROR_LED_GPIO_PORT->OSPEEDR &= ~ERROR_LED_OSPEEDR_0;
-    ERROR_LED_GPIO_PORT->OSPEEDR |=  ERROR_LED_OSPEEDR_1;
+    LED_1_GPIO_PORT->OTYPER &= ~LED_1_OTYPER_0;
+    LED_1_GPIO_PORT->OTYPER |=  LED_1_OTYPER_1;
+    // LEDS are low speed (= max 2MHz) but high current
+    LED_1_GPIO_PORT->OSPEEDR &= ~LED_1_OSPEEDR_0;
+    LED_1_GPIO_PORT->OSPEEDR |=  LED_1_OSPEEDR_1;
     // No pull ups or pull downs
-    ERROR_LED_GPIO_PORT->PUPDR &= ~ERROR_LED_PUPD_0;
-    ERROR_LED_GPIO_PORT->PUPDR |=  ERROR_LED_PUPD_1;
+    LED_1_GPIO_PORT->PUPDR &= ~LED_1_PUPD_0;
+    LED_1_GPIO_PORT->PUPDR |=  LED_1_PUPD_1;
     // start with output = 0
-    ERROR_LED_GPIO_PORT->ODR &= ERROR_LED_ODR;
-    devices[ERROR_LED].port = ERROR_LED_GPIO_PORT;
-    devices[ERROR_LED].mask = ERROR_LED_BSRR;
-    devices[ERROR_LED].is_on = false;
+    LED_1_GPIO_PORT->ODR &= LED_1_ODR;
+    devices[1].port = LED_1_GPIO_PORT;
+    devices[1].mask = LED_1_BSRR;
+    devices[1].is_on = false;
+
+    RCC->AHB1ENR |= LED_2_RCC_GPIO_ENABLE;
+    // LEDS are general purpose outputs
+    LED_2_GPIO_PORT->MODER &= ~LED_2_MODER_0;
+    LED_2_GPIO_PORT->MODER |=  LED_2_MODER_1;
+    // LEDS are push pull
+    LED_2_GPIO_PORT->OTYPER &= ~LED_2_OTYPER_0;
+    LED_2_GPIO_PORT->OTYPER |=  LED_2_OTYPER_1;
+    // LEDS are low speed (= max 2MHz) but high current
+    LED_2_GPIO_PORT->OSPEEDR &= ~LED_2_OSPEEDR_0;
+    LED_2_GPIO_PORT->OSPEEDR |=  LED_2_OSPEEDR_1;
+    // No pull ups or pull downs
+    LED_2_GPIO_PORT->PUPDR &= ~LED_2_PUPD_0;
+    LED_2_GPIO_PORT->PUPDR |=  LED_2_PUPD_1;
+    // start with output = 0
+    LED_2_GPIO_PORT->ODR &= LED_2_ODR;
+    devices[2].port = LED_2_GPIO_PORT;
+    devices[2].mask = LED_2_BSRR;
+    devices[2].is_on = false;
+
+    RCC->AHB1ENR |= LED_3_RCC_GPIO_ENABLE;
+    // LEDS are general purpose outputs
+    LED_3_GPIO_PORT->MODER &= ~LED_3_MODER_0;
+    LED_3_GPIO_PORT->MODER |=  LED_3_MODER_1;
+    // LEDS are push pull
+    LED_3_GPIO_PORT->OTYPER &= ~LED_3_OTYPER_0;
+    LED_3_GPIO_PORT->OTYPER |=  LED_3_OTYPER_1;
+    // LEDS are low speed (= max 2MHz) but high current
+    LED_3_GPIO_PORT->OSPEEDR &= ~LED_3_OSPEEDR_0;
+    LED_3_GPIO_PORT->OSPEEDR |=  LED_3_OSPEEDR_1;
+    // No pull ups or pull downs
+    LED_3_GPIO_PORT->PUPDR &= ~LED_3_PUPD_0;
+    LED_3_GPIO_PORT->PUPDR |=  LED_3_PUPD_1;
+    // start with output = 0
+    LED_3_GPIO_PORT->ODR &= LED_3_ODR;
+    devices[3].port = LED_3_GPIO_PORT;
+    devices[3].mask = LED_3_BSRR;
+    devices[3].is_on = false;
 }
 
 void hal_led_toggle_led(uint_fast8_t device)
 {
-    if(device < MAX_LED)
+    if(device < NUMBER_OF_LED)
     {
         if(true == devices[device].is_on)
         {
@@ -90,7 +125,7 @@ void hal_led_toggle_led(uint_fast8_t device)
 
 void hal_led_set_led(uint_fast8_t device, bool on)
 {
-    if(device < MAX_LED)
+    if(device < NUMBER_OF_LED)
     {
         if(false == on)
         {
