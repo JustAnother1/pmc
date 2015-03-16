@@ -38,6 +38,8 @@ static uint_fast8_t last_line_end = 'l'; // invalid value
 static void count_debug_ticks_per_ms(void);
 static void search_for_orders(void);
 static void parse_order(int length);
+static void debug_hex_buffer(uint8_t* buf, int length);
+static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low);
 
 void debug_init(void)
 {
@@ -164,6 +166,73 @@ static int get_next_word(int start_pos, int end_pos, uint8_t *buf)
     return i;
 }
 
+static void debug_hex_buffer(uint8_t* buf, int length)
+{
+    int i;
+    for(i = 0; i < length; i++)
+    {
+        debug_msg("%02x ", buf[i]);
+    }
+}
+
+static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low)
+{
+    uint_fast8_t res = 0;
+    switch(high)
+    {
+    case '0':break;
+    case '1': res = res + 1*16; break;
+    case '2': res = res + 2*16; break;
+    case '3': res = res + 3*16; break;
+    case '4': res = res + 4*16; break;
+    case '5': res = res + 5*16; break;
+    case '6': res = res + 6*16; break;
+    case '7': res = res + 7*16; break;
+    case '8': res = res + 8*16; break;
+    case '9': res = res + 9*16; break;
+    case 'A':
+    case 'a': res = res + 10*16; break;
+    case 'B':
+    case 'b': res = res + 11*16; break;
+    case 'C':
+    case 'c': res = res + 12*16; break;
+    case 'D':
+    case 'd': res = res + 13*16; break;
+    case 'E':
+    case 'e': res = res + 14*16; break;
+    case 'F':
+    case 'f': res = res + 15*16; break;
+    default: return 0;
+    }
+    switch(low)
+    {
+    case '0':break;
+    case '1': res = res + 1; break;
+    case '2': res = res + 2; break;
+    case '3': res = res + 3; break;
+    case '4': res = res + 4; break;
+    case '5': res = res + 5; break;
+    case '6': res = res + 6; break;
+    case '7': res = res + 7; break;
+    case '8': res = res + 8; break;
+    case '9': res = res + 9; break;
+    case 'A':
+    case 'a': res = res + 10; break;
+    case 'B':
+    case 'b': res = res + 11; break;
+    case 'C':
+    case 'c': res = res + 12; break;
+    case 'D':
+    case 'd': res = res + 13; break;
+    case 'E':
+    case 'e': res = res + 14; break;
+    case 'F':
+    case 'f': res = res + 15; break;
+    default: return 0;
+    }
+    return res;
+}
+
 static void parse_order(int length)
 {
     uint8_t cmd_buf[10] = {0};
@@ -181,6 +250,7 @@ static void parse_order(int length)
         debug_line("t               : show current time");
         debug_line("pu<device num>  : print UART configuration");
         debug_line("ps<device num>  : print SPI configuration");
+        debug_line("ws<hex chars>   : write data to SPI");
         break;
 
     case 'D':
@@ -224,6 +294,37 @@ static void parse_order(int length)
             break;
         }
         break;
+
+        case 'W':
+        case 'w': // write data
+        {
+            uint8_t receive_data[(length -2)/2];
+            uint8_t send_data[(length -2)/2];
+            int i;
+            switch (cmd_buf[1])
+            {
+            case 'S':
+            case 's':
+                for (i = 0; i < (length -2)/2; i++)
+                {
+                    send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
+                }
+                if(false == hal_spi_do_transaction(STEPPER_SPI, &send_data[0], (length - 2)/2, &receive_data[0]))
+                {
+                    debug_line("ERROR: Did not receive all bytes !");
+                }
+                // else OK
+                debug_msg("Received: 0x");
+                debug_hex_buffer(&receive_data[0], (length -2)/2);
+                debug_line("Done.");
+                break;
+
+            default:
+                debug_line("Invalid command ! try h for help");
+                break;
+            }
+            break;
+        }
 
     default: // invalid command
         debug_line("Invalid command ! try h for help");
