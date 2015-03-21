@@ -46,8 +46,8 @@ static void get_steps_for_this_phase(float factor);
 static void calculate_step_chunk(uint_fast8_t num_slots);
 static uint_fast8_t get_number_of_free_slots(void);
 static void finished_cur_slot(void);
-static void make_the_needed_steps(void);
-static void do_step_on_axis(uint_fast8_t i);
+static void make_the_needed_steps(uint_fast16_t reload_time);
+static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time);
 static void auto_activate_usedAxis(void);
 static void step_isr(void);
 static void refill_step_buffer(void);
@@ -102,6 +102,7 @@ static bool enabled[MAX_NUMBER];
 #ifdef USE_STEP_DIR
 static volatile uint32_t next_step[STEP_BUFFER_SIZE];
 static volatile uint32_t cur_step;
+static volatile uint_fast8_t last_direction_axis;
 #else
 static volatile uint_fast8_t move_on_axis[STEP_BUFFER_SIZE];
 static volatile uint_fast8_t next_direction[STEP_BUFFER_SIZE];
@@ -193,7 +194,6 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 {
     if(step_pos == stop_pos)
     {
-        //TODO check if the queue is really empty
         // we are done nothing more to do
         // -> disable Interrupt Stop Timer
         hal_time_stop_timer(STEP_TIMER);
@@ -246,8 +246,6 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
     }
 }
 
-
-// TODO deal with direction
 // TODO deal with more than one axis
 
 static uint_fast8_t get_number_of_free_slots(void)
@@ -403,14 +401,7 @@ static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
             // Calculate reload time for primary axis
             uint_fast16_t reload_time = get_reload_primary_axis();
             // decide which axis will have a step this time
-            make_the_needed_steps();
-            // write values out
-            next_reload[stop_pos] = reload_time;
-            stop_pos ++;
-            if(stop_pos == STEP_BUFFER_SIZE)
-            {
-                stop_pos = 0;
-            }
+            make_the_needed_steps(reload_time);
         }
         else
         {
@@ -510,7 +501,7 @@ static uint_fast16_t get_reload_primary_axis(void)
 }
 
 
-static void make_the_needed_steps(void)
+static void make_the_needed_steps(uint_fast16_t reload_time)
 {
     uint_fast8_t i;
     for(i = 0; i < MAX_NUMBER; i++)
@@ -520,7 +511,7 @@ static void make_the_needed_steps(void)
             if(i == primary_axis)
             {
                 // we step on the primary axis every time
-                do_step_on_axis(i);
+                do_step_on_axis(i, reload_time);
             }
             else
             {
@@ -549,12 +540,36 @@ static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value)
 #else
 #endif
 
-static void do_step_on_axis(uint_fast8_t i)
+static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time)
 {
 #ifdef USE_STEP_DIR
+    bool cur_step_has_direction_change = false;
+    uint32_t last_step = cur_step;
+    // direction
+    if( (direction_for_move & (1 << i))
+            !=
+        (last_direction_axis & (1 << i)) )
+    {
+        // change of direction on this axis
+        cur_step_has_direction_change = true;
+        cur_step = toggle_bit(i + 8, cur_step);
+        last_direction_axis = toggle_bit(i, last_direction_axis);
+    }
+    // step
     cur_step = toggle_bit(i, cur_step);
+    if(true == cur_step_has_direction_change)
+    {
+        uint_fast16_t half_reload = reload_time /2;
+        reload_time = reload_time - half_reload;
+        next_step[stop_pos] = (0x00ff & last_step) | (0xff00 & cur_step);
+        next_reload[stop_pos] = half_reload;
+        stop_pos ++;
+        if(stop_pos == STEP_BUFFER_SIZE)
+        {
+            stop_pos = 0;
+        }
+    }
     next_step[stop_pos] = cur_step;
-    //TODO Direction
 #else
     uint_fast8_t axis_mask = 0;
     switch(i)
@@ -573,6 +588,13 @@ static void do_step_on_axis(uint_fast8_t i)
     next_direction[stop_pos] = 0;
 #endif
     steps_already_made[i]++;
+    // write values out
+    next_reload[stop_pos] = reload_time;
+    stop_pos ++;
+    if(stop_pos == STEP_BUFFER_SIZE)
+    {
+        stop_pos = 0;
+    }
 }
 
 static void get_steps_for_this_phase(float factor)
@@ -630,6 +652,7 @@ void step_init(uint_fast8_t num_stepper)
         next_step[i] = 0;
     }
     cur_step = 0;
+    last_direction_axis = 0;
     hal_stepper_port_init();
 #else
         move_on_axis[i] = 0;
