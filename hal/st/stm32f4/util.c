@@ -31,6 +31,16 @@ uint_fast8_t copy_string(char * str, uint8_t *position)
 
 void print_gpio_configuration(GPIO_TypeDef * gpio)
 {
+    if(gpio == GPIOA) { debug_line("Port A:"); }
+    if(gpio == GPIOB) { debug_line("Port B:"); }
+    if(gpio == GPIOC) { debug_line("Port C:"); }
+    if(gpio == GPIOD) { debug_line("Port D:"); }
+    if(gpio == GPIOE) { debug_line("Port E:"); }
+    if(gpio == GPIOF) { debug_line("Port F:"); }
+    if(gpio == GPIOG) { debug_line("Port G:"); }
+    if(gpio == GPIOH) { debug_line("Port H:"); }
+    if(gpio == GPIOI) { debug_line("Port I:"); }
+
     debug_line("GPIO->AFRL    = 0x%08x", gpio->AFR[0]);
     debug_line("GPIO->AFRH    = 0x%08x", gpio->AFR[1]);
     debug_line("GPIO->IDR     = 0x%08x", gpio->IDR);
@@ -41,3 +51,23 @@ void print_gpio_configuration(GPIO_TypeDef * gpio)
     debug_line("GPIO->OTYPER  = 0x%08x", gpio->OTYPER);
     debug_line("GPIO->PUPDR   = 0x%08x", gpio->PUPDR);
 }
+
+void uDelay(const uint32_t usec)
+{
+  uint32_t count = 0;
+  const uint32_t utime = (120 * usec / 7);
+  do
+  {
+    if ( ++count > utime )
+    {
+      return ;
+    }
+  }
+  while(1);
+}
+
+void mDelay(const uint32_t msec)
+{
+  uDelay(msec * 1000);
+}
+

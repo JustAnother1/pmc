@@ -23,6 +23,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "hal_cfg.h"
+#include "util.h"
 
 #define HEART_BEAT_FAST_LIMIT 5
 #define HEART_BEAT_SLOW_LIMIT 500
@@ -213,7 +214,7 @@ void hal_cpu_die(void)
         {
             i = i - HEART_BEAT_STEP_SIZE;
         }
-        hal_time_ms_sleep(i);
+        mDelay(i);
     }
 }
 

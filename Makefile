@@ -12,9 +12,9 @@
 
 # Define project name
 PROJECT = pmc
+include cfg/features.mk
 
 include hal/hal.mk
-include cfg/features.mk
 include cfg/system.mk
 include cfg/files.mk
 

@@ -63,6 +63,8 @@
 #define SPI_0_IRQ_PRIORITY         8
 #define SPI_1_IRQ_NUMBER           SPI2_IRQn
 #define SPI_1_IRQ_PRIORITY         12
+#define USB_FS_IRQ_NUMBER          OTG_FS_IRQn
+#define USB_FS_IRQ_PRIORITY        6
 
 /******************************************************************************/
 /*                                                                            */
@@ -472,7 +474,7 @@
 
 #define D_IN_NUM_PINS              3
 #define D_IN_0_NAME                "In 1"
-#define D_IN_0_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIODEN
+#define D_IN_0_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIOCEN
 #define D_IN_0_GPIO_PORT           GPIOC
 #define D_IN_0_MODER_0             GPIO_MODER_10_INPUT_0
 #define D_IN_0_MODER_1             GPIO_MODER_10_INPUT_1
@@ -485,7 +487,7 @@
 #define D_IN_0_IDR                 GPIO_IDR_10
 
 #define D_IN_1_NAME                "In 2"
-#define D_IN_1_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIODEN
+#define D_IN_1_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIOCEN
 #define D_IN_1_GPIO_PORT           GPIOC
 #define D_IN_1_MODER_0             GPIO_MODER_11_INPUT_0
 #define D_IN_1_MODER_1             GPIO_MODER_11_INPUT_1
@@ -498,7 +500,7 @@
 #define D_IN_1_IDR                 GPIO_IDR_11
 
 #define D_IN_2_NAME                "In 3"
-#define D_IN_2_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIODEN
+#define D_IN_2_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIOCEN
 #define D_IN_2_GPIO_PORT           GPIOC
 #define D_IN_2_MODER_0             GPIO_MODER_12_INPUT_0
 #define D_IN_2_MODER_1             GPIO_MODER_12_INPUT_1
@@ -510,12 +512,12 @@
 #define D_IN_2_PUPD_1              GPIO_PUPDR_12_NONE_1
 #define D_IN_2_IDR                 GPIO_IDR_12
 
-
 /******************************************************************************/
 /*                                                                            */
 /*         GPIO Port used for Stepper Step and Dir Signals                    */
 /*                                                                            */
 /******************************************************************************/
+
 #define STEPPER_PORT_RCC_GPIO_ENABLE  RCC_AHB1ENR_GPIODEN
 #define STEPPER_PORT_GPIO_PORT        GPIOD
 #define STEPPER_PORT_MODER            0x55555555
@@ -523,5 +525,42 @@
 #define STEPPER_PORT_OSPEEDR          0x00000000
 #define STEPPER_PORT_PUPD             0x00000000
 #define STEPPER_PORT_ODR              0x00000000
+
+/******************************************************************************/
+/*                                                                            */
+/*         USB FS - Universal Serial Bus Full Speed (12 MHz)                  */
+/*                                                                            */
+/******************************************************************************/
+
+#define USB_FS_DP_GPIO_PORT_RCC    RCC_AHB1ENR_GPIOAEN
+#define USB_FS_DM_GPIO_PORT_RCC    RCC_AHB1ENR_GPIOAEN
+#define USB_FS_AHB2ENR             0x00000080
+#define USB_FS_IRQ_HANDLER         OTG_FS_IRQHandler
+#define USB_FS_DM_GPIO_PORT        GPIOA
+#define USB_FS_DM_GPIO_MODER_0     GPIO_MODER_11_ALTFUNC_0
+#define USB_FS_DM_GPIO_MODER_1     GPIO_MODER_11_ALTFUNC_1
+#define USB_FS_DM_GPIO_AFR_0_0     0
+#define USB_FS_DM_GPIO_AFR_0_1     0
+#define USB_FS_DM_GPIO_AFR_1_0     0x00005000
+#define USB_FS_DM_GPIO_AFR_1_1     0x0000a000
+#define USB_FS_DM_GPIO_OTYPER_0    GPIO_OTYPER_11_PUSH_PULL_0
+#define USB_FS_DM_GPIO_OTYPER_1    GPIO_OTYPER_11_PUSH_PULL_1
+#define USB_FS_DM_GPIO_PUPD_0      GPIO_PUPDR_11_NONE_0
+#define USB_FS_DM_GPIO_PUPD_1      GPIO_PUPDR_11_NONE_1
+#define USB_FS_DM_GPIO_OSPEEDR_0   GPIO_OSPEEDER_11_HIGH_SPEED_0
+#define USB_FS_DM_GPIO_OSPEEDR_1   GPIO_OSPEEDER_11_HIGH_SPEED_1
+#define USB_FS_DP_GPIO_PORT        GPIOA
+#define USB_FS_DP_GPIO_MODER_0     GPIO_MODER_12_ALTFUNC_0
+#define USB_FS_DP_GPIO_MODER_1     GPIO_MODER_12_ALTFUNC_1
+#define USB_FS_DP_GPIO_AFR_0_0     0
+#define USB_FS_DP_GPIO_AFR_0_1     0
+#define USB_FS_DP_GPIO_AFR_1_0     0x00050000
+#define USB_FS_DP_GPIO_AFR_1_1     0x000a0000
+#define USB_FS_DP_GPIO_OTYPER_0    GPIO_OTYPER_12_PUSH_PULL_0
+#define USB_FS_DP_GPIO_OTYPER_1    GPIO_OTYPER_12_PUSH_PULL_1
+#define USB_FS_DP_GPIO_PUPD_0      GPIO_PUPDR_12_NONE_0
+#define USB_FS_DP_GPIO_PUPD_1      GPIO_PUPDR_12_NONE_1
+#define USB_FS_DP_GPIO_OSPEEDR_0   GPIO_OSPEEDER_12_HIGH_SPEED_0
+#define USB_FS_DP_GPIO_OSPEEDR_1   GPIO_OSPEEDER_12_HIGH_SPEED_1
 
 #endif /* CPU_CFG_H_ */

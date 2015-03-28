@@ -13,15 +13,24 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_UTIL_H_
-#define HAL_ST_STM32F4_UTIL_H_
+#ifndef HAL_INCLUDE_HAL_USB_DEVICE_CDC_H_
+#define HAL_INCLUDE_HAL_USB_DEVICE_CDC_H_
 
+#include <stdbool.h>
 #include <inttypes.h>
-#include "gpio.h"
 
-uint_fast8_t copy_string(char * str, uint8_t *position);
-void print_gpio_configuration(GPIO_TypeDef * gpio);
-void uDelay(const uint32_t usec);
-void mDelay(const uint32_t msec);
+typedef struct
+{
+  void (*Init)(void);
+  void (*DeInit)(void);
+  void (*receive)(uint8_t* buffer, uint16_t length);
+} cdc_call_back_api_typ;
 
-#endif /* HAL_ST_STM32F4_UTIL_H_ */
+
+bool hal_usb_device_cdc_init(cdc_call_back_api_typ* client);
+void hal_usb_device_cdc_send_data(uint8_t * data, uint_fast16_t length);
+void hal_usb_device_cdc_disconnect(void);/// cut USB connection to host - unplug USB cable
+void hal_usb_print_configuration(void);
+
+
+#endif /* HAL_INCLUDE_HAL_USB_DEVICE_CDC_H_ */

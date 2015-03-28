@@ -24,6 +24,6 @@ uint_fast8_t usb_get_parameter_byte(uint_fast8_t index);
 uint_fast8_t usb_get_order(void);
 uint_fast8_t usb_get_parameter_length(void);
 uint_fast8_t usb_get_control(void);
-void usb_send_frame(uint_fast8_t * frame, uint_fast16_t length);
+void usb_send_frame(uint8_t * frame, uint_fast16_t length);
 void usb_forget_frame(void);
 #endif /* USB_H_ */
