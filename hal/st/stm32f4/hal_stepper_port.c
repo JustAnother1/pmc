@@ -13,9 +13,9 @@
  *
  */
 
+#include <st_gpio.h>
+#include <st_rcc.h>
 #include "hal_stepper_port.h"
-#include "rcc.h"
-#include "gpio.h"
 #include "board_cfg.h"
 
 void hal_stepper_port_init(void)

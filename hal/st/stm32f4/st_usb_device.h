@@ -13,11 +13,12 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_USB_DEVICE_H_
-#define HAL_ST_STM32F4_USB_DEVICE_H_
+#ifndef HAL_ST_STM32F4_ST_USB_DEVICE_H_
+#define HAL_ST_STM32F4_ST_USB_DEVICE_H_
 
 #include <stdbool.h>
-#include "usb.h"
+
+#include "st_usb.h"
 
 bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb);
 void usb_device_print_configuration(void);
@@ -42,4 +43,4 @@ void EP_Tx(uint8_t  ep_addr,
            uint32_t buf_len);
 void usb_EPDeactivate(USB_OTG_EP *ep);
 
-#endif /* HAL_ST_STM32F4_USB_DEVICE_H_ */
+#endif /* HAL_ST_STM32F4_ST_USB_DEVICE_H_ */

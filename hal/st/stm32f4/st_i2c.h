@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_I2C_H_
-#define HAL_ST_STM32F4_I2C_H_
+#ifndef HAL_ST_STM32F4_ST_I2C_H_
+#define HAL_ST_STM32F4_ST_I2C_H_
 
-#include "hal_common.h"
+#include "st_common.h"
 
 /******************************************************************************/
 /*                                                                            */
@@ -142,4 +142,4 @@ typedef struct
 #define I2C2                ((I2C_TypeDef *) I2C2_BASE)
 #define I2C3                ((I2C_TypeDef *) I2C3_BASE)
 
-#endif /* HAL_ST_STM32F4_I2C_H_ */
+#endif /* HAL_ST_STM32F4_ST_I2C_H_ */

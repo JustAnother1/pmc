@@ -14,16 +14,16 @@
  */
 
 #include <407discovery/board_cfg.h>
-#include "hal_common.h"
+#include <st_common.h>
+#include <st_flash.h>
+#include <st_rcc.h>
+#include <st_util.h>
 #include "hal_cpu.h"
 #include "hal_led.h"
 #include "hal_time.h"
-#include "flash.h"
-#include "rcc.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include "hal_cfg.h"
-#include "util.h"
 
 #define HEART_BEAT_FAST_LIMIT 5
 #define HEART_BEAT_SLOW_LIMIT 500

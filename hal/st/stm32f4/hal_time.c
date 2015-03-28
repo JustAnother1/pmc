@@ -13,13 +13,13 @@
  *
  */
 
+#include <st_common.h>
+#include <st_rcc.h>
+#include <st_timer.h>
 #include "hal_cpu.h"
 #include "hal_time.h"
-#include "hal_common.h"
 #include "hal_led.h"
-#include "timer.h"
 #include "stddef.h"
-#include "rcc.h"
 #include "board_cfg.h"
 
 static void hal_time_ISR(void);

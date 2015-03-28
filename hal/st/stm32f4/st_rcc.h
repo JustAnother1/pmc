@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_RCC_H_
-#define HAL_ST_STM32F4_RCC_H_
+#ifndef HAL_ST_STM32F4_ST_RCC_H_
+#define HAL_ST_STM32F4_ST_RCC_H_
 
-#include "hal_common.h"
+#include "st_common.h"
 
 /******************************************************************************/
 /*                                                                            */
@@ -504,4 +504,4 @@ typedef struct
 #define RCC_BASE            (AHB1PERIPH_BASE + 0x3800)
 #define RCC                 ((RCC_TypeDef *) RCC_BASE)
 
-#endif /* HAL_ST_STM32F4_RCC_H_ */
+#endif /* HAL_ST_STM32F4_ST_RCC_H_ */

@@ -13,15 +13,15 @@
  *
  */
 
+#include <st_gpio.h>
+#include <st_rcc.h>
+#include <st_usb.h>
+#include <st_usb_device.h>
+#include <st_usb_std.h>
+#include <st_util.h>
 #include "hal_usb_device_cdc.h"
-#include "rcc.h"
-#include "gpio.h"
 #include "board_cfg.h"
 #include <stddef.h>
-#include "usb.h"
-#include "usb_device.h"
-#include "usb_std.h"
-#include "util.h"
 #include "hal_debug.h"
 
 static void usb_cdc_Init (uint8_t cfgidx);

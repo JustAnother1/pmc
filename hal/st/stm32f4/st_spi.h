@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_SPI_H_
-#define HAL_ST_STM32F4_SPI_H_
+#ifndef HAL_ST_STM32F4_ST_SPI_H_
+#define HAL_ST_STM32F4_ST_SPI_H_
 
-#include "hal_common.h"
+#include "st_common.h"
 
 /******************************************************************************/
 /*                                                                            */
@@ -128,4 +128,4 @@ typedef struct
 #define SPI3                ((SPI_TypeDef *) SPI3_BASE)
 #define SPI1                ((SPI_TypeDef *) SPI1_BASE)
 
-#endif /* HAL_ST_STM32F4_SPI_H_ */
+#endif /* HAL_ST_STM32F4_ST_SPI_H_ */

@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_DMA_H_
-#define HAL_ST_STM32F4_DMA_H_
+#ifndef HAL_ST_STM32F4_ST_DMA_H_
+#define HAL_ST_STM32F4_ST_DMA_H_
 
-#include "hal_common.h"
+#include "st_common.h"
 
 /******************************************************************************/
 /*                                                                            */
@@ -240,4 +240,4 @@ typedef struct
 #define DMA2_Stream7        ((DMA_Stream_TypeDef *) DMA2_Stream7_BASE)
 
 
-#endif /* HAL_ST_STM32F4_DMA_H_ */
+#endif /* HAL_ST_STM32F4_ST_DMA_H_ */

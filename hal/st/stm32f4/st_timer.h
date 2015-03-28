@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_TIMER_H_
-#define HAL_ST_STM32F4_TIMER_H_
+#ifndef HAL_ST_STM32F4_ST_TIMER_H_
+#define HAL_ST_STM32F4_ST_TIMER_H_
 
-#include "hal_common.h"
+#include "st_common.h"
 
 /******************************************************************************/
 /*                                                                            */
@@ -377,4 +377,4 @@ typedef struct
 #define TIM10               ((TIM_TypeDef *) TIM10_BASE)
 #define TIM11               ((TIM_TypeDef *) TIM11_BASE)
 
-#endif /* HAL_ST_STM32F4_TIMER_H_ */
+#endif /* HAL_ST_STM32F4_ST_TIMER_H_ */

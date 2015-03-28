@@ -13,17 +13,17 @@
  *
  */
 
+#include <st_common.h>
+#include <st_gpio.h>
+#include <st_rcc.h>
+#include <st_usart.h>
+#include <st_util.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include "hal_uart.h"
 #include "hal_time.h"
-#include "rcc.h"
 #include "board_cfg.h"
-#include "usart.h"
-#include "gpio.h"
-#include "util.h"
 #include "hal_debug.h"
-#include "hal_common.h"
 #include "hal_led.h"
 
 // Baudrate is 115200 so a byte should transfere in less than one ms

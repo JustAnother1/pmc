@@ -12,11 +12,11 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
-#include "usb_descriptor.h"
-#include "usb.h"
+#include <st_usb.h>
+#include <st_usb_descriptor.h>
+#include <st_usb_device.h>
+#include <st_usb_std.h>
 #include <stddef.h>
-#include "usb_device.h"
-#include "usb_std.h"
 #include "hal_led.h"
 #include "hal_cfg.h"
 

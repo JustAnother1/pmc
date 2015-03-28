@@ -13,8 +13,8 @@
  *
  */
 
-#include "rcc.h"
-#include "gpio.h"
+#include <st_gpio.h>
+#include <st_rcc.h>
 #include "board_cfg.h"
 #include "hal_led.h"
 

@@ -13,11 +13,11 @@
  *
  */
 
+#include <st_gpio.h>
+#include <st_rcc.h>
+#include <st_util.h>
 #include "hal_din.h"
 #include "board_cfg.h"
-#include "rcc.h"
-#include "gpio.h"
-#include "util.h"
 #include "hal_debug.h"
 
 void hal_din_init(void)

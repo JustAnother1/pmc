@@ -13,9 +13,9 @@
  *
  */
 
+#include <st_util.h>
 #include "hal_adc.h"
 #include "board_cfg.h"
-#include "util.h"
 
 void hal_adc_init(void)
 {

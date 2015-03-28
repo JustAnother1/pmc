@@ -13,9 +13,9 @@
  *
  */
 
+#include <st_util.h>
 #include "hal_buzzer.h"
 #include "board_cfg.h"
-#include "util.h"
 
 void hal_buzzer_init(void)
 {

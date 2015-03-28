@@ -13,9 +13,9 @@
  *
  */
 
+#include <st_util.h>
 #include "hal_pwm.h"
 #include "board_cfg.h"
-#include "util.h"
 
 void hal_pwm_init(void)
 {

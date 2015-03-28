@@ -12,15 +12,15 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
+#include <st_rcc.h>
+#include <st_usb.h>
+#include <st_usb_descriptor.h>
+#include <st_usb_device.h>
+#include <st_usb_std.h>
+#include <st_util.h>
 #include "board_cfg.h"
-#include "usb_device.h"
-#include "usb.h"
 #include <stddef.h>
-#include "util.h"
-#include "usb_descriptor.h"
-#include "usb_std.h"
 #include "hal_debug.h"
-#include "rcc.h"
 #include "hal_led.h"
 #include "hal_cfg.h"
 

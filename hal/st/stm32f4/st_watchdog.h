@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_WATCHDOG_H_
-#define HAL_ST_STM32F4_WATCHDOG_H_
+#ifndef HAL_ST_STM32F4_ST_WATCHDOG_H_
+#define HAL_ST_STM32F4_ST_WATCHDOG_H_
 
-#include "hal_common.h"
+#include "st_common.h"
 
 /******************************************************************************/
 /*                                                                            */
@@ -105,4 +105,4 @@ typedef struct
 #define WWDG                ((WWDG_TypeDef *) WWDG_BASE)
 #define IWDG                ((IWDG_TypeDef *) IWDG_BASE)
 
-#endif /* HAL_ST_STM32F4_WATCHDOG_H_ */
+#endif /* HAL_ST_STM32F4_ST_WATCHDOG_H_ */

@@ -13,10 +13,10 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_ADC_H_
-#define HAL_ST_STM32F4_ADC_H_
+#ifndef HAL_ST_STM32F4_ST_ADC_H_
+#define HAL_ST_STM32F4_ST_ADC_H_
 
-#include "hal_common.h"
+#include "st_common.h"
 
 /******************************************************************************/
 /*                                                                            */
@@ -426,4 +426,4 @@ typedef struct
 #define ADC3                ((ADC_TypeDef *) ADC3_BASE)
 
 
-#endif /* HAL_ST_STM32F4_ADC_H_ */
+#endif /* HAL_ST_STM32F4_ST_ADC_H_ */

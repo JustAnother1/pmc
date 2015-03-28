@@ -13,8 +13,8 @@
  *
  */
 
-#ifndef HAL_ST_STM32F4_USB_STD_H_
-#define HAL_ST_STM32F4_USB_STD_H_
+#ifndef HAL_ST_STM32F4_ST_USB_STD_H_
+#define HAL_ST_STM32F4_ST_USB_STD_H_
 
 // see http://usb.org
 
@@ -51,4 +51,4 @@
 #define DEVICE_CLASS_CDC                         0x02
 #define DEVICE_SUBCLASS_CDC                      0x00
 
-#endif /* HAL_ST_STM32F4_USB_STD_H_ */
+#endif /* HAL_ST_STM32F4_ST_USB_STD_H_ */

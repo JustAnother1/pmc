@@ -13,7 +13,7 @@
  *
  */
 
-#include "util.h"
+#include <st_util.h>
 #include "hal_debug.h"
 
 uint_fast8_t copy_string(char * str, uint8_t *position)

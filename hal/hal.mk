@@ -9,7 +9,7 @@ ifeq ($(BOARD), stm407disco)
 	STARTUP += $(HAL_FOLDER)$(BOARD_FOLDER)/407discovery/startup_stm32f407xx.s
 	INCDIRS +=$(HAL_FOLDER)arm/
 	INCDIRS +=$(HAL_FOLDER)$(BOARD_FOLDER)/407discovery/
-	SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/util.c
+	SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/st_util.c
 	OPTIONS_ARCH += -mthumb -mcpu=cortex-m4 -march=armv7e-m
 	ASFLAGS += -g -Wall -gdwarf-2 -Wa,-amhls=$(addprefix $(BIN_FOLDER),$(<:.s=.lst))
 	CFLAGS += -ffunction-sections -fdata-sections -ffreestanding --specs=nano.specs 
@@ -18,8 +18,8 @@ ifeq ($(BOARD), stm407disco)
 	LDFLAGS += -flto -fsingle-precision-constant --specs=nano.specs -lgcc -lc -lnosys -gdwarf-2 $(LINKER_SCRIPT)
 	LDFLAGS += -Wl,-Map=$(BIN_FOLDER)$(PROJECT).map,--gc-sections,--cref
 	ifeq ($(USE_USB), yes)
-		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/usb_device.c
-		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/usb_descriptor.c
+		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/st_usb_device.c
+		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/st_usb_descriptor.c
 	endif
 endif
 

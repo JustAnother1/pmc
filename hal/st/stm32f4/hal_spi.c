@@ -13,15 +13,15 @@
  *
  */
 
+#include <st_gpio.h>
+#include <st_rcc.h>
+#include <st_spi.h>
+#include <st_util.h>
 #include "hal_spi.h"
 #include "hal_cpu.h"
 #include <stdbool.h>
-#include "spi.h"
-#include "rcc.h"
-#include "gpio.h"
 #include "board_cfg.h"
 #include "hal_debug.h"
-#include "util.h"
 #include "hal_cfg.h"
 
 // On the Wire : Most Significant Bit First (CR1)
