@@ -426,7 +426,6 @@ static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
                     // switch to decelerate
                     phase_of_move = MOVE_PHASE_DECELERATE ;
                     curTime = 0;
-                    hal_led_set_led(ERROR_LED, true);
                     get_steps_for_this_phase(1);
                 }
                 else
@@ -443,7 +442,6 @@ static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
                 {
                     // switch to decelerate
                     phase_of_move = MOVE_PHASE_DECELERATE ;
-                    hal_led_set_led(ERROR_LED, true);
                     curTime = 0;
                     get_steps_for_this_phase(1);
                 }
@@ -843,7 +841,6 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         {
             // this move is decelerating only
             phase_of_move = MOVE_PHASE_DECELERATE ;
-            hal_led_set_led(ERROR_LED, true);
             get_steps_for_this_phase(1);
         }
     }
