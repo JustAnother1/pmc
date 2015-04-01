@@ -1460,7 +1460,7 @@ static void usb_FlushRxFifo(void)
 
 /*
  * Initializes the USB_OTG controller registers and prepares the core
- * device mode or host mode operation.
+ * device mode operation.
  */
 static void usb_CoreInit(void)
 {
@@ -1469,9 +1469,11 @@ static void usb_CoreInit(void)
     usbcfg = USB_FS->GREGS->GUSBCFG;
     usbcfg |= USB_OTG_GUSBCFG_PHYSEL; /* FS Interface */
     USB_FS->GREGS->GUSBCFG = usbcfg;
+
     /* Reset after a PHY select and set Host mode */
     usb_CoreReset();
-    /* Enable the I2C interface and deactivate the power down*/
+
+    /* Deactivate the power down*/
     gccfg = USB_OTG_GCCFG_PWRDWN | USB_OTG_GCCFG_VBUSASEN | USB_OTG_GCCFG_VBUSBSEN;
     USB_FS->GREGS->GCCFG = gccfg;
     mDelay(20);
@@ -1498,21 +1500,8 @@ static void usb_EnableCommonInt(void)
  */
 static void usb_CoreReset(void)
 {
-    uint32_t greset;
     uint32_t count = 0;
-    /* Wait for AHB master IDLE state. */
-    do
-    {
-        uDelay(3);
-        greset = USB_FS->GREGS->GRSTCTL;
-        if (++count > 200000)
-        {
-            return;
-        }
-    } while((greset & USB_OTG_GRSTCTL_AHBIDL) != 0);
-    /* Core Soft Reset */
-    count = 0;
-    greset |= USB_OTG_GRSTCTL_CSRST;
+    uint32_t greset = USB_OTG_GRSTCTL_CSRST;
     USB_FS->GREGS->GRSTCTL = greset;
     do
     {
