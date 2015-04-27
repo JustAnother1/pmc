@@ -88,7 +88,7 @@ void GetDescriptor(USB_SETUP_REQ *req)
     {
     case USB_DESC_TYPE_DEVICE:
         pbuf = GetDeviceDescriptor(&len);
-        if((req->wLength == 64) || ( get_device_status() == USB_OTG_DEFAULT))
+        if((req->wLength == 64) || (get_device_status() == USB_OTG_DEFAULT))
         {
             len = 8;
         }
@@ -197,7 +197,7 @@ static uint8_t* GetInterfaceStrDescriptor(uint16_t* length)
 static void GetString(uint8_t *desc, uint8_t *unicode, uint16_t *len)
 {
     uint8_t idx = 0;
-    if (desc != NULL)
+    if(desc != NULL)
     {
         *len = GetLen(desc) * 2 + 2;
         unicode[idx++] = *len;
@@ -217,12 +217,10 @@ static void GetString(uint8_t *desc, uint8_t *unicode, uint16_t *len)
 static uint8_t GetLen(uint8_t *buf)
 {
     uint8_t  len = 0;
-
-    while (*buf != 0)
+    while(*buf != 0)
     {
         len++;
         buf++;
     }
-
     return len;
 }

@@ -397,7 +397,7 @@ bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb)
     device_status = USB_OTG_DEFAULT;
     device_address = 0;
     /* Init ep structure */
-    for (i = 0; i < MAX_DEVICE_ENDPOINTS ; i++)
+    for(i = 0; i < MAX_DEVICE_ENDPOINTS ; i++)
     {
         ep = &in_ep[i];
         /* Init ep structure */
@@ -410,7 +410,7 @@ bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb)
         ep->xfer_buff = 0;
         ep->xfer_len = 0;
     }
-    for (i = 0; i < MAX_DEVICE_ENDPOINTS; i++)
+    for(i = 0; i < MAX_DEVICE_ENDPOINTS; i++)
     {
         ep = &out_ep[i];
         /* Init ep structure */
@@ -446,6 +446,7 @@ bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb)
 void USB_FS_IRQ_HANDLER(void)
 {
     uint32_t irqs = USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK;
+    hal_led_toggle_led(ERROR_LED);
     if(0 == irqs) /* avoid spurious interrupt */
     {
         return;
@@ -754,16 +755,16 @@ static void HandleRxStatusQueueLevel_ISR(void)
  * Flush a Tx FIFO
  *   num : FO num
  */
-static void usb_FlushTxFifo(uint32_t num )
+static void usb_FlushTxFifo(uint32_t num)
 {
     uint32_t  greset;
     uint32_t count = 0;
-    greset = USB_OTG_GRSTCTL_TXFFLSH | (num<<USB_OTG_GRSTCTL_TXFNUM_OFFSET);
+    greset = USB_OTG_GRSTCTL_TXFFLSH | (num << USB_OTG_GRSTCTL_TXFNUM_OFFSET);
     USB_FS->GREGS->GRSTCTL = greset;
     do
     {
         greset = USB_FS->GREGS->GRSTCTL;
-        if (++count > 200000)
+        if(++count > 200000)
         {
             break;
         }
@@ -780,7 +781,7 @@ void EP_Open(uint8_t ep_addr,
              uint8_t ep_type)
 {
     USB_OTG_EP *ep;
-    if ((ep_addr & 0x80) == 0x80)
+    if((ep_addr & 0x80) == 0x80)
     {
         ep = &in_ep[ep_addr & 0x7F];
     }
@@ -792,13 +793,13 @@ void EP_Open(uint8_t ep_addr,
     ep->is_in = (0x80 & ep_addr) != 0;
     ep->maxpacket = ep_mps;
     ep->type = ep_type;
-    if (ep->is_in)
+    if(ep->is_in)
     {
         /* Assign a Tx FIFO */
         ep->tx_fifo_num = ep->num;
     }
     /* Set initial data PID. */
-    if (ep_type == USB_OTG_EP_BULK )
+    if(ep_type == USB_OTG_EP_BULK)
     {
         ep->data_pid_start = 0;
     }
@@ -821,7 +822,7 @@ static void HandleUsbReset_ISR(void)
     USB_FS->DREGS->DCTL &= ~dctl;
     /* Flush the Tx FIFO */
     usb_FlushTxFifo(0);
-    for (i = 0; i < MAX_DEVICE_ENDPOINTS; i++)
+    for(i = 0; i < MAX_DEVICE_ENDPOINTS; i++)
     {
         USB_FS->INEP_REGS[i]->DIEPINT = 0xFF;
         USB_FS->OUTEP_REGS[i]->DOEPINT = 0xFF;
@@ -869,8 +870,8 @@ static void usb_EP0Activate(void)
     dsts = USB_FS->DREGS->DSTS;
     diepctl = USB_FS->INEP_REGS[0]->DIEPCTL;
     /* Set the MPS of the IN EP based on the enumeration speed */
-    dsts = (dsts & USB_OTG_DSTS_ENUMSPD)>>USB_OTG_DSTS_ENUMSPD_OFFSET;
-    switch (dsts)
+    dsts = (dsts & USB_OTG_DSTS_ENUMSPD) >> USB_OTG_DSTS_ENUMSPD_OFFSET;
+    switch(dsts)
     {
     case DSTS_ENUMSPD_HS_PHY_30MHZ_OR_60MHZ:
     case DSTS_ENUMSPD_FS_PHY_30MHZ_OR_60MHZ:
@@ -1031,7 +1032,7 @@ static void usb_EPClearStall(USB_OTG_EP *ep)
     }
     /* clear the stall bits */
     depctl &= ~USB_OTG_DIEPCTL_STALL;
-    if (ep->type == EP_TYPE_INTR || ep->type == EP_TYPE_BULK)
+    if(ep->type == EP_TYPE_INTR || ep->type == EP_TYPE_BULK)
     {
         depctl |= USB_OTG_DIEPCTL_SD0PID_SEVNFRM;
     }
@@ -1051,7 +1052,7 @@ static void usb_EPClearStall(USB_OTG_EP *ep)
 static void usb_EPSetStall(USB_OTG_EP *ep)
 {
     uint32_t  depctl;
-    if (ep->is_in == 1)
+    if(ep->is_in == 1)
     {
         depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
         /* set the disable and stall bits */
@@ -1081,20 +1082,20 @@ static void usb_EP0StartXfer(USB_OTG_EP *ep)
     USB_OTG_INEPREGS          *in_regs;
     uint32_t fifoemptymsk = 0;
     /* IN endpoint */
-    if (ep->is_in == 1)
+    if(ep->is_in == 1)
     {
         in_regs = USB_FS->INEP_REGS[0];
         depctl  = in_regs->DIEPCTL;
         deptsiz = in_regs->DIEPTSIZ;
         /* Zero Length Packet? */
         deptsiz &= ~BITMASK_DEP0XFRSIZ_XFRSIZ;
-        if (ep->xfer_len == 0)
+        if(ep->xfer_len == 0)
         {
             // XFRSIZE = 0
         }
         else
         {
-            if (ep->xfer_len > ep->maxpacket)
+            if(ep->xfer_len > ep->maxpacket)
             {
                 ep->xfer_len = ep->maxpacket;
                 deptsiz |= ep->maxpacket;
@@ -1111,7 +1112,7 @@ static void usb_EP0StartXfer(USB_OTG_EP *ep)
         depctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
         in_regs->DIEPCTL = depctl;
         /* Enable the Tx FIFO Empty Interrupt for this EP */
-        if (ep->xfer_len > 0)
+        if(ep->xfer_len > 0)
         {
             fifoemptymsk |= 1 << ep->num;
             USB_FS->DREGS->DIEPEMPMSK |= fifoemptymsk;
@@ -1125,7 +1126,7 @@ static void usb_EP0StartXfer(USB_OTG_EP *ep)
         /* Program the transfer size and packet count as follows:
         * xfersize = N * (maxpacket + 4 - (maxpacket % 4))
         * pktcnt = N           */
-        if (ep->xfer_len == 0)
+        if(ep->xfer_len == 0)
         {
         }
         else
@@ -1153,12 +1154,12 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
     uint32_t dsts;
     uint32_t fifoemptymsk = 0;
     /* IN endpoint */
-    if (ep->is_in == 1)
+    if(ep->is_in == 1)
     {
         depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
         deptsiz = USB_FS->INEP_REGS[ep->num]->DIEPTSIZ;
         /* Zero Length Packet? */
-        if (ep->xfer_len == 0)
+        if(ep->xfer_len == 0)
         {
             deptsiz &= ~USB_OTG_DOEPTSIZ_XFRSIZ;
             deptsiz &= ~USB_OTG_DOEPTSIZ_PKTCNT;
@@ -1175,23 +1176,23 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
             deptsiz |= ep->xfer_len;
             deptsiz &= ~USB_OTG_DOEPTSIZ_PKTCNT;
             deptsiz |= ((ep->xfer_len - 1 + ep->maxpacket) / ep->maxpacket) << DOEPTSIZ_PKTCNT_OFFSET;
-            if (ep->type == EP_TYPE_ISOC)
+            if(ep->type == EP_TYPE_ISOC)
             {
                 deptsiz &= ~USB_OTG_DOEPTSIZ_STUPCNT;
                 deptsiz |= (1 << DOEPTSIZ_RXDPID_STUPCNT_OFFSET);
             }
         }
         USB_FS->INEP_REGS[ep->num]->DIEPTSIZ = deptsiz;
-            if (ep->type != EP_TYPE_ISOC)
+            if(ep->type != EP_TYPE_ISOC)
             {
                 /* Enable the Tx FIFO Empty Interrupt for this EP */
-                if (ep->xfer_len > 0)
+                if(ep->xfer_len > 0)
                 {
                     fifoemptymsk = 1 << ep->num;
                     USB_FS->DREGS->DIEPEMPMSK |= fifoemptymsk;
                 }
             }
-        if (ep->type == EP_TYPE_ISOC)
+        if(ep->type == EP_TYPE_ISOC)
         {
             dsts = USB_FS->DREGS->DSTS;
             if((dsts & USB_OTG_DSTS_FNSOF_0) == 0)
@@ -1206,7 +1207,7 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
         /* EP enable, IN data in FIFO */
         depctl |= USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK;
         USB_FS->INEP_REGS[ep->num]->DIEPCTL = depctl;
-        if (ep->type == EP_TYPE_ISOC)
+        if(ep->type == EP_TYPE_ISOC)
         {
             usb_WritePacket(ep->xfer_buff, ep->num, ep->xfer_len);
         }
@@ -1220,7 +1221,7 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
         * pktcnt = N
         * xfersize = N * maxpacket
         */
-        if (ep->xfer_len == 0)
+        if(ep->xfer_len == 0)
         {
             deptsiz &= ~USB_OTG_DOEPTSIZ_XFRSIZ;
             deptsiz |= ep->maxpacket;
@@ -1237,9 +1238,9 @@ static void usb_EPStartXfer(USB_OTG_EP *ep)
         }
         USB_FS->OUTEP_REGS[ep->num]->DOEPTSIZ = deptsiz;
 
-        if (ep->type == EP_TYPE_ISOC)
+        if(ep->type == EP_TYPE_ISOC)
         {
-            if (ep->even_odd_frame)
+            if(ep->even_odd_frame)
             {
                 depctl |= USB_OTG_DIEPCTL_SODDFRM;
             }
@@ -1262,7 +1263,7 @@ static void usb_EPActivate(USB_OTG_EP *ep)
     uint32_t depctl;
     uint32_t daintmsk;
     /* Read DEPCTLn register */
-    if (ep->is_in == 1)
+    if(ep->is_in == 1)
     {
         depctl = USB_FS->INEP_REGS[ep->num]->DIEPCTL;
         daintmsk = 1 << ep->num;
@@ -1284,7 +1285,7 @@ static void usb_EPActivate(USB_OTG_EP *ep)
         depctl |= ep->tx_fifo_num<<USB_OTG_DIEPCTL_TXFNUM_OFFSET;
         depctl |= USB_OTG_DIEPCTL_SD0PID_SEVNFRM;
         depctl |= USB_OTG_DIEPCTL_USBAEP;
-        if (ep->is_in == 1)
+        if(ep->is_in == 1)
         {
             USB_FS->INEP_REGS[ep->num]->DIEPCTL = depctl;
         }
@@ -1305,7 +1306,7 @@ static void USB_OTG_EPDeactivate(USB_OTG_EP *ep)
     uint32_t depctl;
     uint32_t daintmsk;
     /* Read DEPCTLn register */
-    if (ep->is_in == 1)
+    if(ep->is_in == 1)
     {
         daintmsk = 1 << ep->num;
         depctl = USB_OTG_DIEPCTL_USBAEP;
@@ -1391,7 +1392,7 @@ static void usb_CoreInitDev(void)
     USB_FS->DREGS->DOEPMSK = 0;
     USB_FS->DREGS->DAINT = 0xFFFFFFFF;
     USB_FS->DREGS->DAINTMSK = 0;
-    for (i = 0; i < MAX_DEVICE_ENDPOINTS; i++)
+    for(i = 0; i < MAX_DEVICE_ENDPOINTS; i++)
     {
         depctl = USB_FS->INEP_REGS[i]->DIEPCTL;
         if(0 != (depctl & USB_OTG_DIEPCTL_EPENA))
@@ -1406,7 +1407,7 @@ static void usb_CoreInitDev(void)
         USB_FS->INEP_REGS[i]->DIEPTSIZ = 0;
         USB_FS->INEP_REGS[i]->DIEPINT = 0xFF;
     }
-    for (i = 0; i <  MAX_DEVICE_ENDPOINTS; i++)
+    for(i = 0; i <  MAX_DEVICE_ENDPOINTS; i++)
     {
         depctl = USB_FS->OUTEP_REGS[i]->DOEPCTL;
         if(0 != (depctl & USB_OTG_DIEPCTL_EPENA))
@@ -1448,7 +1449,7 @@ static void usb_FlushRxFifo(void)
     do
     {
         greset = USB_FS->GREGS->GRSTCTL;
-        if (++count > 200000)
+        if(++count > 200000)
         {
             break;
         }
@@ -1468,10 +1469,8 @@ static void usb_CoreInit(void)
     usbcfg = USB_FS->GREGS->GUSBCFG;
     usbcfg |= USB_OTG_GUSBCFG_PHYSEL; /* FS Interface */
     USB_FS->GREGS->GUSBCFG = usbcfg;
-
     /* Reset after a PHY select and set Host mode */
     usb_CoreReset();
-
     /* Deactivate the power down*/
     gccfg = USB_OTG_GCCFG_PWRDWN | USB_OTG_GCCFG_VBUSASEN | USB_OTG_GCCFG_VBUSBSEN;
     USB_FS->GREGS->GCCFG = gccfg;
@@ -1505,11 +1504,11 @@ static void usb_CoreReset(void)
     do
     {
         greset = USB_FS->GREGS->GRSTCTL;
-        if (++count > 200000)
+        if(++count > 200000)
         {
             break;
         }
-    } while ((greset & USB_OTG_GRSTCTL_CSRST) != 0);
+    } while((greset & USB_OTG_GRSTCTL_CSRST) != 0);
     /* Wait for 3 PHY Clocks*/
     uDelay(3);
 }
@@ -1533,7 +1532,7 @@ void EP_Tx(uint8_t  ep_addr,
     ep->dma_addr = (uint32_t)pbuf;
     ep->xfer_count = 0;
     ep->xfer_len  = buf_len;
-    if ( ep->num == 0 )
+    if(ep->num == 0)
     {
         usb_EP0StartXfer(ep);
     }
@@ -1573,7 +1572,7 @@ static void  usb_CtlSendStatus(void)
 static void  EP_Stall(uint8_t epnum)
 {
     USB_OTG_EP *ep;
-    if ((0x80 & epnum) == 0x80)
+    if((0x80 & epnum) == 0x80)
     {
         ep = &in_ep[epnum & 0x7F];
     }
@@ -1637,8 +1636,7 @@ static void usb_ParseSetupRequest(USB_SETUP_REQ *req)
 void EP_Close(uint8_t  ep_addr)
 {
     USB_OTG_EP *ep;
-
-    if ((ep_addr&0x80) == 0x80)
+    if((ep_addr & 0x80) == 0x80)
     {
         ep = &in_ep[ep_addr & 0x7F];
     }
@@ -1712,7 +1710,7 @@ static void usb_Std_EndPoint_Req(USB_SETUP_REQ  *req)
             {
                 EP_Stall(ep_addr);
             }
-        break;
+            break;
 
         case USB_OTG_CONFIGURED:
             if(req->wValue == USB_FEATURE_EP_HALT)
@@ -1736,16 +1734,16 @@ static void usb_Std_EndPoint_Req(USB_SETUP_REQ  *req)
         switch(device_status)
         {
         case USB_OTG_ADDRESSED:
-            if ((ep_addr != 0x00) && (ep_addr != 0x80))
+            if((ep_addr != 0x00) && (ep_addr != 0x80))
             {
                 EP_Stall(ep_addr);
             }
             break;
 
         case USB_OTG_CONFIGURED:
-            if (req->wValue == USB_FEATURE_EP_HALT)
+            if(req->wValue == USB_FEATURE_EP_HALT)
             {
-                if ((ep_addr != 0x00) && (ep_addr != 0x80))
+                if((ep_addr != 0x00) && (ep_addr != 0x80))
                 {
                     EP_ClrStall(ep_addr);
                     class_cb->Setup(req);
@@ -1764,7 +1762,7 @@ static void usb_Std_EndPoint_Req(USB_SETUP_REQ  *req)
         switch(device_status)
         {
         case USB_OTG_ADDRESSED:
-            if ((ep_addr != 0x00) && (ep_addr != 0x80))
+            if((ep_addr != 0x00) && (ep_addr != 0x80))
             {
                 EP_Stall(ep_addr);
             }
@@ -1815,7 +1813,7 @@ static void usb_Std_Interface_Req(USB_SETUP_REQ  *req)
     switch(device_status)
     {
     case USB_OTG_CONFIGURED:
-        if (LOBYTE(req->wIndex) <= USBD_ITF_MAX_NUM)
+        if(LOBYTE(req->wIndex) <= USBD_ITF_MAX_NUM)
         {
             class_cb->Setup(req);
             if(req->wLength == 0)
@@ -1896,7 +1894,7 @@ static void usb_ClrFeature(USB_SETUP_REQ *req)
     {
     case USB_OTG_ADDRESSED:
     case USB_OTG_CONFIGURED:
-        if (req->wValue == USB_FEATURE_REMOTE_WAKEUP)
+        if(req->wValue == USB_FEATURE_REMOTE_WAKEUP)
         {
             DevRemoteWakeup = 0;
             class_cb->Setup(req);
@@ -1917,7 +1915,7 @@ static void usb_SetFeature(USB_SETUP_REQ *req)
 {
     uint32_t dctl;
     uint8_t test_mode = 0;
-    if (req->wValue == USB_FEATURE_REMOTE_WAKEUP)
+    if(req->wValue == USB_FEATURE_REMOTE_WAKEUP)
     {
         DevRemoteWakeup = 1;
         class_cb->Setup(req);
@@ -1929,7 +1927,7 @@ static void usb_SetFeature(USB_SETUP_REQ *req)
         dctl = USB_FS->DREGS->DCTL;
         test_mode = req->wIndex >> 8;
         dctl &= ~USB_OTG_DCTL_TCTL;
-        switch (test_mode)
+        switch(test_mode)
         {
         case 1: // TEST_J
             dctl |= 1<<USB_OTG_DCTL_TCTL_OFFSET;
@@ -1961,7 +1959,7 @@ static void usb_GetStatus(USB_SETUP_REQ *req)
     {
     case USB_OTG_ADDRESSED:
     case USB_OTG_CONFIGURED:
-        if(DevRemoteWakeup)
+        if(0 != DevRemoteWakeup)
         {
             USBD_cfg_status = USB_CONFIG_SELF_POWERED | USB_CONFIG_REMOTE_WAKEUP;
         }
@@ -1983,7 +1981,7 @@ static void usb_GetStatus(USB_SETUP_REQ *req)
  */
 static void usb_GetConfig(USB_SETUP_REQ *req)
 {
-    if (req->wLength != 1)
+    if(req->wLength != 1)
     {
         usb_CtlError(req);
     }
@@ -2022,7 +2020,7 @@ static void usb_SetConfig(USB_SETUP_REQ *req)
         switch(device_status)
         {
         case USB_OTG_ADDRESSED:
-            if(cfgidx)
+            if(0 != cfgidx)
             {
                 device_config = cfgidx;
                 device_status = USB_OTG_CONFIGURED;
@@ -2047,7 +2045,6 @@ static void usb_SetConfig(USB_SETUP_REQ *req)
             {
                 /* Clear old configuration */
                 class_cb->DeInit(device_config);
-
                 /* set new configuration */
                 device_config = cfgidx;
                 class_cb->Init(cfgidx);
@@ -2073,7 +2070,7 @@ static void usb_SetConfig(USB_SETUP_REQ *req)
 static void  EP_SetAddress(uint8_t address)
 {
     uint32_t dcfg;
-    dcfg = address<<USB_OTG_DCFG_DAD_OFFSET;
+    dcfg = address << USB_OTG_DCFG_DAD_OFFSET;
     USB_FS->DREGS->DCFG |= dcfg;
 }
 
@@ -2082,11 +2079,10 @@ static void  EP_SetAddress(uint8_t address)
  */
 static void usb_SetAddress(USB_SETUP_REQ *req)
 {
-    uint8_t  dev_addr;
-    if ((req->wIndex == 0) && (req->wLength == 0))
+    uint8_t dev_addr;
+    if((req->wIndex == 0) && (req->wLength == 0))
     {
         dev_addr = (uint8_t)(req->wValue) & 0x7F;
-
         if(device_status == USB_OTG_CONFIGURED)
         {
             usb_CtlError(req);
@@ -2249,9 +2245,10 @@ static uint32_t ReadDevInEP(uint8_t epnum)
  */
 static void usb_WritePacket(uint8_t *src, uint8_t ch_ep_num, uint16_t len)
 {
-    uint32_t count32b= 0 , i= 0;
+    uint32_t count32b = 0;
+    uint32_t i= 0;
     count32b =  (len + 3) / 4;
-    for (i = 0; i < count32b; i++, src+=4)
+    for(i = 0; i < count32b; i++, src+=4)
     {
         USB_FS->DFIFO[ch_ep_num] = ((uint32_t *)src);
     }
@@ -2268,13 +2265,13 @@ static void WriteEmptyTxFifo(uint32_t epnum)
     uint32_t len32b;
     ep = &in_ep[epnum];
     len = ep->xfer_len - ep->xfer_count;
-    if (len > ep->maxpacket)
+    if(len > ep->maxpacket)
     {
         len = ep->maxpacket;
     }
     len32b = (len + 3) / 4;
     txstatus = (0x0000ffff & USB_FS->INEP_REGS[epnum]->DTXFSTS);
-    while  (txstatus > len32b && ep->xfer_count < ep->xfer_len && ep->xfer_len != 0)
+    while((txstatus > len32b) && (ep->xfer_count < ep->xfer_len) && (ep->xfer_len != 0))
     {
         /* Write the FIFO */
         len = ep->xfer_len - ep->xfer_count;
