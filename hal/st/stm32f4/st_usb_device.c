@@ -696,11 +696,10 @@ static void usb_ReadPacket(uint8_t *dest8, uint16_t len)
     uint32_t i;
     uint32_t count32b = (len + 3) / 4;
     uint32_t* dest = (uint32_t *)dest8;
-
     for(i = 0; i < count32b; i++)
     {
         *dest = *(USB_FS->DFIFO[0]);
-        dest += 4;
+        dest++;
     }
 }
 
@@ -740,7 +739,7 @@ static void HandleRxStatusQueueLevel_ISR(void)
         uint32_t bcnt = (status & USB_OTG_GRXSTSP_BCNT)>>USB_OTG_GRXSTSP_BCNT_OFFSET;
         /* Copy the setup packet received in FIFO into the setup buffer in RAM */
         hal_led_toggle_led(ERROR_LED);
-        usb_ReadPacket(setup_packet, 8);
+        usb_ReadPacket(&setup_packet[0], 8);
         ep->xfer_count += bcnt;
         break;
     }
