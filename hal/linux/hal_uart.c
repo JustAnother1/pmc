@@ -366,9 +366,10 @@ void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many)
     // else invalid Interface Specified
 }
 
-void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
+bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
     hal_uart_send_frame(device, frame, length);
+    return true;
 }
 
 void hal_uart_send_frame(uint_fast8_t device, uint_fast8_t * frame, uint_fast16_t length)

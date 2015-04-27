@@ -47,8 +47,7 @@ typedef struct {
 }uart_device_typ;
 
 static void device_IRQ_handler(uint_fast8_t device);
-static void make_sure_that_we_can_send(uint_fast8_t device);
-static void copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
+static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
 
 static volatile uart_device_typ devices[MAX_UART];
 
@@ -155,27 +154,6 @@ void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t len
     // else invalid Interface Specified
 }
 
-static void make_sure_that_we_can_send(uint_fast8_t device)
-{
-    uint32_t timeout = hal_time_get_ms_tick() + UART_BYTE_TIMEOUT_MS;
-    if(timeout < hal_time_get_ms_tick())
-    {
-        // wrap around
-        // wait for TX to be ready for the next Byte
-        while(   (timeout < hal_time_get_ms_tick())
-              && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
-        {
-            ; // wait
-        }
-    }
-    // wait for TX to be ready for the next Byte
-    while(   (timeout > hal_time_get_ms_tick())
-          && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
-    {
-        ; // wait
-    }
-}
-
 // TODO non blocking using DMA
 /*
 // DMA:
@@ -220,7 +198,7 @@ default:
 }
 */
 
-static void copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
+static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
     // TODO simplify
     if(devices[device].send_end_pos < devices[device].send_pos)
@@ -240,8 +218,7 @@ static void copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_
         else
         {
             // already wrapped and not fitting -> blocking
-            hal_uart_send_frame(device, frame, length);
-            return;
+            return false;
         }
     }
     else
@@ -281,35 +258,35 @@ static void copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_
             else
             {
                 // doesn't fit -> blocking !
-                hal_uart_send_frame(device, frame, length);
-                return;
+                return false;
             }
         }
     }
+    return true;
 }
 
-void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
+bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
     if( !(device < MAX_UART) || (1 > length) )
     {
         // invalid Interface Specified or
         // no data
-        return;
+        return false;
     }
 
     if(NULL == devices[device].send_buffer)
     {
         // send_buffer is generated in hal_uart_init() !
         // So this only happens if sending on a Device that has not been initialized.
-        devices[device].is_sending = false; // for safety
-        devices[device].port->CR1 &= ~USART_CR1_TXEIE;
-        // no sendbuffer -> blocking
-        hal_uart_send_frame(device, frame, length);
-        return;
+        return false;
     }
 
     // can we copy the data ?
-    copy_data_to_send(device, frame, length);
+    if(false == copy_data_to_send(device, frame, length))
+    {
+        // Send buffer is full
+        return false;
+    }
 
     // are we already sending or do we need to start sending
     if(true == devices[device].is_sending)
@@ -319,7 +296,6 @@ void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint
     else
     {
         // start sending now
-        make_sure_that_we_can_send(device);
         devices[device].is_sending = true;
         devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_pos];
         devices[device].send_pos++;
@@ -336,6 +312,7 @@ void hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint
         // active immediately. It therefore must be the last line !
         devices[device].port->CR1 |= USART_CR1_TXEIE;
     }
+    return true;
 }
 
 static void device_IRQ_handler(uint_fast8_t device)
