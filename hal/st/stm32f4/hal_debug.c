@@ -81,3 +81,17 @@ void debug_line(const char* format, ...)
     }
 }
 
+void debug_print32(uint32_t num)
+{
+    buffer[0] = '*';
+    buffer[1] = (num>>24)  &0xff;
+    buffer[2] = (num>>16) & 0xff;
+    buffer[3] = (num>>8) & 0xff;
+    buffer[4] = num & 0xff;
+    buffer[5] = '+';
+    if(false == hal_uart_send_frame_non_blocking(DEBUG_UART, &buffer[0], 6))
+    {
+        hal_led_set_led(ERROR_LED, true);
+    }
+}
+

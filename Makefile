@@ -18,7 +18,7 @@ include hal/hal.mk
 include cfg/system.mk
 include cfg/files.mk
 
-# Define optimisation level here -O3
+# Define optimisation level here -O3 or -O0 for no optimisation
 OPT += -O0 -ffunction-sections -fdata-sections
 CFLAGS += $(OPT) -g -Wall -pedantic -std=gnu99
 LDFLAGS +=  -g -Wall -fwhole-program $(LIB)

@@ -40,4 +40,9 @@ void debug_line(const char* format, ...)
     printf("\r\n");
 }
 
+void debug_print32(uint32_t num)
+{
+    printf("%08x", num);
+}
+
 
