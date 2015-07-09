@@ -22,6 +22,8 @@
 #include "orderhandler.h"
 #include "device_stepper.h"
 #include "device_input.h"
+#include "hal_debug.h"
+#include <stdlib.h>
 
 #define MAX_QUEUE_ELEMENTS                50
 // Block Envelope is Length and Type -> 2 Bytes
@@ -60,9 +62,36 @@ static uint_fast8_t stacked_non_move_orders = 0; // number of commands that have
 static uint_fast16_t finished_blocks = 0; // number of successfully executed Blocks
 static bool move_since_last_tag = false;
 
+#define STEPPER_MODULE_TEST
+
+#ifdef STEPPER_MODULE_TEST
+
+uint_fast8_t move_data[9] = {
+       0, /* 0 : Don't care*/
+       1, /* 1: Axis selection field*/
+       0, /* 2: num bytes per Step, directions on axis*/
+       0, /* 3: primary axis, homing */
+       0, /* 4: nominal speed - dynamic */
+       0, /* 5: end speed - dynamic change */
+    0xff, /* 6: Accelleration steps - becomes 0 when full speed is reached*/
+       0, /* 7: decelleration steps - who breaks losses ;-) */
+    0xff  /* 8: steps on axis 0 */
+};
+
+static uint_fast8_t start_speed = 0;
+static uint_fast8_t speed_increment = 1;
+static uint_fast8_t max_speed = 12;
+static bool enabled = false;
+
+#endif
+
 void cmd_queue_init(void)
 {
+#ifdef STEPPER_MODULE_TEST
+    dev_stepper_enable_motor(0, 1);
+#else
     cmd_queue_clear();
+#endif
 }
 
 void cmd_queue_reset_executed_commands(void)
@@ -351,8 +380,93 @@ static void send_queue_ok_response(void)
 // removing from the Queue:
 // ========================
 
+bool cmd_queue_chnage_setting(uint8_t* setting)
+{
+    switch(*setting)
+    {
+#ifdef STEPPER_MODULE_TEST
+    case 'E':
+    case 'e': // enable stepper test
+        if(true == enabled)
+        {
+            enabled = false;
+        }
+        else
+        {
+            enabled = true;
+        }
+        return true;
+
+    case 'S':
+    case 's': // set speed
+        max_speed = atoi(++setting);
+        debug_line("changing max speed to %d !", max_speed);
+        return true;
+
+    case 'I':
+    case 'i':
+        if(true == enabled)
+        {
+            debug_line("enabled !");
+        }
+        else
+        {
+            debug_line("disabled !");
+        }
+        debug_line("max speed is %d !", max_speed);
+        return true;
+
+#else
+#endif // STEPPER_MODULE_TEST
+    default:
+        return false;
+    }
+}
+
 void cmd_queue_tick(void)
 {
+#ifdef STEPPER_MODULE_TEST
+    if(true == enabled)
+    {
+        if(false == step_is_busy())
+        {
+            // prepare next move
+            uint_fast8_t move_data[9] = {
+                   0, /* 0 : Don't care*/
+                   1, /* 1: Axis selection field*/
+                   0, /* 2: num bytes per Step, directions on axis*/
+                   0, /* 3: primary axis, homing */
+                   0, /* 4: nominal speed - dynamic */
+                   0, /* 5: end speed - dynamic change */
+                0xff, /* 6: Accelleration steps - becomes 0 when full speed is reached*/
+                   0, /* 7: decelleration steps - who breaks losses ;-) */
+                0xff  /* 8: steps on axis 0 */
+            };
+            if(start_speed < max_speed)
+            {
+                start_speed = start_speed + speed_increment;
+            }
+            else
+            {
+                if(start_speed > max_speed)
+                {
+                    // max speed was reduced
+                    start_speed = start_speed - speed_increment;
+                }
+                else
+                {
+                    // start_speed is already max_speed
+                    move_data[6] = 0;
+                }
+            }
+            move_data[4] = start_speed;
+            move_data[5] = start_speed;
+            step_add_basic_linear_move(&move_data[0]);
+        }
+        // else step is busy -> so we can not send the next action over
+    }
+#else
+#endif
     if(0 < stacked_non_move_orders)
     {
         if(true == step_has_reached_tag())
@@ -452,6 +566,7 @@ void cmd_queue_tick(void)
         // else Queue is empty -> nothing to do.
     }
     // else step is busy -> so we can not send the next action over
+
 }
 
 static void handle_wrapped_command(void)

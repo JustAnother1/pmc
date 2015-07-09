@@ -16,12 +16,14 @@
 #ifndef COMMAND_QUEUE_H_
 #define COMMAND_QUEUE_H_
 
-#include "inttypes.h"
+#include <inttypes.h>
+#include <stdbool.h>
 
 void cmd_queue_init(void);
 void cmd_queue_add_blocks(uint_fast8_t parameter_length);
 void cmd_queue_clear(void);
 void cmd_queue_tick(void);
 void cmd_queue_reset_executed_commands(void);
+bool cmd_queue_chnage_setting(uint8_t* setting);
 
 #endif /* COMMAND_QUEUE_H_ */

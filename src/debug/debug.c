@@ -25,6 +25,7 @@
 #include "hal_debug.h"
 #include "device_stepper.h"
 #include "hal_usb_device_cdc.h"
+#include "command_queue.h"
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
@@ -255,6 +256,7 @@ static void parse_order(int length)
 #endif
         debug_line("ps<device num>  : print SPI configuration");
         debug_line("ws<hex chars>   : write data to SPI");
+        debug_line("c<setting>      : change special setting");
         break;
 
     case 'D':
@@ -276,7 +278,44 @@ static void parse_order(int length)
 
     case 'T':
     case 't': // show current time
-        debug_line("now : %d", hal_time_get_ms_tick());
+    {
+        uint32_t millis = 0;
+        uint32_t seconds = 0;
+        uint32_t minutes = 0;
+        uint32_t hours = 0;
+        uint32_t now =  hal_time_get_ms_tick();
+        debug_line("now : %d", now);
+        if(now < 1000)
+        {
+            debug_line("%d ms", now);
+        }
+        else
+        {
+            millis = now %1000;
+            seconds = now / 1000;
+            if(seconds < 60)
+            {
+                debug_line("%d,%03d s", seconds, millis);
+            }
+            else
+            {
+                now = seconds;
+                seconds = seconds % 60;
+                minutes = now / 60;
+                if(minutes < 60)
+                {
+                    debug_line("%d:%02d,%03d mm:ss",minutes, seconds, millis);
+                }
+                else
+                {
+                    now = minutes;
+                    minutes = minutes % 60;
+                    hours = now / 60;
+                    debug_line("%d:%02d:%02d,%03d hh:mm:ss", hours, minutes, seconds, millis);
+                }
+            }
+        }
+    }
         break;
 
     case 'P':
@@ -335,6 +374,25 @@ static void parse_order(int length)
             }
             break;
         }
+
+        case 'C':
+        case 'c':
+            switch (cmd_buf[1])
+            {
+            case 'Q':
+            case 'q':
+                if(false == cmd_queue_chnage_setting(&cmd_buf[2]))
+                {
+                    debug_line("Invalid command ! try h for help");
+                }
+                // else -> OK
+                break;
+
+            default:
+                debug_line("Invalid command ! try h for help");
+                break;
+            }
+            break;
 
     default: // invalid command
         debug_line("Invalid command ! try h for help");
