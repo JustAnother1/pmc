@@ -40,6 +40,7 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers);
 void trinamic_enable_stepper(uint_fast8_t stepper_num);
 void trinamic_disable_stepper(uint_fast8_t stepper_num);
 #ifdef USE_STEP_DIR
+void trinamic_print_stepper_status(void);
 #else
 void trinamic_make_step_using_SPI(uint_fast8_t stepper_num, bool direction_is_increasing);
 #endif

@@ -26,6 +26,7 @@
 #include "device_stepper.h"
 #include "hal_usb_device_cdc.h"
 #include "command_queue.h"
+#include "trinamic.h"
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
@@ -257,6 +258,9 @@ static void parse_order(int length)
         debug_line("ps<device num>  : print SPI configuration");
         debug_line("ws<hex chars>   : write data to SPI");
         debug_line("c<setting>      : change special setting");
+#ifdef USE_STEP_DIR
+        debug_line("pt              : print Trinamic status");
+#endif
         break;
 
     case 'D':
@@ -335,6 +339,12 @@ static void parse_order(int length)
         case 'B':
         case 'b':
             hal_usb_print_configuration();
+            break;
+#endif
+#ifdef USE_STEP_DIR
+        case 'T':
+        case 't':
+            trinamic_print_stepper_status();
             break;
 #endif
 

@@ -228,7 +228,7 @@ void trinamic_disable_stepper(uint_fast8_t stepper_num)
 void trinamic_configure_steppers(uint_fast8_t num_steppers)
 {
     int i;
-    num_bytes_used =((num_steppers+1)/2)*5;
+    num_bytes_used =((num_steppers+1)/2)*5; // 20 bits per Stepper
 
     if(0 == num_steppers)
     {
@@ -461,6 +461,50 @@ void periodic_status_check(void)
 {
     hal_spi_start_spi_transaction(STEPPER_SPI, &smarten_data[0], num_bytes_used, &spi_receive_buffer[0]);
     // TODO check reply
+}
+
+void trinamic_print_stepper_status(void)
+{
+    int i;
+    // war data
+    debug_msg("hex: ");
+    for(int i = 0; i < num_bytes_used; i++)
+    {
+        debug_msg("%02X ", spi_receive_buffer[i]);
+    }
+    debug_line(" ");
+
+    /*
+     * Status Format:
+     *
+     * RDSEL (0,1,2)
+     *
+     *  Bit   | RDSEL  | RDSEL | RDSEL
+     * Number |  0     |  1    |  2
+     * -------+--------+-------+------
+     *   19   | MSTEP9 | SG9   | SG9
+     *   18   | MSTEP8 | SG8   | SG8
+     *   17   | MSTEP7 | SG7   | SG7
+     *   16   | MSTEP6 | SG6   | SG6
+     *   15   | MSTEP5 | SG5   | SG5
+     *   14   | MSTEP4 | SG4   | SE4
+     *   13   | MSTEP3 | SG3   | SE3
+     *   12   | MSTEP2 | SG2   | SE2
+     *   11   | MSTEP1 | SG1   | SE1
+     *   10   | MSTEP0 | SG0   | SE0
+     *    9   | not used
+     *    8   | not used
+     *    7   | STST = Standstill detector           (0 = moving;          1 = standstill)
+     *    6   | OLB  = Open Load Coil B              (0 = load detected;   1 = open load detected) only reliable during slow movement
+     *    5   | OLA  = Open Load Coil A              (0 = load detected;   1 = open load detected) only reliable during slow movement
+     *    4   | S2GB = short to GND detection Coil B (0 = OK;              1 = Short to GND on high side transistors)
+     *    3   | S2GA = short to GND detection Coil A (0 = OK;              1 = Short to GND on high side transistors)
+     *    2   | OTPW = over Temperature warning      (0 = Temperature OK,  1 = over Temperature !)
+     *    1   | OT   = over Temperature shutdown     (0 = OK;              1 = Motor has been shut down due to over temperature condition)
+     *    0   | SG   = Stall Guard                   (0 = motor is moving; 1 = stall guard current threshold has been reached)
+     */
+
+
 }
 
 #else
