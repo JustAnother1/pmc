@@ -389,8 +389,19 @@ static void parse_order(int length)
         case 'c':
             switch (cmd_buf[1])
             {
+
+            case 'T':
+            case 't':
+                // Trinamic (src/stepper/trinamic.c):
+                if(false == trinamic_change_setting(&cmd_buf[2]))
+                {
+                    debug_line("Invalid command ! try h for help");
+                }
+                // else -> OK
+
             case 'Q':
             case 'q':
+                // Command Queue (src/order/commandqueue.c):
                 if(false == cmd_queue_chnage_setting(&cmd_buf[2]))
                 {
                     debug_line("Invalid command ! try h for help");

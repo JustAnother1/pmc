@@ -377,9 +377,6 @@ static void send_queue_ok_response(void)
     com_send_ok_with_prefilled_parameter(6);
 }
 
-// removing from the Queue:
-// ========================
-
 bool cmd_queue_chnage_setting(uint8_t* setting)
 {
     switch(*setting)
@@ -422,6 +419,9 @@ bool cmd_queue_chnage_setting(uint8_t* setting)
         return false;
     }
 }
+
+// removing from the Queue:
+// ========================
 
 void cmd_queue_tick(void)
 {

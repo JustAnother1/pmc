@@ -47,7 +47,7 @@ static void slave_select_start(uint_fast8_t device);
 static void slave_select_end(uint_fast8_t device);
 static void device_IRQ_handler(uint_fast8_t device);
 
-static volatile spi_device_typ devices[MAX_SPI];
+static spi_device_typ devices[MAX_SPI];
 
 
 void hal_spi_init(uint_fast8_t device)
@@ -274,6 +274,7 @@ static void device_IRQ_handler(uint_fast8_t device)
 
     if(SPI_SR_RXNE == (SPI_SR_RXNE & sr))
     {
+        devices[device].bus->SR = devices[device].bus->SR &~SPI_SR_RXNE;
         // we received a byte
         devices[device].receive_buffer[devices[device].rec_pos] = (uint8_t)devices[device].bus->DR;
         devices[device].rec_pos++;
@@ -295,6 +296,7 @@ static void device_IRQ_handler(uint_fast8_t device)
     }
     if(SPI_SR_TXE == (SPI_SR_TXE & sr))
     {
+        devices[device].bus->SR =  devices[device].bus->SR &~SPI_SR_TXE;
         // send the next byte
         if(devices[device].length > devices[device].send_pos)
         {

@@ -231,6 +231,9 @@ static uint8_t setup_packet[8*3];
 static USB_OTG_EP in_ep[USB_OTG_MAX_TX_FIFOS];
 static USB_OTG_EP out_ep[USB_OTG_MAX_TX_FIFOS];
 
+static uint32_t num_same = 0;
+static uint32_t cur_int_status = 0;
+
 
 USB_OTG_EP* get_out_ep_num(uint_fast8_t num)
 {
@@ -447,6 +450,21 @@ void USB_FS_IRQ_HANDLER(void)
 {
     uint32_t irqs = USB_OTG_FS->GINTSTS & USB_OTG_FS->GINTMSK;
     hal_led_toggle_led(ERROR_LED);
+    if(irqs != cur_int_status)
+    {
+        cur_int_status = irqs;
+        num_same = 0;
+    }
+    else
+    {
+        num_same++;
+        if(10 < num_same)
+        {
+            debug_print32(irqs);
+            num_same = 0;
+        }
+    }
+
     if(0 == irqs) /* avoid spurious interrupt */
     {
         return;
@@ -532,6 +550,7 @@ void USB_FS_IRQ_HANDLER(void)
         /* Clear interrupt */
         USB_OTG_FS->GINTSTS |= USB_OTG_GINTSTS_PXFR_INCOMPISOOUT;
     }
+
     /* Not used:
      *  USB_OTG_GINTSTS_OTGINT       OTG interrupt
      *  USB_OTG_GINTSTS_GINAKEFF     Global IN nonperiodic NAK effective
@@ -574,19 +593,17 @@ static void usb_EP0_OutStart(void)
  */
 static void HandleInEP_ISR(void)
 {
-    uint32_t  diepint;
     uint32_t ep_intr;
     uint32_t epnum = 0;
-    uint32_t fifoemptymsk;
     ep_intr = usb_ReadDevAllInEPItr();
     while(ep_intr)
     {
         if(ep_intr&0x1) /* In ITR */
         {
-            diepint = ReadDevInEP(epnum); /* Get In ITR status */
+            uint32_t diepint = ReadDevInEP(epnum); /* Get In ITR status */
             if(0 != (diepint & USB_OTG_DIEPINT_XFRC))
             {
-                fifoemptymsk = 0x1 << epnum;
+                uint32_t fifoemptymsk = 0x1 << epnum;
                 USB_FS->DREGS->DIEPEMPMSK &= ~fifoemptymsk;
                 USB_FS->INEP_REGS[epnum]->DIEPINT = USB_OTG_DIEPINT_XFRC;
                 /* TX COMPLETE */
@@ -1079,7 +1096,7 @@ static void usb_EP0StartXfer(USB_OTG_EP *ep)
 {
     uint32_t depctl;
     uint32_t deptsiz;
-    USB_OTG_INEPREGS          *in_regs;
+    USB_OTG_INEPREGS *in_regs;
     uint32_t fifoemptymsk = 0;
     /* IN endpoint */
     if(ep->is_in == 1)
@@ -2229,7 +2246,9 @@ static void DataInStage(uint8_t epnum)
  */
 static uint32_t ReadDevInEP(uint8_t epnum)
 {
-    uint32_t v, msk, emp;
+    uint32_t v;
+    uint32_t msk;
+    uint32_t emp;
     msk = USB_FS->DREGS->DIEPMSK;
     emp = USB_FS->DREGS->DIEPEMPMSK;
     msk |= ((emp >> epnum) & 0x1) << 7;

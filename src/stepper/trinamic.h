@@ -34,7 +34,8 @@
 #define STEP_MODE_HALF_STEP                 2
 #endif
 
-
+void trinamic_init(void);
+bool trinamic_change_setting(uint8_t* setting);
 uint_fast8_t trinamic_detect_number_of_steppers(void);
 void trinamic_configure_steppers(uint_fast8_t num_steppers);
 void trinamic_enable_stepper(uint_fast8_t stepper_num);

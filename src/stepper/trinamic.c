@@ -16,6 +16,11 @@
 #include "hal_cfg.h"
 #include "hal_spi.h"
 #include "hal_cpu.h"
+#include "hal_debug.h"
+
+/*
+ * D E F I N E S
+ */
 
 // 20 bit per stepper in Bytes
 //(1 Stepper =  3 Bytes; ( 4 bits unused)
@@ -24,30 +29,173 @@
 // 6 Stepper = 15 Bytes
 // 8 Stepper = 20 Bytes)
 #define SPI_BUFFER_LENGTH           20
+#define MAX_NUM_STEPPERS            8
+#define NUM_CFG_REGISTERS           5
 
-typedef struct {
-    uint_fast8_t step_mode;
-    uint_fast8_t drvctrl_microsteps;
-    uint_fast8_t chop_toff;
-}lstepper_configuration_typ;
+/*
+ *  T Y P E S
+ */
 
+    typedef struct {
+        // DRVCTRL
+    #ifdef USE_STEP_DIR
+        bool stepInterpolation;
+        bool doubleEdgeStepPulse;
+        uint_fast8_t microstepResolution;
+    #else
+        uint_fast8_t step_mode;
+    #endif
+        // CHOPCONF
+        uint_fast8_t blankingTime;
+        bool chopperMode;
+        bool randomToff;
+        uint_fast8_t hysteresisDecrementTime;
+        bool fastDecayMode;
+        uint_fast8_t hysteresisEnd;
+        uint_fast8_t sineWaveOffset;
+        uint_fast8_t hysteresisStartOffset;
+        uint_fast8_t fastDecayTime;
+        uint_fast8_t toff;
+        // SMARTEN
+        bool seIMin;
+        uint_fast8_t decrementSpeed;
+        uint_fast8_t seUpper;
+        uint_fast8_t seUpStep;
+        uint_fast8_t seLower;
+        //SGCSCONF
+        bool sgFilter;
+        int_fast8_t sgThreshold;
+        uint_fast8_t sgCS;
+        // DRVCONF
+        bool test;
+        uint_fast8_t slopeHigh;
+        uint_fast8_t slopeLow;
+        uint_fast8_t shortGNDdisabled;
+        uint_fast8_t shortGNDtimer;
+        bool disableSTEPDIR;
+        bool lowVoltageRsense;
+        uint_fast8_t responseFormat;
 
-// configuration buffer
-static lstepper_configuration_typ stepper_conf[8];
-static uint8_t drvctrl_data[SPI_BUFFER_LENGTH];
-static uint8_t chopconf_data[SPI_BUFFER_LENGTH];
-static uint8_t smarten_data[SPI_BUFFER_LENGTH];
-static uint8_t sgcsconf_data[SPI_BUFFER_LENGTH];
-static uint8_t drvconf_data[SPI_BUFFER_LENGTH];
+    }lstepper_configuration_typ;
+
+    enum cfgSetting {
+        // DRVCTRL
+        stepInterpolation,
+        doubleEdge,
+        microstepResolution,
+        // CHOPCONF
+        blankingTime,
+        chopperMode,
+        randomToff,
+        hysteresisDecrementTime,
+        fastDecayMode,
+        hysteresisEnd,
+        sineWaveOffset,
+        hysteresisStartOffset,
+        fastDecayTime,
+        toff,
+        // SMARTEN
+        seIMin,
+        decrementSpeed,
+        seUpper,
+        seUpStep,
+        seLower,
+        // SGCSCONF
+        sgFilter,
+        sgThreshold,
+        sgCS,
+        // DRVCONF
+        test,
+        slopeHigh,
+        slopeLow,
+        shortGNDdisabled,
+        shortGNDtimer,
+        disableSTEPDIR,
+        lowVoltageRsense,
+        responseFormat,
+    };
+
+    enum cfgRegisters {
+        DRVCTRL  = 0,
+        CHOPCONF = 1,
+        SMARTEN  = 2,
+        SGCSCONF = 3,
+        DRVCONF  = 4,
+    };
+
+/*
+ * S T A T I C   F U N C T I O N S
+ */
+static void setBit(enum cfgRegisters reg, int bit);
+static void resetBit(enum cfgRegisters reg, int bit);
+static void writeInt(int value,enum cfgRegisters reg, int bit, int bits);
+static void setInt(int value, enum cfgSetting Setting, int stepper);
+static void setBool(bool value, enum cfgSetting Setting, int stepper);
+
+#ifdef USE_STEP_DIR
+    static void periodic_status_check(void);
+#else
+    static uint8_t* get_next_step(uint_fast8_t stepper_num, bool direction_is_increasing);
+#endif
+
+/*
+ *  S T A T I C   V A R I A B L E S
+ */
+
+static lstepper_configuration_typ stepper_conf[MAX_NUM_STEPPERS];
+static uint8_t cfg_data[5][SPI_BUFFER_LENGTH];
 static uint_fast8_t num_bytes_used;
+static uint8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
 
 #ifdef USE_STEP_DIR
 
-void periodic_status_check(void);
-
 #else
-
+static uint_fast8_t cur_step[8];
 static uint8_t next_step_buffer[3];
+
+// DRVCTRL in SPI Mode:
+//
+// Bit     |Range  |Meaning
+//---------+-------+------------------
+// 19 + 18 |0      |
+// 17      |0/1    |Polarity A
+// 9-16    |0..255 |Current in coil A
+// 8       |0/1    |Polarity B
+// 0..7    |0..255 |Current in coil B
+static const uint8_t STEP_MODE_WAVE_TABLE[4][3] = {
+        // !!! last hex char must be 0 !!!
+        //  Byte Index      | current    | Microstep
+        //  0,    1,    2   |     A    B | 1/1   1/2
+        //------------------+------------+----------
+        {0x1f, 0x00, 0x00}, // +248    0 |  0     0
+        {0x00, 0x0f, 0x80}, //    0 +248 |  1     2
+        {0x3f, 0x00, 0x00}, // -248    0 |  2     4
+        {0x00, 0x1f, 0x80}, //    0 -248 |  3     6
+};
+
+// DRVCTRL in SPI Mode:
+//
+// Bit     |Range  |Meaning
+//---------+-------+------------------
+// 19 + 18 |0      |
+// 17      |0/1    |Polarity A
+// 9-16    |0..255 |Current in coil A
+// 8       |0/1    |Polarity B
+// 0..7    |0..255 |Current in coil B
+static const uint8_t STEP_MODE_FULL_HALF[8][3] = {
+        // !!! last hex char must be 0 !!!
+        //  Byte Index      | current    | Microstep
+        //  0,    1,    2   |     A    B | 1/1   1/2
+        //------------------+------------+----------
+        {0x1f, 0x00, 0x00}, // +248    0 |  0     0
+        {0x1f, 0x0f, 0x80}, // +248 +248 |        1
+        {0x00, 0x0f, 0x80}, //    0 +248 |  1     2
+        {0x3f, 0x0f, 0x80}, // -248 +248 |        3
+        {0x3f, 0x00, 0x00}, // -248    0 |  2     4
+        {0x3f, 0x1f, 0x80}, // -248 -248 |        5
+        {0x00, 0x1f, 0x80}, //    0 -248 |  3     6
+        {0x1f, 0x1f, 0x80}, // +248 -248 |        7
+};
 
 // DRVCTRL in SPI Mode:
 //
@@ -94,6 +242,7 @@ static const uint8_t DRVCONTROL_Buffer_1[32][3] = {
         {0x1c, 0xb5, 0xf0}, // 30
         {0x1e, 0x73, 0x00}  // 31
 };
+
 static const uint8_t DRVCONTROL_Buffer_2[32][3] = {
         // !!! first hex char must be 0 !!!
         //  0,    1,    2
@@ -131,12 +280,379 @@ static const uint8_t DRVCONTROL_Buffer_2[32][3] = {
         {0x01, 0xe7, 0x30}  // 31
 };
 
-uint8_t* get_next_step(uint_fast8_t stepper_num, bool direction_is_increasing);
-
 #endif
 
-uint_fast8_t cur_step[8];
-static uint8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
+/*
+ * P U B L I C   F U N C T I O N S
+ */
+
+void trinamic_init(void)
+{
+    uint_fast8_t i;
+
+    // clean configuration Buffers
+    for(i = 0; i < NUM_CFG_REGISTERS ; i++)
+    {
+        uint_fast8_t j;
+        for(j = 0; j < SPI_BUFFER_LENGTH; j++)
+        {
+            cfg_data[i][j] = 0;
+        }
+    }
+
+    // default configuration
+    // DRVCTRL  = 0x00100
+    // CHOPCONF = 0x9a9f0 // stepper enabled = 0x 9a9ff
+    // SMARTEN  = 0xa0000
+    // SGCSCONF = 0xd3f1f
+    // DRVCONF  = 0xef060
+    for(i = 0; i < MAX_NUM_STEPPERS; i++)
+    {
+        // set Register Address bits
+        // bit 19
+        setBit(CHOPCONF, 19 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        setBit(SMARTEN,  19 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        setBit(SGCSCONF, 19 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        setBit(DRVCONF,  19 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        // bit 18
+        setBit(SGCSCONF, 18 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        setBit(DRVCONF,  18 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        // bit 17
+        setBit(SMARTEN,  17 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        setBit(DRVCONF,  17 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+
+        // Drive Control DRVCTRL
+        // Step Interpolation
+        // - false = Disabled
+        // - true  = Enabled
+        stepper_conf[i].stepInterpolation = false;
+        // Double Edge Step Pulses
+        // - false = only rising edge
+        // - true  = both edges trigger Steps
+        stepper_conf[i].doubleEdgeStepPulse = true;
+        // Micro Step Resolution MRES(4 Bit)
+        // - 0 = 1/256
+        // - 1 = 1/128
+        // - 2 = 1/64
+        // - 3 = 1/32
+        // - 4 = 1/16
+        // - 5 = 1/8
+        // - 6 = 1/4
+        // - 7 = half steps
+        // - 8 = full Steps
+        stepper_conf[i].microstepResolution = 8;
+
+        // Chopper Control CHOPCONF
+        // Blanking Time TBL(2 Bit)
+        // - 0 = 16
+        // - 1 = 24
+        // - 2 = 36
+        // - 3 = 54 (in System Clocks)
+        stepper_conf[i].blankingTime = 3;
+        // Chopper Mode (CHM)
+        // - false = Spread Cycle
+        // - true = Constant Toff with fast decay
+        stepper_conf[i].chopperMode  = false;
+        // Random Toff (RNDTF)
+        // - false = Toff is fixed
+        // - true  = Toff = Toff + (-12..+3) clocks
+        stepper_conf[i].randomToff = true;
+        // Hysteresis Decrement Time HDEC (2 Bit)
+        // - 0 = 16
+        // - 1 = 32
+        // - 2 = 48
+        // - 3 = 64 (in System clock cycles)
+        stepper_conf[i].hysteresisDecrementTime = 1;
+        // Fast Decay mode HDEC (1 bit)
+        // - false = fast decay can be finished sooner
+        // - true  = fast decay time defined by timer
+        stepper_conf[i].fastDecayMode = true;
+        // Hysteresis end (low value) HEND (4bit)
+        // -  0 = -3
+        // -  1 = -2
+        // -  2 = -1
+        // -  3 =  0
+        // -  4 =  1
+        // -  5 =  2
+        // -  6 =  3
+        // -  7 =  4
+        // -  8 =  5
+        // -  9 =  6
+        // - 10 =  7
+        // - 11 =  8
+        // - 12 =  9
+        // - 13 = 10
+        // - 14 = 11
+        // - 15 = 12
+        stepper_conf[i].hysteresisEnd = 3;
+        // Sine Wave Offset HEND (4 Bit)
+        // -  0 = -3
+        // -  1 = -2
+        // -  2 = -1
+        // -  3 =  0
+        // -  4 =  1
+        // -  5 =  2
+        // -  6 =  3
+        // -  7 =  4
+        // -  8 =  5
+        // -  9 =  6
+        // - 10 =  7
+        // - 11 =  8
+        // - 12 =  9
+        // - 13 = 10
+        // - 14 = 11
+        // - 15 = 12
+        stepper_conf[i].sineWaveOffset = 3;
+        // Hysteresis start Value HSTRT (3 bit) Hysteresis start offset from HEND
+        // - 0 = 1
+        // - 1 = 2
+        // - 2 = 3
+        // - 3 = 4
+        // - 4 = 5
+        // - 5 = 6
+        // - 6 = 7
+        // - 7 = 8
+        // HEND + HSTRT must be <=15
+        stepper_conf[i].hysteresisStartOffset = 7;
+        // Fast decay time setting HSTRT (4bit)
+        stepper_conf[i].fastDecayTime = 7;
+        // Off Time / MOSFET disable Toff (4 Bit)
+        // - 0 = Drive disable, bridges off
+        // - 1 = 1 (TBL>= 24 clk)
+        // - 2 = 2, .. 15 = 15
+        stepper_conf[i].toff = 0;
+
+        // coolStep Control Register SMARTEN
+        //Minimum coolStep current(SEIMIN)
+        // - false = 1/2 Current Scale (CS)
+        // - true  = 1/4 CS
+        stepper_conf[i].seIMin = false;
+        // Current decrement Speed (SEDN) 2bit
+        // Number of times that the stallGurad2 value must be sampled equal to
+        // or above the upper threshold for each decrement of the coil current.
+        // - 0 = 32
+        // - 1 = 8
+        // - 2 = 2
+        // - 3 = 1
+        stepper_conf[i].decrementSpeed = 0;
+        // Upper coolStep Threshold (offset from the lower threshold) 4bit
+        // - 0 .. 15
+        stepper_conf[i].seUpper = 0;
+        // current increment size 2 bit
+        // - 0 = 1
+        // - 1 = 2
+        // - 2 = 4
+        // - 3 = 8
+        stepper_conf[i].seUpStep = 0;
+        // Lower coolStep threshold / disable 4bit
+        // - 0 = disabled
+        // - 1..15
+        stepper_conf[i].seLower = 0;
+
+        // stallGuard2 Control Register SGCSCONF
+        // Filter enable
+        // - false = standard mode, fastest response time
+        // - true  = filtered mode, updated once each 4 full steps, highest accuracy
+        stepper_conf[i].sgFilter = true;
+        // threshold
+        // two's compliment signed int
+        // Range +63 .. -64
+        // Values below -10 are not recommended
+        // lower value = higher sensitivity
+        stepper_conf[i].sgThreshold = 63;
+        // Current scale
+        // - 0 = 1/32
+        // - 1 = 2/32
+        // - ...
+        // - 31 = 32/32
+        stepper_conf[i].sgCS = 31;
+
+        // Driver Control Register DRVCONF
+        // Test Mode
+        // - false = disabled - normal operation
+        // - true  = enabled - test mode
+        stepper_conf[i].test = false;
+        // Slope Control High Side 2 bit
+        // - 0 = Minimum
+        // - 1 = Minimum temperature compensation mode
+        // - 2 = Medium temperature compensation mode
+        // - 3 = maximum
+        stepper_conf[i].slopeHigh = 3;
+        // Slope Control low Side 2 bit
+        // - 0 = Minimum
+        // - 1 = Minimum
+        // - 2 = Medium
+        // - 3 = maximum
+        stepper_conf[i].slopeLow = 3;
+        // Short to Ground protection disable
+        // - false = protection enabled
+        // - true  = protection disabled
+        stepper_conf[i].shortGNDdisabled = false;
+        // short to ground(GND) detection timer
+        // - 0 = 3,2µs
+        // - 1 = 1.6µs
+        // - 2 = 1.2µs
+        // - 3 = 0.8µs
+        stepper_conf[i].shortGNDtimer = 0;
+        // disable STEp/DIR interface
+        // - false = STEP/DIR interface  enabled
+        // - true  = STEP/DIR interface disabled
+        stepper_conf[i].disableSTEPDIR = false;
+        // Sense Resistor voltage based current scaling
+        // - false = full scale voltage is 305mV
+        // - true  = full scale voltage is 165 mV
+        stepper_conf[i].lowVoltageRsense = true;
+        // Response Data Format
+        // - 0 = Microstep Position
+        // - 1 = stallGuard2 level
+        // - 2 = stallGuard2 level and coolStep current level
+        // - 3 = reserved. do not use
+        stepper_conf[i].responseFormat = 2;
+    }
+}
+
+void trinamic_configure_steppers(uint_fast8_t num_steppers)
+{
+    uint_fast8_t i;
+
+    for(i = 0; i < num_steppers; i++)
+    {
+        // DRVCTRL
+#ifdef USE_STEP_DIR
+        setBool(stepper_conf[i].stepInterpolation,   stepInterpolation,   i);
+        setBool(stepper_conf[i].doubleEdgeStepPulse, doubleEdge,          i);
+        setInt( stepper_conf[i].microstepResolution, microstepResolution, i);
+#else
+        cfg_data[DRVCTRL][(i/2)*5 + 0] = 0x1f;
+        cfg_data[DRVCTRL][(i/2)*5 + 1] = 0x00;
+        cfg_data[DRVCTRL][(i/2)*5 + 2] = 0x01;
+        cfg_data[DRVCTRL][(i/2)*5 + 3] = 0xf0;
+        cfg_data[DRVCTRL][(i/2)*5 + 4] = 0x00;
+
+        stepper_conf[i].step_mode = STEP_MODE_FULL_WAVE;
+        for(i = 0; i < 8; i++)
+        {
+            cur_step[i] = 0;
+        }
+#endif
+
+        // CHOPCONF
+        setInt( stepper_conf[i].blankingTime,        blankingTime,        i);
+        setBool(stepper_conf[i].chopperMode,         chopperMode,         i);
+        setBool(stepper_conf[i].randomToff,          randomToff,          i);
+        if(false == stepper_conf[i].chopperMode)
+        {
+            setInt( stepper_conf[i].hysteresisDecrementTime, hysteresisDecrementTime, i);
+            setInt( stepper_conf[i].hysteresisEnd,           hysteresisEnd,           i);
+            setInt( stepper_conf[i].hysteresisStartOffset,   hysteresisStartOffset,   i);
+        }
+        else
+        {
+            setBool(stepper_conf[i].fastDecayMode,  fastDecayMode,  i);
+            setInt( stepper_conf[i].sineWaveOffset, sineWaveOffset, i);
+            setInt( stepper_conf[i].fastDecayTime,  fastDecayTime,  i);
+        }
+        setInt( stepper_conf[i].toff,           toff,           i);
+        //SMARTEN
+        setBool(stepper_conf[i].seIMin,         seIMin,         i);
+        setInt( stepper_conf[i].decrementSpeed, decrementSpeed, i);
+        setInt( stepper_conf[i].seUpper,        seUpper,        i);
+        setInt( stepper_conf[i].seUpStep,       seUpStep,       i);
+        setInt( stepper_conf[i].seLower,        seLower,        i);
+        // SGCSCONF
+        setBool(stepper_conf[i].sgFilter,       sgFilter,       i);
+        setInt( stepper_conf[i].sgThreshold,    sgThreshold,    i);
+        setInt( stepper_conf[i].sgCS,           sgCS,           i);
+        // DRVCONF
+        setBool(stepper_conf[i].test,             test,             i);
+        setInt( stepper_conf[i].slopeHigh,        slopeHigh,        i);
+        setInt( stepper_conf[i].slopeLow,         slopeLow,         i);
+        setBool(stepper_conf[i].shortGNDdisabled, shortGNDdisabled, i);
+        setInt( stepper_conf[i].shortGNDtimer,    shortGNDtimer,    i);
+        setBool(stepper_conf[i].disableSTEPDIR,   disableSTEPDIR,   i);
+        setBool(stepper_conf[i].lowVoltageRsense, lowVoltageRsense, i);
+        setInt( stepper_conf[i].responseFormat,   responseFormat,   i);
+    }
+
+    num_bytes_used =((num_steppers+1)/2)*5; // 20 bits per Stepper
+
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[DRVCTRL][0], num_bytes_used, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[CHOPCONF][0], num_bytes_used, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[SMARTEN][0], num_bytes_used, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[SGCSCONF][0], num_bytes_used, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[DRVCONF][0], num_bytes_used, &spi_receive_buffer[0]);
+
+#ifdef USE_STEP_DIR
+    hal_cpu_add_ms_tick_function(&periodic_status_check);
+#else
+#endif
+}
+
+bool trinamic_change_setting(uint8_t* setting)
+{
+    switch(*setting)
+    {
+    case 'C':
+    case 'c':
+    {
+        uint_fast8_t numSteppers = trinamic_detect_number_of_steppers();
+        debug_line("configuring %d Steppers !", numSteppers);
+        trinamic_configure_steppers(numSteppers);
+    }
+        break;
+
+        // Stall Guard SGT (-64 .. +63)
+        // Stall Guard Filter SFILT (1/0)
+
+        // Cool Step
+        // SEMIN (0..15) (SEMIN *32))
+        // SEMAX (0..15) (SEMIN + SEMAX + 1)*32
+
+        // Current Scale CS (0..31) (1/32 .. 32/32)
+        // Smart Energy Current up SEUP (0..3) -> (Step width: 1, 2, 4, 8)
+        // Smart Energy current down SEDN (0..3)-> (32, 8, 2, 1)
+
+
+/*
+    case 'E':
+    case 'e': // enable stepper test
+        if(true == enabled)
+        {
+            enabled = false;
+        }
+        else
+        {
+            enabled = true;
+        }
+        return true;
+
+    case 'S':
+    case 's': // set speed
+        max_speed = atoi(++setting);
+        debug_line("changing max speed to %d !", max_speed);
+        return true;
+
+    case 'I':
+    case 'i':
+        if(true == enabled)
+        {
+            debug_line("enabled !");
+        }
+        else
+        {
+            debug_line("disabled !");
+        }
+        debug_line("max speed is %d !", max_speed);
+        return true;
+*/
+    default:
+        return false;
+    }
+    return true;
+}
+
+
+
 
 uint_fast8_t trinamic_detect_number_of_steppers(void)
 {
@@ -225,243 +741,7 @@ void trinamic_disable_stepper(uint_fast8_t stepper_num)
     */
 }
 
-void trinamic_configure_steppers(uint_fast8_t num_steppers)
-{
-    int i;
-    num_bytes_used =((num_steppers+1)/2)*5; // 20 bits per Stepper
-
-    if(0 == num_steppers)
-    {
-        // TODO Event?
-        return;
-    }
-    // TODO get complete stepper configuration
-    // TODO get configuration of Which Microstep Level to use (Full Steps, half steps, .., 1/256 Steps)
-    // until then,...
-    for(i = 0; i < 8; i++)
-    {
 #ifdef USE_STEP_DIR
-        stepper_conf[i].drvctrl_microsteps = MICROSTEP_1_1_STEP;
-#else
-        stepper_conf[i].step_mode = STEP_MODE_FULL_WAVE;
-#endif
-        stepper_conf[i].chop_toff = 0xff;
-    }
-
-    for(i = 0; i < 8; i++)
-    {
-        cur_step[i] = 0;
-    }
-
-    // CHOPCONF
-    //
-    // Bit     |Range  |Meaning
-    //---------+-------+------------------
-    // 19      |1      |
-    // 18 + 17 |0      |
-    // 16 + 15 |0.3    |Blanking time System clock periods)(0 = 16 1=24 2=36 3=54)
-    // 14      |0/1    | Chopper Mode (0=spread cycle; 1=constant toff with fast decay)
-    // 13      |0/1    | random Toff (0=fixed 1=random(-12 .. +3 clocks)
-    // 11 + 12 |0..3   | spread cycle :hysteresis decrement period (0=16 1=32 2=48 3=64 clocks)
-    //         |       | random Toff  : 0x: current comparator can terminate the fast decay 1x: only timer terminated fast decay;  low bit is MSB of fast decay time
-    // 7..10   |0..15  | spread cycle : Hysteresis 0..15 -3 -> -3..12
-    //         |       | random Toff  : Hysteresis 0..15 -3 -> -3..12
-    // 4..6    |0..7   | spread cycle : Hysteresis start offset 0..7 + 1 -> 1..8 Hysteresis + offset must be < 16
-    //         |       | random Toff  : lsbs of fast decay time 0..15 *32 clocks.
-    // 0..3    |0..15  | Toff ( 0 = free rotate; 1 = needs Blanking time of minimum 24 clocks 2..15: duration of slow decay = 12 + (32 * toff) clocks)
-
-    // stepper disabled -> 9a9f0
-    // stepper enabled  -> 9a9f2
-    // stepper are initially disabled !
-    for(i= 0; i < num_bytes_used; )
-    {
-        chopconf_data[i++] = 0x9a;
-        chopconf_data[i++] = 0x9f;
-        chopconf_data[i++] = 0x09;
-        chopconf_data[i++] = 0xa9;
-        chopconf_data[i++] = 0xf0;
-    }
-    hal_spi_do_transaction(STEPPER_SPI, &chopconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
-
-    // SGCSCONF
-    //
-    // Bit     |Range  |Meaning
-    //---------+-------+------------------
-    // 19 + 18 |1      |
-    // 17      |0      |
-    // 16      |0/1    |SFILT 0=no filtering; 1 = Filter active (increases precision, reduces speed)
-    // 15      |0      |
-    // 8..14   |0..127 |SGT 0..127 -64 -> -64 .. +63 (+63 = lowest sensitivity; -64 = highest sensitivity)
-    // 5..7    |0      |
-    // 0..4    |0..31  | CS current scale 0..31 -> 1/32 .. 32/32
-
-    // -> c041f
-    // d001f
-    for(i= 0; i < num_bytes_used; )
-    {
-        sgcsconf_data[i++] = 0xd3;
-        sgcsconf_data[i++] = 0xf1;
-        sgcsconf_data[i++] = 0xfd;
-        sgcsconf_data[i++] = 0x3f;
-        sgcsconf_data[i++] = 0x1f;
-        /*
-        sgcsconf_data[i++] = 0xc0;
-        sgcsconf_data[i++] = 0x41;
-        sgcsconf_data[i++] = 0xfc;
-        sgcsconf_data[i++] = 0x04;
-        sgcsconf_data[i++] = 0x1f;
-        */
-    }
-    hal_spi_do_transaction(STEPPER_SPI, &sgcsconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
-
-    // DRVCONF
-    //
-    // Bit     |Range  |Meaning
-    //---------+-------+------------------
-    // 17..19  |1      |
-    // 16      |0/1    | Test mode (0=normal operation; 1= test)
-    // 14 + 15 |0..3   | slope control high (0=min 3=max)
-    // 12 + 13 |0..3   | slope control low (0=min 3=max)
-    // 11      |0      |
-    // 10      |0/1    |short to gnd detection(0=enabled 1=disabled)
-    // 8 + 9   |0..3   |short to gnd detection timer (0=3.2us 1=1.6us 2=1.2us 3=0.8us)
-    // 7       |0/1    |Step/Dir interface (0=enabled 1=disabled)
-    // 6       |0/1    |Sense Resistor full scale(0=305mV 1=165mV)
-    // 4 + 5   |0..3   |Response frame format (0=microstep position; 1=SG; 2=SG+cool Step; 3=do not use)
-    // 0..3    |0      |
-#ifdef USE_STEP_DIR
-    // -> ef460
-    // ef060
-    for(i= 0; i < num_bytes_used; )
-    {
-        drvconf_data[i++] = 0xef;
-        drvconf_data[i++] = 0x06;
-        drvconf_data[i++] = 0x0e;
-        drvconf_data[i++] = 0xf0;
-        drvconf_data[i++] = 0x60;
-    }
-#else
-    // -> ef4e0
-    // ef0e0
-    for(i= 0; i < num_bytes_used; )
-    {
-        drvconf_data[i++] = 0xef;
-        drvconf_data[i++] = 0x0e;
-        drvconf_data[i++] = 0x0e;
-        drvconf_data[i++] = 0xf0;
-        drvconf_data[i++] = 0xe0;
-    }
-#endif
-    hal_spi_do_transaction(STEPPER_SPI, &drvconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
-
-    // SMARTEN
-    //
-    // Bit     |Range  |Meaning
-    //---------+-------+------------------
-    // 19      |1      |
-    // 18      |0      |
-    // 17      |1      |
-    // 16      |0      |
-    // 15      |0/1    |SEIMIN Minimum Motor current 0=1/2 CS 1= 1/4 CS
-    // 14 + 13 |0..3   |SEDN Number of measurements >= upper threshold to decrement current (0 = 32 1=8 2=2 3=1)
-    // 16      |0      |
-    // 8..11   |0..15  |SEMAX upper threshold = (SEMIN + SEMAX + 1)*32
-    // 7       |0      |
-    // 5 + 6   |0.. 3  |SEUP Number of measurements <= lower threshold to increment current(0=1 1=2 2=4 3=8)
-    // 4       |0      |
-    // 0..3    |0..15  |SEMIN lower threshold
-
-    // -> a0000
-    // new : a2a63
-    for(i= 0; i < num_bytes_used; )
-    {
-        smarten_data[i++] = 0xa0;
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x0a;
-        smarten_data[i++] = 0x00;
-        smarten_data[i++] = 0x00;
-        /*
-        smarten_data[i++] = 0xa2;
-        smarten_data[i++] = 0xa6;
-        smarten_data[i++] = 0x3a;
-        smarten_data[i++] = 0x2a;
-        smarten_data[i++] = 0x63;
-        */
-    }
-    hal_spi_do_transaction(STEPPER_SPI, &smarten_data[0], num_bytes_used, &spi_receive_buffer[0]);
-
-#ifdef USE_STEP_DIR
-    // DRVCTRL in STEP/DIR Mode:
-    //
-    // Bit     |Range  |Meaning
-    //---------+-------+------------------
-    // -> 00108
-    int cur_stepper = 0;
-    for(i= 0; i < num_bytes_used; )
-    {
-        drvctrl_data[i++] = 0x00;
-        drvctrl_data[i++] = 0x10;
-        drvctrl_data[i++] = 0x00 | (stepper_conf[cur_stepper].drvctrl_microsteps << 8);
-        cur_stepper++;
-        drvctrl_data[i++] = 0x01;
-        drvctrl_data[i++] = 0x00 | stepper_conf[cur_stepper].drvctrl_microsteps;
-    }
-
-    hal_cpu_add_ms_tick_function(&periodic_status_check);
-
-#else
-    // TODO 1f000
-    for(i= 0; i < num_bytes_used; )
-    {
-        drvctrl_data[i++] = 0x1f;
-        drvctrl_data[i++] = 0x00;
-        drvctrl_data[i++] = 0x01;
-        drvctrl_data[i++] = 0xf0;
-        drvctrl_data[i++] = 0x00;
-    }
-#endif
-    hal_spi_do_transaction(STEPPER_SPI, &drvctrl_data[0], num_bytes_used, &spi_receive_buffer[0]);
-
-
-    // CHOPCONF
-    //
-    // Bit     |Range  |Meaning
-    //---------+-------+------------------
-    // 19      |1      |
-    // 18 + 17 |0      |
-    // 16 + 15 |0.3    |Blanking time System clock periods)(0 = 16 1=24 2=36 3=54)
-    // 14      |0/1    | Chopper Mode (0=spread cycle; 1=constant toff with fast decay)
-    // 13      |0/1    | random Toff (0=fixed 1=random(-12 .. +3 clocks)
-    // 11 + 12 |0..3   | spread cycle :hysteresis decrement period (0=16 1=32 2=48 3=64 clocks)
-    //         |       | random Toff  : 0x: current comparator can terminate the fast decay 1x: only timer terminated fast decay;  low bit is MSB of fast decay time
-    // 7..10   |0..15  | spread cycle : Hysteresis 0..15 -3 -> -3..12
-    //         |       | random Toff  : Hysteresis 0..15 -3 -> -3..12
-    // 4..6    |0..7   | spread cycle : Hysteresis start offset 0..7 + 1 -> 1..8 Hysteresis + offset must be < 16
-    //         |       | random Toff  : lsbs of fast decay time 0..15 *32 clocks.
-    // 0..3    |0..15  | Toff ( 0 = free rotate; 1 = needs Blanking time of minimum 24 clocks 2..15: duration of slow decay = 12 + (32 * toff) clocks)
-
-    // stepper disabled -> 9a9f0
-    // stepper enabled  -> 9a9f2
-    // stepper are initially disabled !
-    for(i= 0; i < num_bytes_used; )
-    {
-        chopconf_data[i++] = 0x9a;
-        chopconf_data[i++] = 0x9f;
-        chopconf_data[i++] = 0xf9;
-        chopconf_data[i++] = 0xa9;
-        chopconf_data[i++] = 0xff;
-    }
-    hal_spi_do_transaction(STEPPER_SPI, &chopconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
-
-}
-
-#ifdef USE_STEP_DIR
-
-void periodic_status_check(void)
-{
-    hal_spi_start_spi_transaction(STEPPER_SPI, &smarten_data[0], num_bytes_used, &spi_receive_buffer[0]);
-    // TODO check reply
-}
 
 void trinamic_print_stepper_status(void)
 {
@@ -473,6 +753,95 @@ void trinamic_print_stepper_status(void)
         debug_msg("%02X ", spi_receive_buffer[i]);
     }
     debug_line(" ");
+    i = 0;
+    while(i <= (num_bytes_used -5))
+    {
+        int sg = (spi_receive_buffer[i] & 0xf8) * 4;
+        int se = (spi_receive_buffer[i] & 0x07) * 4 + ((spi_receive_buffer[i +1] & 0xc0)>>6);
+        debug_line("Stepper A:");
+        debug_line("SG: %4d", sg);
+        debug_line("SE: %4d", se);
+        if(0 != (spi_receive_buffer[i + 1] & 0x08))
+        {
+            debug_line("standing still");
+        }
+        else
+        {
+            debug_line("moving");
+        }
+        if(0 != (spi_receive_buffer[i + 1] & 0x04))
+        {
+            debug_line("open Load coil B");
+        }
+        if(0 != (spi_receive_buffer[i + 1] & 0x02))
+        {
+            debug_line("open Load coil A");
+        }
+        if(0 != (spi_receive_buffer[i + 1] & 0x01))
+        {
+            debug_line("short to GND coil B");
+        }
+        if(0 != (spi_receive_buffer[i + 2] & 0x80))
+        {
+            debug_line("short to GND coil A");
+        }
+        if(0 != (spi_receive_buffer[i + 2] & 0x40))
+        {
+            debug_line("Warning: over Temperature !");
+        }
+        if(0 != (spi_receive_buffer[i + 2] & 0x20))
+        {
+            debug_line("Shutdown due to over Temperature !");
+        }
+        if(0 != (spi_receive_buffer[i + 2] & 0x10))
+        {
+            debug_line("Stall detected !");
+        }
+        // second stepper in this 5 byte packet
+        debug_line("Stepper B:");
+        sg = ((spi_receive_buffer[i +2] & 0x0f)<<6) + ((spi_receive_buffer[i + 3] & 0x80)>>2);
+        se = ((spi_receive_buffer[i +3] & 0x7c)>>2);
+        debug_line("SG: %4d", sg);
+        debug_line("SE: %4d", se);
+        if(0 != (spi_receive_buffer[i + 4] & 0x80))
+        {
+            debug_line("standing still");
+        }
+        else
+        {
+            debug_line("moving");
+        }
+        if(0 != (spi_receive_buffer[i + 4] & 0x40))
+        {
+            debug_line("open Load coil B");
+        }
+        if(0 != (spi_receive_buffer[i + 4] & 0x20))
+        {
+            debug_line("open Load coil A");
+        }
+        if(0 != (spi_receive_buffer[i + 4] & 0x10))
+        {
+            debug_line("short to GND coil B");
+        }
+        if(0 != (spi_receive_buffer[i + 4] & 0x08))
+        {
+            debug_line("short to GND coil A");
+        }
+        if(0 != (spi_receive_buffer[i + 4] & 0x04))
+        {
+            debug_line("Warning: over Temperature !");
+        }
+        if(0 != (spi_receive_buffer[i + 4] & 0x02))
+        {
+            debug_line("Shutdown due to over Temperature !");
+        }
+        if(0 != (spi_receive_buffer[i + 4] & 0x01))
+        {
+            debug_line("Stall detected !");
+        }
+        // done with these two steppers
+        i = i+5;
+    }
 
     /*
      * Status Format:
@@ -509,57 +878,364 @@ void trinamic_print_stepper_status(void)
 
 #else
 
-// DRVCTRL in SPI Mode:
-//
-// Bit     |Range  |Meaning
-//---------+-------+------------------
-// 19 + 18 |0      |
-// 17      |0/1    |Polarity A
-// 9-16    |0..255 |Current in coil A
-// 8       |0/1    |Polarity B
-// 0..7    |0..255 |Current in coil B
-static const uint8_t STEP_MODE_WAVE_TABLE[4][3] = {
-        // !!! last hex char must be 0 !!!
-        //  Byte Index      | current    | Microstep
-        //  0,    1,    2   |     A    B | 1/1   1/2
-        //------------------+------------+----------
-        {0x1f, 0x00, 0x00}, // +248    0 |  0     0
-        {0x00, 0x0f, 0x80}, //    0 +248 |  1     2
-        {0x3f, 0x00, 0x00}, // -248    0 |  2     4
-        {0x00, 0x1f, 0x80}, //    0 -248 |  3     6
-};
+void trinamic_make_step_using_SPI(uint_fast8_t stepper_num, bool direction_is_increasing)
+{
+    int offset = 0;
+    bool shift_nibble = false;
+    uint8_t * next_step;
+    // step is in the first 2 bytes and the 4 higher bits of the 3rd byte.
+    // The 4 low bits of the 3rd byte are always 0 !
+    next_step = get_next_step(stepper_num, direction_is_increasing);
+
+    switch(stepper_num)
+    {
+    case 0: shift_nibble = false; offset = 0;  break;
+    case 1: shift_nibble = true;  offset = 2;  break;
+    case 2: shift_nibble = false; offset = 5;  break;
+    case 3: shift_nibble = true;  offset = 7;  break;
+    case 4: shift_nibble = false; offset = 10; break;
+    case 5: shift_nibble = true;  offset = 12; break;
+    case 6: shift_nibble = false; offset = 15; break;
+    case 7: shift_nibble = true;  offset = 17; break;
+    default: return;
+    }
+
+    if(false == shift_nibble)
+    {
+        drvctrl_data[offset + 0] = next_step[0];
+        drvctrl_data[offset + 1] = next_step[1];
+        drvctrl_data[offset + 2] = (drvctrl_data[offset + 2] & 0x0f) | (0xf0 & next_step[2]);
+    }
+    else
+    {
+        drvctrl_data[offset + 0] = (drvctrl_data[offset + 0] & 0xf0) | (0x0f & (next_step[0]>>4));
+        drvctrl_data[offset + 1] = (0xf0 & (next_step[0]<<4)) | (0x0f & (next_step[1]>>4));
+        drvctrl_data[offset + 2] = (0xf0 & (next_step[1]<<4)) | (0x0f & (next_step[2]>>4));
+    }
+
+    hal_spi_start_spi_transaction(STEPPER_SPI,
+                                  &drvctrl_data[0],
+                                  num_bytes_used,
+                                  &spi_receive_buffer[0]);
+}
+
+#endif
+
+/*
+ * P R I V A T E   F U N C T I O N S
+ */
 
 
+// SPI:
+// ----
+// - Most significant Bit First
+// - buffer[0], buffer[1], buffer[2]
+// - first bit send is bit 19, followed by bit 18
+// -> 1. Byte contains bits 19 .. 12
+//    2. Byte contains bits 11 ..  4
+//    3. Byte contains bits 3, 2, 1, 0 and bit 19 .. 16 of next stepper
+//    4. Byte contains next stepper bits       15 ..  8
+//    5. Byte contains next Stepper bits        7 ..  0
 
-// DRVCTRL in SPI Mode:
-//
-// Bit     |Range  |Meaning
-//---------+-------+------------------
-// 19 + 18 |0      |
-// 17      |0/1    |Polarity A
-// 9-16    |0..255 |Current in coil A
-// 8       |0/1    |Polarity B
-// 0..7    |0..255 |Current in coil B
-static const uint8_t STEP_MODE_FULL_HALF[8][3] = {
-        // !!! last hex char must be 0 !!!
-        //  Byte Index      | current    | Microstep
-        //  0,    1,    2   |     A    B | 1/1   1/2
-        //------------------+------------+----------
-        {0x1f, 0x00, 0x00}, // +248    0 |  0     0
-        {0x1f, 0x0f, 0x80}, // +248 +248 |        1
-        {0x00, 0x0f, 0x80}, //    0 +248 |  1     2
-        {0x3f, 0x0f, 0x80}, // -248 +248 |        3
-        {0x3f, 0x00, 0x00}, // -248    0 |  2     4
-        {0x3f, 0x1f, 0x80}, // -248 -248 |        5
-        {0x00, 0x1f, 0x80}, //    0 -248 |  3     6
-        {0x1f, 0x1f, 0x80}, // +248 -248 |        7
-};
+static void setBit(enum cfgRegisters reg, int bit)
+{
+    int byte;
+    int bitShift;
+    byte = 20 - (bit/8);
+    bitShift = bit%8;
+    cfg_data[reg][byte] |= 1<bitShift;
+}
 
+static void resetBit(enum cfgRegisters reg, int bit)
+{
+    int byte;
+    int bitShift;
+    byte = 20 - (bit/8);
+    bitShift = bit%8;
+    cfg_data[reg][byte] &= ~(1<bitShift);
+}
 
+static void writeInt(int value,enum cfgRegisters reg, int bit, int bits)
+{
+    int bitmask;
+    int byte;
+    int bitShift;
+    byte = 20 - (bit/8);
+    bitShift = bit%8;
+    switch(bits)
+    {
+    case 0: return;
+    case 1: bitmask = 0x01; break;
+    case 2: bitmask = 0x03; break;
+    case 3: bitmask = 0x07; break;
+    case 4: bitmask = 0x0f; break;
+    case 5: bitmask = 0x1f; break;
+    case 6: bitmask = 0x3f; break;
+    case 7: bitmask = 0x7f; break;
+    case 8: bitmask = 0xff; break;
+    default: return;
+    }
+    // write all used bits to 0
+    cfg_data[reg][byte] &= ~(bitmask<bitShift);
+    // set the bits needed
+    cfg_data[reg][byte] |= value<bitShift;
+    // check if data fit into byte
+    if(bitShift + bits > 8)
+    {
+        // next byte is also effected
+        int shift = 8 -bitShift;
+        int additional_bits = (bitShift + bits) -8;
+        switch(additional_bits)
+        {
+        case 0: return;
+        case 1: bitmask = 0x01; break;
+        case 2: bitmask = 0x03; break;
+        case 3: bitmask = 0x07; break;
+        case 4: bitmask = 0x0f; break;
+        case 5: bitmask = 0x1f; break;
+        case 6: bitmask = 0x3f; break;
+        case 7: bitmask = 0x7f; break;
+        case 8: bitmask = 0xff; break;
+        default: return;
+        }
+        // write all used bits to 0
+        cfg_data[reg][byte-1] &= ~(bitmask);
+        // set the bits needed
+        cfg_data[reg][byte] |= value>shift;
+    }
+}
+
+static void setInt(int value, enum cfgSetting setting, int stepper)
+{
+    enum cfgRegisters reg; // which register
+    int bitPosition;       // Which bit in the addressed Register
+    int numBits;           // the number of bits the int consumes
+    switch(setting)
+    {
+    // DRVCTRL
+    case microstepResolution:
+        reg = DRVCTRL;
+        bitPosition = 0;
+        numBits = 4;
+        break;
+
+    // CHOPCONF
+    case blankingTime:
+        reg = CHOPCONF;
+        bitPosition = 15;
+        numBits = 2;
+        break;
+
+    case hysteresisDecrementTime:
+        reg = CHOPCONF;
+        bitPosition = 11;
+        numBits = 2;
+        break;
+
+    case hysteresisEnd:
+        reg = CHOPCONF;
+        bitPosition = 7;
+        numBits = 4;
+        break;
+
+    case sineWaveOffset:
+        reg = CHOPCONF;
+        bitPosition = 7;
+        numBits = 4;
+        break;
+
+    case hysteresisStartOffset:
+        reg = CHOPCONF;
+        bitPosition = 4;
+        numBits = 3;
+        break;
+
+    case fastDecayTime:
+        reg = CHOPCONF;
+        bitPosition = 3;
+        // handle 4th bit
+        if(value > 7)
+        {
+            setBit(reg, bitPosition + 7 + ((MAX_NUM_STEPPERS -(stepper +1)) * 20));
+        }
+        else
+        {
+            resetBit(reg, bitPosition + 7 + ((MAX_NUM_STEPPERS -(stepper +1)) * 20));
+        }
+        value = value %8;
+        numBits = 3;
+        break;
+
+    case toff:
+        reg = CHOPCONF;
+        bitPosition = 0;
+        numBits = 4;
+        break;
+
+    // SMARTEN
+    case decrementSpeed:
+        reg = SMARTEN;
+        bitPosition = 13;
+        numBits = 3;
+        break;
+
+    case seUpper:
+        reg = SMARTEN;
+        bitPosition = 8;
+        numBits = 4;
+        break;
+
+    case seUpStep:
+        reg = SMARTEN;
+        bitPosition = 5;
+        numBits = 2;
+        break;
+
+    case seLower:
+        reg = SMARTEN;
+        bitPosition = 0;
+        numBits = 4;
+        break;
+
+    // SGCSCONF
+    case sgThreshold:
+        reg = SGCSCONF;
+        bitPosition = 8;
+        numBits = 7;
+        break;
+
+    case sgCS:
+        reg = SGCSCONF;
+        bitPosition = 0;
+        numBits = 5;
+        break;
+
+    // DRVCONF
+    case slopeHigh:
+        reg = DRVCONF;
+        bitPosition = 14;
+        numBits = 2;
+        break;
+
+    case slopeLow:
+        reg = DRVCONF;
+        bitPosition = 12;
+        numBits = 2;
+        break;
+
+    case shortGNDtimer:
+        reg = DRVCONF;
+        bitPosition = 8;
+        numBits = 2;
+        break;
+
+    case responseFormat:
+        reg = DRVCONF;
+        bitPosition = 4;
+        numBits = 2;
+        break;
+
+    default:
+        debug_line("Tried to set unknown bool setting !");
+        break;
+    }
+    writeInt(value, reg, bitPosition + ((MAX_NUM_STEPPERS -(stepper +1)) * 20), numBits);
+}
+
+static void setBool(bool value, enum cfgSetting setting, int stepper)
+{
+    enum cfgRegisters reg; // which register
+    int bitPosition;       // Which bit in the addressed Register
+
+    switch(setting)
+    {
+    // DRVCTRL
+    case stepInterpolation:
+        reg = DRVCTRL;
+        bitPosition = 9;
+        break;
+
+    case doubleEdge:
+        reg = DRVCTRL;
+        bitPosition = 8;
+        break;
+
+    // CHOPCONF
+    case chopperMode:
+        reg = CHOPCONF;
+        bitPosition = 14;
+        break;
+
+    case randomToff:
+        reg = CHOPCONF;
+        bitPosition = 13;
+        break;
+
+    case fastDecayMode:
+        reg = CHOPCONF;
+        bitPosition = 12;
+        break;
+
+    // SMARTEN
+    case seIMin:
+        reg = SMARTEN;
+        bitPosition = 15;
+        break;
+
+    // SGCSCONF
+    case sgFilter:
+        reg = SGCSCONF;
+        bitPosition = 16;
+        break;
+
+    // DRVCONF
+    case test:
+        reg = DRVCONF;
+        bitPosition = 16;
+        break;
+
+    case shortGNDdisabled:
+        reg = DRVCONF;
+        bitPosition = 10;
+        break;
+
+    case disableSTEPDIR:
+        reg = DRVCONF;
+        bitPosition = 7;
+        break;
+
+    case lowVoltageRsense:
+        reg = DRVCONF;
+        bitPosition = 6;
+        break;
+
+    default:
+        debug_line("Tried to set unknown bool setting !");
+        return;
+    }
+    if(true == value)
+    {
+        setBit(  reg, bitPosition + ((MAX_NUM_STEPPERS -(stepper +1)) * 20));
+    }
+    else
+    {
+        resetBit(reg, bitPosition + ((MAX_NUM_STEPPERS -(stepper +1)) * 20));
+    }
+}
+
+#ifdef USE_STEP_DIR
+
+void periodic_status_check(void)
+{
+    hal_spi_start_spi_transaction(STEPPER_SPI, &cfg_data[SMARTEN][0], num_bytes_used, &spi_receive_buffer[0]);
+    // TODO check reply
+}
+
+#else
 
 // step is in the first 2 bytes and the 4 higher bits of the 3rd byte.
 // The 4 low bits of the 3rd byte are always 0 !
-uint8_t* get_next_step(uint_fast8_t stepper_num, bool direction_is_increasing)
+static uint8_t* get_next_step(uint_fast8_t stepper_num, bool direction_is_increasing)
 {
     switch (stepper_conf[stepper_num].step_mode)
     {
@@ -648,46 +1324,4 @@ uint8_t* get_next_step(uint_fast8_t stepper_num, bool direction_is_increasing)
     return &next_step_buffer[0];
 }
 
-
-void trinamic_make_step_using_SPI(uint_fast8_t stepper_num, bool direction_is_increasing)
-{
-    int offset = 0;
-    bool shift_nibble = false;
-    uint8_t * next_step;
-    // step is in the first 2 bytes and the 4 higher bits of the 3rd byte.
-    // The 4 low bits of the 3rd byte are always 0 !
-    next_step = get_next_step(stepper_num, direction_is_increasing);
-
-    switch(stepper_num)
-    {
-    case 0: shift_nibble = false; offset = 0;  break;
-    case 1: shift_nibble = true;  offset = 2;  break;
-    case 2: shift_nibble = false; offset = 5;  break;
-    case 3: shift_nibble = true;  offset = 7;  break;
-    case 4: shift_nibble = false; offset = 10; break;
-    case 5: shift_nibble = true;  offset = 12; break;
-    case 6: shift_nibble = false; offset = 15; break;
-    case 7: shift_nibble = true;  offset = 17; break;
-    default: return;
-    }
-
-    if(false == shift_nibble)
-    {
-        drvctrl_data[offset + 0] = next_step[0];
-        drvctrl_data[offset + 1] = next_step[1];
-        drvctrl_data[offset + 2] = (drvctrl_data[offset + 2] & 0x0f) | (0xf0 & next_step[2]);
-    }
-    else
-    {
-        drvctrl_data[offset + 0] = (drvctrl_data[offset + 0] & 0xf0) | (0x0f & (next_step[0]>>4));
-        drvctrl_data[offset + 1] = (0xf0 & (next_step[0]<<4)) | (0x0f & (next_step[1]>>4));
-        drvctrl_data[offset + 2] = (0xf0 & (next_step[1]<<4)) | (0x0f & (next_step[2]>>4));
-    }
-
-    hal_spi_start_spi_transaction(STEPPER_SPI,
-                                  &drvctrl_data[0],
-                                  num_bytes_used,
-                                  &spi_receive_buffer[0]);
-}
 #endif
-
