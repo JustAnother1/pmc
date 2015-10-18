@@ -398,6 +398,7 @@ static void parse_order(int length)
                     debug_line("Invalid command ! try h for help");
                 }
                 // else -> OK
+                break;
 
             case 'Q':
             case 'q':

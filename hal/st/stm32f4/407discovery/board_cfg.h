@@ -368,6 +368,7 @@
 #define SPI_0_SCK_GPIO_AFR_0_1    0x00005000
 #define SPI_0_SCK_GPIO_AFR_1_0    0
 #define SPI_0_SCK_GPIO_AFR_1_1    0
+#define SPI_0_SCK_GPIO_BSRR       GPIO_BSRR_3
 
 
 #define SPI_1_MISO_GPIO_PORT_RCC  RCC_AHB1ENR_GPIOCEN
@@ -431,6 +432,7 @@
 #define SPI_1_SCK_GPIO_AFR_0_1    0
 #define SPI_1_SCK_GPIO_AFR_1_0    0x00a00000
 #define SPI_1_SCK_GPIO_AFR_1_1    0x00500000
+#define SPI_1_SCK_GPIO_BSRR       GPIO_BSRR_13
 
 
 /******************************************************************************/

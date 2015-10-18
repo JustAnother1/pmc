@@ -396,7 +396,7 @@ bool cmd_queue_chnage_setting(uint8_t* setting)
 
     case 'S':
     case 's': // set speed
-        max_speed = atoi(++setting);
+        max_speed = atoi((char *)++setting);
         debug_line("changing max speed to %d !", max_speed);
         return true;
 

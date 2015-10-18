@@ -44,7 +44,6 @@ void dev_stepper_init(void)
         max_end_stop[i] = 0;
         min_end_stop[i] = 0;
     }
-    hal_spi_init(STEPPER_SPI);
     trinamic_init();
     available_steppers = trinamic_detect_number_of_steppers();
     if((0 < available_steppers) && (MAX_NUMBER+1 > available_steppers))

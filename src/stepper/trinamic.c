@@ -12,6 +12,8 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
+#include <stdio.h>
+#include <stdlib.h>
 #include "trinamic.h"
 #include "hal_cfg.h"
 #include "hal_spi.h"
@@ -145,6 +147,7 @@ static void setBool(bool value, enum cfgSetting Setting, int stepper);
 static lstepper_configuration_typ stepper_conf[MAX_NUM_STEPPERS];
 static uint8_t cfg_data[5][SPI_BUFFER_LENGTH];
 static uint_fast8_t num_bytes_used;
+static uint_fast8_t steppers_detected_on_last_detection;
 static uint8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
 
 #ifdef USE_STEP_DIR
@@ -289,6 +292,8 @@ static const uint8_t DRVCONTROL_Buffer_2[32][3] = {
 void trinamic_init(void)
 {
     uint_fast8_t i;
+    hal_spi_init(STEPPER_SPI);
+    steppers_detected_on_last_detection = 0;
 
     // clean configuration Buffers
     for(i = 0; i < NUM_CFG_REGISTERS ; i++)
@@ -310,16 +315,16 @@ void trinamic_init(void)
     {
         // set Register Address bits
         // bit 19
-        setBit(CHOPCONF, 19 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
-        setBit(SMARTEN,  19 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
-        setBit(SGCSCONF, 19 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
-        setBit(DRVCONF,  19 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        setBit(CHOPCONF, 19 + (i * 20));
+        setBit(SMARTEN,  19 + (i * 20));
+        setBit(SGCSCONF, 19 + (i * 20));
+        setBit(DRVCONF,  19 + (i * 20));
         // bit 18
-        setBit(SGCSCONF, 18 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
-        setBit(DRVCONF,  18 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        setBit(SGCSCONF, 18 + (i * 20));
+        setBit(DRVCONF,  18 + (i * 20));
         // bit 17
-        setBit(SMARTEN,  17 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
-        setBit(DRVCONF,  17 + ((MAX_NUM_STEPPERS -(i +1)) * 20));
+        setBit(SMARTEN,  17 + (i * 20));
+        setBit(DRVCONF,  17 + (i * 20));
 
         // Drive Control DRVCTRL
         // Step Interpolation
@@ -420,7 +425,7 @@ void trinamic_init(void)
         // - 0 = Drive disable, bridges off
         // - 1 = 1 (TBL>= 24 clk)
         // - 2 = 2, .. 15 = 15
-        stepper_conf[i].toff = 0;
+        stepper_conf[i].toff = 15;//0;
 
         // coolStep Control Register SMARTEN
         //Minimum coolStep current(SEIMIN)
@@ -576,11 +581,11 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
 
     num_bytes_used =((num_steppers+1)/2)*5; // 20 bits per Stepper
 
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[DRVCTRL][0], num_bytes_used, &spi_receive_buffer[0]);
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[CHOPCONF][0], num_bytes_used, &spi_receive_buffer[0]);
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[SMARTEN][0], num_bytes_used, &spi_receive_buffer[0]);
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[SGCSCONF][0], num_bytes_used, &spi_receive_buffer[0]);
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[DRVCONF][0], num_bytes_used, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[DRVCTRL] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[CHOPCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[SMARTEN] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[SGCSCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[DRVCONF] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
 
 #ifdef USE_STEP_DIR
     hal_cpu_add_ms_tick_function(&periodic_status_check);
@@ -592,67 +597,157 @@ bool trinamic_change_setting(uint8_t* setting)
 {
     switch(*setting)
     {
+    case 'S':
+    case 's':
+        debug_line("detected %d Steppers !", steppers_detected_on_last_detection);
+
+        debug_msg("DRVCTRL  hex: ");
+        for(int i = 0; i < num_bytes_used; i++)
+        {
+            debug_msg("%02X ", cfg_data[DRVCTRL][i]);
+        }
+        debug_line(" ");
+
+        debug_msg("CHOPCONF hex: ");
+        for(int i = 0; i < num_bytes_used; i++)
+        {
+            debug_msg("%02X ", cfg_data[CHOPCONF][i]);
+        }
+        debug_line(" ");
+
+        debug_msg("SMARTEN  hex: ");
+        for(int i = 0; i < num_bytes_used; i++)
+        {
+            debug_msg("%02X ", cfg_data[SMARTEN][i]);
+        }
+        debug_line(" ");
+
+        debug_msg("SGCSCONF hex: ");
+        for(int i = 0; i < num_bytes_used; i++)
+        {
+            debug_msg("%02X ", cfg_data[SGCSCONF][i]);
+        }
+        debug_line(" ");
+
+        debug_msg("DRVCONF  hex: ");
+        for(int i = 0; i < num_bytes_used; i++)
+        {
+            debug_msg("%02X ", cfg_data[DRVCONF][i]);
+        }
+        debug_line(" ");
+        break;
+
     case 'C':
     case 'c':
     {
+        enum cfgSetting settingToChange;
         uint_fast8_t numSteppers = trinamic_detect_number_of_steppers();
+        setting++;
+
+        //  3 4 5 6 7 8 9
+
+        switch(*setting)
+        {
+        // DRVCTRL
+        case 'i': settingToChange = stepInterpolation; break;
+        case 'e': settingToChange = doubleEdge; break;
+        case 'm': settingToChange = microstepResolution; break;
+        // CHOPCONF
+        case 'b': settingToChange = blankingTime; break;
+        case 'c': settingToChange = chopperMode; break;
+        case 'r': settingToChange = randomToff; break;
+        case 'd': settingToChange = hysteresisDecrementTime; break;
+        case 'f': settingToChange = fastDecayMode; break;
+        case 'h': settingToChange = hysteresisEnd; break;
+        case 'w': settingToChange = sineWaveOffset; break;
+        case 's': settingToChange = hysteresisStartOffset; break;
+        case 't': settingToChange = fastDecayTime; break;
+        case 'o': settingToChange = toff; break;
+        // SMARTEN
+        case 'n': settingToChange = seIMin; break;
+        case 'p': settingToChange = decrementSpeed; break;
+        case 'u': settingToChange = seUpper; break;
+        case '1': settingToChange = seUpStep; break;
+        case '0': settingToChange = seLower; break;
+        // SGCSCONF
+        case 'g': settingToChange = sgFilter; break;
+        case 'l': settingToChange = sgThreshold; break;
+        case '2': settingToChange = sgCS; break;
+        // DRVCONF
+        case 'x': settingToChange = test; break;
+        case 'a': settingToChange = slopeHigh; break;
+        case 'j': settingToChange = slopeLow; break;
+        case 'k': settingToChange = shortGNDdisabled; break;
+        case 'q': settingToChange = shortGNDtimer; break;
+        case 'v': settingToChange = disableSTEPDIR; break;
+        case 'y': settingToChange = lowVoltageRsense; break;
+        case 'z': settingToChange = responseFormat; break;
+        }
+
+        switch(settingToChange)
+        {
+        // DRVCTRL
+        case stepInterpolation:
+        case doubleEdge:
+        // CHOPCONF
+        case chopperMode:
+        case randomToff:
+        case fastDecayMode:
+        // SMARTEN
+        case seIMin:
+        // SGCSCONF
+        case sgFilter:
+        // DRVCONF
+        case test:
+        case shortGNDdisabled:
+        case disableSTEPDIR:
+        case lowVoltageRsense:
+            // BOOL
+            if(*(++setting) == 't')
+            {
+                setBool(true, settingToChange, 1); // stepper 1
+            }
+            break;
+
+        // DRVCTRL
+        case microstepResolution:
+        // CHOPCONF
+        case blankingTime:
+        case hysteresisDecrementTime:
+        case hysteresisEnd:
+        case sineWaveOffset:
+        case hysteresisStartOffset:
+        case fastDecayTime:
+        case toff:
+        // SMARTEN
+        case decrementSpeed:
+        case seUpper:
+        case seUpStep:
+        case seLower:
+        // SGCSCONF
+        case sgThreshold:
+        case sgCS:
+        // DRVCONF
+        case slopeHigh:
+        case slopeLow:
+        case shortGNDtimer:
+        case responseFormat:
+            // Int
+            setInt(atoi((char *)++setting), settingToChange, 1); // stepper 1
+            break;
+
+        }
+
         debug_line("configuring %d Steppers !", numSteppers);
         trinamic_configure_steppers(numSteppers);
     }
         break;
 
-        // Stall Guard SGT (-64 .. +63)
-        // Stall Guard Filter SFILT (1/0)
-
-        // Cool Step
-        // SEMIN (0..15) (SEMIN *32))
-        // SEMAX (0..15) (SEMIN + SEMAX + 1)*32
-
-        // Current Scale CS (0..31) (1/32 .. 32/32)
-        // Smart Energy Current up SEUP (0..3) -> (Step width: 1, 2, 4, 8)
-        // Smart Energy current down SEDN (0..3)-> (32, 8, 2, 1)
-
-
-/*
-    case 'E':
-    case 'e': // enable stepper test
-        if(true == enabled)
-        {
-            enabled = false;
-        }
-        else
-        {
-            enabled = true;
-        }
-        return true;
-
-    case 'S':
-    case 's': // set speed
-        max_speed = atoi(++setting);
-        debug_line("changing max speed to %d !", max_speed);
-        return true;
-
-    case 'I':
-    case 'i':
-        if(true == enabled)
-        {
-            debug_line("enabled !");
-        }
-        else
-        {
-            debug_line("disabled !");
-        }
-        debug_line("max speed is %d !", max_speed);
-        return true;
-*/
     default:
         return false;
     }
     return true;
 }
-
-
-
 
 uint_fast8_t trinamic_detect_number_of_steppers(void)
 {
@@ -700,6 +795,7 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
             count ++;
         }
     }
+    steppers_detected_on_last_detection = count;
     return count;
 }
 
@@ -746,7 +842,9 @@ void trinamic_disable_stepper(uint_fast8_t stepper_num)
 void trinamic_print_stepper_status(void)
 {
     int i;
-    // war data
+    int step = 1;
+    int num = steppers_detected_on_last_detection;
+    // raw data
     debug_msg("hex: ");
     for(int i = 0; i < num_bytes_used; i++)
     {
@@ -754,11 +852,51 @@ void trinamic_print_stepper_status(void)
     }
     debug_line(" ");
     i = 0;
+
+    /*
+     * Status Format:
+     *
+     * RDSEL (0,1,2)
+     *
+     *  Bit   | RDSEL  | RDSEL | RDSEL
+     * Number |  0     |  1    |  2
+     * -------+--------+-------+------
+     *   19   | MSTEP9 | SG9   | SG9
+     *   18   | MSTEP8 | SG8   | SG8
+     *   17   | MSTEP7 | SG7   | SG7
+     *   16   | MSTEP6 | SG6   | SG6
+     *   15   | MSTEP5 | SG5   | SG5
+     *   14   | MSTEP4 | SG4   | SE4
+     *   13   | MSTEP3 | SG3   | SE3
+     *   12   | MSTEP2 | SG2   | SE2
+     *   11   | MSTEP1 | SG1   | SE1
+     *   10   | MSTEP0 | SG0   | SE0
+     *    9   | not used
+     *    8   | not used
+     *    7   | STST = Standstill detector           (0 = moving;          1 = standstill)
+     *    6   | OLB  = Open Load Coil B              (0 = load detected;   1 = open load detected) only reliable during slow movement
+     *    5   | OLA  = Open Load Coil A              (0 = load detected;   1 = open load detected) only reliable during slow movement
+     *    4   | S2GB = short to GND detection Coil B (0 = OK;              1 = Short to GND on high side transistors)
+     *    3   | S2GA = short to GND detection Coil A (0 = OK;              1 = Short to GND on high side transistors)
+     *    2   | OTPW = over Temperature warning      (0 = Temperature OK,  1 = over Temperature !)
+     *    1   | OT   = over Temperature shutdown     (0 = OK;              1 = Motor has been shut down due to over temperature condition)
+     *    0   | SG   = Stall Guard                   (0 = motor is moving; 1 = stall guard current threshold has been reached)
+     */
+
     while(i <= (num_bytes_used -5))
     {
-        int sg = (spi_receive_buffer[i] & 0xf8) * 4;
-        int se = (spi_receive_buffer[i] & 0x07) * 4 + ((spi_receive_buffer[i +1] & 0xc0)>>6);
-        debug_line("Stepper A:");
+        int sg = -1;
+        int se = -1;
+
+        if(step > num)
+        {
+            return;
+        }
+        debug_line("Stepper %d:", step);
+        step ++;
+
+        sg = (spi_receive_buffer[i] & 0xf8) * 4;
+        se = (spi_receive_buffer[i] & 0x07) * 4 + ((spi_receive_buffer[i +1] & 0xc0)>>6);
         debug_line("SG: %4d", sg);
         debug_line("SE: %4d", se);
         if(0 != (spi_receive_buffer[i + 1] & 0x08))
@@ -798,7 +936,13 @@ void trinamic_print_stepper_status(void)
             debug_line("Stall detected !");
         }
         // second stepper in this 5 byte packet
-        debug_line("Stepper B:");
+        if(step > num)
+        {
+            return;
+        }
+        debug_line("Stepper %d:", step);
+        step++;
+
         sg = ((spi_receive_buffer[i +2] & 0x0f)<<6) + ((spi_receive_buffer[i + 3] & 0x80)>>2);
         se = ((spi_receive_buffer[i +3] & 0x7c)>>2);
         debug_line("SG: %4d", sg);
@@ -839,41 +983,10 @@ void trinamic_print_stepper_status(void)
         {
             debug_line("Stall detected !");
         }
+
         // done with these two steppers
         i = i+5;
     }
-
-    /*
-     * Status Format:
-     *
-     * RDSEL (0,1,2)
-     *
-     *  Bit   | RDSEL  | RDSEL | RDSEL
-     * Number |  0     |  1    |  2
-     * -------+--------+-------+------
-     *   19   | MSTEP9 | SG9   | SG9
-     *   18   | MSTEP8 | SG8   | SG8
-     *   17   | MSTEP7 | SG7   | SG7
-     *   16   | MSTEP6 | SG6   | SG6
-     *   15   | MSTEP5 | SG5   | SG5
-     *   14   | MSTEP4 | SG4   | SE4
-     *   13   | MSTEP3 | SG3   | SE3
-     *   12   | MSTEP2 | SG2   | SE2
-     *   11   | MSTEP1 | SG1   | SE1
-     *   10   | MSTEP0 | SG0   | SE0
-     *    9   | not used
-     *    8   | not used
-     *    7   | STST = Standstill detector           (0 = moving;          1 = standstill)
-     *    6   | OLB  = Open Load Coil B              (0 = load detected;   1 = open load detected) only reliable during slow movement
-     *    5   | OLA  = Open Load Coil A              (0 = load detected;   1 = open load detected) only reliable during slow movement
-     *    4   | S2GB = short to GND detection Coil B (0 = OK;              1 = Short to GND on high side transistors)
-     *    3   | S2GA = short to GND detection Coil A (0 = OK;              1 = Short to GND on high side transistors)
-     *    2   | OTPW = over Temperature warning      (0 = Temperature OK,  1 = over Temperature !)
-     *    1   | OT   = over Temperature shutdown     (0 = OK;              1 = Motor has been shut down due to over temperature condition)
-     *    0   | SG   = Stall Guard                   (0 = motor is moving; 1 = stall guard current threshold has been reached)
-     */
-
-
 }
 
 #else
@@ -941,18 +1054,18 @@ static void setBit(enum cfgRegisters reg, int bit)
 {
     int byte;
     int bitShift;
-    byte = 20 - (bit/8);
+    byte = 19 - (bit/8);
     bitShift = bit%8;
-    cfg_data[reg][byte] |= 1<bitShift;
+    cfg_data[reg][byte] |= 1<<bitShift;
 }
 
 static void resetBit(enum cfgRegisters reg, int bit)
 {
     int byte;
     int bitShift;
-    byte = 20 - (bit/8);
+    byte = 19 - (bit/8);
     bitShift = bit%8;
-    cfg_data[reg][byte] &= ~(1<bitShift);
+    cfg_data[reg][byte] &= ~(1<<bitShift);
 }
 
 static void writeInt(int value,enum cfgRegisters reg, int bit, int bits)
@@ -960,7 +1073,7 @@ static void writeInt(int value,enum cfgRegisters reg, int bit, int bits)
     int bitmask;
     int byte;
     int bitShift;
-    byte = 20 - (bit/8);
+    byte = 19 - (bit/8);
     bitShift = bit%8;
     switch(bits)
     {
@@ -976,9 +1089,9 @@ static void writeInt(int value,enum cfgRegisters reg, int bit, int bits)
     default: return;
     }
     // write all used bits to 0
-    cfg_data[reg][byte] &= ~(bitmask<bitShift);
+    cfg_data[reg][byte] &= ~(bitmask<<bitShift);
     // set the bits needed
-    cfg_data[reg][byte] |= value<bitShift;
+    cfg_data[reg][byte] |= value<<bitShift;
     // check if data fit into byte
     if(bitShift + bits > 8)
     {
@@ -1001,7 +1114,7 @@ static void writeInt(int value,enum cfgRegisters reg, int bit, int bits)
         // write all used bits to 0
         cfg_data[reg][byte-1] &= ~(bitmask);
         // set the bits needed
-        cfg_data[reg][byte] |= value>shift;
+        cfg_data[reg][byte-1] |= bitmask & (value>>shift);
     }
 }
 
@@ -1139,7 +1252,7 @@ static void setInt(int value, enum cfgSetting setting, int stepper)
         debug_line("Tried to set unknown bool setting !");
         break;
     }
-    writeInt(value, reg, bitPosition + ((MAX_NUM_STEPPERS -(stepper +1)) * 20), numBits);
+    writeInt(value, reg, bitPosition + (stepper * 20), numBits);
 }
 
 static void setBool(bool value, enum cfgSetting setting, int stepper)
@@ -1215,11 +1328,11 @@ static void setBool(bool value, enum cfgSetting setting, int stepper)
     }
     if(true == value)
     {
-        setBit(  reg, bitPosition + ((MAX_NUM_STEPPERS -(stepper +1)) * 20));
+        setBit(  reg, bitPosition + (stepper * 20));
     }
     else
     {
-        resetBit(reg, bitPosition + ((MAX_NUM_STEPPERS -(stepper +1)) * 20));
+        resetBit(reg, bitPosition + (stepper * 20));
     }
 }
 

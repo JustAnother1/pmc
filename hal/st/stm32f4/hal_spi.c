@@ -129,6 +129,7 @@ void hal_spi_init(uint_fast8_t device)
             SPI_0_SCK_GPIO_PORT->AFR[0]  &= ~SPI_0_SCK_GPIO_AFR_0_0;
             SPI_0_SCK_GPIO_PORT->AFR[1]  |=  SPI_0_SCK_GPIO_AFR_1_1;
             SPI_0_SCK_GPIO_PORT->AFR[1]  &= ~SPI_0_SCK_GPIO_AFR_1_0;
+            SPI_1_SCK_GPIO_PORT->BSRR_SET =  SPI_0_SCK_GPIO_BSRR;
 
             devices[device].bus = SPI_0;
             break;
@@ -201,6 +202,7 @@ void hal_spi_init(uint_fast8_t device)
             SPI_1_SCK_GPIO_PORT->AFR[0]  &= ~SPI_1_SCK_GPIO_AFR_0_0;
             SPI_1_SCK_GPIO_PORT->AFR[1]  |=  SPI_1_SCK_GPIO_AFR_1_1;
             SPI_1_SCK_GPIO_PORT->AFR[1]  &= ~SPI_1_SCK_GPIO_AFR_1_0;
+            SPI_1_SCK_GPIO_PORT->BSRR_SET =  SPI_1_SCK_GPIO_BSRR;
 
             devices[device].bus = SPI_1;
             break;
@@ -374,13 +376,13 @@ void hal_spi_start_spi_transaction(uint_fast8_t device,
         // TODO report the error
     }
     devices[device].idle = false;
-    slave_select_start(device);
+    devices[device].bus->CR2 |= SPI_CR2_TXEIE;
     devices[device].successfully_received = true;
     devices[device].send_buffer = data_to_send;
     devices[device].receive_buffer = data_received;
     devices[device].send_pos = 1;
     devices[device].rec_pos = 0;
+    slave_select_start(device);
     devices[device].length = num_bytes_to_send;
     devices[device].bus->DR = devices[device].send_buffer[0];
-    devices[device].bus->CR2 |= SPI_CR2_TXEIE;
 }
