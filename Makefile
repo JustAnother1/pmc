@@ -40,7 +40,9 @@ help:
 	@echo "make doxygen                - create Documentation"
 	@echo "make all BOARD=linux        - build project to run on Linux"
 	@echo "make all BOARD=stm407disco  - build project to run on STM32F4 Discovery Board"
+	@echo "make all BOARD=pipy         - build project to run on pipy Board"
 	@echo "make burn BOARD=stm407disco - programm the created file to STM32F4 Discovery Board"
+	@echo "make burn BOARD=pipy        - programm the created file to pipy Board"
 	@echo "  "
 
 all: directories $(OBJS) $(BIN_FOLDER)$(PROJECT).elf $(OBJS) $(BIN_FOLDER)$(PROJECT).bin
@@ -90,6 +92,15 @@ debug:
 	$(DB) $(BIN_FOLDER)$(PROJECT).elf
 endif
 
+ifeq ($(BOARD),pipy)
+# todo
+burn: 
+	$(STLINK_FOLDER)/st-flash write $(BIN_FOLDER)$(PROJECT).bin 0x8000000
+# todo
+debug:
+	$(STLINK_FOLDER)/st-util&
+	$(DB) $(BIN_FOLDER)$(PROJECT).elf
+endif
 .PHONY: all clean directories
 
 # end of file
