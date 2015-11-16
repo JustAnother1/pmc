@@ -17,6 +17,7 @@
 #include <st_rcc.h>
 #include "board_cfg.h"
 #include "hal_led.h"
+#include "hal_cfg.h"
 
 typedef struct {
     GPIO_TypeDef * port;
@@ -25,6 +26,79 @@ typedef struct {
 }led_device_typ;
 
 static volatile led_device_typ devices[NUMBER_OF_LED];
+
+static void hal_led_init(void);
+static void hal_led_toggle_led(uint_fast8_t device);
+static void hal_led_set_led(uint_fast8_t device, bool on);
+
+
+// Implementation of hal_led_api
+
+
+void hal_init_leds(void)
+{
+	hal_led_init();
+}
+
+void hal_toggle_debug_led(void)
+{
+#ifdef BOARD_HAS_DEBUG_LED
+	hal_led_toggle_led(DEBUG_LED);
+#endif
+}
+
+void hal_set_debug_led(bool on)
+{
+#ifdef BOARD_HAS_DEBUG_LED
+	hal_led_set_led(DEBUG_LED, on);
+#endif
+}
+
+void hal_toggle_error_led(void)
+{
+#ifdef BOARD_HAS_ERROR_LED
+	hal_led_toggle_led(ERROR_LED);
+#endif
+}
+
+void hal_set_error_led(bool on)
+{
+#ifdef BOARD_HAS_ERROR_LED
+	hal_led_set_led(ERROR_LED, on);
+#endif
+}
+
+void hal_toggle_isr1_led(void)
+{
+#ifdef BOARD_HAS_ISR_1_LED
+	hal_led_toggle_led(ISR_1_LED);
+#endif
+}
+
+void hal_set_isr1_led(bool on)
+{
+#ifdef BOARD_HAS_ISR_1_LED
+	hal_led_set_led(ISR_1_LED, on);
+#endif
+}
+
+void hal_toggle_isr2_led(void)
+{
+#ifdef BOARD_HAS_ISR_2_LED
+	hal_led_toggle_led(ISR_2_LED);
+#endif
+}
+
+void hal_set_isr2_led(bool on)
+{
+#ifdef BOARD_HAS_ISR_2_LED
+	hal_led_set_led(ISR_2_LED, on);
+#endif
+}
+
+
+// end of hal_led_api
+
 
 void hal_led_init(void)
 {

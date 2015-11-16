@@ -15,33 +15,60 @@
 
 #include "hal_spi.h"
 
-void hal_spi_init(uint_fast8_t device)
+void hal_init_stepper_spi(void)
 {
 
 }
 
-void hal_spi_print_configuration(uint_fast8_t device)
+void hal_print_stepper_spi_configuration(void)
 {
 
 }
 
-bool hal_spi_do_transaction(uint_fast8_t device,
-                            uint8_t      *data_to_send,
-                            uint_fast8_t num_bytes_to_send,
-                            uint8_t      *data_received)
+bool hal_do_stepper_spi_transaction(uint8_t*     data_to_send,
+                                    uint_fast8_t num_bytes_to_send,
+                                    uint8_t*     data_received)
 {
-    return false;
+	return false;
 }
 
-void hal_spi_start_spi_transaction(uint_fast8_t device,
-                                   uint8_t *data_to_send,
-                                   uint_fast8_t num_bytes_to_send,
-                                   uint8_t *data_received)
+void hal_start_stepper_spi_transaction(uint8_t*     data_to_send,
+                                       uint_fast8_t num_bytes_to_send,
+                                       uint8_t*     data_received)
 {
 
 }
 
-bool hal_spi_is_idle(uint_fast8_t device)
+bool hal_stepper_spi_is_idle(void)
 {
-    return true;
+	return false;
+}
+
+void hal_init_expansion_spi(void)
+{
+
+}
+
+void hal_print_expansion_spi_configuration(void)
+{
+
+}
+
+bool hal_do_exansion_spi_transaction(uint8_t*     data_to_send,
+                                     uint_fast8_t num_bytes_to_send,
+                                     uint8_t*     data_received)
+{
+	return false;
+}
+
+void hal_start_expansion_spi_transaction(uint8_t*     data_to_send,
+                                         uint_fast8_t num_bytes_to_send,
+                                         uint8_t*     data_received)
+{
+
+}
+
+bool hal_expansion_spi_is_idle(void)
+{
+	return false;
 }

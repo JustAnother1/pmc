@@ -42,7 +42,7 @@ int main (void)
 #endif
     // initialize Hardware Abstraction Layer
     hal_cpu_init_hal();
-    hal_led_init();
+    hal_init_leds();
     hal_time_init();
     debug_init();
     // initialize Pacemaker Client Firmware
@@ -60,7 +60,7 @@ int main (void)
     debug_line("Reached end of initialization!");
     for(;;)
     {
-        hal_led_set_led(DEBUG_LED, on);
+    	hal_set_debug_led(on);
         on = !on;
         com_tick();
         cmd_queue_tick();

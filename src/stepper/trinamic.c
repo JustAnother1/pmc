@@ -292,7 +292,7 @@ static const uint8_t DRVCONTROL_Buffer_2[32][3] = {
 void trinamic_init(void)
 {
     uint_fast8_t i;
-    hal_spi_init(STEPPER_SPI);
+    hal_init_stepper_spi();
     steppers_detected_on_last_detection = 0;
 
     // clean configuration Buffers
@@ -581,11 +581,11 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
 
     num_bytes_used =((num_steppers+1)/2)*5; // 20 bits per Stepper
 
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[DRVCTRL] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[CHOPCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[SMARTEN] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[SGCSCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
-    hal_spi_do_transaction(STEPPER_SPI, &cfg_data[DRVCONF] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    hal_do_stepper_spi_transaction(&cfg_data[DRVCTRL] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    hal_do_stepper_spi_transaction(&cfg_data[CHOPCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    hal_do_stepper_spi_transaction(&cfg_data[SMARTEN] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    hal_do_stepper_spi_transaction(&cfg_data[SGCSCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    hal_do_stepper_spi_transaction(&cfg_data[DRVCONF] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
 
 #ifdef USE_STEP_DIR
     hal_cpu_add_ms_tick_function(&periodic_status_check);
@@ -766,11 +766,9 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
         detect_data[i] = 0x0;
     }
 
-    hal_spi_do_transaction(STEPPER_SPI, // device
-                           &detect_data[0], // data to send
-                           SPI_BUFFER_LENGTH, // number of bytes to send
-                           &spi_receive_buffer[0] // where to put the response
-                           );
+    hal_do_stepper_spi_transaction(&detect_data[0],          // data to send
+                                   SPI_BUFFER_LENGTH,        // number of bytes to send
+                                   &spi_receive_buffer[0] ); // where to put the response
     for(i = 0; i < ((SPI_BUFFER_LENGTH/5)* 2); i++)
     {
         // 20 bits = 2.5 byte per stepper,..
@@ -1340,7 +1338,7 @@ static void setBool(bool value, enum cfgSetting setting, int stepper)
 
 void periodic_status_check(void)
 {
-    hal_spi_start_spi_transaction(STEPPER_SPI, &cfg_data[SMARTEN][0], num_bytes_used, &spi_receive_buffer[0]);
+	hal_start_stepper_spi_transaction(&cfg_data[SMARTEN][0], num_bytes_used, &spi_receive_buffer[0]);
     // TODO check reply
 }
 

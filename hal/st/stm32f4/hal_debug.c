@@ -33,10 +33,10 @@ void hal_debug_init(void)
     // TODO create alternative implementation that uses core_cm4.h:ITM_SendChar() / ITM_ReceiveChar()
     // UART
     bool res = false;
-    res = hal_uart_init(DEBUG_UART, RECEIVE_BUFFER_SIZE, SEND_BUFFER_SIZE);
+    res = hal_init_debug_uart(RECEIVE_BUFFER_SIZE, SEND_BUFFER_SIZE);
     if(false == res)
     {
-        hal_led_set_led(ERROR_LED, true);
+    	hal_set_error_led(true);
         hal_cpu_die();
     }
 }
@@ -48,9 +48,9 @@ void debug_msg(const char* format, ...)
     va_start(args, format);
     nwritten = vsnprintf((char *)buffer, MSG_BUFFER_LENGTH, format, args );
     va_end(args);
-    if(false == hal_uart_send_frame_non_blocking(DEBUG_UART, &buffer[0], nwritten))
+    if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], nwritten))
     {
-        hal_led_set_led(ERROR_LED, true);
+    	hal_set_error_led(true);
     }
 }
 
@@ -75,9 +75,9 @@ void debug_line(const char* format, ...)
         buffer[MSG_BUFFER_LENGTH -1] = '\n';
         nwritten = MSG_BUFFER_LENGTH;
     }
-    if(false == hal_uart_send_frame_non_blocking(DEBUG_UART, &buffer[0], nwritten))
+    if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], nwritten))
     {
-        hal_led_set_led(ERROR_LED, true);
+    	hal_set_error_led(true);
     }
 }
 
@@ -89,9 +89,9 @@ void debug_print32(uint32_t num)
     buffer[3] = (num>>8) & 0xff;
     buffer[4] = num & 0xff;
     buffer[5] = '+';
-    if(false == hal_uart_send_frame_non_blocking(DEBUG_UART, &buffer[0], 6))
+    if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], 6))
     {
-        hal_led_set_led(ERROR_LED, true);
+    	hal_set_error_led(true);
     }
 }
 

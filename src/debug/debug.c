@@ -96,7 +96,7 @@ static void count_debug_ticks_per_ms(void)
 static void search_for_orders(void)
 {
     int i;
-    uint_fast16_t num_bytes_received = hal_uart_get_available_bytes(DEBUG_UART);
+    uint_fast16_t num_bytes_received = hal_get_available_bytes_debug_uart();
     if(checked_bytes == num_bytes_received)
     {
         // we did a check on this number of Bytes and had no order
@@ -108,7 +108,7 @@ static void search_for_orders(void)
     {
         // there is a byte at offset 0,
         // but num_bytes_received = 0 mean nothing received
-        uint_fast8_t c = hal_uart_get_byte_at_offset(DEBUG_UART, i);
+        uint_fast8_t c = hal_get_debug_uart_byte_at_offset(i);
         if(('\r' == c) || ('\n' == c))
         {
             if(0 == i)
@@ -117,7 +117,7 @@ static void search_for_orders(void)
                 if(c == last_line_end)
                 {
                     // empty command
-                    hal_uart_forget_bytes(DEBUG_UART, i+1);
+                	hal_forget_bytes_debug_uart(i+1);
                     checked_bytes = 0;
                     debug_msg("(db)");
                     return;
@@ -133,7 +133,7 @@ static void search_for_orders(void)
             }
             // debug_line("found line feed !");
             parse_order(i);
-            hal_uart_forget_bytes(DEBUG_UART, i+1);
+            hal_forget_bytes_debug_uart(i+1);
             checked_bytes = 0;
             debug_msg("(db)");
             return;
@@ -148,7 +148,7 @@ static int get_next_word(int start_pos, int end_pos, uint8_t *buf)
     int idx = 0;
     for(i = start_pos; i < end_pos; i++)
     {
-        uint8_t c = hal_uart_get_byte_at_offset(DEBUG_UART, i);
+        uint8_t c = hal_get_debug_uart_byte_at_offset(i);
         switch(c)
         {
         case '\t':
@@ -251,12 +251,15 @@ static void parse_order(int length)
         debug_line("d               : die - stops the processor");
         debug_line("r               : reset the processor");
         debug_line("t               : show current time");
-        debug_line("pu<device num>  : print UART configuration");
+        debug_line("pug             : print G-Code UART configuration");
+        debug_line("pud             : print Debug UART configuration");
 #ifdef HAS_USB
         debug_line("pb              : print USB configuration");
 #endif
-        debug_line("ps<device num>  : print SPI configuration");
-        debug_line("ws<hex chars>   : write data to SPI");
+        debug_line("pss             : print stepper SPI configuration");
+        debug_line("pse             : print expansion SPI configuration");
+        debug_line("ws<hex chars>   : write data to stepper SPI");
+        debug_line("we<hex chars>   : write data to expansion SPI");
         debug_line("c<setting>      : change special setting");
 #ifdef USE_STEP_DIR
         debug_line("pt              : print Trinamic status");
@@ -328,12 +331,42 @@ static void parse_order(int length)
         {
         case 'U':
         case 'u':
-            hal_uart_print_configuration(cmd_buf[2] - '0'); // quick and dirty a2i()
+        	switch(cmd_buf[2])
+        	{
+        	case 'D':
+        	case 'd':
+        		hal_print_configuration_debug_uart();
+        		break;
+
+        	case 'G':
+        	case 'g':
+        		hal_print_configuration_gcode_uart();
+        		break;
+
+            default:
+                debug_line("Invalid command ! try h for help");
+                break;
+        	}
             break;
 
         case 'S':
         case 's':
-            hal_spi_print_configuration(cmd_buf[2] - '0'); // quick and dirty a2i()
+        	switch(cmd_buf[2])
+        	{
+        	case 'S':
+        	case 's':
+        		hal_print_stepper_spi_configuration();
+        		break;
+
+        	case 'E':
+        	case 'e':
+        		hal_print_expansion_spi_configuration();
+        		break;
+
+            default:
+                debug_line("Invalid command ! try h for help");
+                break;
+        	}
             break;
 #ifdef HAS_USB
         case 'B':
@@ -368,7 +401,23 @@ static void parse_order(int length)
                 {
                     send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
                 }
-                if(false == hal_spi_do_transaction(STEPPER_SPI, &send_data[0], (length - 2)/2, &receive_data[0]))
+                if(false == hal_do_stepper_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
+                {
+                    debug_line("ERROR: Did not receive all bytes !");
+                }
+                // else OK
+                debug_msg("Received: 0x");
+                debug_hex_buffer(&receive_data[0], (length -2)/2);
+                debug_line("Done.");
+                break;
+
+            case 'E':
+            case 'e':
+                for (i = 0; i < (length -2)/2; i++)
+                {
+                    send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
+                }
+                if(false == hal_do_exansion_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
                 {
                     debug_line("ERROR: Did not receive all bytes !");
                 }

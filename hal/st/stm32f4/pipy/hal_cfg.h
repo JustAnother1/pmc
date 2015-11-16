@@ -13,26 +13,35 @@
  *
  */
 
-#ifndef HAL_LED_H_
-#define HAL_LED_H_
+#ifndef HAL_INCLUDE_HAL_CFG_H_
+#define HAL_INCLUDE_HAL_CFG_H_
 
-#include <stdbool.h>
-#include <inttypes.h>
+// SPI
+#define STEPPER_SPI   0
+#define EXPANSION_SPI 1
+#define MAX_SPI       2
 
-void hal_init_leds(void);
+// UART
+#define GCODE_UART  0
+#define DEBUG_UART  1
+#define MAX_UART    2
 
+// Heaters
+#define NUMBER_OF_HEATERS 6
 
-void hal_toggle_debug_led(void);
-void hal_set_debug_led(bool on);
+// LEDs
+#define DEBUG_LED  0
+#define ISR_1_LED  1
+#define ERROR_LED  2
+#define MAX_LED    3
 
-void hal_toggle_error_led(void);
-void hal_set_error_led(bool on);
+#define BOARD_HAS_DEBUG_LED
+#define BOARD_HAS_ERROR_LED
+#define BOARD_HAS_ISR_1_LED
 
-void hal_toggle_isr1_led(void);
-void hal_set_isr1_led(bool on);
+// Timer
+// Step creation
+#define STEP_TIMER        6
+#define STEP_BUFFER_TIMER 7
 
-void hal_toggle_isr2_led(void);
-void hal_set_isr2_led(bool on);
-
-
-#endif /* HAL_LED_H_ */
+#endif /* HAL_INCLUDE_HAL_CFG_H_ */

@@ -47,10 +47,89 @@ static void slave_select_start(uint_fast8_t device);
 static void slave_select_end(uint_fast8_t device);
 static void device_IRQ_handler(uint_fast8_t device);
 
+static void hal_spi_init(uint_fast8_t device);
+static void hal_spi_print_configuration(uint_fast8_t device);
+static bool hal_spi_do_transaction(uint_fast8_t device,
+                                   uint8_t *data_to_send,
+                                   uint_fast8_t num_bytes_to_send,
+                                   uint8_t *data_received);
+static bool hal_spi_is_idle(uint_fast8_t device);
+static void hal_spi_start_spi_transaction(uint_fast8_t device,
+                                          uint8_t *data_to_send,
+                                          uint_fast8_t num_bytes_to_send,
+                                          uint8_t *data_received);
+
+
 static spi_device_typ devices[MAX_SPI];
 
 
-void hal_spi_init(uint_fast8_t device)
+// Implementation of hal_api_api
+
+void hal_init_stepper_spi(void)
+{
+	hal_spi_init(STEPPER_SPI);
+}
+
+void hal_print_stepper_spi_configuration(void)
+{
+	hal_spi_print_configuration(STEPPER_SPI);
+}
+
+bool hal_do_stepper_spi_transaction(uint8_t*     data_to_send,
+                                    uint_fast8_t num_bytes_to_send,
+                                    uint8_t*     data_received)
+{
+	return hal_spi_do_transaction(STEPPER_SPI, data_to_send, num_bytes_to_send, data_received);
+}
+
+void hal_start_stepper_spi_transaction(uint8_t*     data_to_send,
+                                       uint_fast8_t num_bytes_to_send,
+                                       uint8_t*     data_received)
+{
+	hal_spi_start_spi_transaction(STEPPER_SPI, data_to_send, num_bytes_to_send, data_received);
+}
+
+bool hal_stepper_spi_is_idle(void)
+{
+	return hal_spi_is_idle(STEPPER_SPI);
+}
+
+
+// the "other" SPI
+
+void hal_init_expansion_spi(void)
+{
+	hal_spi_init(EXPANSION_SPI);
+}
+
+void hal_print_expansion_spi_configuration(void)
+{
+	hal_spi_print_configuration(EXPANSION_SPI);
+}
+
+bool hal_do_exansion_spi_transaction(uint8_t*     data_to_send,
+                                     uint_fast8_t num_bytes_to_send,
+                                     uint8_t*     data_received)
+{
+	return hal_spi_do_transaction(EXPANSION_SPI, data_to_send, num_bytes_to_send, data_received);
+}
+
+void hal_start_expansion_spi_transaction(uint8_t*     data_to_send,
+                                         uint_fast8_t num_bytes_to_send,
+                                         uint8_t*     data_received)
+{
+	hal_spi_start_spi_transaction(EXPANSION_SPI, data_to_send, num_bytes_to_send, data_received);
+}
+
+bool hal_expansion_spi_is_idle(void)
+{
+	return hal_spi_is_idle(EXPANSION_SPI);
+}
+
+// End of Implementation of hal_spi_api
+
+
+static void hal_spi_init(uint_fast8_t device)
 {
     if(device < MAX_SPI)
     {
@@ -216,7 +295,7 @@ void hal_spi_init(uint_fast8_t device)
     // else invalid Interface Specified
 }
 
-void hal_spi_print_configuration(uint_fast8_t device)
+static void hal_spi_print_configuration(uint_fast8_t device)
 {
     if(device < MAX_SPI)
     {
@@ -313,10 +392,10 @@ static void device_IRQ_handler(uint_fast8_t device)
     }
 }
 
-bool hal_spi_do_transaction(uint_fast8_t device,
-                            uint8_t *data_to_send,
-                            uint_fast8_t num_bytes_to_send,
-                            uint8_t *data_received)
+static bool hal_spi_do_transaction(uint_fast8_t device,
+                                   uint8_t *data_to_send,
+                                   uint_fast8_t num_bytes_to_send,
+                                   uint8_t *data_received)
 {
     if(device < MAX_SPI)
     {
@@ -361,15 +440,15 @@ static void slave_select_end(uint_fast8_t device)
     }
 }
 
-bool hal_spi_is_idle(uint_fast8_t device)
+static bool hal_spi_is_idle(uint_fast8_t device)
 {
     return devices[device].idle;
 }
 
-void hal_spi_start_spi_transaction(uint_fast8_t device,
-                                   uint8_t *data_to_send,
-                                   uint_fast8_t num_bytes_to_send,
-                                   uint8_t *data_received)
+static void hal_spi_start_spi_transaction(uint_fast8_t device,
+                                          uint8_t *data_to_send,
+                                          uint_fast8_t num_bytes_to_send,
+                                          uint8_t *data_received)
 {
     if(false == devices[device].idle)
     {

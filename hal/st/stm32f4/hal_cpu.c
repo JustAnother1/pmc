@@ -191,19 +191,19 @@ void hal_cpu_die(void)
     bool direction_is_increment = true;
     // Disable all System Tick( = 1ms) services
     tick_list = NULL;
-    hal_led_set_led(ERROR_LED, direction_is_increment);
+    hal_set_error_led(direction_is_increment);
     for(;;)
     {
         if((i <HEART_BEAT_FAST_LIMIT) && (false == direction_is_increment))
         {
             direction_is_increment = true;
-            hal_led_set_led(ERROR_LED, direction_is_increment);
+            hal_set_error_led(direction_is_increment);
             i = HEART_BEAT_FAST_LIMIT;
         }
         else if((i > HEART_BEAT_SLOW_LIMIT) && (true == direction_is_increment))
         {
             direction_is_increment = false;
-            hal_led_set_led(ERROR_LED, direction_is_increment);
+            hal_set_error_led(direction_is_increment);
             i = HEART_BEAT_SLOW_LIMIT;
         }
         else if(true == direction_is_increment)

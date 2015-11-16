@@ -16,17 +16,47 @@
 #include <unistd.h>
 #include "hal_led.h"
 
-void hal_led_init(void)
-{
-
-}
-void hal_led_toggle_led(uint_fast8_t device)
+void hal_init_leds(void)
 {
 
 }
 
-void hal_led_set_led(uint_fast8_t device, bool on)
+void hal_toggle_debug_led(void)
 {
 
 }
 
+void hal_set_debug_led(bool on)
+{
+
+}
+
+void hal_toggle_error_led(void)
+{
+
+}
+
+void hal_set_error_led(bool on)
+{
+
+}
+
+void hal_toggle_isr1_led(void)
+{
+
+}
+
+void hal_set_isr1_led(bool on)
+{
+
+}
+
+void hal_toggle_isr2_led(void)
+{
+
+}
+
+void hal_set_isr2_led(bool on)
+{
+
+}

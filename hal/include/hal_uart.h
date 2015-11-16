@@ -20,11 +20,20 @@
 #include <stdbool.h>
 #include "hal_cfg.h"
 
-bool hal_uart_init(uint_fast8_t device, uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size);
-void hal_uart_print_configuration(uint_fast8_t device);
-uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16_t offset);
-uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device);
-void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many);
-void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
-bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
+bool hal_init_gcode_uart(uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size);
+void hal_print_configuration_gcode_uart(void);
+uint_fast8_t hal_get_gcode_uart_byte_at_offset(uint_fast16_t offset);
+uint_fast16_t hal_get_available_bytes_gcode_uart(void);
+void hal_forget_bytes_gcode_uart(uint_fast16_t how_many);
+void hal_send_frame_gcode_uart(uint8_t * frame, uint_fast16_t length);
+bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t length);
+
+bool hal_init_debug_uart(uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size);
+void hal_print_configuration_debug_uart(void);
+uint_fast8_t hal_get_debug_uart_byte_at_offset(uint_fast16_t offset);
+uint_fast16_t hal_get_available_bytes_debug_uart(void);
+void hal_forget_bytes_debug_uart(uint_fast16_t how_many);
+void hal_send_frame_debug_uart(uint8_t * frame, uint_fast16_t length);
+bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t length);
+
 #endif /* HAL_UART_H_ */
