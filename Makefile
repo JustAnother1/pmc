@@ -85,19 +85,21 @@ clean:
 	-rm -rf $(BIN_FOLDER)
 ifeq ($(BOARD),stm407disco)
 burn: 
+# needs https://github.com/texane/stlink
 	$(STLINK_FOLDER)/st-flash write $(BIN_FOLDER)$(PROJECT).bin 0x8000000
 
 debug:
+# needs https://github.com/texane/stlink
 	$(STLINK_FOLDER)/st-util&
 	$(DB) $(BIN_FOLDER)$(PROJECT).elf
 endif
 
 ifeq ($(BOARD),pipy)
-# todo
 burn: 
+# needs https://github.com/texane/stlink
 	$(STLINK_FOLDER)/st-flash write $(BIN_FOLDER)$(PROJECT).bin 0x8000000
-# todo
 debug:
+# needs https://github.com/texane/stlink
 	$(STLINK_FOLDER)/st-util&
 	$(DB) $(BIN_FOLDER)$(PROJECT).elf
 endif
