@@ -43,6 +43,8 @@ static void search_for_orders(void);
 static void parse_order(int length);
 static void debug_hex_buffer(uint8_t* buf, int length);
 static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low);
+static void order_help(void);
+static void order_curTime(void);
 
 void debug_init(void)
 {
@@ -117,7 +119,7 @@ static void search_for_orders(void)
                 if(c == last_line_end)
                 {
                     // empty command
-                	hal_forget_bytes_debug_uart(i+1);
+                    hal_forget_bytes_debug_uart(i+1);
                     checked_bytes = 0;
                     debug_msg("(db)");
                     return;
@@ -236,6 +238,69 @@ static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low)
     return res;
 }
 
+static void order_help(void)
+{
+    debug_line("available commands:");
+    debug_line("h               : print this information");
+    debug_line("l               : list recorded debug information");
+    debug_line("d               : die - stops the processor");
+    debug_line("r               : reset the processor");
+    debug_line("t               : show current time");
+    debug_line("pug             : print G-Code UART configuration");
+    debug_line("pud             : print Debug UART configuration");
+#ifdef HAS_USB
+    debug_line("pb              : print USB configuration");
+#endif
+    debug_line("pss             : print stepper SPI configuration");
+    debug_line("pse             : print expansion SPI configuration");
+    debug_line("ws<hex chars>   : write data to stepper SPI");
+    debug_line("we<hex chars>   : write data to expansion SPI");
+    debug_line("c<setting>      : change special setting");
+#ifdef USE_STEP_DIR
+    debug_line("pt              : print Trinamic status");
+#endif
+}
+
+static void order_curTime(void)
+{
+    uint32_t millis = 0;
+    uint32_t seconds = 0;
+    uint32_t minutes = 0;
+    uint32_t hours = 0;
+    uint32_t now =  hal_time_get_ms_tick();
+    debug_line("now : %d", now);
+    if(now < 1000)
+    {
+        debug_line("%d ms", now);
+    }
+    else
+    {
+        millis = now %1000;
+        seconds = now / 1000;
+        if(seconds < 60)
+        {
+            debug_line("%d,%03d s", seconds, millis);
+        }
+        else
+        {
+            now = seconds;
+            seconds = seconds % 60;
+            minutes = now / 60;
+            if(minutes < 60)
+            {
+                debug_line("%d:%02d,%03d mm:ss",minutes, seconds, millis);
+            }
+            else
+            {
+                now = minutes;
+                minutes = minutes % 60;
+                hours = now / 60;
+                debug_line("%d:%02d:%02d,%03d hh:mm:ss", hours, minutes, seconds, millis);
+            }
+        }
+    }
+}
+
 static void parse_order(int length)
 {
     uint8_t cmd_buf[10] = {0};
@@ -243,27 +308,36 @@ static void parse_order(int length)
     pos_in_buf = get_next_word(pos_in_buf, length, &cmd_buf[0]);
     switch(cmd_buf[0])
     {
-    case 'H':
-    case 'h': // help - list available commands
-        debug_line("available commands:");
-        debug_line("h               : print this information");
-        debug_line("l               : list recorded debug information");
-        debug_line("d               : die - stops the processor");
-        debug_line("r               : reset the processor");
-        debug_line("t               : show current time");
-        debug_line("pug             : print G-Code UART configuration");
-        debug_line("pud             : print Debug UART configuration");
-#ifdef HAS_USB
-        debug_line("pb              : print USB configuration");
-#endif
-        debug_line("pss             : print stepper SPI configuration");
-        debug_line("pse             : print expansion SPI configuration");
-        debug_line("ws<hex chars>   : write data to stepper SPI");
-        debug_line("we<hex chars>   : write data to expansion SPI");
-        debug_line("c<setting>      : change special setting");
-#ifdef USE_STEP_DIR
-        debug_line("pt              : print Trinamic status");
-#endif
+
+    case 'C':
+    case 'c':
+        switch (cmd_buf[1])
+        {
+
+        case 'T':
+        case 't':
+            // Trinamic (src/stepper/trinamic.c):
+            if(false == trinamic_change_setting(&cmd_buf[2]))
+            {
+                debug_line("Invalid command ! try h for help");
+            }
+            // else -> OK
+            break;
+
+        case 'Q':
+        case 'q':
+            // Command Queue (src/order/commandqueue.c):
+            if(false == cmd_queue_chnage_setting(&cmd_buf[2]))
+            {
+                debug_line("Invalid command ! try h for help");
+            }
+            // else -> OK
+            break;
+
+        default:
+            debug_line("Invalid command ! try h for help");
+            break;
+        }
         break;
 
     case 'D':
@@ -271,9 +345,9 @@ static void parse_order(int length)
         hal_cpu_die();
         break;
 
-    case 'R':
-    case 'r': // reset the CPU
-        hal_cpu_do_software_reset();
+    case 'H':
+    case 'h': // help - list available commands
+        order_help();
         break;
 
     case 'L':
@@ -283,90 +357,48 @@ static void parse_order(int length)
         debug_line("number of detected steppers: %d", dev_stepper_get_count());
         break;
 
-    case 'T':
-    case 't': // show current time
-    {
-        uint32_t millis = 0;
-        uint32_t seconds = 0;
-        uint32_t minutes = 0;
-        uint32_t hours = 0;
-        uint32_t now =  hal_time_get_ms_tick();
-        debug_line("now : %d", now);
-        if(now < 1000)
-        {
-            debug_line("%d ms", now);
-        }
-        else
-        {
-            millis = now %1000;
-            seconds = now / 1000;
-            if(seconds < 60)
-            {
-                debug_line("%d,%03d s", seconds, millis);
-            }
-            else
-            {
-                now = seconds;
-                seconds = seconds % 60;
-                minutes = now / 60;
-                if(minutes < 60)
-                {
-                    debug_line("%d:%02d,%03d mm:ss",minutes, seconds, millis);
-                }
-                else
-                {
-                    now = minutes;
-                    minutes = minutes % 60;
-                    hours = now / 60;
-                    debug_line("%d:%02d:%02d,%03d hh:mm:ss", hours, minutes, seconds, millis);
-                }
-            }
-        }
-    }
-        break;
-
     case 'P':
     case 'p': // print configuration
         switch (cmd_buf[1])
         {
         case 'U':
         case 'u':
-        	switch(cmd_buf[2])
-        	{
-        	case 'D':
-        	case 'd':
-        		hal_print_configuration_debug_uart();
-        		break;
+          switch(cmd_buf[2])
+          {
+          case 'D':
+          case 'd':
+            hal_print_configuration_debug_uart();
+            break;
 
-        	case 'G':
-        	case 'g':
-        		hal_print_configuration_gcode_uart();
-        		break;
+          case 'G':
+          case 'g':
+            hal_print_configuration_gcode_uart();
+            break;
 
             default:
                 debug_line("Invalid command ! try h for help");
                 break;
-        	}
+          }
             break;
 
         case 'S':
         case 's':
-        	switch(cmd_buf[2])
-        	{
-        	case 'S':
-        	case 's':
-        		hal_print_stepper_spi_configuration();
-        		break;
+          switch(cmd_buf[2])
+          {
+          case 'S':
+          case 's':
+            hal_print_stepper_spi_configuration();
+            break;
 
-        	case 'E':
-        	case 'e':
-        		hal_print_expansion_spi_configuration();
-        		break;
+          case 'E':
+          case 'e':
+            hal_print_expansion_spi_configuration();
+            break;
 
             default:
                 debug_line("Invalid command ! try h for help");
                 break;
-        	}
+          }
             break;
 #ifdef HAS_USB
         case 'B':
@@ -434,36 +466,15 @@ static void parse_order(int length)
             break;
         }
 
-        case 'C':
-        case 'c':
-            switch (cmd_buf[1])
-            {
+    case 'R':
+    case 'r': // reset the CPU
+        hal_cpu_do_software_reset();
+        break;
 
-            case 'T':
-            case 't':
-                // Trinamic (src/stepper/trinamic.c):
-                if(false == trinamic_change_setting(&cmd_buf[2]))
-                {
-                    debug_line("Invalid command ! try h for help");
-                }
-                // else -> OK
-                break;
-
-            case 'Q':
-            case 'q':
-                // Command Queue (src/order/commandqueue.c):
-                if(false == cmd_queue_chnage_setting(&cmd_buf[2]))
-                {
-                    debug_line("Invalid command ! try h for help");
-                }
-                // else -> OK
-                break;
-
-            default:
-                debug_line("Invalid command ! try h for help");
-                break;
-            }
-            break;
+    case 'T':
+    case 't': // show current time
+        order_curTime();
+        break;
 
     default: // invalid command
         debug_line("Invalid command ! try h for help");
