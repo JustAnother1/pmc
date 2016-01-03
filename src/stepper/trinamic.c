@@ -843,6 +843,11 @@ void trinamic_print_stepper_status(void)
     int step = 1;
     int num = steppers_detected_on_last_detection;
     // raw data
+    debug_line("Number of detected Steppers: %d", num);
+    if(0 == num)
+    {
+    	return;
+    }
     debug_msg("hex: ");
     for(int i = 0; i < num_bytes_used; i++)
     {
