@@ -37,6 +37,7 @@ SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_pwm.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_spi.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_time.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_watchdog.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_power.c
 
 # source files for specific features - only compiled if feature is activated
 ifeq ($(USE_UART), yes)

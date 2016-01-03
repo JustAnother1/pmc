@@ -619,4 +619,54 @@
 #define USB_FS_DP_GPIO_OSPEEDR_0   GPIO_OSPEEDER_12_HIGH_SPEED_0
 #define USB_FS_DP_GPIO_OSPEEDR_1   GPIO_OSPEEDER_12_HIGH_SPEED_1
 
+
+/******************************************************************************/
+/*                                                                            */
+/*         P O W E R                                                          */
+/*                                                                            */
+/******************************************************************************/
+
+// HighPower - E3
+#define POWER_HAS_HIGH_SWITCH         1
+#define POWER_HV_GPIO_PORT            GPIOE
+#define POWER_HV_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOEEN
+#define POWER_HV_MODER_0              GPIO_MODER_3_OUTPUT_0
+#define POWER_HV_MODER_1              GPIO_MODER_3_OUTPUT_1
+#define POWER_HV_OTYPER_0             GPIO_OTYPER_3_PUSH_PULL_0
+#define POWER_HV_OTYPER_1             GPIO_OTYPER_3_PUSH_PULL_1
+#define POWER_HV_OSPEEDR_0            GPIO_OSPEEDER_3_LOW_SPEED_0
+#define POWER_HV_OSPEEDR_1            GPIO_OSPEEDER_3_LOW_SPEED_1
+#define POWER_HV_PUPD_0               GPIO_PUPDR_3_PULL_UP_0
+#define POWER_HV_PUPD_1               GPIO_PUPDR_3_PULL_UP_1
+#define POWER_HV_ODR                  GPIO_ODR_3
+#define POWER_HV_BSRR                 GPIO_BSRR_3
+// 5V - E13
+#define POWER_HAS_5V_SWITCH           1
+#define POWER_5V_GPIO_PORT            GPIOE
+#define POWER_5V_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOEEN
+#define POWER_5V_MODER_0              GPIO_MODER_13_OUTPUT_0
+#define POWER_5V_MODER_1              GPIO_MODER_13_OUTPUT_1
+#define POWER_5V_OTYPER_0             GPIO_OTYPER_13_PUSH_PULL_0
+#define POWER_5V_OTYPER_1             GPIO_OTYPER_13_PUSH_PULL_1
+#define POWER_5V_OSPEEDR_0            GPIO_OSPEEDER_13_LOW_SPEED_0
+#define POWER_5V_OSPEEDR_1            GPIO_OSPEEDER_13_LOW_SPEED_1
+#define POWER_5V_PUPD_0               GPIO_PUPDR_13_PULL_UP_0
+#define POWER_5V_PUPD_1               GPIO_PUPDR_13_PULL_UP_1
+#define POWER_5V_ODR                  GPIO_ODR_13
+#define POWER_5V_BSRR                 GPIO_BSRR_13
+// 12V - E11
+#define POWER_HAS_12V_SWITCH           1
+#define POWER_12V_GPIO_PORT            GPIOE
+#define POWER_12V_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOEEN
+#define POWER_12V_MODER_0              GPIO_MODER_11_OUTPUT_0
+#define POWER_12V_MODER_1              GPIO_MODER_11_OUTPUT_1
+#define POWER_12V_OTYPER_0             GPIO_OTYPER_11_PUSH_PULL_0
+#define POWER_12V_OTYPER_1             GPIO_OTYPER_11_PUSH_PULL_1
+#define POWER_12V_OSPEEDR_0            GPIO_OSPEEDER_11_LOW_SPEED_0
+#define POWER_12V_OSPEEDR_1            GPIO_OSPEEDER_11_LOW_SPEED_1
+#define POWER_12V_PUPD_0               GPIO_PUPDR_11_PULL_UP_0
+#define POWER_12V_PUPD_1               GPIO_PUPDR_11_PULL_UP_1
+#define POWER_12V_ODR                  GPIO_ODR_11
+#define POWER_12V_BSRR                 GPIO_BSRR_11
+
 #endif /* CPU_CFG_H_ */

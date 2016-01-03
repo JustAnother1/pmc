@@ -565,4 +565,17 @@
 #define USB_FS_DP_GPIO_OSPEEDR_0   GPIO_OSPEEDER_12_HIGH_SPEED_0
 #define USB_FS_DP_GPIO_OSPEEDR_1   GPIO_OSPEEDER_12_HIGH_SPEED_1
 
+/******************************************************************************/
+/*                                                                            */
+/*         P O W E R                                                          */
+/*                                                                            */
+/******************************************************************************/
+
+// HighPower - not available
+#define POWER_HAS_HIGH_SWITCH         0
+// 5V - not available
+#define POWER_HAS_5V_SWITCH           0
+// 12V - not available
+#define POWER_HAS_12V_SWITCH           0
+
 #endif /* CPU_CFG_H_ */

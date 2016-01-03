@@ -14,6 +14,7 @@
  */
 
 #include <stdio.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include "hal_cfg.h"
 #include "hal_uart.h"
@@ -45,6 +46,11 @@ static void debug_hex_buffer(uint8_t* buf, int length);
 static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low);
 static void order_help(void);
 static void order_curTime(void);
+static uint32_t getStartOffsetOfNextWord(uint8_t* buf, uint32_t length);
+static uint32_t getNumBytesNextWord(uint8_t* buf, uint32_t length);
+static uint32_t getHexNumber(uint8_t* buf, uint32_t length);
+static void printMemory(uint8_t* buf, uint32_t length);
+static uint_fast8_t hexChar2int(uint8_t c);
 
 void debug_init(void)
 {
@@ -180,6 +186,36 @@ static void debug_hex_buffer(uint8_t* buf, int length)
     }
 }
 
+static uint_fast8_t hexChar2int(uint8_t c)
+{
+    switch(c)
+    {
+    // case '0': return 0;
+    case '1': return 1;
+    case '2': return 2;
+    case '3': return 3;
+    case '4': return 4;
+    case '5': return 5;
+    case '6': return 6;
+    case '7': return 7;
+    case '8': return 8;
+    case '9': return 9;
+    case 'A':
+    case 'a': return 10;
+    case 'B':
+    case 'b': return 11;
+    case 'C':
+    case 'c': return 12;
+    case 'D':
+    case 'd': return 13;
+    case 'E':
+    case 'e': return 14;
+    case 'F':
+    case 'f': return 15;
+    default: return 0;
+    }
+}
+
 static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low)
 {
     uint_fast8_t res = 0;
@@ -241,24 +277,44 @@ static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low)
 static void order_help(void)
 {
     debug_line("available commands:");
-    debug_line("h               : print this information");
-    debug_line("l               : list recorded debug information");
-    debug_line("d               : die - stops the processor");
-    debug_line("r               : reset the processor");
-    debug_line("t               : show current time");
-    debug_line("pug             : print G-Code UART configuration");
-    debug_line("pud             : print Debug UART configuration");
+    // a
+    // b
+    debug_line("c<setting>                 : change special setting");
+    debug_line("d                          : die - stops the processor");
+    // e
+    // f
+    // g
+    debug_line("h                          : print this information");
+    // i
+    // j
+    // k
+    debug_line("l                          : list recorded debug information");
+    debug_line("md<addressHex> <lengthHex> : change special setting");
+    // n
+    // o
 #ifdef HAS_USB
-    debug_line("pb              : print USB configuration");
+    debug_line("pb                         : print USB configuration");
 #endif
-    debug_line("pss             : print stepper SPI configuration");
-    debug_line("pse             : print expansion SPI configuration");
-    debug_line("ws<hex chars>   : write data to stepper SPI");
-    debug_line("we<hex chars>   : write data to expansion SPI");
-    debug_line("c<setting>      : change special setting");
+    debug_line("pse                        : print expansion SPI configuration");
+    debug_line("pss                        : print stepper SPI configuration");
 #ifdef USE_STEP_DIR
-    debug_line("pt              : print Trinamic status");
+    debug_line("pt                         : print Trinamic status");
 #endif
+    debug_line("pud                        : print Debug UART configuration");
+    debug_line("pug                        : print G-Code UART configuration");
+    // q
+    debug_line("r                          : reset the processor");
+    // s
+    debug_line("sc                         : scan number of steppers");
+    debug_line("t                          : show current time");
+    // u
+    // v
+    debug_line("we<hex chars>              : write data to expansion SPI");
+    debug_line("ws<hex chars>              : write data to stepper SPI");
+    // x
+    // y
+    // z
+    // 0..9, !, ?, ...
 }
 
 static void order_curTime(void)
@@ -301,9 +357,100 @@ static void order_curTime(void)
     }
 }
 
+static void printMemory(uint8_t* buf, uint32_t length)
+{
+    while(0 < length)
+    {
+        uint_fast8_t i;
+        uint_fast8_t bytesInRow;
+        uint32_t addr = (uint32_t) buf;
+        if(length > 16)
+        {
+            bytesInRow = 16;
+        }
+        else
+        {
+            // last line
+            bytesInRow = length;
+        }
+        // Adress(hex) : Data in Hex                                      : Data in Ascii
+        // 00 00 00 00 : 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  : ....affe....beef
+
+        // 00 00 00 00 :
+        debug_msg("%02x %02x %02x %02x :", (addr>>24) & 0xff, (addr>>16) & 0xff, (addr>>8) & 0xff, addr & 0xff);
+
+        //  00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00  :
+        for(i = 0; i < bytesInRow; i++)
+        {
+            debug_msg("%02x ", *(buf + i));
+        }
+        for( ; i < 16; i++)
+        {
+            debug_msg("   ");
+        }
+        //  ....affe....beef
+        for(i = 0; i < bytesInRow; i++)
+        {
+            if(isalpha(*(buf + i)))
+            {
+                debug_printChar(*(buf + i));
+            }
+            else
+            {
+                debug_msg(".");
+            }
+        }
+        for( ; i < 16; i++)
+        {
+            debug_msg(" ");
+        }
+        buf = buf + 16;
+        length = length - bytesInRow;
+    }
+}
+
+static uint32_t getStartOffsetOfNextWord(uint8_t* buf, uint32_t length)
+{
+    uint32_t res = 0;
+    while((length > 0) && ((' ' == *buf) || ('\t' == *buf) || (0 == *buf)))
+    {
+        // skip whitespace before word
+        buf++;
+        length--;
+        res ++;
+    }
+    return res;
+}
+
+static uint32_t getNumBytesNextWord(uint8_t* buf, uint32_t length)
+{
+    uint32_t res = 0;
+    while((length > 0) && (' ' != *buf) && ('\t' != *buf) && (0 != *buf))
+    {
+        // count bytes
+        res++;
+        buf++;
+        length--;
+    }
+    return res;
+}
+
+static uint32_t getHexNumber(uint8_t* buf, uint32_t length)
+{
+    uint32_t res = 0;
+    int i;
+    for(i = 0; i < length; i++)
+    {
+        res = res << 4;
+        res = res + hexChar2int(*buf);
+        buf++;
+    }
+    return res;
+}
+
 static void parse_order(int length)
 {
-    uint8_t cmd_buf[10] = {0};
+    uint8_t cmd_buf[30] = {0};
     int pos_in_buf = 0;
     pos_in_buf = get_next_word(pos_in_buf, length, &cmd_buf[0]);
     switch(cmd_buf[0])
@@ -355,6 +502,39 @@ static void parse_order(int length)
         debug_line("current status:");
         debug_line("ticks per ms: max=%d, min=%d", tick_max, tick_min);
         debug_line("number of detected steppers: %d", dev_stepper_get_count());
+        break;
+
+    case 'M':
+    case 'm':
+        switch (cmd_buf[1])
+        {
+        case 'D':
+        case 'd':
+        {
+            uint32_t numCharsNextParam;
+            uint32_t address;
+            uint32_t numCharsLengthParam;
+            uint32_t memoryLength;
+            uint32_t startIndexOfParam;
+            startIndexOfParam = 2 + getStartOffsetOfNextWord(&cmd_buf[2], length -2);
+            numCharsNextParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
+            debug_line("numCharsNextParam: %d", numCharsNextParam);
+            address = getHexNumber(&cmd_buf[startIndexOfParam],numCharsNextParam);
+            debug_line("address: %d", address);
+            startIndexOfParam = startIndexOfParam + numCharsNextParam;
+            startIndexOfParam = startIndexOfParam + getStartOffsetOfNextWord(&cmd_buf[startIndexOfParam], length -startIndexOfParam);
+            numCharsLengthParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
+            debug_line("numCharsLengthParam: %d", numCharsLengthParam);
+            memoryLength = getHexNumber(&cmd_buf[startIndexOfParam], numCharsLengthParam);
+            debug_line("memoryLength: %d", memoryLength);
+            printMemory((uint8_t*)address, memoryLength);
+        }
+            break;
+
+        default:
+            debug_line("Invalid command ! try h for help");
+            break;
+        }
         break;
 
     case 'P':
@@ -469,6 +649,22 @@ static void parse_order(int length)
     case 'R':
     case 'r': // reset the CPU
         hal_cpu_do_software_reset();
+        break;
+
+    case 'S':
+    case 's': // stepper
+        switch (cmd_buf[1])
+        {
+        case 'C':
+        case 'c':
+            // scan for number of Steppers
+            debug_line("Detected %d Steppers !", trinamic_detect_number_of_steppers());
+            break;
+
+        default:
+            debug_line("Invalid command ! try h for help");
+            break;
+        }
         break;
 
     case 'T':

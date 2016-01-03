@@ -32,6 +32,7 @@
 #include "hal_led.h"
 #include "hal_time.h"
 #include "hal_cfg.h"
+#include "hal_power.h"
 
 
 int main (void)
@@ -46,6 +47,13 @@ int main (void)
     hal_time_init();
     debug_init();
     // initialize Pacemaker Client Firmware
+    hal_init_power();
+    hal_power_on_5V();
+    hal_time_ms_sleep(5);
+    hal_power_on_12V();
+    hal_time_ms_sleep(5);
+    hal_power_on_HighVoltage();
+    hal_time_ms_sleep(5);
     events_init();
     fw_cfg_init();
     dev_stepper_init();
@@ -60,7 +68,7 @@ int main (void)
     debug_line("Reached end of initialization!");
     for(;;)
     {
-    	hal_set_debug_led(on);
+        hal_set_debug_led(on);
         on = !on;
         com_tick();
         cmd_queue_tick();
