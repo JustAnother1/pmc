@@ -36,7 +36,7 @@ void hal_debug_init(void)
     res = hal_init_debug_uart(RECEIVE_BUFFER_SIZE, SEND_BUFFER_SIZE);
     if(false == res)
     {
-    	hal_set_error_led(true);
+        hal_set_error_led(true);
         hal_cpu_die();
     }
 }
@@ -50,7 +50,7 @@ void debug_msg(const char* format, ...)
     va_end(args);
     if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], nwritten))
     {
-    	hal_set_error_led(true);
+        hal_set_error_led(true);
     }
 }
 
@@ -77,7 +77,7 @@ void debug_line(const char* format, ...)
     }
     if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], nwritten))
     {
-    	hal_set_error_led(true);
+        hal_set_error_led(true);
     }
 }
 
@@ -91,7 +91,15 @@ void debug_print32(uint32_t num)
     buffer[5] = '+';
     if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], 6))
     {
-    	hal_set_error_led(true);
+        hal_set_error_led(true);
+    }
+}
+
+void debug_printChar(char c)
+{
+    if(false == hal_send_frame_non_blocking_debug_uart(&c, 1))
+    {
+        hal_set_error_led(true);
     }
 }
 

@@ -23,11 +23,13 @@ void hal_debug_init(void);
 void debug_msg(const char* format, ...);
 void debug_line(const char* format, ...);
 void debug_print32(uint32_t num);
+void debug_printChar(char c);
 #else
 void hal_debug_init(void) {}
 void debug_msg(const char* format, ...) {}
 void debug_line(const char* format, ...) {}
 void debug_print32(uint32_t num) {}
+void debug_printChar(char c)  {}
 #endif
 
 #endif /* HAL_INCLUDE_HAL_DEBUG_H_ */

@@ -45,4 +45,8 @@ void debug_print32(uint32_t num)
     printf("%08x", num);
 }
 
+void debug_printChar(char c)
+{
+    printf("%s", c);
+}
 
