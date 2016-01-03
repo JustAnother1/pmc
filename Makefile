@@ -17,15 +17,18 @@ include cfg/features.mk
 include hal/hal.mk
 include cfg/system.mk
 include cfg/files.mk
+include test/test_cfg.mk
 
 # Define optimisation level here -O3 or -O0 for no optimisation
-OPT += -O0 -ffunction-sections -fdata-sections
+OPT += -O0 -ffunction-sections -fdata-sections 
+# coverage
+# -ftest-coverage -fprofile-arcs
 CFLAGS += $(OPT) -g -Wall -pedantic -std=gnu99
 LDFLAGS +=  -g -Wall -fwhole-program $(LIB)
 
-
 # preparing the variables
 INCDIR = $(patsubst %,-I%, $(INCDIRS))
+TEST_INCDIR = $(patsubst %,-I%, $(TEST_INCDIRS))
 OBJS = $(addprefix $(BIN_FOLDER),$(STARTUP:.s=.o) $(SRC:.c=.o))
 
 
@@ -37,12 +40,13 @@ help:
 	@echo "BUILD TARGETS FOR PMC"
 	@echo "  "
 	@echo "make clean                  - delete all created files"
-	@echo "make doxygen                - create Documentation"
+	@echo "make doxygen                - create documentation"
+	@echo "make test                   - run unit tests"
 	@echo "make all BOARD=linux        - build project to run on Linux"
-	@echo "make all BOARD=stm407disco  - build project to run on STM32F4 Discovery Board"
-	@echo "make all BOARD=pipy         - build project to run on pipy Board"
-	@echo "make burn BOARD=stm407disco - programm the created file to STM32F4 Discovery Board"
-	@echo "make burn BOARD=pipy        - programm the created file to pipy Board"
+	@echo "make all BOARD=stm407disco  - build project to run on STM32F4 discovery board"
+	@echo "make all BOARD=pipy         - build project to run on pipy board"
+	@echo "make burn BOARD=stm407disco - programm the created file to STM32F4 discovery board"
+	@echo "make burn BOARD=pipy        - programm the created file to pipy board"
 	@echo "  "
 
 all: directories $(OBJS) $(BIN_FOLDER)$(PROJECT).elf $(OBJS) $(BIN_FOLDER)$(PROJECT).bin
@@ -75,14 +79,19 @@ doxygen:
 	-rm -rf doc/doxygen
 	$(DOXYGEN) Doxyfile
 
+include test/test_target.mk
+
 directories:
 	@echo "Board = $(BOARD)"
 	@echo "Architecture = $(ARCHITECTURE)"
 	@echo "Board Folder = $(BOARD_FOLDER)" 
 	@$(MKDIR_P) $(BIN_FOLDER)
+	@$(MKDIR_P) $(TEST_BIN_FOLDER)
 
 clean:
+	-rm -rf $(TEST_BIN_FOLDER)
 	-rm -rf $(BIN_FOLDER)
+
 ifeq ($(BOARD),stm407disco)
 burn: 
 # needs https://github.com/texane/stlink

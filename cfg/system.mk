@@ -19,3 +19,4 @@ STLINK_FOLDER=../stlink
 BIN_FOLDER = bin/
 SRC_FOLDER = src/
 HAL_FOLDER = hal/
+TEST_BIN_FOLDER = test_bin/
