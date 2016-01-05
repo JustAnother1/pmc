@@ -22,7 +22,8 @@ void hal_dout_init(void);
 uint_fast8_t hal_dout_get_amount(void);
 void hal_dout_set_pin_high(uint_fast8_t device);
 void hal_dout_set_pin_low(uint_fast8_t device);
+void hal_dout_set_pin_HighZ(uint_fast8_t device);
 uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position);
-
+uint_fast8_t hal_dout_get_current_state_of(uint_fast8_t number);
 
 #endif /* HAL_INCLUDE_HAL_DOUT_H_ */

@@ -19,6 +19,9 @@
 #include "hal_dout.h"
 #include "board_cfg.h"
 #include "hal_debug.h"
+#include "protocol.h"
+
+static uint_fast8_t curState[D_OUT_NUM_PINS];
 
 void hal_dout_init(void)
 {
@@ -48,6 +51,19 @@ void hal_dout_init(void)
         D_OUT_1_GPIO_PORT->PUPDR   |=  D_OUT_1_PUPD_1;
         D_OUT_1_GPIO_PORT->ODR     &= ~D_OUT_1_ODR;
     }
+    if(D_OUT_NUM_PINS > 2)
+    {
+        RCC->AHB1ENR |= D_OUT_2_RCC_GPIO_ENABLE;
+        D_OUT_2_GPIO_PORT->MODER   &= ~D_OUT_2_MODER_0;
+        D_OUT_2_GPIO_PORT->MODER   |=  D_OUT_2_MODER_1;
+        D_OUT_2_GPIO_PORT->OTYPER  &= ~D_OUT_2_OTYPER_0;
+        D_OUT_2_GPIO_PORT->OTYPER  |=  D_OUT_2_OTYPER_1;
+        D_OUT_2_GPIO_PORT->OSPEEDR &= ~D_OUT_2_OSPEEDR_0;
+        D_OUT_2_GPIO_PORT->OSPEEDR |=  D_OUT_2_OSPEEDR_1;
+        D_OUT_2_GPIO_PORT->PUPDR   &= ~D_OUT_2_PUPD_0;
+        D_OUT_2_GPIO_PORT->PUPDR   |=  D_OUT_2_PUPD_1;
+        D_OUT_2_GPIO_PORT->ODR     &= ~D_OUT_2_ODR;
+    }
 }
 
 uint_fast8_t hal_dout_get_amount(void)
@@ -61,8 +77,9 @@ void hal_dout_set_pin_high(uint_fast8_t device)
     {
         switch(device)
         {
-        case 0: D_OUT_0_GPIO_PORT->ODR |= D_OUT_0_ODR; break;
-        case 1: D_OUT_1_GPIO_PORT->ODR |= D_OUT_1_ODR; break;
+        case 0: D_OUT_0_GPIO_PORT->ODR |= D_OUT_0_ODR; curState[device] = OUTPUT_STATE_HIGH; break;
+        case 1: D_OUT_1_GPIO_PORT->ODR |= D_OUT_1_ODR; curState[device] = OUTPUT_STATE_HIGH; break;
+        case 2: D_OUT_2_GPIO_PORT->ODR |= D_OUT_2_ODR; curState[device] = OUTPUT_STATE_HIGH; break;
         default:
             debug_line("dout pin(%d) not available!", device);
             break;
@@ -80,8 +97,9 @@ void hal_dout_set_pin_low(uint_fast8_t device)
     {
         switch(device)
         {
-        case 0: D_OUT_0_GPIO_PORT->ODR &= ~D_OUT_0_ODR; break;
-        case 1: D_OUT_1_GPIO_PORT->ODR &= ~D_OUT_1_ODR; break;
+        case 0: D_OUT_0_GPIO_PORT->ODR &= ~D_OUT_0_ODR; curState[device] = OUTPUT_STATE_LOW; break;
+        case 1: D_OUT_1_GPIO_PORT->ODR &= ~D_OUT_1_ODR; curState[device] = OUTPUT_STATE_LOW; break;
+        case 2: D_OUT_2_GPIO_PORT->ODR &= ~D_OUT_2_ODR; curState[device] = OUTPUT_STATE_LOW; break;
         default:
             debug_line("dout pin(%d) not available!", device);
             break;
@@ -93,6 +111,12 @@ void hal_dout_set_pin_low(uint_fast8_t device)
     }
 }
 
+void hal_dout_set_pin_HighZ(uint_fast8_t device)
+{
+    // OUTPUT_STATE_HIGH_Z not meaningful on pipy
+    debug_line("high-Z:not implemented");
+}
+
 uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position)
 {
     if(device < D_OUT_NUM_PINS)
@@ -101,6 +125,7 @@ uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position)
         {
         case 0: return copy_string(D_OUT_0_NAME, position);
         case 1: return copy_string(D_OUT_1_NAME, position);
+        case 2: return copy_string(D_OUT_2_NAME, position);
         default:
             return 0;
         }
@@ -109,5 +134,10 @@ uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position)
     {
         return 0;
     }
+}
+
+uint_fast8_t hal_dout_get_current_state_of(uint_fast8_t number)
+{
+    return curState[number];
 }
 

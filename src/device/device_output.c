@@ -47,8 +47,7 @@ uint_fast8_t dev_output_get_status(uint_fast8_t number)
 
 uint_fast8_t dev_output_get_switch_state(uint_fast8_t number)
 {
-    // TODO
-    return SWITCH_STATE_NOT_TRIGGERED;
+    return hal_dout_get_current_state_of(number);
 }
 
 void dev_output_set_switch_state(uint_fast8_t number, uint_fast8_t state)
@@ -66,8 +65,7 @@ void dev_output_set_switch_state(uint_fast8_t number, uint_fast8_t state)
             break;
 
         case OUTPUT_STATE_HIGH_Z:
-            // TODO
-            debug_line("high-Z:not implemented");
+            hal_dout_set_pin_HighZ(number);
             break;
 
         default:

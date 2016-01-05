@@ -444,7 +444,7 @@
 /******************************************************************************/
 
 #define D_OUT_NUM_PINS             3
-#define D_OUT_0_NAME               "Out 1"
+#define D_OUT_0_NAME               "Out A"
 #define D_OUT_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
 #define D_OUT_0_GPIO_PORT          GPIOE
 #define D_OUT_0_MODER_0            GPIO_MODER_0_INPUT_0
@@ -457,7 +457,7 @@
 #define D_OUT_0_PUPD_1             GPIO_PUPDR_0_NONE_1
 #define D_OUT_0_ODR                GPIO_ODR_0
 
-#define D_OUT_1_NAME               "Out 2"
+#define D_OUT_1_NAME               "Out B"
 #define D_OUT_1_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
 #define D_OUT_1_GPIO_PORT          GPIOE
 #define D_OUT_1_MODER_0            GPIO_MODER_1_INPUT_0
@@ -470,7 +470,7 @@
 #define D_OUT_1_PUPD_1             GPIO_PUPDR_1_NONE_1
 #define D_OUT_1_ODR                GPIO_ODR_1
 
-#define D_OUT_2_NAME               "Out 3"
+#define D_OUT_2_NAME               "Out C"
 #define D_OUT_2_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
 #define D_OUT_2_GPIO_PORT          GPIOE
 #define D_OUT_2_MODER_0            GPIO_MODER_2_INPUT_0
