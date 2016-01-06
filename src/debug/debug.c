@@ -140,6 +140,7 @@ static void search_for_orders(void)
                 last_line_end = c;
             }
             // debug_line("found line feed !");
+            debug_line("\r\n");
             parse_order(i);
             hal_forget_bytes_debug_uart(i+1);
             checked_bytes = 0;
@@ -164,7 +165,7 @@ static int get_next_word(int start_pos, int end_pos, uint8_t *buf)
             // ignore
             break;
 
-        case ' ':
+        case '\n':
             // end of command
             return i;
 
@@ -359,6 +360,12 @@ static void order_curTime(void)
 
 static void printMemory(uint8_t* buf, uint32_t length)
 {
+    if(0 < length)
+    {
+        // Adress(hex) : Data in Hex                                     : Data in ASCII
+        //    00000000 : 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 : ....affe....beef
+        debug_line("Address(hex) : Data in Hex                                     : Data in ASCII");
+    }
     while(0 < length)
     {
         uint_fast8_t i;
@@ -373,11 +380,9 @@ static void printMemory(uint8_t* buf, uint32_t length)
             // last line
             bytesInRow = length;
         }
-        // Adress(hex) : Data in Hex                                      : Data in Ascii
-        // 00 00 00 00 : 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  : ....affe....beef
 
         // 00 00 00 00 :
-        debug_msg("%02x %02x %02x %02x :", (addr>>24) & 0xff, (addr>>16) & 0xff, (addr>>8) & 0xff, addr & 0xff);
+        debug_msg("    %02x%02x%02x%02x : ", (addr>>24) & 0xff, (addr>>16) & 0xff, (addr>>8) & 0xff, addr & 0xff);
 
         //  00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00  :
         for(i = 0; i < bytesInRow; i++)
@@ -389,6 +394,7 @@ static void printMemory(uint8_t* buf, uint32_t length)
             debug_msg("   ");
         }
         //  ....affe....beef
+        debug_msg(": ");
         for(i = 0; i < bytesInRow; i++)
         {
             if(isalpha(*(buf + i)))
@@ -404,6 +410,7 @@ static void printMemory(uint8_t* buf, uint32_t length)
         {
             debug_msg(" ");
         }
+        debug_msg("\r\n");
         buf = buf + 16;
         length = length - bytesInRow;
     }
@@ -412,14 +419,22 @@ static void printMemory(uint8_t* buf, uint32_t length)
 static uint32_t getStartOffsetOfNextWord(uint8_t* buf, uint32_t length)
 {
     uint32_t res = 0;
-    while((length > 0) && ((' ' == *buf) || ('\t' == *buf) || (0 == *buf)))
+    while((length > 0) && ((' ' == *buf) || ('\t' == *buf)))
     {
         // skip whitespace before word
         buf++;
         length--;
         res ++;
     }
-    return res;
+    if((0 != *buf) && (length > 0))
+    {
+        return res;
+    }
+    else
+    {
+        // only white space until end of line and no command
+        return 0;
+    }
 }
 
 static uint32_t getNumBytesNextWord(uint8_t* buf, uint32_t length)
@@ -516,18 +531,17 @@ static void parse_order(int length)
             uint32_t numCharsLengthParam;
             uint32_t memoryLength;
             uint32_t startIndexOfParam;
+            uint32_t i;
             startIndexOfParam = 2 + getStartOffsetOfNextWord(&cmd_buf[2], length -2);
             numCharsNextParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
-            debug_line("numCharsNextParam: %d", numCharsNextParam);
             address = getHexNumber(&cmd_buf[startIndexOfParam],numCharsNextParam);
-            debug_line("address: %d", address);
             startIndexOfParam = startIndexOfParam + numCharsNextParam;
             startIndexOfParam = startIndexOfParam + getStartOffsetOfNextWord(&cmd_buf[startIndexOfParam], length -startIndexOfParam);
             numCharsLengthParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
-            debug_line("numCharsLengthParam: %d", numCharsLengthParam);
             memoryLength = getHexNumber(&cmd_buf[startIndexOfParam], numCharsLengthParam);
-            debug_line("memoryLength: %d", memoryLength);
+            debug_line("memoryLength: 0x%x address: 0x%x", memoryLength, address);
             printMemory((uint8_t*)address, memoryLength);
+            debug_line("");
         }
             break;
 

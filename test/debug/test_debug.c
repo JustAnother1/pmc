@@ -58,6 +58,31 @@ static void test_getStartOffsetOfNextWord_command_and_leading_whitespace(void **
     uint8_t cmd_buf[30] = "   bla   ";
     assert_int_equal(3, getStartOffsetOfNextWord(&cmd_buf[0], 10));
 }
+
+static void test_getStartOffsetOfNextWord_command_and_one_leading_whitespace(void **state)
+{
+    uint8_t cmd_buf[30] = " bla   ";
+    assert_int_equal(1, getStartOffsetOfNextWord(&cmd_buf[0], 10));
+}
+
+static void test_getStartOffsetOfNextWord_command_and_no_whitespace(void **state)
+{
+    uint8_t cmd_buf[30] = "bla   ";
+    assert_int_equal(0, getStartOffsetOfNextWord(&cmd_buf[0], 10));
+}
+
+static void test_getStartOffsetOfNextWord_no_command(void **state)
+{
+    uint8_t cmd_buf[30] = "   ";
+    assert_int_equal(0, getStartOffsetOfNextWord(&cmd_buf[0], 10));
+}
+
+static void test_getStartOffsetOfNextWord_no_whitespace(void **state)
+{
+    uint8_t cmd_buf[30] = "bla";
+    assert_int_equal(0, getStartOffsetOfNextWord(&cmd_buf[0], 10));
+}
+
 // static uint32_t getNumBytesNextWord(uint8_t* buf, uint32_t length);
 static void test_getNumBytesNextWord_lengthZero(void **state)
 {
@@ -121,6 +146,10 @@ int main(void)
     const struct CMUnitTest tests[] = {
             cmocka_unit_test(test_debug_init),
             cmocka_unit_test(test_getStartOffsetOfNextWord_command_and_leading_whitespace),
+            cmocka_unit_test(test_getStartOffsetOfNextWord_command_and_one_leading_whitespace),
+            cmocka_unit_test(test_getStartOffsetOfNextWord_command_and_no_whitespace),
+            cmocka_unit_test(test_getStartOffsetOfNextWord_no_command),
+            cmocka_unit_test(test_getStartOffsetOfNextWord_no_whitespace),
             cmocka_unit_test(test_getNumBytesNextWord_lengthZero),
             cmocka_unit_test(test_getNumBytesNextWord_noMoreChars),
             cmocka_unit_test(test_getNumBytesNextWord_only_whitespace),
