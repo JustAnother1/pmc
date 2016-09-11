@@ -2,3 +2,5 @@
 /doc/
 /openocd.log
 /*.sh
+/todo.txt
+/*.zip

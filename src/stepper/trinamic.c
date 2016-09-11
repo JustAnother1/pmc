@@ -763,12 +763,18 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
         // 0xfffff will be send back if the loop is open (No SPI Device connected)
         // 0x00000 will be send back for each missing stepper
         // any other value is the current status of a stepper.
-        detect_data[i] = 0x0;
+        detect_data[i] = 0x00;
     }
-
+    debug_line("detecting Steppers with  %d bytes !", SPI_BUFFER_LENGTH);
     hal_do_stepper_spi_transaction(&detect_data[0],          // data to send
                                    SPI_BUFFER_LENGTH,        // number of bytes to send
                                    &spi_receive_buffer[0] ); // where to put the response
+    debug_msg("received : ");
+    for(i = 0; i < SPI_BUFFER_LENGTH; i++)
+    {
+        debug_msg("%02x ", spi_receive_buffer[i]);
+    }
+    debug_msg("\r\n");
     for(i = 0; i < ((SPI_BUFFER_LENGTH/5)* 2); i++)
     {
         // 20 bits = 2.5 byte per stepper,..
@@ -846,7 +852,7 @@ void trinamic_print_stepper_status(void)
     debug_line("Number of detected Steppers: %d", num);
     if(0 == num)
     {
-    	return;
+        return;
     }
     debug_msg("hex: ");
     for(int i = 0; i < num_bytes_used; i++)
@@ -1343,7 +1349,8 @@ static void setBool(bool value, enum cfgSetting setting, int stepper)
 
 void periodic_status_check(void)
 {
-	hal_start_stepper_spi_transaction(&cfg_data[SMARTEN][0], num_bytes_used, &spi_receive_buffer[0]);
+    // TODO check steppers if enabled, but only then
+    // hal_start_stepper_spi_transaction(&cfg_data[SMARTEN][0], num_bytes_used, &spi_receive_buffer[0]);
     // TODO check reply
 }
 

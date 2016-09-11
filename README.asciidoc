@@ -27,6 +27,7 @@ Depending on the target you are building for you might need to have additionalto
 - To build for ARM Cortex-M Targets you need https://launchpad.net/gcc-arm-embedded[GCC ARM Embedded]
 - for automatic generated documentation you need http://www.stack.nl/~dimitri/doxygen/[Doxygen]
 - for unit testing you need https://cmocka.org/[cmocka]
+- for flashing the target you need https://github.com/texane/stlink[stlink]
 
 License
 -------

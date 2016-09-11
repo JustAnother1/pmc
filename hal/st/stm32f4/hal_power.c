@@ -19,7 +19,7 @@
 
 void hal_init_power(void)
 {
-// #if (1 == POWER_HAS_HIGH_SWITCH)
+#if (1 == POWER_HAS_HIGH_SWITCH)
     RCC->AHB1ENR |= POWER_HV_RCC_GPIO_ENABLE;
     POWER_HV_GPIO_PORT->MODER &= ~POWER_HV_MODER_0;
     POWER_HV_GPIO_PORT->MODER |=  POWER_HV_MODER_1;
@@ -30,7 +30,7 @@ void hal_init_power(void)
     POWER_HV_GPIO_PORT->PUPDR &= ~POWER_HV_PUPD_0;
     POWER_HV_GPIO_PORT->PUPDR |=  POWER_HV_PUPD_1;
     POWER_HV_GPIO_PORT->ODR &= POWER_HV_ODR;
-// #endif
+#endif
 
 #if (1 == POWER_HAS_5V_SWITCH)
     RCC->AHB1ENR |= POWER_5V_RCC_GPIO_ENABLE;
@@ -61,9 +61,9 @@ void hal_init_power(void)
 
 void hal_power_on_5V(void)
 {
-// #if (1 == POWER_HAS_5V_SWITCH)
+#if (1 == POWER_HAS_5V_SWITCH)
     POWER_5V_GPIO_PORT->BSRR_SET = POWER_5V_BSRR;
-// #endif
+#endif
 }
 
 void hal_power_off_5V(void)

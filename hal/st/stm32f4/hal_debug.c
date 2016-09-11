@@ -97,7 +97,7 @@ void debug_print32(uint32_t num)
 
 void debug_printChar(char c)
 {
-    if(false == hal_send_frame_non_blocking_debug_uart(&c, 1))
+    if(false == hal_send_frame_non_blocking_debug_uart((uint8_t *)&c, 1))
     {
         hal_set_error_led(true);
     }

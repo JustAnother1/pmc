@@ -531,7 +531,6 @@ static void parse_order(int length)
             uint32_t numCharsLengthParam;
             uint32_t memoryLength;
             uint32_t startIndexOfParam;
-            uint32_t i;
             startIndexOfParam = 2 + getStartOffsetOfNextWord(&cmd_buf[2], length -2);
             numCharsNextParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
             address = getHexNumber(&cmd_buf[startIndexOfParam],numCharsNextParam);
