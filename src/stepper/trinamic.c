@@ -784,13 +784,13 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
         // fourth stepper is in bytes 7, 8, 9
         // ...
         int start = (i * 25)/10;
-        if( (   (0xff == spi_receive_buffer[start + i + 0])
-             && (0xff == spi_receive_buffer[start + i + 1])
-             && (0xf0 == (0xf0 & spi_receive_buffer[start + i + 2])) )
+        if( (   (0xff == spi_receive_buffer[start + 0])
+             && (0xff == spi_receive_buffer[start + 1])
+             && (0xf0 == (0xf0 & spi_receive_buffer[start + 2])) )
                 ||
-            (   (0 == spi_receive_buffer[start + i + 0])
-             && (0 == spi_receive_buffer[start + i + 1])
-             && (0 == (0xf0 & spi_receive_buffer[start + i + 2])) ) )
+            (   (0 == spi_receive_buffer[start + 0])
+             && (0 == spi_receive_buffer[start + 1])
+             && (0 == (0xf0 & spi_receive_buffer[start + 2])) ) )
         {
             // stepper not available
         }
