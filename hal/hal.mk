@@ -50,6 +50,7 @@ endif
 ifeq ($(BOARD), linux)
 	ARCHITECTURE = x86
 	BOARD_FOLDER = linux
+	INCDIRS +=$(HAL_FOLDER)$(BOARD_FOLDER)/
 	CFLAGS += -fhosted
 	LDFLAGS += -Wl,-Map=$(BIN_FOLDER)$(PROJECT).map,--gc-sections
 	LIB += -lpthread

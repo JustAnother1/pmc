@@ -47,6 +47,11 @@ void debug_print32(uint32_t num)
 
 void debug_printChar(char c)
 {
-    printf("%s", c);
+    printf("%c", c);
+}
+
+void curTest(void)
+{
+
 }
 

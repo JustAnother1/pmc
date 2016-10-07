@@ -36,6 +36,10 @@
 #define ISR_2_LED  3
 #define MAX_LED    4
 
+#define BOARD_HAS_DEBUG_LED
+#define BOARD_HAS_ERROR_LED
+#define BOARD_HAS_ISR_1_LED
+#define BOARD_HAS_ISR_2_LED
 
 // Timer
 // Step creation

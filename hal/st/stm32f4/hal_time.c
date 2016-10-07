@@ -337,6 +337,7 @@ bool hal_time_start_timer(uint_fast8_t device,
     timer->CR1 =0x0005; // Timer enable + Interrupt on overflow
     return true;
 }
+
 void hal_time_stop_timer(uint_fast8_t device)
 {
     TIM_TypeDef* timer =  get_timer_register_for(device);

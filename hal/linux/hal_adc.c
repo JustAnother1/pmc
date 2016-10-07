@@ -34,3 +34,8 @@ uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
 {
     return 0;
 }
+
+void hal_print_configuration_adc(void)
+{
+
+}
