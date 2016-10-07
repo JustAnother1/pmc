@@ -28,6 +28,8 @@
 #include "hal_usb_device_cdc.h"
 #include "command_queue.h"
 #include "trinamic.h"
+#include "device_temperature_sensor.h"
+#include "hal_adc.h"
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
@@ -51,6 +53,8 @@ static uint32_t getNumBytesNextWord(uint8_t* buf, uint32_t length);
 static uint32_t getHexNumber(uint8_t* buf, uint32_t length);
 static void printMemory(uint8_t* buf, uint32_t length);
 static uint_fast8_t hexChar2int(uint8_t c);
+
+void curTest(void);
 
 void debug_init(void)
 {
@@ -290,9 +294,10 @@ static void order_help(void)
     // j
     // k
     debug_line("l                          : list recorded debug information");
-    debug_line("md<addressHex> <lengthHex> : change special setting");
+    debug_line("md<addressHex> <lengthHex> : print memory");
     // n
     // o
+    debug_line("pa                         : print ADC configuration");
 #ifdef HAS_USB
     debug_line("pb                         : print USB configuration");
 #endif
@@ -517,6 +522,7 @@ static void parse_order(int length)
         debug_line("current status:");
         debug_line("ticks per ms: max=%d, min=%d", tick_max, tick_min);
         debug_line("number of detected steppers: %d", dev_stepper_get_count());
+        dev_temperature_sensor_print_status();
         break;
 
     case 'M':
@@ -554,6 +560,10 @@ static void parse_order(int length)
     case 'p': // print configuration
         switch (cmd_buf[1])
         {
+        case 'A':
+        case 'a':
+        	 hal_print_configuration_adc();
+        	 break;
         case 'U':
         case 'u':
           switch(cmd_buf[2])
@@ -684,6 +694,12 @@ static void parse_order(int length)
     case 't': // show current time
         order_curTime();
         break;
+
+    case 'X':
+    case 'x': // current testing
+    	curTest();
+    	break;
+
 
     default: // invalid command
         debug_line("Invalid command ! try h for help");

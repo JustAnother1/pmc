@@ -115,6 +115,44 @@
 #define ADC_4_NAME                 "Temp_4"
 #define ADC_5_NAME                 "Temp_5"
 
+#define ADC_0_GPIO_PORT_RCC        RCC_AHB1ENR_GPIOAEN
+#define ADC_0_GPIO_PORT            GPIOA
+#define ADC_0_GPIO_MODER_1         GPIO_MODER_5_ANALOG_1
+#define ADC_0_GPIO_MODER_0         GPIO_MODER_5_ANALOG_0
+#define ADC_1_GPIO_PORT_RCC        RCC_AHB1ENR_GPIOCEN
+#define ADC_1_GPIO_PORT            GPIOC
+#define ADC_1_GPIO_MODER_1         GPIO_MODER_0_ANALOG_1
+#define ADC_1_GPIO_MODER_0         GPIO_MODER_0_ANALOG_0
+#define ADC_2_GPIO_PORT_RCC        RCC_AHB1ENR_GPIOCEN
+#define ADC_2_GPIO_PORT            GPIOC
+#define ADC_2_GPIO_MODER_1         GPIO_MODER_1_ANALOG_1
+#define ADC_2_GPIO_MODER_0         GPIO_MODER_1_ANALOG_0
+#define ADC_3_GPIO_PORT_RCC        RCC_AHB1ENR_GPIOCEN
+#define ADC_3_GPIO_PORT            GPIOC
+#define ADC_3_GPIO_MODER_1         GPIO_MODER_4_ANALOG_1
+#define ADC_3_GPIO_MODER_0         GPIO_MODER_4_ANALOG_0
+
+// Input Numbers for used ADC Input Pins,
+// then 16 for the internal temperature sensor,
+// then 0 till the end.
+#define ADC_0_INPUT_NUM            5
+#define ADC_1_INPUT_NUM            10
+#define ADC_2_INPUT_NUM            11
+#define ADC_3_INPUT_NUM            14
+#define ADC_4_INPUT_NUM            16
+#define ADC_5_INPUT_NUM            0
+#define ADC_6_INPUT_NUM            0
+#define ADC_7_INPUT_NUM            0
+#define ADC_8_INPUT_NUM            0
+#define ADC_9_INPUT_NUM            0
+#define ADC_10_INPUT_NUM           0
+#define ADC_11_INPUT_NUM           0
+#define ADC_12_INPUT_NUM           0
+#define ADC_13_INPUT_NUM           0
+#define ADC_14_INPUT_NUM           0
+#define ADC_15_INPUT_NUM           0
+
+
 /******************************************************************************/
 /*                                                                            */
 /*         Buzzer - Tone Generator                                            */

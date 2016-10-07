@@ -20,8 +20,12 @@
 
 void hal_adc_init(void);
 uint_fast8_t hal_adc_get_amount(void);
+/** retrieves the currently measured analog value as temperature.
+ * @param device number of temperature sensor
+ * @return temperature in 0.1° steps (250 = 25°; 123 = 12.3°)
+ */
 uint_fast16_t hal_adc_get_value(uint_fast8_t device);
 uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position);
-
+void hal_print_configuration_adc(void);
 
 #endif /* HAL_INCLUDE_HAL_ADC_H_ */

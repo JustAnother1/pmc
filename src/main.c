@@ -56,7 +56,6 @@ int main (void)
     hal_time_ms_sleep(5);
     events_init();
     fw_cfg_init();
-    dev_stepper_init();
     dev_temperature_sensor_init();
     dev_heater_init();
     dev_buzzer_init();
@@ -65,6 +64,7 @@ int main (void)
     dev_output_init();
     cmd_queue_init();
     com_init();
+    dev_stepper_init();
     debug_line("Reached end of initialization!");
     for(;;)
     {

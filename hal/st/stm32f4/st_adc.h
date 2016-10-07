@@ -372,6 +372,10 @@
 #define  ADC_CCR_ADCPRE                      ((uint32_t)0x00030000)        /*!<ADCPRE[1:0] bits (ADC prescaler) */
 #define  ADC_CCR_ADCPRE_0                    ((uint32_t)0x00010000)        /*!<Bit 0 */
 #define  ADC_CCR_ADCPRE_1                    ((uint32_t)0x00020000)        /*!<Bit 1 */
+#define  ADC_CCR_ADCPRE_2                    0
+#define  ADC_CCR_ADCPRE_4                    ((uint32_t)0x00010000)
+#define  ADC_CCR_ADCPRE_6                    ((uint32_t)0x00020000)
+#define  ADC_CCR_ADCPRE_8                    ((uint32_t)0x00030000)
 #define  ADC_CCR_VBATE                       ((uint32_t)0x00400000)        /*!<VBAT Enable */
 #define  ADC_CCR_TSVREFE                     ((uint32_t)0x00800000)        /*!<Temperature Sensor and VREFINT Enable */
 

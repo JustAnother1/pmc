@@ -23,7 +23,7 @@
 #include "hal_cpu.h"
 
 #define RECEIVE_BUFFER_SIZE  50
-#define SEND_BUFFER_SIZE     1024
+#define SEND_BUFFER_SIZE     2048
 
 #define MSG_BUFFER_LENGTH 100
 uint8_t buffer[MSG_BUFFER_LENGTH];
