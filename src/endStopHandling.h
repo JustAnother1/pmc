@@ -13,15 +13,15 @@
  *
  */
 
-#ifndef DEVICE_INPUT_H_
-#define DEVICE_INPUT_H_
+#ifndef SRC_ENDSTOPHANDLING_H_
+#define SRC_ENDSTOPHANDLING_H_
 
 #include <inttypes.h>
+#include <stdbool.h>
 
-void dev_input_init(void);
-uint_fast8_t dev_input_get_count(void);
-uint_fast8_t dev_input_get_status(uint_fast8_t number);
-uint_fast8_t dev_input_get_name(uint_fast8_t number, uint8_t *position);
-uint_fast8_t dev_input_get_switch_state(uint_fast8_t number);
+void endStopHandling_init(void);
+bool dev_input_enable(uint_fast8_t switch_number, uint_fast8_t enable);
+bool dev_input_is_enabled(uint_fast8_t switch_number);
+bool dev_stepper_configure_end_stops(uint_fast8_t StepperNumber, uint_fast8_t switch_number, uint_fast8_t min_Max);
 
-#endif /* DEVICE_INPUT_H_ */
+#endif /* SRC_ENDSTOPHANDLING_H_ */

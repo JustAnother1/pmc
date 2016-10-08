@@ -14,6 +14,7 @@
  */
 
 #include "device_stepper.h"
+#include <stdbool.h>
 
 void dev_stepper_init(void)
 {
@@ -50,9 +51,9 @@ void dev_stepper_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 
 }
 
-void dev_stepper_configure_end_stops(uint_fast8_t StepperNumber, uint_fast8_t switch_number, uint_fast8_t min_Max)
+bool dev_stepper_configure_end_stops(uint_fast8_t StepperNumber, uint_fast8_t switch_number, uint_fast8_t min_Max)
 {
-
+	return true;
 }
 
 void dev_stepper_configure_both_end_stops(uint_fast8_t stepper_number, uint_fast8_t switch_number, uint_fast8_t min_max,

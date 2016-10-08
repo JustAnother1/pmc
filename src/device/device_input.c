@@ -16,6 +16,7 @@
 #include "device_buzzer.h"
 #include "protocol.h"
 #include "hal_din.h"
+#include "endStopHandling.h"
 
 void dev_input_init(void)
 {
@@ -31,23 +32,19 @@ uint_fast8_t dev_input_get_status(uint_fast8_t number)
 {
     if(number < hal_din_get_amount())
     {
-        // TODO enabled?
-        return DEVICE_STATUS_ACTIVE;
+    	if(false == dev_input_is_enabled(number))
+    	{
+    		return DEVICE_STATUS_DISABLED;
+    	}
+    	else
+    	{
+    		return DEVICE_STATUS_ACTIVE;
+    	}
     }
     else
     {
         return DEVICE_STATUS_FAULT;
     }
-}
-
-void dev_input_enable(uint_fast8_t switch_number, uint_fast8_t enable)
-{
-    // TODO
-}
-
-void dev_input_enable_two(uint_fast8_t switch_number, uint_fast8_t enable, uint_fast8_t switch_number2, uint_fast8_t enable2)
-{
-    // TODO
 }
 
 uint_fast8_t dev_input_get_name(uint_fast8_t number, uint8_t *position)

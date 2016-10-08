@@ -22,8 +22,7 @@
 
 void hal_din_init(void)
 {
-    if(D_IN_NUM_PINS > 0)
-    {
+#if D_IN_NUM_PINS > 0
         RCC->AHB1ENR |= D_IN_0_RCC_GPIO_ENABLE;
         D_IN_0_GPIO_PORT->MODER   &= ~D_IN_0_MODER_0;
         D_IN_0_GPIO_PORT->MODER   |=  D_IN_0_MODER_1;
@@ -33,9 +32,9 @@ void hal_din_init(void)
         D_IN_0_GPIO_PORT->OSPEEDR |=  D_IN_0_OSPEEDR_1;
         D_IN_0_GPIO_PORT->PUPDR   &= ~D_IN_0_PUPD_0;
         D_IN_0_GPIO_PORT->PUPDR   |=  D_IN_0_PUPD_1;
-    }
-    if(D_IN_NUM_PINS > 1)
-    {
+#endif
+
+#if D_IN_NUM_PINS > 1
         RCC->AHB1ENR |= D_IN_1_RCC_GPIO_ENABLE;
         D_IN_1_GPIO_PORT->MODER   &= ~D_IN_1_MODER_0;
         D_IN_1_GPIO_PORT->MODER   |=  D_IN_1_MODER_1;
@@ -45,7 +44,55 @@ void hal_din_init(void)
         D_IN_1_GPIO_PORT->OSPEEDR |=  D_IN_1_OSPEEDR_1;
         D_IN_1_GPIO_PORT->PUPDR   &= ~D_IN_1_PUPD_0;
         D_IN_1_GPIO_PORT->PUPDR   |=  D_IN_1_PUPD_1;
-    }
+#endif
+
+#if D_IN_NUM_PINS > 2
+        RCC->AHB1ENR |= D_IN_2_RCC_GPIO_ENABLE;
+        D_IN_2_GPIO_PORT->MODER   &= ~D_IN_2_MODER_0;
+        D_IN_2_GPIO_PORT->MODER   |=  D_IN_2_MODER_1;
+        D_IN_2_GPIO_PORT->OTYPER  &= ~D_IN_2_OTYPER_0;
+        D_IN_2_GPIO_PORT->OTYPER  |=  D_IN_2_OTYPER_1;
+        D_IN_2_GPIO_PORT->OSPEEDR &= ~D_IN_2_OSPEEDR_0;
+        D_IN_2_GPIO_PORT->OSPEEDR |=  D_IN_2_OSPEEDR_1;
+        D_IN_2_GPIO_PORT->PUPDR   &= ~D_IN_2_PUPD_0;
+        D_IN_2_GPIO_PORT->PUPDR   |=  D_IN_2_PUPD_1;
+#endif
+
+#if D_IN_NUM_PINS > 3
+        RCC->AHB1ENR |= D_IN_3_RCC_GPIO_ENABLE;
+        D_IN_3_GPIO_PORT->MODER   &= ~D_IN_3_MODER_0;
+        D_IN_3_GPIO_PORT->MODER   |=  D_IN_3_MODER_1;
+        D_IN_3_GPIO_PORT->OTYPER  &= ~D_IN_3_OTYPER_0;
+        D_IN_3_GPIO_PORT->OTYPER  |=  D_IN_3_OTYPER_1;
+        D_IN_3_GPIO_PORT->OSPEEDR &= ~D_IN_3_OSPEEDR_0;
+        D_IN_3_GPIO_PORT->OSPEEDR |=  D_IN_3_OSPEEDR_1;
+        D_IN_3_GPIO_PORT->PUPDR   &= ~D_IN_3_PUPD_0;
+        D_IN_3_GPIO_PORT->PUPDR   |=  D_IN_3_PUPD_1;
+#endif
+
+#if D_IN_NUM_PINS > 4
+        RCC->AHB1ENR |= D_IN_4_RCC_GPIO_ENABLE;
+        D_IN_4_GPIO_PORT->MODER   &= ~D_IN_4_MODER_0;
+        D_IN_4_GPIO_PORT->MODER   |=  D_IN_4_MODER_1;
+        D_IN_4_GPIO_PORT->OTYPER  &= ~D_IN_4_OTYPER_0;
+        D_IN_4_GPIO_PORT->OTYPER  |=  D_IN_4_OTYPER_1;
+        D_IN_4_GPIO_PORT->OSPEEDR &= ~D_IN_4_OSPEEDR_0;
+        D_IN_4_GPIO_PORT->OSPEEDR |=  D_IN_4_OSPEEDR_1;
+        D_IN_4_GPIO_PORT->PUPDR   &= ~D_IN_4_PUPD_0;
+        D_IN_4_GPIO_PORT->PUPDR   |=  D_IN_4_PUPD_1;
+#endif
+
+#if D_IN_NUM_PINS > 5
+        RCC->AHB1ENR |= D_IN_5_RCC_GPIO_ENABLE;
+        D_IN_5_GPIO_PORT->MODER   &= ~D_IN_5_MODER_0;
+        D_IN_5_GPIO_PORT->MODER   |=  D_IN_5_MODER_1;
+        D_IN_5_GPIO_PORT->OTYPER  &= ~D_IN_5_OTYPER_0;
+        D_IN_5_GPIO_PORT->OTYPER  |=  D_IN_5_OTYPER_1;
+        D_IN_5_GPIO_PORT->OSPEEDR &= ~D_IN_5_OSPEEDR_0;
+        D_IN_5_GPIO_PORT->OSPEEDR |=  D_IN_5_OSPEEDR_1;
+        D_IN_5_GPIO_PORT->PUPDR   &= ~D_IN_5_PUPD_0;
+        D_IN_5_GPIO_PORT->PUPDR   |=  D_IN_5_PUPD_1;
+#endif
 }
 
 uint_fast8_t hal_din_get_amount(void)
@@ -59,8 +106,24 @@ uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position)
     {
         switch(device)
         {
+#if D_IN_NUM_PINS > 0
         case 0: return copy_string(D_IN_0_NAME, position);
+#endif
+#if D_IN_NUM_PINS > 1
         case 1: return copy_string(D_IN_1_NAME, position);
+#endif
+#if D_IN_NUM_PINS > 2
+        case 2: return copy_string(D_IN_2_NAME, position);
+#endif
+#if D_IN_NUM_PINS > 3
+        case 3: return copy_string(D_IN_3_NAME, position);
+#endif
+#if D_IN_NUM_PINS > 4
+        case 4: return copy_string(D_IN_4_NAME, position);
+#endif
+#if D_IN_NUM_PINS > 5
+        case 5: return copy_string(D_IN_5_NAME, position);
+#endif
         default:
             return 0;
         }
@@ -77,8 +140,24 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
     {
         switch(device)
         {
+#if D_IN_NUM_PINS > 0
         case 0: if(0 !=(D_IN_0_GPIO_PORT->IDR & D_IN_0_IDR)) {return 1;} else {return 0;} break;
+#endif
+#if D_IN_NUM_PINS > 1
         case 1: if(0 !=(D_IN_1_GPIO_PORT->IDR & D_IN_1_IDR)) {return 1;} else {return 0;} break;
+#endif
+#if D_IN_NUM_PINS > 2
+        case 2: if(0 !=(D_IN_2_GPIO_PORT->IDR & D_IN_2_IDR)) {return 1;} else {return 0;} break;
+#endif
+#if D_IN_NUM_PINS > 3
+        case 3: if(0 !=(D_IN_3_GPIO_PORT->IDR & D_IN_3_IDR)) {return 1;} else {return 0;} break;
+#endif
+#if D_IN_NUM_PINS > 4
+        case 4: if(0 !=(D_IN_4_GPIO_PORT->IDR & D_IN_4_IDR)) {return 1;} else {return 0;} break;
+#endif
+#if D_IN_NUM_PINS > 5
+        case 5: if(0 !=(D_IN_5_GPIO_PORT->IDR & D_IN_5_IDR)) {return 1;} else {return 0;} break;
+#endif
         default:
             debug_line("dout pin(%d) not available!", device);
             break;

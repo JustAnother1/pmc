@@ -27,6 +27,7 @@
 #include "hal_cpu.h"
 #include "hal_time.h"
 #include "error.h"
+#include "endStopHandling.h"
 
 #if defined(HAS_USB) && defined(HAS_UART)
 #error "Can only have UART or USB not both !"
@@ -376,18 +377,30 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             if(3 == parameter_length)
             {
                 // one Switch
-                dev_stepper_configure_end_stops(com_get_parameter_byte(0),
+                if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
                                                 com_get_parameter_byte(1),
-                                                com_get_parameter_byte(2) );
+                                                com_get_parameter_byte(2) ))
+                {
+                	com_send_ok_response();
+                }
+                // else - command already send error
             }
             else if(5 == parameter_length)
             {
                 // two switches
-                dev_stepper_configure_both_end_stops(com_get_parameter_byte(0),
-                                                     com_get_parameter_byte(1),
-                                                     com_get_parameter_byte(2),
-                                                     com_get_parameter_byte(3),
-                                                     com_get_parameter_byte(4) );
+            	if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
+                                                com_get_parameter_byte(1),
+                                                com_get_parameter_byte(2) ) )
+            	{
+            		if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
+                                                com_get_parameter_byte(3),
+                                                com_get_parameter_byte(4) ))
+            		{
+            			com_send_ok_response();
+            		}
+            		// else - command already send error
+            	}
+            	// else - command already send error
             }
             else
             {
@@ -401,16 +414,27 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             if(2 == parameter_length)
             {
                 // one Switch
-                dev_input_enable(com_get_parameter_byte(0),
-                                 com_get_parameter_byte(1) );
+            	if(true == dev_input_enable(com_get_parameter_byte(0),
+                                 com_get_parameter_byte(1) ))
+            	{
+            		com_send_ok_response();
+            	}
+            	// else - command already send error
             }
             else if(4 == parameter_length)
             {
                 // two switches
-                dev_input_enable_two(com_get_parameter_byte(0),
-                                     com_get_parameter_byte(1),
-                                     com_get_parameter_byte(2),
-                                     com_get_parameter_byte(3) );
+                if(true == dev_input_enable(com_get_parameter_byte(0),
+                                 com_get_parameter_byte(1) ) )
+                {
+                	if(true == dev_input_enable(com_get_parameter_byte(2),
+                                 com_get_parameter_byte(3) ) )
+                	{
+                		com_send_ok_response();
+                	}
+                	// else - command already send error
+                }
+                // else - command already send error
             }
             else
             {

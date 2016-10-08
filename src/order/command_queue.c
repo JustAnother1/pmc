@@ -13,6 +13,7 @@
  *
  */
 
+#include <stdlib.h>
 #include "command_queue.h"
 #include "step.h"
 #include "protocol.h"
@@ -23,7 +24,7 @@
 #include "device_stepper.h"
 #include "device_input.h"
 #include "hal_debug.h"
-#include <stdlib.h>
+#include "endStopHandling.h"
 
 #define MAX_QUEUE_ELEMENTS                50
 // Block Envelope is Length and Type -> 2 Bytes
@@ -672,16 +673,27 @@ static void handle_wrapped_command(void)
         if(2 == queue[read_pos][POS_OF_LENGTH])
         {
             // one Switch
-            dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0],
-                             queue[read_pos][POS_OF_PARAMETER_START + 1]);
+        	if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0],
+                                        queue[read_pos][POS_OF_PARAMETER_START + 1]) )
+        	{
+        		com_send_ok_response();
+        	}
+        	// else - command already send error
         }
         else if(4 == queue[read_pos][POS_OF_LENGTH])
         {
             // two switches
-            dev_input_enable_two(queue[read_pos][POS_OF_PARAMETER_START + 0],
-                                 queue[read_pos][POS_OF_PARAMETER_START + 1],
-                                 queue[read_pos][POS_OF_PARAMETER_START + 2],
-                                 queue[read_pos][POS_OF_PARAMETER_START + 3] );
+        	if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0],
+                                        queue[read_pos][POS_OF_PARAMETER_START + 1] ) )
+        	{
+            	if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 2],
+                                            queue[read_pos][POS_OF_PARAMETER_START + 3]) )
+            	{
+            		com_send_ok_response();
+            	}
+            	// else - command already send error
+        	}
+        	// else - command already send error
         }
         else
         {

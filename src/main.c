@@ -33,6 +33,7 @@
 #include "hal_time.h"
 #include "hal_cfg.h"
 #include "hal_power.h"
+#include "endStopHandling.h"
 
 
 int main (void)
@@ -65,6 +66,7 @@ int main (void)
     cmd_queue_init();
     com_init();
     dev_stepper_init();
+    endStopHandling_init();
     debug_line("Reached end of initialization!");
     for(;;)
     {

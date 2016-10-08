@@ -22,16 +22,10 @@
 #include "hal_cfg.h"
 #include "hal_spi.h"
 
-//End Stops:
-#define MAX_END  1
-#define MIN_END  0
-
 static char Stepper_name[]= "Stepper 0";
 
 static uint_fast8_t available_steppers;
 static uint_fast8_t state[MAX_NUMBER];
-static uint_fast8_t max_end_stop[MAX_NUMBER];
-static uint_fast8_t min_end_stop[MAX_NUMBER];
 static uint_fast32_t max_steps_per_second[MAX_NUMBER];
 static uint_fast32_t underrun_max_steps_per_second[MAX_NUMBER];
 static uint_fast32_t underrun_max_decelleration[MAX_NUMBER];
@@ -45,8 +39,6 @@ void dev_stepper_init(void)
     for(i = 0; i < MAX_NUMBER; i++)
     {
         state[i] = DEVICE_STATUS_FAULT;
-        max_end_stop[i] = 0;
-        min_end_stop[i] = 0;
     }
 }
 
@@ -153,104 +145,6 @@ void dev_stepper_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 	    step_enable_motor(stepper_number, on_off);
 	}
 	// else -> nothing to do
-}
-
-void dev_stepper_configure_end_stops(uint_fast8_t stepper_number, uint_fast8_t switch_number, uint_fast8_t min_max)
-{
-	if((true == weControllTheSteppers) && (0 == available_steppers))
-	{
-        trinamic_init();
-		detectSteppers();
-	}
-    if(stepper_number -1  > available_steppers)
-    {
-        com_send_generic_application_error_response(GENERIC_ERROR_INVALID_DEVICE_NUMBER);
-    }
-    else
-    {
-        if(switch_number < dev_input_get_count())
-        {
-            if(MAX_END == min_max)
-            {
-                max_end_stop[stepper_number] = switch_number;
-                com_send_ok_response();
-            }
-            else if( MIN_END == min_max)
-            {
-                min_end_stop[stepper_number] = switch_number;
-                com_send_ok_response();
-            }
-            else
-            {
-                com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
-            }
-        }
-        else
-        {
-            com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
-        }
-    }
-}
-
-void dev_stepper_configure_both_end_stops(uint_fast8_t stepper_number, uint_fast8_t switch_number, uint_fast8_t min_max,
-                                                                       uint_fast8_t switch_number2, uint_fast8_t min_max2)
-{
-	if((true == weControllTheSteppers) && (0 == available_steppers))
-	{
-        trinamic_init();
-		detectSteppers();
-	}
-    if(stepper_number -1 > available_steppers)
-    {
-        com_send_generic_application_error_response(GENERIC_ERROR_INVALID_DEVICE_NUMBER);
-        return;
-    }
-    // first Switch
-    if(switch_number < dev_input_get_count())
-    {
-        if(MAX_END == min_max)
-        {
-            max_end_stop[stepper_number] = switch_number;
-        }
-        else if( MIN_END == min_max)
-        {
-            min_end_stop[stepper_number] = switch_number;
-        }
-        else
-        {
-            com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
-            return;
-        }
-    }
-    else
-    {
-        com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
-        return;
-    }
-
-    // second switch
-    if(switch_number2 < dev_input_get_count())
-    {
-        if(MAX_END == min_max2)
-        {
-            max_end_stop[stepper_number] = switch_number2;
-        }
-        else if( MIN_END == min_max2)
-        {
-            min_end_stop[stepper_number] = switch_number2;
-        }
-        else
-        {
-            com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
-            return;
-        }
-    }
-    else
-    {
-        com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
-        return;
-    }
-    com_send_ok_response();
 }
 
 void dev_stepper_configure_axis_movement_rate(uint_fast8_t stepper_number, uint_fast32_t max_steps)
