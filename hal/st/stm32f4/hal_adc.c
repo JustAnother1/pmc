@@ -179,17 +179,6 @@ uint_fast8_t hal_adc_get_amount(void)
     return NUM_TEMPERATURES;
 }
 
-void curTest(void)
-{
-	int i;
-	ADC1->CR1 = 0;
-	ADC1->CR2 = ADC_CR2_SWSTART | ADC_CR2_EOCS | ADC_CR2_DDS | ADC_CR2_ADON;
-	for(i=0; i < 10; i++)
-	{
-		 debug_line("ADC1->DR           = 0x%08x", ADC1->DR);
-	}
-}
-
 #define MAX_TRIES 500
 
 uint_fast16_t hal_adc_get_value(uint_fast8_t device)

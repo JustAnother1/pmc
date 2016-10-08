@@ -307,33 +307,37 @@ bool hal_time_start_timer(uint_fast8_t device,
                           TimerFkt function)
 {
     TIM_TypeDef* timer = get_timer_register_for(device);
-    if((NULL == timer) || (0 == clock) || (NULL == function))
+    if((NULL == timer) || (0 == clock))
     {
         return false;
     }
-    switch(device)
+    if(NULL != function)
     {
-    case  1: tim_1_isr =  function; break;
-    case  2: tim_2_isr =  function; break;
-    case  3: tim_3_isr =  function; break;
-    case  4: tim_4_isr =  function; break;
-    case  5: tim_5_isr =  function; break;
-    case  6: tim_6_isr =  function; break;
-    case  7: tim_7_isr =  function; break;
-    case  8: tim_8_isr =  function; break;
-    case  9: tim_9_isr =  function; break;
-    case 10: tim_10_isr = function; break;
-    case 11: tim_11_isr = function; break;
-    case 12: tim_12_isr = function; break;
-    case 13: tim_13_isr = function; break;
-    case 14: tim_14_isr = function; break;
+		switch(device)
+		{
+		case  1: tim_1_isr =  function; break;
+		case  2: tim_2_isr =  function; break;
+		case  3: tim_3_isr =  function; break;
+		case  4: tim_4_isr =  function; break;
+		case  5: tim_5_isr =  function; break;
+		case  6: tim_6_isr =  function; break;
+		case  7: tim_7_isr =  function; break;
+		case  8: tim_8_isr =  function; break;
+		case  9: tim_9_isr =  function; break;
+		case 10: tim_10_isr = function; break;
+		case 11: tim_11_isr = function; break;
+		case 12: tim_12_isr = function; break;
+		case 13: tim_13_isr = function; break;
+		case 14: tim_14_isr = function; break;
+		}
+		timer->DIER = TIM_DIER_UIE; // Interrupt enable
     }
     enable_clock_for_timer(device);
     set_irq_priority(device);
     timer->PSC = (uint16_t)(0xffff & ((FREQUENCY_OF_CPU_CLK / clock) - 1));
     timer->ARR = reload_value;
     timer->CNT = 0; // start counting at 0
-    timer->DIER = TIM_DIER_UIE; // Interrupt enable
+
     timer->CR1 =0x0005; // Timer enable + Interrupt on overflow
     return true;
 }

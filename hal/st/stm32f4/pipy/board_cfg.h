@@ -161,6 +161,22 @@
 
 #define BUZZER_NUM_PINS            1
 #define BUZZER_0_NAME              "Buzzer_0"
+#define BUZZER_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
+#define BUZZER_0_GPIO_PORT          GPIOB
+#define BUZZER_0_MODER_0            GPIO_MODER_9_ALTFUNC_0
+#define BUZZER_0_MODER_1            GPIO_MODER_9_ALTFUNC_1
+#define BUZZER_0_OTYPER_0           GPIO_OTYPER_9_OPEN_DRAIN_0
+#define BUZZER_0_OTYPER_1           GPIO_OTYPER_9_OPEN_DRAIN_1
+#define BUZZER_0_OSPEEDR_0          GPIO_OSPEEDER_9_LOW_SPEED_0
+#define BUZZER_0_OSPEEDR_1          GPIO_OSPEEDER_9_LOW_SPEED_1
+#define BUZZER_0_PUPD_0             GPIO_PUPDR_9_NONE_0
+#define BUZZER_0_PUPD_1             GPIO_PUPDR_9_NONE_1
+#define BUZZER_0_ODR                GPIO_ODR_9
+// PB9 = AF 3 = 0011
+#define BUZZER_0_AFR_0_0     0
+#define BUZZER_0_AFR_0_1     0
+#define BUZZER_0_AFR_1_0     0x00000030
+#define BUZZER_0_AFR_1_1     0x000000c0
 
 /******************************************************************************/
 /*                                                                            */
@@ -485,8 +501,8 @@
 #define D_OUT_0_NAME               "Out A"
 #define D_OUT_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
 #define D_OUT_0_GPIO_PORT          GPIOE
-#define D_OUT_0_MODER_0            GPIO_MODER_0_INPUT_0
-#define D_OUT_0_MODER_1            GPIO_MODER_0_INPUT_1
+#define D_OUT_0_MODER_0            GPIO_MODER_0_OUTPUT_0
+#define D_OUT_0_MODER_1            GPIO_MODER_0_OUTPUT_1
 #define D_OUT_0_OTYPER_0           GPIO_OTYPER_0_OPEN_DRAIN_0
 #define D_OUT_0_OTYPER_1           GPIO_OTYPER_0_OPEN_DRAIN_1
 #define D_OUT_0_OSPEEDR_0          GPIO_OSPEEDER_0_LOW_SPEED_0
@@ -498,8 +514,8 @@
 #define D_OUT_1_NAME               "Out B"
 #define D_OUT_1_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
 #define D_OUT_1_GPIO_PORT          GPIOE
-#define D_OUT_1_MODER_0            GPIO_MODER_1_INPUT_0
-#define D_OUT_1_MODER_1            GPIO_MODER_1_INPUT_1
+#define D_OUT_1_MODER_0            GPIO_MODER_1_OUTPUT_0
+#define D_OUT_1_MODER_1            GPIO_MODER_1_OUTPUT_1
 #define D_OUT_1_OTYPER_0           GPIO_OTYPER_1_OPEN_DRAIN_0
 #define D_OUT_1_OTYPER_1           GPIO_OTYPER_1_OPEN_DRAIN_1
 #define D_OUT_1_OSPEEDR_0          GPIO_OSPEEDER_1_LOW_SPEED_0
@@ -511,8 +527,8 @@
 #define D_OUT_2_NAME               "Out C"
 #define D_OUT_2_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
 #define D_OUT_2_GPIO_PORT          GPIOE
-#define D_OUT_2_MODER_0            GPIO_MODER_2_INPUT_0
-#define D_OUT_2_MODER_1            GPIO_MODER_2_INPUT_1
+#define D_OUT_2_MODER_0            GPIO_MODER_2_OUTPUT_0
+#define D_OUT_2_MODER_1            GPIO_MODER_2_OUTPUT_1
 #define D_OUT_2_OTYPER_0           GPIO_OTYPER_2_OPEN_DRAIN_0
 #define D_OUT_2_OTYPER_1           GPIO_OTYPER_2_OPEN_DRAIN_1
 #define D_OUT_2_OSPEEDR_0          GPIO_OSPEEDER_2_LOW_SPEED_0

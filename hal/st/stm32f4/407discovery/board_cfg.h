@@ -171,6 +171,11 @@
 #define BUZZER_0_PUPD_0             GPIO_PUPDR_9_NONE_0
 #define BUZZER_0_PUPD_1             GPIO_PUPDR_9_NONE_1
 #define BUZZER_0_ODR                GPIO_ODR_9
+// PB9 = AF 3 = 0011
+#define BUZZER_0_AFR_0_0     0
+#define BUZZER_0_AFR_0_1     0
+#define BUZZER_0_AFR_1_0     0x00000030
+#define BUZZER_0_AFR_1_1     0x000000c0
 
 /******************************************************************************/
 /*                                                                            */

@@ -44,4 +44,6 @@
 #define STEP_TIMER        6
 #define STEP_BUFFER_TIMER 7
 
+#define BUZZER_TIMER      11
+
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */

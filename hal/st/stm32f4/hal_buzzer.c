@@ -12,27 +12,41 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
-
+#include <stdio.h>
+#include <st_common.h>
 #include <st_util.h>
 #include "st_rcc.h"
 #include "hal_buzzer.h"
+#include "hal_time.h"
 #include "board_cfg.h"
+#include "hal_cfg.h"
+
+#define TIMER_FREQUENCY 500000
 
 void hal_buzzer_init(void)
 {
 #if(BUZZER_NUM_PINS > 0)
         RCC->AHB1ENR |= D_OUT_0_RCC_GPIO_ENABLE;
-        D_OUT_0_GPIO_PORT->MODER   &= ~D_OUT_0_MODER_0;
-        D_OUT_0_GPIO_PORT->MODER   |=  D_OUT_0_MODER_1;
-        D_OUT_0_GPIO_PORT->OTYPER  &= ~D_OUT_0_OTYPER_0;
-        D_OUT_0_GPIO_PORT->OTYPER  |=  D_OUT_0_OTYPER_1;
-        D_OUT_0_GPIO_PORT->OSPEEDR &= ~D_OUT_0_OSPEEDR_0;
-        D_OUT_0_GPIO_PORT->OSPEEDR |=  D_OUT_0_OSPEEDR_1;
-        D_OUT_0_GPIO_PORT->PUPDR   &= ~D_OUT_0_PUPD_0;
-        D_OUT_0_GPIO_PORT->PUPDR   |=  D_OUT_0_PUPD_1;
-        D_OUT_0_GPIO_PORT->ODR     &= ~D_OUT_0_ODR;
+        BUZZER_0_GPIO_PORT->MODER   &= ~BUZZER_0_MODER_0;
+        BUZZER_0_GPIO_PORT->MODER   |=  BUZZER_0_MODER_1;
+        BUZZER_0_GPIO_PORT->OTYPER  &= ~BUZZER_0_OTYPER_0;
+        BUZZER_0_GPIO_PORT->OTYPER  |=  BUZZER_0_OTYPER_1;
+        BUZZER_0_GPIO_PORT->OSPEEDR &= ~BUZZER_0_OSPEEDR_0;
+        BUZZER_0_GPIO_PORT->OSPEEDR |=  BUZZER_0_OSPEEDR_1;
+        BUZZER_0_GPIO_PORT->PUPDR   &= ~BUZZER_0_PUPD_0;
+        BUZZER_0_GPIO_PORT->PUPDR   |=  BUZZER_0_PUPD_1;
+        BUZZER_0_GPIO_PORT->ODR     &= ~BUZZER_0_ODR;
+        BUZZER_0_GPIO_PORT->AFR[0]  |=  BUZZER_0_AFR_0_1;
+        BUZZER_0_GPIO_PORT->AFR[0]  &= ~BUZZER_0_AFR_0_0;
+        BUZZER_0_GPIO_PORT->AFR[1]  |=  BUZZER_0_AFR_1_1;
+        BUZZER_0_GPIO_PORT->AFR[1]  &= ~BUZZER_0_AFR_1_0;
 #endif
 
+}
+
+void curTest(void)
+{
+	hal_buzzer_set_frequency(1, 500);
 }
 
 uint_fast8_t hal_buzzer_get_amount(void)
@@ -47,11 +61,18 @@ void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency)
     	if(0 == frequency)
     	{
     		// Stop Timer -> Low Level
+    		hal_time_stop_timer(BUZZER_TIMER);
     	}
     	else
     	{
-    		// configure Timer
+    		// calculate Reload Value
+    		int reload = TIMER_FREQUENCY/frequency;
+    		if(reload > 0xffff)
+    		{
+    			reload = 0xffff;
+    		}
     		// Start Timer
+    		hal_time_start_timer(BUZZER_TIMER, TIMER_FREQUENCY, reload, NULL);
     	}
     }
     // else ignore request for not available device

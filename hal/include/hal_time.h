@@ -24,8 +24,8 @@ typedef void (*TimerFkt)(void);
 void hal_time_init(void);
 uint32_t hal_time_get_ms_tick(void);
 void hal_time_ms_sleep(uint_fast32_t ms);
-bool hal_time_start_timer(uint_fast8_t device,
-                          uint32_t clock,
+bool hal_time_start_timer(uint_fast8_t device,  // Timer NUmber
+                          uint32_t clock,       // Frequency that the timer runs on
                           uint_fast16_t reload_value,
                           TimerFkt function);
 bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value);
