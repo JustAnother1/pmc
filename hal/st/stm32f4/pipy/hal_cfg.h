@@ -27,7 +27,7 @@
 #define MAX_UART    2
 
 // Heaters
-#define NUMBER_OF_HEATERS 6
+#define NUMBER_OF_HEATERS 5
 
 // LEDs
 #define DEBUG_LED  0

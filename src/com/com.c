@@ -773,6 +773,17 @@ void com_send_ok_response_with_single_byte_parameter(uint_fast8_t parameter)
     send_frame(6);
 }
 
+void com_send_ok_response_with_two_byte_parameter(uint_fast8_t parameter1, uint_fast8_t parameter2)
+{
+    send_buffer[REPLY_FRAME_POS_OF_LENGTH] = 3;
+    send_buffer[REPLY_FRAME_POS_OF_CONTROL] = cur_sequence_number;
+    send_buffer[REPLY_FRAME_POS_OF_REPLY_CODE] = REPLY_CODE_OK;
+    send_buffer[REPLY_FRAME_START_OF_PARAMETER] = parameter1;
+    send_buffer[REPLY_FRAME_START_OF_PARAMETER + 1] = parameter2;
+    send_buffer[6] = crc8(5);
+    send_frame(7);
+}
+
 void com_send_order_specific_error_with_prefilled_parameter(uint_fast8_t parameter_length)
 {
     send_buffer[REPLY_FRAME_POS_OF_LENGTH] = 2 + parameter_length;

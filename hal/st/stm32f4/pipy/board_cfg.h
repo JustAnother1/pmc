@@ -184,21 +184,17 @@
 /*                                                                            */
 /******************************************************************************/
 
-#define PWM_NUM_PINS               14
-#define PWM_0_NAME                 "PWM 1"
-#define PWM_1_NAME                 "PWM 2"
-#define PWM_2_NAME                 "PWM 3"
-#define PWM_3_NAME                 "PWM 4"
-#define PWM_4_NAME                 "PWM 5"
-#define PWM_5_NAME                 "PWM 6"
-#define PWM_6_NAME                 "PWM 7"
-#define PWM_7_NAME                 "PWM 8"
-#define PWM_8_NAME                 "PWM 9"
-#define PWM_9_NAME                 "PWM 10"
-#define PWM_10_NAME                "PWM 11"
-#define PWM_11_NAME                "PWM 12"
-#define PWM_12_NAME                "PWM 13"
-#define PWM_13_NAME                "PWM 14"
+#define PWM_NUM_PINS               10
+#define PWM_0_NAME                 "Room Heater"
+#define PWM_1_NAME                 "Bed Heater"
+#define PWM_2_NAME                 "Extruder 1"
+#define PWM_3_NAME                 "Extruder 2"
+#define PWM_4_NAME                 "Extruder 3"
+#define PWM_5_NAME                 "Fan 1"
+#define PWM_6_NAME                 "Fan 2"
+#define PWM_7_NAME                 "Fan 3"
+#define PWM_8_NAME                 "Fan 4"
+#define PWM_9_NAME                 "Fan 5"
 
 /******************************************************************************/
 /*                                                                            */

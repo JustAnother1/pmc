@@ -19,11 +19,17 @@ include cfg/system.mk
 include cfg/files.mk
 include test/test_cfg.mk
 
+# lib math used for log() in ADC to temperature calculation.
+LIB += -lm 
+LIB +=  -u _printf_float
+
 # Define optimisation level here -O3 or -O0 for no optimisation
 OPT += -O0 -ffunction-sections -fdata-sections 
 # coverage
 # -ftest-coverage -fprofile-arcs
 CFLAGS += $(OPT) -g -Wall -pedantic -std=gnu99
+# TODO CFLAGS += -mfloat-abi=hard
+
 LDFLAGS +=  -g -Wall -fwhole-program $(LIB)
 
 # preparing the variables

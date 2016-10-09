@@ -13,6 +13,7 @@
  *
  */
 
+#include <math.h>
 #include <st_util.h>
 #include <stdbool.h>
 #include "st_adc.h"
@@ -27,15 +28,28 @@
 #define ADC_USE_DMA 0
 
 #define NUM_TEMPERATURES   ADC_NUM_PINS + 1
+#define MAX_TRIES 500
+typedef uint_fast16_t (*ADCTicksToDegCFkt)(uint32_t DR);
+static ADCTicksToDegCFkt converters[NUM_TEMPERATURES];
 
 #if 1 == ADC_USE_DMA
 static uint16_t res_buf[NUM_TEMPERATURES];
 #endif
 
+static uint_fast16_t NoConverter(uint32_t DR);
+static uint_fast16_t InternalTempSensorConverter(uint32_t DR);
+static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR);
+
 void hal_adc_init(void)
 {
-#if 1 == ADC_USE_DMA
 	int i;
+	for(i = 0; i < NUM_TEMPERATURES; i++)
+	{
+		converters[i] = NoConverter;
+	}
+	converters[0] = SteinhartHartBOnlyConverter;
+	converters[4] = InternalTempSensorConverter;
+#if 1 == ADC_USE_DMA
 	for(i = 0; i < NUM_TEMPERATURES; i++)
 	{
 		res_buf[i] = 7; // -> 0.7 °C ;-)
@@ -179,8 +193,6 @@ uint_fast8_t hal_adc_get_amount(void)
     return NUM_TEMPERATURES;
 }
 
-#define MAX_TRIES 500
-
 uint_fast16_t hal_adc_get_value(uint_fast8_t device)
 {
 	if(device < NUM_TEMPERATURES)
@@ -208,17 +220,7 @@ uint_fast16_t hal_adc_get_value(uint_fast8_t device)
 			debug_line("ADC never finished! Result %d !", ADC1->DR);
 			return 7;
 		}
-		if(4 == device) // Temperature sensor
-		{
-			uint32_t help = ADC1->DR * 1000;
-			help = help - 952087;
-			help = help /341;
-			return 0xffff & help;
-		}
-		else
-		{
-			return ADC1->DR;
-		}
+		return converters[device](ADC1->DR);
 #endif
 	}
 	else
@@ -269,3 +271,38 @@ void ADC_IRQHandler(void)
 		debug_line("ERROR: Unexpected ADC Interrupt (0x%08x) !", ADC1->SR);
 	}
 }
+
+static uint_fast16_t InternalTempSensorConverter(uint32_t DR)
+{
+	uint32_t help = DR * 1000;
+	help = help - 952087;
+	help = help /341;
+	return (uint_fast16_t)0xffff & help;
+}
+
+#define VCC_OF_ADC            3.0
+#define SERIES_RESISTOR      4700
+#define THERMISTOR_R_AT_25 100000
+#define STEINHART_HART_B     3974
+
+static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR)
+{
+	int ires;
+	// debug_line("ADC value: %d", DR);
+	float res = VCC_OF_ADC/4095 * DR;
+	// debug_line("Vadc: %f", res);
+	res = SERIES_RESISTOR/((VCC_OF_ADC/res) -1);
+	// debug_line("Rthermistor: %f", res);
+	res = log(res/THERMISTOR_R_AT_25);
+	res = res / STEINHART_HART_B + (1.0/(25+273.15));
+	res = 1/res - 273.15;
+	// debug_line("Temperature: %f", res);
+	ires = res * 10;
+	return (uint_fast16_t)0xffff & ires;
+}
+
+static uint_fast16_t NoConverter(uint32_t DR)
+{
+	return (uint_fast16_t)0xffff & DR;
+}
+

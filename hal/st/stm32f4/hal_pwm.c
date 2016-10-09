@@ -38,20 +38,48 @@ uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position)
     {
         switch(device)
         {
+#if PWM_NUM_PINS > 0
         case  0: return copy_string(PWM_0_NAME, position);
+#endif
+#if PWM_NUM_PINS > 1
         case  1: return copy_string(PWM_1_NAME, position);
+#endif
+#if PWM_NUM_PINS > 2
         case  2: return copy_string(PWM_2_NAME, position);
+#endif
+#if PWM_NUM_PINS > 3
         case  3: return copy_string(PWM_3_NAME, position);
+#endif
+#if PWM_NUM_PINS > 4
         case  4: return copy_string(PWM_4_NAME, position);
+#endif
+#if PWM_NUM_PINS > 5
         case  5: return copy_string(PWM_5_NAME, position);
+#endif
+#if PWM_NUM_PINS > 6
         case  6: return copy_string(PWM_6_NAME, position);
+#endif
+#if PWM_NUM_PINS > 7
         case  7: return copy_string(PWM_7_NAME, position);
+#endif
+#if PWM_NUM_PINS > 8
         case  8: return copy_string(PWM_8_NAME, position);
+#endif
+#if PWM_NUM_PINS > 9
         case  9: return copy_string(PWM_9_NAME, position);
+#endif
+#if PWM_NUM_PINS > 10
         case 10: return copy_string(PWM_10_NAME, position);
+#endif
+#if PWM_NUM_PINS > 11
         case 11: return copy_string(PWM_11_NAME, position);
+#endif
+#if PWM_NUM_PINS > 12
         case 12: return copy_string(PWM_12_NAME, position);
+#endif
+#if PWM_NUM_PINS > 13
         case 13: return copy_string(PWM_13_NAME, position);
+#endif
         default:
             return 0;
         }
