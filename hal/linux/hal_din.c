@@ -12,8 +12,8 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
-
 #include "hal_din.h"
+#include "hal_debug.h"
 
 void hal_din_init(void)
 {
@@ -35,5 +35,9 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
     return 0;
 }
 
+void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
+{
+
+}
 
 

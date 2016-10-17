@@ -14,22 +14,25 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <stdarg.h>
-#include "hal_cfg.h"
-#include "hal_uart.h"
-#include "hal_spi.h"
-#include "hal_time.h"
 #include "error.h"
 #include "debug.h"
+#include "hal_adc.h"
+#include "hal_cfg.h"
 #include "hal_cpu.h"
 #include "hal_debug.h"
+#include "hal_din.h"
+#include "hal_spi.h"
+#include "hal_time.h"
+#include "hal_uart.h"
 #include "device_stepper.h"
 #include "hal_usb_device_cdc.h"
 #include "command_queue.h"
 #include "trinamic.h"
 #include "device_temperature_sensor.h"
-#include "hal_adc.h"
+
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
@@ -301,6 +304,7 @@ static void order_help(void)
 #ifdef HAS_USB
     debug_line("pb                         : print USB configuration");
 #endif
+    debug_line("pin<Port,idx>              : print state of the pin");
     debug_line("pse                        : print expansion SPI configuration");
     debug_line("pss                        : print stepper SPI configuration");
 #ifdef USE_STEP_DIR
@@ -562,46 +566,7 @@ static void parse_order(int length)
         {
         case 'A':
         case 'a':
-        	 hal_print_configuration_adc();
-        	 break;
-        case 'U':
-        case 'u':
-          switch(cmd_buf[2])
-          {
-          case 'D':
-          case 'd':
-            hal_print_configuration_debug_uart();
-            break;
-
-          case 'G':
-          case 'g':
-            hal_print_configuration_gcode_uart();
-            break;
-
-            default:
-                debug_line("Invalid command ! try h for help");
-                break;
-          }
-            break;
-
-        case 'S':
-        case 's':
-          switch(cmd_buf[2])
-          {
-          case 'S':
-          case 's':
-            hal_print_stepper_spi_configuration();
-            break;
-
-          case 'E':
-          case 'e':
-            hal_print_expansion_spi_configuration();
-            break;
-
-            default:
-                debug_line("Invalid command ! try h for help");
-                break;
-          }
+            hal_print_configuration_adc();
             break;
 #ifdef HAS_USB
         case 'B':
@@ -609,56 +574,15 @@ static void parse_order(int length)
             hal_usb_print_configuration();
             break;
 #endif
-#ifdef USE_STEP_DIR
-        case 'T':
-        case 't':
-            trinamic_print_stepper_status();
-            break;
-#endif
 
-        default:
-            debug_line("Invalid command ! try h for help");
-            break;
-        }
-        break;
-
-        case 'W':
-        case 'w': // write data
-        {
-            uint8_t receive_data[(length -2)/2];
-            uint8_t send_data[(length -2)/2];
-            int i;
-            switch (cmd_buf[1])
+        case 'I':
+        case 'i':
+            switch(cmd_buf[2])
             {
-            case 'S':
-            case 's':
-                for (i = 0; i < (length -2)/2; i++)
-                {
-                    send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
-                }
-                if(false == hal_do_stepper_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
-                {
-                    debug_line("ERROR: Did not receive all bytes !");
-                }
-                // else OK
-                debug_msg("Received: 0x");
-                debug_hex_buffer(&receive_data[0], (length -2)/2);
-                debug_line("Done.");
-                break;
-
-            case 'E':
-            case 'e':
-                for (i = 0; i < (length -2)/2; i++)
-                {
-                    send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
-                }
-                if(false == hal_do_exansion_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
-                {
-                    debug_line("ERROR: Did not receive all bytes !");
-                }
-                // else OK
-                debug_msg("Received: 0x");
-                debug_hex_buffer(&receive_data[0], (length -2)/2);
+            case 'N':
+            case 'n':
+                debug_line("Pin");
+                hal_din_print_PinConfiguration(cmd_buf[3], atoi((char *)&(cmd_buf[4])));
                 debug_line("Done.");
                 break;
 
@@ -667,7 +591,104 @@ static void parse_order(int length)
                 break;
             }
             break;
+
+        case 'S':
+        case 's':
+            switch(cmd_buf[2])
+            {
+            case 'S':
+            case 's':
+                hal_print_stepper_spi_configuration();
+                break;
+
+            case 'E':
+            case 'e':
+                hal_print_expansion_spi_configuration();
+                break;
+
+            default:
+                debug_line("Invalid command ! try h for help");
+                break;
+            }
+            break;
+#ifdef USE_STEP_DIR
+        case 'T':
+        case 't':
+            trinamic_print_stepper_status();
+            break;
+#endif
+        case 'U':
+        case 'u':
+            switch(cmd_buf[2])
+            {
+            case 'D':
+            case 'd':
+                hal_print_configuration_debug_uart();
+                break;
+
+            case 'G':
+            case 'g':
+                hal_print_configuration_gcode_uart();
+                break;
+
+            default:
+                debug_line("Invalid command ! try h for help");
+                break;
+            }
+            break;
+
+        default:
+            debug_line("Invalid command ! try h for help");
+            break;
         }
+        break;
+
+    case 'W':
+    case 'w': // write data
+    {
+        uint8_t receive_data[(length -2)/2];
+        uint8_t send_data[(length -2)/2];
+        int i;
+        switch (cmd_buf[1])
+        {
+        case 'S':
+        case 's':
+            for (i = 0; i < (length -2)/2; i++)
+            {
+                send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
+            }
+            if(false == hal_do_stepper_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
+            {
+                debug_line("ERROR: Did not receive all bytes !");
+            }
+            // else OK
+            debug_msg("Received: 0x");
+            debug_hex_buffer(&receive_data[0], (length -2)/2);
+            debug_line("Done.");
+            break;
+
+        case 'E':
+        case 'e':
+            for (i = 0; i < (length -2)/2; i++)
+            {
+                send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
+            }
+            if(false == hal_do_exansion_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
+            {
+                debug_line("ERROR: Did not receive all bytes !");
+            }
+            // else OK
+            debug_msg("Received: 0x");
+            debug_hex_buffer(&receive_data[0], (length -2)/2);
+            debug_line("Done.");
+            break;
+
+        default:
+            debug_line("Invalid command ! try h for help");
+            break;
+        }
+        break;
+    }
 
     case 'R':
     case 'r': // reset the CPU
@@ -697,8 +718,8 @@ static void parse_order(int length)
 
     case 'X':
     case 'x': // current testing
-    	curTest();
-    	break;
+        curTest();
+        break;
 
 
     default: // invalid command
