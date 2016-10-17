@@ -30,5 +30,8 @@ bool hal_time_start_timer(uint_fast8_t device,  // Timer NUmber
                           TimerFkt function);
 bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value);
 void hal_time_stop_timer(uint_fast8_t device);
+bool hal_time_enable_timer_for(uint_fast8_t device);
+bool hal_time_set_PWM_for(uint_fast8_t device, uint_fast8_t channel, uint16_t pwm_value);
+bool hal_time_stop_pwm_for(uint_fast8_t device, uint_fast8_t channel);
 
 #endif /* HAL_TIME_H_ */

@@ -22,6 +22,9 @@
 #include "stddef.h"
 #include "board_cfg.h"
 
+
+#define PWM_FREQUENCY 500000 // TODO
+
 static void hal_time_ISR(void);
 static TIM_TypeDef* get_timer_register_for(uint_fast8_t device);
 static void enable_clock_for_timer(uint_fast8_t device);
@@ -301,6 +304,51 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void)
     TIM14->SR &= ~TIM_SR_UIF;
 }
 
+bool hal_time_enable_timer_for(uint_fast8_t device)
+{
+	// TODO
+    TIM_TypeDef* timer = get_timer_register_for(device);
+    if((NULL == timer) || (0 == PWM_FREQUENCY))
+    {
+        return false;
+    }
+    enable_clock_for_timer(device);
+    set_irq_priority(device);
+    timer->PSC = (uint16_t)(0xffff & ((FREQUENCY_OF_CPU_CLK / PWM_FREQUENCY) - 1));
+    timer->ARR = 0;
+    timer->CCR1 = 0;
+    timer->CNT = 0; // start counting at 0
+    timer->CCMR1 = 0x0030;
+    timer->CCER = 1;
+    timer->EGR = 3;
+    timer->CR1 =0x0081; // Timer enable + Interrupt on overflow
+    return true;
+}
+
+bool hal_time_set_PWM_for(uint_fast8_t device, uint_fast8_t channel, uint16_t pwm_value)
+{
+	// TODO
+    TIM_TypeDef* timer = get_timer_register_for(device);
+    if(NULL == timer)
+    {
+        return false;
+    }
+    timer->ARR = pwm_value;
+    return true;
+}
+
+bool hal_time_stop_pwm_for(uint_fast8_t device, uint_fast8_t channel)
+{
+	// TODO
+    TIM_TypeDef* timer = get_timer_register_for(device);
+    if(NULL == timer)
+    {
+        return false;
+    }
+    timer->ARR = 0;
+    return true;
+}
+
 bool hal_time_start_timer(uint_fast8_t device,
                           uint32_t clock,
                           uint_fast16_t reload_value,
@@ -336,9 +384,12 @@ bool hal_time_start_timer(uint_fast8_t device,
     set_irq_priority(device);
     timer->PSC = (uint16_t)(0xffff & ((FREQUENCY_OF_CPU_CLK / clock) - 1));
     timer->ARR = reload_value;
+    timer->CCR1 = reload_value;
     timer->CNT = 0; // start counting at 0
-
-    timer->CR1 =0x0005; // Timer enable + Interrupt on overflow
+    timer->CCMR1 = 0x0030;
+    timer->CCER = 1;
+    timer->EGR = 3;
+    timer->CR1 =0x0081; // Timer enable + Interrupt on overflow
     return true;
 }
 

@@ -18,6 +18,7 @@
 #include "hal_adc.h"
 #include "hal_pwm.h"
 #include "hal_cfg.h"
+#include "hal_cpu.h"
 #include "com.h"
 
 #define INVALID_SENSOR 255
