@@ -307,8 +307,9 @@ static void order_help(void)
     debug_line("pin<Port,idx>              : print state of the pin");
     debug_line("pse                        : print expansion SPI configuration");
     debug_line("pss                        : print stepper SPI configuration");
+    debug_line("ptim<num>                  : print Timer Registers");
 #ifdef USE_STEP_DIR
-    debug_line("pt                         : print Trinamic status");
+    debug_line("ptri                       : print Trinamic status");
 #endif
     debug_line("pud                        : print Debug UART configuration");
     debug_line("pug                        : print G-Code UART configuration");
@@ -581,9 +582,7 @@ static void parse_order(int length)
             {
             case 'N':
             case 'n':
-                debug_line("Pin");
                 hal_din_print_PinConfiguration(cmd_buf[3], atoi((char *)&(cmd_buf[4])));
-                debug_line("Done.");
                 break;
 
             default:
@@ -614,7 +613,42 @@ static void parse_order(int length)
 #ifdef USE_STEP_DIR
         case 'T':
         case 't':
-            trinamic_print_stepper_status();
+            switch(cmd_buf[2])
+            {
+            case 'I':
+            case 'i':
+                switch(cmd_buf[3])
+                {
+                case 'M':
+                case 'm':
+                    hal_time_print_Configuration(atoi((char *)&(cmd_buf[4])));
+                    break;
+
+                default:
+                    debug_line("Invalid command ! try h for help");
+                    break;
+                }
+                break;
+
+            case 'R':
+            case 'r':
+                switch(cmd_buf[3])
+                {
+                case 'I':
+                case 'i':
+                    trinamic_print_stepper_status();
+                    break;
+
+                default:
+                    debug_line("Invalid command ! try h for help");
+                    break;
+                }
+                break;
+
+            default:
+                debug_line("Invalid command ! try h for help");
+                break;
+            }
             break;
 #endif
         case 'U':

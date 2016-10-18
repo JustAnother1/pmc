@@ -25,6 +25,8 @@
 #define FREQUENCY_OF_CPU_CLK 168000000
 // frequency the cpu runs with AHB / HCLK = 84MHz
 #define FREQUENCY_OF_HCLK    ((uint32_t)84000000)
+#define FREQUENCY_OF_APB1    42000000
+#define FREQUENCY_OF_APB2    84000000
 
 // Flash:
 // Wait states (3,3V and 168MHz) RM0090_P80
@@ -161,6 +163,7 @@
 
 #define BUZZER_NUM_PINS            1
 #define BUZZER_0_NAME              "Buzzer_0"
+#define BUZZER_0_TIMER_FREQUENCY    500000
 #define BUZZER_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
 #define BUZZER_0_GPIO_PORT          GPIOB
 #define BUZZER_0_MODER_0            GPIO_MODER_9_ALTFUNC_0

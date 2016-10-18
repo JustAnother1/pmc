@@ -232,6 +232,7 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
         return;
     }
     // Moder
+    debug_line("GPIO->MODER     = 0x%08x", PortRegisters->MODER);
     val = (PortRegisters->MODER) >> (idx*2);
     val = val &3;
     switch(val)
@@ -242,6 +243,7 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
     case 3: debug_line("type     : Analog Pin"); break;
     }
     // Typer
+    debug_line("GPIO->OTYPER     = 0x%08x", PortRegisters->OTYPER);
     val = (PortRegisters->OTYPER) >> idx;
     val = val &1;
     switch(val)
@@ -250,6 +252,7 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
     case 1: debug_line("Output   : Open Drain"); break;
     }
     // Speedr
+    debug_line("GPIO->OSPEEDR     = 0x%08x", PortRegisters->OSPEEDR);
     val = (PortRegisters->OSPEEDR) >> (idx*2);
     val = val &3;
     switch(val)
@@ -260,6 +263,7 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
     case 3: debug_line("Output   : high speed"); break;
     }
     // pupdr
+    debug_line("GPIO->PUPDR     = 0x%08x", PortRegisters->PUPDR);
     val = (PortRegisters->PUPDR) >> (idx*2);
     val = val &3;
     switch(val)
@@ -270,6 +274,7 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
     case 3: debug_line("pull up  : ERROR: r e s e r v e d"); debug_line("pull down: ERROR: r e s e r v e d"); break;
     }
     // IDR
+    debug_line("GPIO->IDR     = 0x%08x", PortRegisters->IDR);
     val = (PortRegisters->IDR) >> idx;
     val = val &1;
     switch(val)
@@ -278,6 +283,7 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
     case 1: debug_line("Input    : Pin is High"); break;
     }
     // ODR
+    debug_line("GPIO->ODR     = 0x%08x", PortRegisters->ODR);
     val = (PortRegisters->ODR) >> idx;
     val = val &1;
     switch(val)
@@ -285,6 +291,8 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
     case 0: debug_line("Output   : Pin should be Low"); break;
     case 1: debug_line("Output   : Pin should be High"); break;
     }
+    debug_line("GPIO->AFR[0]     = 0x%08x", PortRegisters->AFR[0]);
+    debug_line("GPIO->AFR[1]     = 0x%08x", PortRegisters->AFR[1]);
     if(idx < 8)
     {
         val = (PortRegisters->AFR[0]) >> (idx*4);

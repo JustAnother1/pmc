@@ -21,6 +21,7 @@
 #include "hal_led.h"
 #include "stddef.h"
 #include "board_cfg.h"
+#include "hal_debug.h"
 
 
 #define PWM_FREQUENCY 500000 // TODO
@@ -30,6 +31,7 @@ static TIM_TypeDef* get_timer_register_for(uint_fast8_t device);
 static void enable_clock_for_timer(uint_fast8_t device);
 static void disable_clock_for_timer(uint_fast8_t device);
 static void error_isr_on_stopped_timer(void);
+static uint32_t getClockFrequencyForTimer(uint_fast8_t device);
 
 static volatile uint32_t now = 0;
 static volatile TimerFkt tim_1_isr;
@@ -110,6 +112,28 @@ static TIM_TypeDef* get_timer_register_for(uint_fast8_t device)
     case 13:return TIM13;
     case 14:return TIM14;
     default: return NULL;
+    }
+}
+
+static uint32_t getClockFrequencyForTimer(uint_fast8_t device)
+{
+    switch(device)
+    {
+    case  1:return FREQUENCY_OF_APB2;
+    case  2:return FREQUENCY_OF_APB1;
+    case  3:return FREQUENCY_OF_APB1;
+    case  4:return FREQUENCY_OF_APB1;
+    case  5:return FREQUENCY_OF_APB1;
+    case  6:return FREQUENCY_OF_APB1;
+    case  7:return FREQUENCY_OF_APB1;
+    case  8:return FREQUENCY_OF_APB2;
+    case  9:return FREQUENCY_OF_APB2;
+    case 10:return FREQUENCY_OF_APB2;
+    case 11:return FREQUENCY_OF_APB2;
+    case 12:return FREQUENCY_OF_APB1;
+    case 13:return FREQUENCY_OF_APB1;
+    case 14:return FREQUENCY_OF_APB1;
+    default: return FREQUENCY_OF_CPU_CLK;
     }
 }
 
@@ -306,7 +330,7 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void)
 
 bool hal_time_enable_timer_for(uint_fast8_t device)
 {
-	// TODO
+    // TODO
     TIM_TypeDef* timer = get_timer_register_for(device);
     if((NULL == timer) || (0 == PWM_FREQUENCY))
     {
@@ -314,7 +338,7 @@ bool hal_time_enable_timer_for(uint_fast8_t device)
     }
     enable_clock_for_timer(device);
     set_irq_priority(device);
-    timer->PSC = (uint16_t)(0xffff & ((FREQUENCY_OF_CPU_CLK / PWM_FREQUENCY) - 1));
+    timer->PSC = (uint16_t)(0xffff & ((getClockFrequencyForTimer(device) / PWM_FREQUENCY) - 1));
     timer->ARR = 0;
     timer->CCR1 = 0;
     timer->CNT = 0; // start counting at 0
@@ -327,7 +351,7 @@ bool hal_time_enable_timer_for(uint_fast8_t device)
 
 bool hal_time_set_PWM_for(uint_fast8_t device, uint_fast8_t channel, uint16_t pwm_value)
 {
-	// TODO
+    // TODO
     TIM_TypeDef* timer = get_timer_register_for(device);
     if(NULL == timer)
     {
@@ -339,7 +363,7 @@ bool hal_time_set_PWM_for(uint_fast8_t device, uint_fast8_t channel, uint16_t pw
 
 bool hal_time_stop_pwm_for(uint_fast8_t device, uint_fast8_t channel)
 {
-	// TODO
+    // TODO
     TIM_TypeDef* timer = get_timer_register_for(device);
     if(NULL == timer)
     {
@@ -355,34 +379,35 @@ bool hal_time_start_timer(uint_fast8_t device,
                           TimerFkt function)
 {
     TIM_TypeDef* timer = get_timer_register_for(device);
+    debug_line("Start timer %d", device);
     if((NULL == timer) || (0 == clock))
     {
         return false;
     }
     if(NULL != function)
     {
-		switch(device)
-		{
-		case  1: tim_1_isr =  function; break;
-		case  2: tim_2_isr =  function; break;
-		case  3: tim_3_isr =  function; break;
-		case  4: tim_4_isr =  function; break;
-		case  5: tim_5_isr =  function; break;
-		case  6: tim_6_isr =  function; break;
-		case  7: tim_7_isr =  function; break;
-		case  8: tim_8_isr =  function; break;
-		case  9: tim_9_isr =  function; break;
-		case 10: tim_10_isr = function; break;
-		case 11: tim_11_isr = function; break;
-		case 12: tim_12_isr = function; break;
-		case 13: tim_13_isr = function; break;
-		case 14: tim_14_isr = function; break;
-		}
-		timer->DIER = TIM_DIER_UIE; // Interrupt enable
+        switch(device)
+        {
+        case  1: tim_1_isr =  function; break;
+        case  2: tim_2_isr =  function; break;
+        case  3: tim_3_isr =  function; break;
+        case  4: tim_4_isr =  function; break;
+        case  5: tim_5_isr =  function; break;
+        case  6: tim_6_isr =  function; break;
+        case  7: tim_7_isr =  function; break;
+        case  8: tim_8_isr =  function; break;
+        case  9: tim_9_isr =  function; break;
+        case 10: tim_10_isr = function; break;
+        case 11: tim_11_isr = function; break;
+        case 12: tim_12_isr = function; break;
+        case 13: tim_13_isr = function; break;
+        case 14: tim_14_isr = function; break;
+        }
+        timer->DIER = TIM_DIER_UIE; // Interrupt enable
     }
     enable_clock_for_timer(device);
     set_irq_priority(device);
-    timer->PSC = (uint16_t)(0xffff & ((FREQUENCY_OF_CPU_CLK / clock) - 1));
+    timer->PSC = (uint16_t)(0xffff & ((getClockFrequencyForTimer(device) / clock) - 1));
     timer->ARR = reload_value;
     timer->CCR1 = reload_value;
     timer->CNT = 0; // start counting at 0
@@ -432,5 +457,208 @@ bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
     }
     timer->ARR = reload_value;
     return true;
+}
+
+void hal_time_print_Configuration(int timerNumber)
+{
+    TIM_TypeDef* timer = get_timer_register_for(timerNumber);
+    switch(timerNumber)
+    {
+    case 1:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_1_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_1_isr);
+        }
+        break;
+
+    case 2:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_2_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_2_isr);
+        }
+        break;
+
+    case 3:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_3_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_3_isr);
+        }
+        break;
+
+    case 4:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_4_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_4_isr);
+        }
+        break;
+
+    case 5:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_5_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_5_isr);
+        }
+        break;
+
+    case 6:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_6_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_6_isr);
+        }
+        break;
+
+    case 7:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_7_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_7_isr);
+        }
+        break;
+
+    case 8:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_8_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_8_isr);
+        }
+        break;
+
+    case 9:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_9_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_9_isr);
+        }
+        break;
+
+    case 10:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_10_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_10_isr);
+        }
+        break;
+
+    case 11:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_11_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_11_isr);
+        }
+        break;
+
+    case 12:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_12_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_12_isr);
+        }
+        break;
+
+    case 13:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_13_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_13_isr);
+        }
+        break;
+
+    case 14:
+        debug_line("Printing Configuration of Timer %d :", timerNumber);
+        if(tim_14_isr ==  &error_isr_on_stopped_timer)
+        {
+            debug_line("ISR Function : None");
+        }
+        else
+        {
+            debug_line("ISR Function : at address 0x%08x", &tim_14_isr);
+        }
+        break;
+
+    default:
+        debug_line("Invalid Timer Number %d! allowed = 1..14", timerNumber);
+        return;
+    }
+
+    debug_line("Timer->CR1     = 0x%08x", timer->CR1);
+    debug_line("Timer->CR2     = 0x%08x", timer->CR2);
+    debug_line("Timer->SMCR    = 0x%08x", timer->SMCR);
+    debug_line("Timer->CR1     = 0x%08x", timer->CR1);
+    debug_line("Timer->DIER    = 0x%08x", timer->DIER);
+    debug_line("Timer->CR1     = 0x%08x", timer->CR1);
+    debug_line("Timer->SR      = 0x%08x", timer->SR);
+    debug_line("Timer->EGR     = 0x%08x", timer->EGR);
+    debug_line("Timer->CR1     = 0x%08x", timer->CR1);
+    debug_line("Timer->CCMR1   = 0x%08x", timer->CCMR1);
+    debug_line("Timer->CCMR2   = 0x%08x", timer->CCMR2);
+    debug_line("Timer->CCER    = 0x%08x", timer->CCER);
+    debug_line("Timer->CNT     = 0x%08x", timer->CNT);
+    debug_line("Timer->PSC     = 0x%08x", timer->PSC);
+    debug_line("Timer->ARR     = 0x%08x", timer->ARR);
+    debug_line("Timer->RCR     = 0x%08x", timer->RCR);
+    debug_line("Timer->CCR1    = 0x%08x", timer->CCR1);
+    debug_line("Timer->CCR2    = 0x%08x", timer->CCR2);
+    debug_line("Timer->CCR3    = 0x%08x", timer->CCR3);
+    debug_line("Timer->CCR4    = 0x%08x", timer->CCR4);
+    debug_line("Timer->BDTR    = 0x%08x", timer->BDTR);
+    debug_line("Timer->DCR     = 0x%08x", timer->DCR);
+    debug_line("Timer->DMAR    = 0x%08x", timer->DMAR);
 }
 

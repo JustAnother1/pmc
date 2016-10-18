@@ -20,8 +20,8 @@
 #include "hal_time.h"
 #include "board_cfg.h"
 #include "hal_cfg.h"
+#include "hal_debug.h"
 
-#define TIMER_FREQUENCY 500000
 
 void hal_buzzer_init(void)
 {
@@ -46,7 +46,7 @@ void hal_buzzer_init(void)
 
 void curTest(void)
 {
-	hal_buzzer_set_frequency(1, 500);
+    hal_buzzer_set_frequency(0, 2000);
 }
 
 uint_fast8_t hal_buzzer_get_amount(void)
@@ -56,24 +56,29 @@ uint_fast8_t hal_buzzer_get_amount(void)
 
 void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency)
 {
+    debug_line("hal_buzzer_set_frequency %d Hz", frequency);
     if(device < BUZZER_NUM_PINS)
     {
-    	if(0 == frequency)
-    	{
-    		// Stop Timer -> Low Level
-    		hal_time_stop_timer(BUZZER_TIMER);
-    	}
-    	else
-    	{
-    		// calculate Reload Value
-    		int reload = TIMER_FREQUENCY/frequency;
-    		if(reload > 0xffff)
-    		{
-    			reload = 0xffff;
-    		}
-    		// Start Timer
-    		hal_time_start_timer(BUZZER_TIMER, TIMER_FREQUENCY, reload, NULL);
-    	}
+        if(0 == frequency)
+        {
+            // Stop Timer -> Low Level
+            hal_time_stop_timer(BUZZER_TIMER);
+        }
+        else
+        {
+            // calculate Reload Value
+            // the reason for the 2 is that the reload is just one half of the
+            // period. The timer runs to the reload value and only toggels the
+            // output. To get a whole wave it has to run to the reload agin to
+            // toggle the utput again. -> 2
+            int reload = BUZZER_0_TIMER_FREQUENCY/(2*frequency);
+            if(reload > 0xffff)
+            {
+                reload = 0xffff;
+            }
+            // Start Timer
+            hal_time_start_timer(BUZZER_TIMER, BUZZER_0_TIMER_FREQUENCY, reload, NULL);
+        }
     }
     // else ignore request for not available device
 }
