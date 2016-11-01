@@ -50,8 +50,3 @@ void debug_printChar(char c)
     printf("%c", c);
 }
 
-void curTest(void)
-{
-
-}
-

@@ -37,7 +37,7 @@ void dev_heater_init(void)
         temperature_sensors[i] = INVALID_SENSOR;
         target_temperature[i] = 0;
     }
-	hal_cpu_add_ms_tick_function(TemperatureControlTick);
+    hal_cpu_add_ms_tick_function(TemperatureControlTick);
 }
 
 uint_fast8_t dev_heater_get_count(void)
@@ -64,34 +64,34 @@ uint_fast8_t dev_heater_get_status(uint_fast8_t number)
 
 void dev_heater_get_configuration(uint_fast8_t number)
 {
-	// first Byte is 0x00 - we do not have an invisible internal Temperature sensor
-	// the second byte is the heater Number or 0xff
-	if(number < NUMBER_OF_HEATERS)
-	{
-		com_send_ok_response_with_two_byte_parameter(0, temperature_sensors[number]);
-	}
-	else
-	{
-		com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
-	}
+    // first Byte is 0x00 - we do not have an invisible internal Temperature sensor
+    // the second byte is the heater Number or 0xff
+    if(number < NUMBER_OF_HEATERS)
+    {
+        com_send_ok_response_with_two_byte_parameter(0, temperature_sensors[number]);
+    }
+    else
+    {
+        com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
+    }
 }
 
 void dev_heater_set_temperature_sensor(uint_fast8_t number, uint_fast8_t sensor_Number)
 {
-	if(number < NUMBER_OF_HEATERS)
-	{
-		temperature_sensors[number] = sensor_Number;
-	}
-	// else Ignore Temperature sensor for not existing heater
+    if(number < NUMBER_OF_HEATERS)
+    {
+        temperature_sensors[number] = sensor_Number;
+    }
+    // else Ignore Temperature sensor for not existing heater
 }
 
 void dev_heater_set_target_temperature(uint_fast8_t number, uint_fast16_t target_Temperature)
 {
-	if(number < NUMBER_OF_HEATERS)
-	{
-		target_temperature[number] = target_Temperature;
-	}
-	// else - temperature for a Heater that we do not have
+    if(number < NUMBER_OF_HEATERS)
+    {
+        target_temperature[number] = target_Temperature;
+    }
+    // else - temperature for a Heater that we do not have
 }
 
 uint_fast16_t dev_heater_get_temperature(uint_fast8_t number)
@@ -120,24 +120,31 @@ void TemperatureControlTick(void)
     {
         if(0 != target_temperature[i])
         {
-        	// Read Temperature
-        	uint_fast16_t curTemp = hal_adc_get_value(temperature_sensors[i]);
-        	// PID / Bang Bang
-        	// PID
-        	// TODO
-        	// Bang Bang
-        	if(curTemp > target_temperature[i] + HALF_BANG_BANG_HYSTERESIS_DEG_C)
-        	{
-            	// Set new PWM Mode - completely off
-            	hal_pwm_set_on_time(i, 0);
-        	}
-        	else if(curTemp <  target_temperature[i] - HALF_BANG_BANG_HYSTERESIS_DEG_C)
-        	{
-        		// Set new PWM Mode - Full on
-        		hal_pwm_set_on_time(i, 0xffff);
-        	}
+            // Read Temperature
+            uint_fast16_t curTemp = hal_adc_get_value(temperature_sensors[i]);
+            // PID / Bang Bang
+            // PID
+            // TODO
+            // Bang Bang
+            if(curTemp > target_temperature[i] + HALF_BANG_BANG_HYSTERESIS_DEG_C)
+            {
+                // Set new PWM Mode - completely off
+                hal_pwm_set_on_time(i, 0);
+            }
+            else if(curTemp <  target_temperature[i] - HALF_BANG_BANG_HYSTERESIS_DEG_C)
+            {
+                // Set new PWM Mode - Full on
+                hal_pwm_set_on_time(i, 0xffff);
+            }
         }
     }
 }
-
+/*
+void curTest(int value)
+{
+    debug_line("Found Value %d !", value);
+    dev_heater_set_temperature_sensor(1, 0);
+    dev_heater_set_target_temperature(1, value);
+}
+*/
 // end of File

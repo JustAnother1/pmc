@@ -24,11 +24,18 @@
 #include "hal_debug.h"
 #include "st_rcc.h"
 #include "st_util.h"
+#include "hal_spi.h"
+#include "debug.h"
 
 #define ADC_USE_DMA 0
 
-#define NUM_TEMPERATURES   ADC_NUM_PINS + 1
-#define MAX_TRIES 500
+// Temperatures measured with internal ADC = Pins + Chip Temperature
+#define NUM_TEMPERATURES            (ADC_NUM_PINS + 1)
+// Temperatures measured by external chips ( Thermocouple, I2C Sensor)
+#define NUM_EXTERNAL_TEMPERATURES   2
+#define MAX_TRIES                   500
+
+
 typedef uint_fast16_t (*ADCTicksToDegCFkt)(uint32_t DR);
 static ADCTicksToDegCFkt converters[NUM_TEMPERATURES];
 
@@ -42,23 +49,26 @@ static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR);
 
 void hal_adc_init(void)
 {
-	int i;
-	for(i = 0; i < NUM_TEMPERATURES; i++)
-	{
-		converters[i] = NoConverter;
-	}
-	converters[0] = SteinhartHartBOnlyConverter;
-	converters[4] = InternalTempSensorConverter;
+    int i;
+    for(i = 0; i < NUM_TEMPERATURES; i++)
+    {
+        converters[i] = NoConverter;
+    }
+    converters[0] = SteinhartHartBOnlyConverter;
+    converters[4] = InternalTempSensorConverter;
+
+    hal_init_expansion_spi();
+
 #if 1 == ADC_USE_DMA
-	for(i = 0; i < NUM_TEMPERATURES; i++)
-	{
-		res_buf[i] = 7; // -> 0.7 °C ;-)
-	}
-	// Power ON DMA2
-	RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
+    for(i = 0; i < NUM_TEMPERATURES; i++)
+    {
+        res_buf[i] = 7; // -> 0.7 °C ;-)
+    }
+    // Power ON DMA2
+    RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
 #endif
-	// Power on ADC
-	RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
+    // Power on ADC
+    RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
     // enable clock for GPIO Port
     RCC->AHB1ENR |= ADC_0_GPIO_PORT_RCC;
     RCC->AHB1ENR |= ADC_1_GPIO_PORT_RCC;
@@ -66,76 +76,76 @@ void hal_adc_init(void)
     RCC->AHB1ENR |= ADC_3_GPIO_PORT_RCC;
 
 #if 1 == ADC_USE_DMA
-	DMA2_Stream0->PAR = ADC1->DR;  // Peripheral Address
-	// DMA2_Stream0->PAR = ADC1;  // Peripheral Address
-	DMA2_Stream0->M0AR = (uint32_t)&(res_buf[0]);  // Memory Address
-	DMA2_Stream0->NDTR = ADC_NUM_PINS + 1; //number of transfers before resetting the pointer
-	DMA2_Stream0->FCR = 0; // Direct mode
-	// Stream 0, Channel 0
-	// single transfer, no double buffer, priority low, peripheral to memory, DMA is flow controller
-	DMA2_Stream0->CR = (1 <<13) // 16bit transfer
-			         | (1 <<11) // 16bit transfer
-					 | (1 <<10) // increment pointer, peripheral pointer is fixed
-					 | (1 <<8)  // circular mode
-					 | (1 <<1)  // Direct more Error Interrupt enabled
-					 | (1 <<0); // Stream enable
+    DMA2_Stream0->PAR = ADC1->DR;  // Peripheral Address
+    // DMA2_Stream0->PAR = ADC1;  // Peripheral Address
+    DMA2_Stream0->M0AR = (uint32_t)&(res_buf[0]);  // Memory Address
+    DMA2_Stream0->NDTR = ADC_NUM_PINS + 1; //number of transfers before resetting the pointer
+    DMA2_Stream0->FCR = 0; // Direct mode
+    // Stream 0, Channel 0
+    // single transfer, no double buffer, priority low, peripheral to memory, DMA is flow controller
+    DMA2_Stream0->CR = (1 <<13) // 16bit transfer
+                     | (1 <<11) // 16bit transfer
+                     | (1 <<10) // increment pointer, peripheral pointer is fixed
+                     | (1 <<8)  // circular mode
+                     | (1 <<1)  // Direct more Error Interrupt enabled
+                     | (1 <<0); // Stream enable
 #endif
 
-	ADC_0_GPIO_PORT->MODER   |=  ADC_0_GPIO_MODER_1;
-	ADC_0_GPIO_PORT->MODER   &= ~ADC_0_GPIO_MODER_0;
-	ADC_1_GPIO_PORT->MODER   |=  ADC_1_GPIO_MODER_1;
-	ADC_1_GPIO_PORT->MODER   &= ~ADC_1_GPIO_MODER_0;
-	ADC_2_GPIO_PORT->MODER   |=  ADC_2_GPIO_MODER_1;
-	ADC_2_GPIO_PORT->MODER   &= ~ADC_2_GPIO_MODER_0;
-	ADC_3_GPIO_PORT->MODER   |=  ADC_3_GPIO_MODER_1;
-	ADC_3_GPIO_PORT->MODER   &= ~ADC_3_GPIO_MODER_0;
-	// TODO more than 4 Temperature sensor Input Pins
+    ADC_0_GPIO_PORT->MODER   |=  ADC_0_GPIO_MODER_1;
+    ADC_0_GPIO_PORT->MODER   &= ~ADC_0_GPIO_MODER_0;
+    ADC_1_GPIO_PORT->MODER   |=  ADC_1_GPIO_MODER_1;
+    ADC_1_GPIO_PORT->MODER   &= ~ADC_1_GPIO_MODER_0;
+    ADC_2_GPIO_PORT->MODER   |=  ADC_2_GPIO_MODER_1;
+    ADC_2_GPIO_PORT->MODER   &= ~ADC_2_GPIO_MODER_0;
+    ADC_3_GPIO_PORT->MODER   |=  ADC_3_GPIO_MODER_1;
+    ADC_3_GPIO_PORT->MODER   &= ~ADC_3_GPIO_MODER_0;
+    // TODO more than 4 Temperature sensor Input Pins
 
 #if 1 == ADC_USE_DMA
-	// set list of channels that shall be measured
-	ADC1->SQR3 = ((0x1f & ADC_0_INPUT_NUM)   << 0)
-			   | ((0x1f & ADC_1_INPUT_NUM)   << 5)
-			   | ((0x1f & ADC_2_INPUT_NUM)   << 10)
-			   | ((0x1f & ADC_3_INPUT_NUM)   << 15)
-			   | ((0x1f & ADC_4_INPUT_NUM)   << 20)
-			   | ((0x1f & ADC_5_INPUT_NUM)   << 25);
-	ADC1->SQR2 = ((0x1f & ADC_6_INPUT_NUM)   << 0)
-			   | ((0x1f & ADC_7_INPUT_NUM)   << 5)
-			   | ((0x1f & ADC_8_INPUT_NUM)   << 10)
-			   | ((0x1f & ADC_9_INPUT_NUM)   << 15)
-			   | ((0x1f & ADC_10_INPUT_NUM)  << 20)
-			   | ((0x1f & ADC_11_INPUT_NUM)  << 25);
-	ADC1->SQR1 = ((0x1f & ADC_12_INPUT_NUM)  << 0)
-			   | ((0x1f & ADC_13_INPUT_NUM)  << 5)
-			   | ((0x1f & ADC_14_INPUT_NUM)  << 10)
-			   | ((0x1f & ADC_15_INPUT_NUM)  << 15)
-			   // Number of conversions = ADC_NUM_PINS + internal Temperature Sensor
-			   | ((0xf & (ADC_NUM_PINS + 1)) << 20);
+    // set list of channels that shall be measured
+    ADC1->SQR3 = ((0x1f & ADC_0_INPUT_NUM)   << 0)
+               | ((0x1f & ADC_1_INPUT_NUM)   << 5)
+               | ((0x1f & ADC_2_INPUT_NUM)   << 10)
+               | ((0x1f & ADC_3_INPUT_NUM)   << 15)
+               | ((0x1f & ADC_4_INPUT_NUM)   << 20)
+               | ((0x1f & ADC_5_INPUT_NUM)   << 25);
+    ADC1->SQR2 = ((0x1f & ADC_6_INPUT_NUM)   << 0)
+               | ((0x1f & ADC_7_INPUT_NUM)   << 5)
+               | ((0x1f & ADC_8_INPUT_NUM)   << 10)
+               | ((0x1f & ADC_9_INPUT_NUM)   << 15)
+               | ((0x1f & ADC_10_INPUT_NUM)  << 20)
+               | ((0x1f & ADC_11_INPUT_NUM)  << 25);
+    ADC1->SQR1 = ((0x1f & ADC_12_INPUT_NUM)  << 0)
+               | ((0x1f & ADC_13_INPUT_NUM)  << 5)
+               | ((0x1f & ADC_14_INPUT_NUM)  << 10)
+               | ((0x1f & ADC_15_INPUT_NUM)  << 15)
+               // Number of conversions = ADC_NUM_PINS + internal Temperature Sensor
+               | ((0xf & (ADC_NUM_PINS + 1)) << 20);
 #endif
-	ADC1->SR = 0; // Clear interrupt flags
-	// Enable chip internal Temperature sensor
-	// Clock prescaler - /4
-	ADC->CCR = ADC_CCR_TSVREFE | ADC_CCR_ADCPRE_4;
+    ADC1->SR = 0; // Clear interrupt flags
+    // Enable chip internal Temperature sensor
+    // Clock prescaler - /4
+    ADC->CCR = ADC_CCR_TSVREFE | ADC_CCR_ADCPRE_4;
 
 
-	// sample really slowly - just in case
-	ADC1->SMPR1 = 0x07ffffff;
-	ADC1->SMPR2 = 0x3fffffff;
+    // sample really slowly - just in case
+    ADC1->SMPR1 = 0x07ffffff;
+    ADC1->SMPR2 = 0x3fffffff;
 
 #if 1 == ADC_USE_DMA
-	// 12bit: RES = 0
-	// Scan mode,
-	ADC1->CR1 = ADC_CR1_SCAN;
-	// start conversion
-	// right alignment (0 .. 4095)-> ALIGN = 0
-	// DMA at every conversion EOCS = 1
-	// DMA on -> DDS = 1, DMA = 1
-	// Continuous conversion
-	// ADC Power ON
-	ADC1->CR2 = ADC_CR2_SWSTART | ADC_CR2_EOCS | ADC_CR2_DDS | ADC_CR2_DMA | ADC_CR2_CONT | ADC_CR2_ADON;
-	// TODO? sample time
+    // 12bit: RES = 0
+    // Scan mode,
+    ADC1->CR1 = ADC_CR1_SCAN;
+    // start conversion
+    // right alignment (0 .. 4095)-> ALIGN = 0
+    // DMA at every conversion EOCS = 1
+    // DMA on -> DDS = 1, DMA = 1
+    // Continuous conversion
+    // ADC Power ON
+    ADC1->CR2 = ADC_CR2_SWSTART | ADC_CR2_EOCS | ADC_CR2_DDS | ADC_CR2_DMA | ADC_CR2_CONT | ADC_CR2_ADON;
+    // TODO? sample time
 #else
-	ADC1->CR1 = 0;
+    ADC1->CR1 = 0;
 #endif
 }
 
@@ -190,45 +200,106 @@ void hal_print_configuration_adc(void)
 
 uint_fast8_t hal_adc_get_amount(void)
 {
-    return NUM_TEMPERATURES;
+    return NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES;
 }
 
 uint_fast16_t hal_adc_get_value(uint_fast8_t device)
 {
-	if(device < NUM_TEMPERATURES)
-	{
+    if(device < NUM_TEMPERATURES)
+    {
 #if 1 == ADC_USE_DMA
-		return res_buf[device];
+        return res_buf[device];
 #else
-		int i = 0;
-		switch(device)
-		{
-		case 0: ADC1->SQR3 = ADC_0_INPUT_NUM; break;
-		case 1: ADC1->SQR3 = ADC_1_INPUT_NUM; break;
-		case 2: ADC1->SQR3 = ADC_2_INPUT_NUM; break;
-		case 3: ADC1->SQR3 = ADC_3_INPUT_NUM; break;
-		default:
-		case 4: ADC1->SQR3 = ADC_4_INPUT_NUM; break;
-		}
-		ADC1->CR2 = ADC_CR2_SWSTART | ADC_CR2_EOCS | ADC_CR2_ADON;
-		while((0 == (ADC1->SR & 0x2)) && (i < MAX_TRIES))
-		{
-			i++;
-		}
-		if(MAX_TRIES == i)
-		{
-			debug_line("ADC never finished! Result %d !", ADC1->DR);
-			return 7;
-		}
-		return converters[device](ADC1->DR);
+        int i = 0;
+        switch(device)
+        {
+        case 0: ADC1->SQR3 = ADC_0_INPUT_NUM; break;
+        case 1: ADC1->SQR3 = ADC_1_INPUT_NUM; break;
+        case 2: ADC1->SQR3 = ADC_2_INPUT_NUM; break;
+        case 3: ADC1->SQR3 = ADC_3_INPUT_NUM; break;
+        default:
+        case 4: ADC1->SQR3 = ADC_4_INPUT_NUM; break;
+        }
+        ADC1->CR2 = ADC_CR2_SWSTART | ADC_CR2_EOCS | ADC_CR2_ADON;
+        while((0 == (ADC1->SR & 0x2)) && (i < MAX_TRIES))
+        {
+            i++;
+        }
+        if(MAX_TRIES == i)
+        {
+            debug_line("ADC never finished! Result %d !", ADC1->DR);
+            return 7;
+        }
+        return converters[device](ADC1->DR);
 #endif
-	}
-	else
-	{
-		// TODO SPI Temperature Sensor?
-		// invalid device number
-		return 0;
-	}
+    }
+    else if(device < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES))
+    {
+        switch(device - NUM_TEMPERATURES)
+        {
+        case 0: // SPI - Thermocouple
+        {
+            uint8_t receive_data[4];
+            uint8_t send_data[4];
+            uint32_t tempMeasured;
+            uint32_t tempReference;
+            if(false == hal_do_exansion_spi_transaction(&send_data[0], 4, &receive_data[0]))
+            {
+                debug_line("ERROR: Did not receive all bytes !");
+            }
+            // else OK
+            // debug_msg("Received: 0x");
+            // debug_hex_buffer(&receive_data[0], 4);
+            // debug_line(".");
+            if(1 == (receive_data[3] & 0x01))
+            {
+                debug_line("Open Circut.");
+            }
+            if(2 == (receive_data[3] & 0x02))
+            {
+                debug_line("Short to GND.");
+            }
+            if(4 == (receive_data[3] & 0x04))
+            {
+                debug_line("Short to Vcc.");
+            }
+            if(1 == (receive_data[1] & 0x01))
+            {
+                debug_line("Fault Bit.");
+            }
+            tempMeasured = (receive_data[1]>>2) + (receive_data[0] << 6);
+            tempMeasured = tempMeasured * 10;
+            tempMeasured = tempMeasured / 4;
+
+            tempReference = (receive_data[3]>>4) + (receive_data[2]<<4);
+            tempReference = tempReference * 100;
+            tempReference = tempReference / 16;
+            // debug_line("Temperature at Reference Junction = %d /100 °C", tempReference);
+            // debug_line("Done.");
+            if((10000 < tempMeasured ) || (tempMeasured < 0))
+            {
+                tempMeasured = 0;
+            }
+            return tempMeasured;
+        }
+            break;
+
+        case 1: // I2C Temperature Sensor
+            // TODO I2C Temperature Sensor
+            return 6;
+
+        default:
+            // invalid device number
+            debug_line("Invalid External Device %d (%d) !", device, device - NUM_TEMPERATURES);
+            return 3;
+        }
+    }
+    else
+    {
+        // invalid device number
+        debug_line("Invalid Device %d !", device);
+        return 0;
+    }
 }
 
 uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
@@ -255,29 +326,29 @@ uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
 
 void DMA2_Stream0_IRQHandler(void)
 {
-	debug_line("ERROR: Unexpected DMA2:Stream0 Interrupt (Low: 0x%08x, High: 0x%08x) !",
-			    DMA2->LISR, DMA2->HISR);
+    debug_line("ERROR: Unexpected DMA2:Stream0 Interrupt (Low: 0x%08x, High: 0x%08x) !",
+                DMA2->LISR, DMA2->HISR);
 }
 
 void ADC_IRQHandler(void)
 {
-	if(ADC_SR_OVR == (ADC1->SR & ADC_SR_OVR))
-	{
-		 debug_line("ERROR: ADC Overflow !");
-		 ADC1->SR = ADC1->SR &~ADC_SR_OVR;
-	}
-	else
-	{
-		debug_line("ERROR: Unexpected ADC Interrupt (0x%08x) !", ADC1->SR);
-	}
+    if(ADC_SR_OVR == (ADC1->SR & ADC_SR_OVR))
+    {
+         debug_line("ERROR: ADC Overflow !");
+         ADC1->SR = ADC1->SR &~ADC_SR_OVR;
+    }
+    else
+    {
+        debug_line("ERROR: Unexpected ADC Interrupt (0x%08x) !", ADC1->SR);
+    }
 }
 
 static uint_fast16_t InternalTempSensorConverter(uint32_t DR)
 {
-	uint32_t help = DR * 1000;
-	help = help - 952087;
-	help = help /341;
-	return (uint_fast16_t)0xffff & help;
+    uint32_t help = DR * 1000;
+    help = help - 952087;
+    help = help /341;
+    return (uint_fast16_t)0xffff & help;
 }
 
 #define VCC_OF_ADC            3.0
@@ -287,22 +358,22 @@ static uint_fast16_t InternalTempSensorConverter(uint32_t DR)
 
 static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR)
 {
-	int ires;
-	// debug_line("ADC value: %d", DR);
-	float res = VCC_OF_ADC/4095 * DR;
-	// debug_line("Vadc: %f", res);
-	res = SERIES_RESISTOR/((VCC_OF_ADC/res) -1);
-	// debug_line("Rthermistor: %f", res);
-	res = log(res/THERMISTOR_R_AT_25);
-	res = res / STEINHART_HART_B + (1.0/(25+273.15));
-	res = 1/res - 273.15;
-	// debug_line("Temperature: %f", res);
-	ires = res * 10;
-	return (uint_fast16_t)0xffff & ires;
+    int ires;
+    // debug_line("ADC value: %d", DR);
+    float res = VCC_OF_ADC/4095 * DR;
+    // debug_line("Vadc: %f", res);
+    res = SERIES_RESISTOR/((VCC_OF_ADC/res) -1);
+    // debug_line("Rthermistor: %f", res);
+    res = log(res/THERMISTOR_R_AT_25);
+    res = res / STEINHART_HART_B + (1.0/(25+273.15));
+    res = 1/res - 273.15;
+    // debug_line("Temperature: %f", res);
+    ires = res * 10;
+    return (uint_fast16_t)0xffff & ires;
 }
 
 static uint_fast16_t NoConverter(uint32_t DR)
 {
-	return (uint_fast16_t)0xffff & DR;
+    return (uint_fast16_t)0xffff & DR;
 }
 

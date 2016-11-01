@@ -44,11 +44,6 @@ void hal_buzzer_init(void)
 
 }
 
-void curTest(void)
-{
-    hal_buzzer_set_frequency(0, 2000);
-}
-
 uint_fast8_t hal_buzzer_get_amount(void)
 {
     return BUZZER_NUM_PINS;

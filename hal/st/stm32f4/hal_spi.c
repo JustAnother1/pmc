@@ -24,6 +24,8 @@
 #include "hal_debug.h"
 #include "hal_cfg.h"
 
+#define TIMEOUT_MS   500
+
 // On the Wire : Most Significant Bit First (CR1)
 // When a master is communicating with SPI slaves which need to be de-selected between
 // transmissions, the NSS pin must be configured as GPIO or another GPIO must be used and
@@ -67,31 +69,31 @@ static spi_device_typ devices[MAX_SPI];
 
 void hal_init_stepper_spi(void)
 {
-	hal_spi_init(STEPPER_SPI);
+    hal_spi_init(STEPPER_SPI);
 }
 
 void hal_print_stepper_spi_configuration(void)
 {
-	hal_spi_print_configuration(STEPPER_SPI);
+    hal_spi_print_configuration(STEPPER_SPI);
 }
 
 bool hal_do_stepper_spi_transaction(uint8_t*     data_to_send,
                                     uint_fast8_t num_bytes_to_send,
                                     uint8_t*     data_received)
 {
-	return hal_spi_do_transaction(STEPPER_SPI, data_to_send, num_bytes_to_send, data_received);
+    return hal_spi_do_transaction(STEPPER_SPI, data_to_send, num_bytes_to_send, data_received);
 }
 
 void hal_start_stepper_spi_transaction(uint8_t*     data_to_send,
                                        uint_fast8_t num_bytes_to_send,
                                        uint8_t*     data_received)
 {
-	hal_spi_start_spi_transaction(STEPPER_SPI, data_to_send, num_bytes_to_send, data_received);
+    hal_spi_start_spi_transaction(STEPPER_SPI, data_to_send, num_bytes_to_send, data_received);
 }
 
 bool hal_stepper_spi_is_idle(void)
 {
-	return hal_spi_is_idle(STEPPER_SPI);
+    return hal_spi_is_idle(STEPPER_SPI);
 }
 
 
@@ -99,31 +101,31 @@ bool hal_stepper_spi_is_idle(void)
 
 void hal_init_expansion_spi(void)
 {
-	hal_spi_init(EXPANSION_SPI);
+    hal_spi_init(EXPANSION_SPI);
 }
 
 void hal_print_expansion_spi_configuration(void)
 {
-	hal_spi_print_configuration(EXPANSION_SPI);
+    hal_spi_print_configuration(EXPANSION_SPI);
 }
 
 bool hal_do_exansion_spi_transaction(uint8_t*     data_to_send,
                                      uint_fast8_t num_bytes_to_send,
                                      uint8_t*     data_received)
 {
-	return hal_spi_do_transaction(EXPANSION_SPI, data_to_send, num_bytes_to_send, data_received);
+    return hal_spi_do_transaction(EXPANSION_SPI, data_to_send, num_bytes_to_send, data_received);
 }
 
 void hal_start_expansion_spi_transaction(uint8_t*     data_to_send,
                                          uint_fast8_t num_bytes_to_send,
                                          uint8_t*     data_received)
 {
-	hal_spi_start_spi_transaction(EXPANSION_SPI, data_to_send, num_bytes_to_send, data_received);
+    hal_spi_start_spi_transaction(EXPANSION_SPI, data_to_send, num_bytes_to_send, data_received);
 }
 
 bool hal_expansion_spi_is_idle(void)
 {
-	return hal_spi_is_idle(EXPANSION_SPI);
+    return hal_spi_is_idle(EXPANSION_SPI);
 }
 
 // End of Implementation of hal_spi_api
@@ -399,18 +401,32 @@ static bool hal_spi_do_transaction(uint_fast8_t device,
 {
     if(device < MAX_SPI)
     {
-        while(false == devices[device].idle)
+        uint32_t curTime = hal_time_get_ms_tick();
+        uint32_t endTime = curTime + TIMEOUT_MS;
+        while((false == devices[device].idle) && (endTime > curTime))
         {
-            ; // wait until we can send the data out
+            curTime = hal_time_get_ms_tick(); // wait until we can send the data out
+        }
+        if(endTime == curTime)
+        {
+            debug_line("SPI not Idle !");
+            return false;
         }
         hal_spi_start_spi_transaction(device,
                                       data_to_send,
                                       num_bytes_to_send,
                                       data_received);
 
-        while(false == devices[device].idle)
+        curTime = hal_time_get_ms_tick();
+        endTime = curTime + TIMEOUT_MS;
+        while((false == devices[device].idle) && (endTime > curTime))
         {
-            ; // wait until we have the data back
+            curTime = hal_time_get_ms_tick(); // wait until we have the data back
+        }
+        if(endTime == curTime)
+        {
+            debug_line("SPI Transaction never finished!");
+            return false;
         }
         return devices[device].successfully_received;
     }

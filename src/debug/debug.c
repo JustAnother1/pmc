@@ -47,7 +47,7 @@ static uint_fast8_t last_line_end = 'l'; // invalid value
 static void count_debug_ticks_per_ms(void);
 static void search_for_orders(void);
 static void parse_order(int length);
-static void debug_hex_buffer(uint8_t* buf, int length);
+void debug_hex_buffer(uint8_t* buf, int length);
 static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low);
 static void order_help(void);
 static void order_curTime(void);
@@ -57,7 +57,7 @@ static uint32_t getHexNumber(uint8_t* buf, uint32_t length);
 static void printMemory(uint8_t* buf, uint32_t length);
 static uint_fast8_t hexChar2int(uint8_t c);
 
-void curTest(void);
+void curTest(int value);
 
 void debug_init(void)
 {
@@ -185,7 +185,7 @@ static int get_next_word(int start_pos, int end_pos, uint8_t *buf)
     return i;
 }
 
-static void debug_hex_buffer(uint8_t* buf, int length)
+void debug_hex_buffer(uint8_t* buf, int length)
 {
     int i;
     for(i = 0; i < length; i++)
@@ -752,7 +752,7 @@ static void parse_order(int length)
 
     case 'X':
     case 'x': // current testing
-        curTest();
+        curTest(atoi((char *)&(cmd_buf[1])));
         break;
 
 
@@ -761,3 +761,9 @@ static void parse_order(int length)
         break;
     }
 }
+/*
+void curTest(int value)
+{
+    debug_line("Found Value %d !", value);
+}
+*/
