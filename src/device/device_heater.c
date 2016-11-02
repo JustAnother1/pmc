@@ -23,13 +23,20 @@
 #include "com.h"
 
 #define INVALID_SENSOR 255
-#define HALF_BANG_BANG_HYSTERESIS_DEG_C  1
+#define HALF_BANG_BANG_HYSTERESIS_DEG_C_DIV_10  10
 
 void TemperatureControlTick(void);
 
 static uint_fast8_t temperature_sensors[NUMBER_OF_HEATERS];
 static uint_fast16_t target_temperature[NUMBER_OF_HEATERS];
 static uint_fast16_t cur_pwm[NUMBER_OF_HEATERS];
+
+typedef uint_fast16_t (*RegulatorFkt)(uint_fast16_t temperature_should, uint_fast16_t temperature_is, uint_fast16_t curPwm);
+static RegulatorFkt regulators[NUMBER_OF_HEATERS];
+
+uint_fast16_t BangBangRegulator(uint_fast16_t temperature_should, uint_fast16_t temperature_is, uint_fast16_t curPwm);
+uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t temperature_is, uint_fast16_t curPwm);
+
 
 void dev_heater_init(void)
 {
@@ -39,6 +46,7 @@ void dev_heater_init(void)
         temperature_sensors[i] = INVALID_SENSOR;
         target_temperature[i] = 0;
         cur_pwm[i] = 0;
+        regulators[i] = BangBangRegulator;
     }
     hal_cpu_add_ms_tick_function(TemperatureControlTick);
 }
@@ -123,37 +131,46 @@ void TemperatureControlTick(void)
     {
         if(0 != target_temperature[i])
         {
+            uint_fast16_t newPwmValue;
             // Read Temperature
             uint_fast16_t curTemp = hal_adc_get_value(temperature_sensors[i]);
-            // uint_fast16_t curTemp = 20;
-            // PID / Bang Bang
-            // PID
-            // TODO
-
-            // Bang Bang:
-            if(curTemp > target_temperature[i] + HALF_BANG_BANG_HYSTERESIS_DEG_C)
+            // compute next PWM setting
+            newPwmValue = regulators[i](target_temperature[i], curTemp, cur_pwm[i]);
+            if(newPwmValue != cur_pwm[i])
             {
-                // Set new PWM Mode - completely off
-                if(0 != cur_pwm[i])
-                {
-                    hal_pwm_set_on_time(i, 0);
-                    cur_pwm[i] = 0;
-                }
-                // else already correct PWM set.
+                 hal_pwm_set_on_time(i, newPwmValue);
+                 cur_pwm[i] = newPwmValue;
             }
-            else if(curTemp <  target_temperature[i] - HALF_BANG_BANG_HYSTERESIS_DEG_C)
-            {
-                // Set new PWM Mode - Full on
-                if(0xffff != cur_pwm[i])
-                {
-                    hal_pwm_set_on_time(i, 0xffff);
-                    cur_pwm[i] = 0xffff;
-                }
-                // else already correct PWM set.
-            }
+            // else already correct PWM set.
         }
     }
 }
+
+uint_fast16_t BangBangRegulator(uint_fast16_t temperature_should, uint_fast16_t temperature_is, uint_fast16_t curPwm)
+{
+    if(temperature_is > temperature_should + HALF_BANG_BANG_HYSTERESIS_DEG_C_DIV_10)
+    {
+        // Set new PWM Mode - completely off
+        return 0;
+    }
+    else if(temperature_is < temperature_should - HALF_BANG_BANG_HYSTERESIS_DEG_C_DIV_10)
+    {
+        // Set new PWM Mode - Full on
+        return 0xffff;
+    }
+    else
+    {
+        // In hysteresis - no change
+        return curPwm;
+    }
+}
+
+uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t temperature_is, uint_fast16_t curPwm)
+{
+    // TODO
+    return 0;
+}
+
 
 void curTest(int value)
 {

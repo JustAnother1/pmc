@@ -14,9 +14,10 @@
  */
 
 #include <st_util.h>
-#include "hal_pwm.h"
 #include "st_rcc.h"
 #include "hal_cfg.h"
+#include "hal_debug.h"
+#include "hal_pwm.h"
 #include "hal_time.h"
 #include "board_cfg.h"
 
