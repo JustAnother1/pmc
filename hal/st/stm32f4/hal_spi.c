@@ -23,6 +23,7 @@
 #include "board_cfg.h"
 #include "hal_debug.h"
 #include "hal_cfg.h"
+#include "hal_time.h"
 
 #define TIMEOUT_MS   500
 
@@ -109,9 +110,9 @@ void hal_print_expansion_spi_configuration(void)
     hal_spi_print_configuration(EXPANSION_SPI);
 }
 
-bool hal_do_exansion_spi_transaction(uint8_t*     data_to_send,
-                                     uint_fast8_t num_bytes_to_send,
-                                     uint8_t*     data_received)
+bool hal_do_expansion_spi_transaction(uint8_t*     data_to_send,
+                                      uint_fast8_t num_bytes_to_send,
+                                      uint8_t*     data_received)
 {
     return hal_spi_do_transaction(EXPANSION_SPI, data_to_send, num_bytes_to_send, data_received);
 }

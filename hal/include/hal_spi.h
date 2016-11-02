@@ -36,9 +36,9 @@ bool hal_stepper_spi_is_idle(void);
 
 void hal_init_expansion_spi(void);
 void hal_print_expansion_spi_configuration(void);
-bool hal_do_exansion_spi_transaction(uint8_t*     data_to_send,
-                                     uint_fast8_t num_bytes_to_send,
-                                     uint8_t*     data_received);
+bool hal_do_expansion_spi_transaction(uint8_t*     data_to_send,
+                                      uint_fast8_t num_bytes_to_send,
+                                      uint8_t*     data_received);
 void hal_start_expansion_spi_transaction(uint8_t*     data_to_send,
                                          uint_fast8_t num_bytes_to_send,
                                          uint8_t*     data_received);

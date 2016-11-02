@@ -26,6 +26,7 @@
 #include "st_util.h"
 #include "hal_spi.h"
 #include "debug.h"
+#include "hal_cpu.h"
 
 #define ADC_USE_DMA 0
 
@@ -39,9 +40,11 @@
 typedef uint_fast16_t (*ADCTicksToDegCFkt)(uint32_t DR);
 static ADCTicksToDegCFkt converters[NUM_TEMPERATURES];
 
-#if 1 == ADC_USE_DMA
-static uint16_t res_buf[NUM_TEMPERATURES];
-#endif
+static bool start;
+static int curDevice;
+static uint16_t res_buf[NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES];
+
+static void aquireValues(void);
 
 static uint_fast16_t NoConverter(uint32_t DR);
 static uint_fast16_t InternalTempSensorConverter(uint32_t DR);
@@ -59,11 +62,13 @@ void hal_adc_init(void)
 
     hal_init_expansion_spi();
 
-#if 1 == ADC_USE_DMA
-    for(i = 0; i < NUM_TEMPERATURES; i++)
+    start = true;
+    curDevice = 0;
+    for(i = 0; i < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES); i++)
     {
         res_buf[i] = 7; // -> 0.7 °C ;-)
     }
+#if 1 == ADC_USE_DMA
     // Power ON DMA2
     RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
 #endif
@@ -147,6 +152,8 @@ void hal_adc_init(void)
 #else
     ADC1->CR1 = 0;
 #endif
+
+    hal_cpu_add_ms_tick_function(aquireValues);
 }
 
 void hal_print_configuration_adc(void)
@@ -203,96 +210,111 @@ uint_fast8_t hal_adc_get_amount(void)
     return NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES;
 }
 
-uint_fast16_t hal_adc_get_value(uint_fast8_t device)
+static void aquireValues(void)
 {
-    if(device < NUM_TEMPERATURES)
+    static uint8_t receive_data[4];
+    static uint8_t send_data[4];
+
+    if(curDevice < NUM_TEMPERATURES)
     {
-#if 1 == ADC_USE_DMA
-        return res_buf[device];
-#else
-        int i = 0;
-        switch(device)
+        if(true == start)
         {
-        case 0: ADC1->SQR3 = ADC_0_INPUT_NUM; break;
-        case 1: ADC1->SQR3 = ADC_1_INPUT_NUM; break;
-        case 2: ADC1->SQR3 = ADC_2_INPUT_NUM; break;
-        case 3: ADC1->SQR3 = ADC_3_INPUT_NUM; break;
-        default:
-        case 4: ADC1->SQR3 = ADC_4_INPUT_NUM; break;
+            switch(curDevice)
+            {
+            case 0: ADC1->SQR3 = ADC_0_INPUT_NUM; break;
+            case 1: ADC1->SQR3 = ADC_1_INPUT_NUM; break;
+            case 2: ADC1->SQR3 = ADC_2_INPUT_NUM; break;
+            case 3: ADC1->SQR3 = ADC_3_INPUT_NUM; break;
+            default:
+            case 4: ADC1->SQR3 = ADC_4_INPUT_NUM; break;
+            }
+            ADC1->CR2 = ADC_CR2_SWSTART | ADC_CR2_EOCS | ADC_CR2_ADON;
+            start = false;
         }
-        ADC1->CR2 = ADC_CR2_SWSTART | ADC_CR2_EOCS | ADC_CR2_ADON;
-        while((0 == (ADC1->SR & 0x2)) && (i < MAX_TRIES))
+        else
         {
-            i++;
+            res_buf[curDevice] = converters[curDevice](ADC1->DR);
+            start = true;
         }
-        if(MAX_TRIES == i)
-        {
-            debug_line("ADC never finished! Result %d !", ADC1->DR);
-            return 7;
-        }
-        return converters[device](ADC1->DR);
-#endif
     }
-    else if(device < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES))
+    else if(curDevice < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES))
     {
-        switch(device - NUM_TEMPERATURES)
+        switch(curDevice - NUM_TEMPERATURES)
         {
         case 0: // SPI - Thermocouple
-        {
-            uint8_t receive_data[4];
-            uint8_t send_data[4];
-            uint32_t tempMeasured;
-            uint32_t tempReference;
-            if(false == hal_do_exansion_spi_transaction(&send_data[0], 4, &receive_data[0]))
+            if(true == start)
             {
-                debug_line("ERROR: Did not receive all bytes !");
+                hal_start_expansion_spi_transaction(&send_data[0], 4, &receive_data[0]);
+                start = false;
             }
-            // else OK
-            // debug_msg("Received: 0x");
-            // debug_hex_buffer(&receive_data[0], 4);
-            // debug_line(".");
-            if(1 == (receive_data[3] & 0x01))
+            else
             {
-                debug_line("Open Circut.");
-            }
-            if(2 == (receive_data[3] & 0x02))
-            {
-                debug_line("Short to GND.");
-            }
-            if(4 == (receive_data[3] & 0x04))
-            {
-                debug_line("Short to Vcc.");
-            }
-            if(1 == (receive_data[1] & 0x01))
-            {
-                debug_line("Fault Bit.");
-            }
-            tempMeasured = (receive_data[1]>>2) + (receive_data[0] << 6);
-            tempMeasured = tempMeasured * 10;
-            tempMeasured = tempMeasured / 4;
+                uint32_t tempMeasured;
+                uint32_t tempReference;
+                // debug_msg("Received: 0x");
+                // debug_hex_buffer(&receive_data[0], 4);
+                // debug_line(".");
+                if(1 == (receive_data[3] & 0x01))
+                {
+                    debug_line("Open Circut.");
+                }
+                if(2 == (receive_data[3] & 0x02))
+                {
+                    debug_line("Short to GND.");
+                }
+                if(4 == (receive_data[3] & 0x04))
+                {
+                    debug_line("Short to Vcc.");
+                }
+                if(1 == (receive_data[1] & 0x01))
+                {
+                    debug_line("Fault Bit.");
+                }
+                tempMeasured = (receive_data[1]>>2) + (receive_data[0] << 6);
+                tempMeasured = tempMeasured * 10;
+                tempMeasured = tempMeasured / 4;
 
-            tempReference = (receive_data[3]>>4) + (receive_data[2]<<4);
-            tempReference = tempReference * 100;
-            tempReference = tempReference / 16;
-            // debug_line("Temperature at Reference Junction = %d /100 °C", tempReference);
-            // debug_line("Done.");
-            if((10000 < tempMeasured ) || (tempMeasured < 0))
-            {
-                tempMeasured = 0;
+                tempReference = (receive_data[3]>>4) + (receive_data[2]<<4);
+                tempReference = tempReference * 100;
+                tempReference = tempReference / 16;
+                // debug_line("Temperature at Reference Junction = %d /100 °C", tempReference);
+                // debug_line("Done.");
+                if((10000 < tempMeasured ) || (tempMeasured < 0))
+                {
+                    tempMeasured = 0;
+                }
+                res_buf[curDevice] = tempMeasured;
+                start = true;
             }
-            return tempMeasured;
-        }
             break;
 
         case 1: // I2C Temperature Sensor
             // TODO I2C Temperature Sensor
-            return 6;
+            res_buf[curDevice] = 6;
+            break;
 
         default:
             // invalid device number
-            debug_line("Invalid External Device %d (%d) !", device, device - NUM_TEMPERATURES);
-            return 3;
+            debug_line("Invalid External Device %d (%d) !", curDevice, curDevice - NUM_TEMPERATURES);
+            res_buf[curDevice] = 3;
+            break;
         }
+    }
+    if(true == start)
+    {
+        curDevice++;
+        if(curDevice > (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES))
+        {
+            curDevice = 0;
+        }
+    }
+}
+
+uint_fast16_t hal_adc_get_value(uint_fast8_t device)
+{
+    if(device < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES))
+    {
+        return res_buf[device];
     }
     else
     {

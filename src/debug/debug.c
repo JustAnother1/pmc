@@ -707,7 +707,7 @@ static void parse_order(int length)
             {
                 send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
             }
-            if(false == hal_do_exansion_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
+            if(false == hal_do_expansion_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
             {
                 debug_line("ERROR: Did not receive all bytes !");
             }

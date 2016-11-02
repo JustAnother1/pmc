@@ -19,6 +19,7 @@
 #include "hal_pwm.h"
 #include "hal_cfg.h"
 #include "hal_cpu.h"
+#include "hal_debug.h"
 #include "com.h"
 
 #define INVALID_SENSOR 255
@@ -28,6 +29,7 @@ void TemperatureControlTick(void);
 
 static uint_fast8_t temperature_sensors[NUMBER_OF_HEATERS];
 static uint_fast16_t target_temperature[NUMBER_OF_HEATERS];
+static uint_fast16_t cur_pwm[NUMBER_OF_HEATERS];
 
 void dev_heater_init(void)
 {
@@ -36,6 +38,7 @@ void dev_heater_init(void)
     {
         temperature_sensors[i] = INVALID_SENSOR;
         target_temperature[i] = 0;
+        cur_pwm[i] = 0;
     }
     hal_cpu_add_ms_tick_function(TemperatureControlTick);
 }
@@ -122,29 +125,41 @@ void TemperatureControlTick(void)
         {
             // Read Temperature
             uint_fast16_t curTemp = hal_adc_get_value(temperature_sensors[i]);
+            // uint_fast16_t curTemp = 20;
             // PID / Bang Bang
             // PID
             // TODO
-            // Bang Bang
+
+            // Bang Bang:
             if(curTemp > target_temperature[i] + HALF_BANG_BANG_HYSTERESIS_DEG_C)
             {
                 // Set new PWM Mode - completely off
-                hal_pwm_set_on_time(i, 0);
+                if(0 != cur_pwm[i])
+                {
+                    hal_pwm_set_on_time(i, 0);
+                    cur_pwm[i] = 0;
+                }
+                // else already correct PWM set.
             }
             else if(curTemp <  target_temperature[i] - HALF_BANG_BANG_HYSTERESIS_DEG_C)
             {
                 // Set new PWM Mode - Full on
-                hal_pwm_set_on_time(i, 0xffff);
+                if(0xffff != cur_pwm[i])
+                {
+                    hal_pwm_set_on_time(i, 0xffff);
+                    cur_pwm[i] = 0xffff;
+                }
+                // else already correct PWM set.
             }
         }
     }
 }
-/*
+
 void curTest(int value)
 {
     debug_line("Found Value %d !", value);
-    dev_heater_set_temperature_sensor(1, 0);
-    dev_heater_set_target_temperature(1, value);
+    dev_heater_set_temperature_sensor(1, 5);
+    dev_heater_set_target_temperature(1, value * 10);
 }
-*/
+
 // end of File
