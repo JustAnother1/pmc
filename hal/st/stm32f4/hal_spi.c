@@ -307,7 +307,7 @@ static void hal_spi_print_configuration(uint_fast8_t device)
         debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
         debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
         debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
-        // Uart
+        // SPI
         debug_line("SPI->CR1      = 0x%08x", devices[device].bus->CR1);
         debug_line("SPI->CR2      = 0x%08x", devices[device].bus->CR2);
         // GPIO

@@ -15,6 +15,9 @@
 
 #ifndef DEBUG_H_
 #define DEBUG_H_
+
+#include <inttypes.h>
+
 #ifdef DEBUG_ACTIVE
 void debug_init(void);
 void debug_tick(void);
