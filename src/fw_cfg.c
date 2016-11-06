@@ -14,10 +14,11 @@
  */
 
 #include "fw_cfg.h"
+#include "hal_i2c.h"
 
 void fw_cfg_init(void)
 {
-
+    hal_init_i2c();
 }
 
 void fw_cfg_get_value_property(uint_fast8_t idx)
@@ -40,7 +41,7 @@ void fw_cfg_set_value_to(uint_fast8_t parameterLength)
 
 }
 
-uint_fast8_t fw_cfg_write_setting_to(uint_fast8_t setting, uint8_t *position)
+uint_fast8_t fw_cfg_read_setting_to(uint_fast8_t setting, uint8_t *position)
 {
     switch(setting)
     {
@@ -68,5 +69,48 @@ uint_fast8_t fw_cfg_write_setting_to(uint_fast8_t setting, uint8_t *position)
         return 0;
     }
 }
+
+/*
+ *     bool hal_do_i2c_transaction(bool read,
+                                uint_fast8_t i2cAddress,
+                                uint_fast8_t dataAddress,
+                                uint8_t*     data,
+                                uint_fast8_t num_bytes );
+ */
+
+
+/* write
+void curTest(int value)
+{
+    uint8_t data[3] = {23,24,25};
+    debug_line("Found Value %d !", value);
+    if(true == hal_do_i2c_transaction(false, 0xAC, 0, &data[0], 3))
+    {
+        debug_line("success!");
+    }
+    else
+    {
+        debug_line("failed!");
+    }
+}*/
+
+
+// read
+void curTest(int value)
+{
+    uint8_t data[3] = {0,0,0};
+    debug_line("Found Value %d !", value);
+    if(true == hal_do_i2c_transaction(true, 0xAC, 0, &data[0], 3))
+    {
+        debug_line("read: 0x%02x, 0x%02x, 0x%02x !", data[0], data[1], data[2]);
+        debug_line("success!");
+    }
+    else
+    {
+        debug_line("failed!");
+    }
+}
+
+
 
 // end of File

@@ -15,19 +15,85 @@
 
 #include "hal_i2c.h"
 #include "board_cfg.h"
+#include "hal_debug.h"
+#include "hal_time.h"
 #include "st_gpio.h"
 #include "st_rcc.h"
 #include "st_i2c.h"
+#include "st_util.h"
 
 #define TIMEOUT_MS   500
 
-static bool idle;
-static bool successfully_received;
+static bool transaction_successfull;
+
+enum i2c_state  {idle, start_send, device_address_send, byte_send,
+                 repeated_start_send, device_read_address_send, read_a_byte};
+
+typedef struct{
+    bool read;
+    uint_fast8_t i2cAddress;
+    uint_fast8_t dataAddress;
+    uint8_t*     data;
+    uint_fast8_t num_bytes;
+    uint_fast8_t send_bytes;
+} transfer_Definition;
+
+static enum i2c_state cur_state;
+static transfer_Definition cur_transfer;
 
 void hal_init_i2c(void)
 {
-    idle = true; // no activities yet, the bus is ours!
-    successfully_received = false;  // not yet
+    transaction_successfull = false;  // not yet
+    cur_state = idle;// no activities yet, the bus is ours!
+
+    RCC->AHB1ENR |= I2C_0_SCL_GPIO_PORT_RCC;
+    RCC->AHB1ENR |= I2C_0_SDA_GPIO_PORT_RCC;
+    RCC->APB1ENR |= I2C_0_APB1ENR;
+
+    // Sm = 100kHz, Fm = 400kHz
+    // Peripheral Input Clock for Fast Mode must be at least 4MHz (CR2)
+
+    I2C_0->CR1 = 0;
+    I2C_0->CR2 = I2C_CR2_ITBUFEN | I2C_CR2_ITEVTEN | I2C_CR2_ITERREN | I2C_0_APB1_CLOCK;
+    I2C_0->CCR = I2C_CCR_FS | 35; // 42MHz /( 400 kHz * 3)  -> 35
+    I2C_0->TRISE = 14; // (0..63) 400kHz -> 300ms -> 14?
+    I2C_0->FLTR = 0;// Filter not available on 405 -> not used
+
+    I2C_0->CR1 = I2C_CR1_PE;
+
+    // Enable Interrupt
+    NVIC_SetPriority(I2C_0_ERROR_IRQ_NUMBER, I2C_0_ERROR_IRQ_PRIORITY);
+    NVIC_EnableIRQ(I2C_0_ERROR_IRQ_NUMBER);
+
+    NVIC_SetPriority(I2C_0_EVENT_IRQ_NUMBER, I2C_0_EVENT_IRQ_PRIORITY);
+    NVIC_EnableIRQ(I2C_0_EVENT_IRQ_NUMBER);
+
+    // SCL
+    I2C_0_SCL_GPIO_PORT->MODER   |=  I2C_0_SCL_GPIO_MODER_1;
+    I2C_0_SCL_GPIO_PORT->MODER   &= ~I2C_0_SCL_GPIO_MODER_0;
+    I2C_0_SCL_GPIO_PORT->OTYPER  |=  I2C_0_SCL_GPIO_OTYPER_1;
+    I2C_0_SCL_GPIO_PORT->OTYPER  &= ~I2C_0_SCL_GPIO_OTYPER_0;
+    I2C_0_SCL_GPIO_PORT->OSPEEDR |=  I2C_0_SCL_GPIO_OSPEEDR_1;
+    I2C_0_SCL_GPIO_PORT->OSPEEDR &= ~I2C_0_SCL_GPIO_OSPEEDR_0;
+    I2C_0_SCL_GPIO_PORT->PUPDR   |=  I2C_0_SCL_GPIO_PUPD_1;
+    I2C_0_SCL_GPIO_PORT->PUPDR   &= ~I2C_0_SCL_GPIO_PUPD_0;
+    I2C_0_SCL_GPIO_PORT->AFR[0]  |=  I2C_0_SCL_GPIO_AFR_0_1;
+    I2C_0_SCL_GPIO_PORT->AFR[0]  &= ~I2C_0_SCL_GPIO_AFR_0_0;
+    I2C_0_SCL_GPIO_PORT->AFR[1]  |=  I2C_0_SCL_GPIO_AFR_1_1;
+    I2C_0_SCL_GPIO_PORT->AFR[1]  &= ~I2C_0_SCL_GPIO_AFR_1_0;
+    // SDA
+    I2C_0_SDA_GPIO_PORT->MODER   |=  I2C_0_SDA_GPIO_MODER_1;
+    I2C_0_SDA_GPIO_PORT->MODER   &= ~I2C_0_SDA_GPIO_MODER_0;
+    I2C_0_SDA_GPIO_PORT->OTYPER  |=  I2C_0_SDA_GPIO_OTYPER_1;
+    I2C_0_SDA_GPIO_PORT->OTYPER  &= ~I2C_0_SDA_GPIO_OTYPER_0;
+    I2C_0_SDA_GPIO_PORT->OSPEEDR |=  I2C_0_SDA_GPIO_OSPEEDR_1;
+    I2C_0_SDA_GPIO_PORT->OSPEEDR &= ~I2C_0_SDA_GPIO_OSPEEDR_0;
+    I2C_0_SDA_GPIO_PORT->PUPDR   |=  I2C_0_SDA_GPIO_PUPD_1;
+    I2C_0_SDA_GPIO_PORT->PUPDR   &= ~I2C_0_SDA_GPIO_PUPD_0;
+    I2C_0_SDA_GPIO_PORT->AFR[0]  |=  I2C_0_SDA_GPIO_AFR_0_1;
+    I2C_0_SDA_GPIO_PORT->AFR[0]  &= ~I2C_0_SDA_GPIO_AFR_0_0;
+    I2C_0_SDA_GPIO_PORT->AFR[1]  |=  I2C_0_SDA_GPIO_AFR_1_1;
+    I2C_0_SDA_GPIO_PORT->AFR[1]  &= ~I2C_0_SDA_GPIO_AFR_1_0;
 }
 
 void hal_print_i2c_configuration(void)
@@ -38,21 +104,223 @@ void hal_print_i2c_configuration(void)
     debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
     debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
     // I2C
-    debug_line("I2C_0->CR1      = 0x%08x", I2C_0->CR1);
-    debug_line("I2C_0->CR2      = 0x%08x", I2C_0->CR2);
-    debug_line("I2C_0->OAR1     = 0x%08x", I2C_0->OAR1);
-    debug_line("I2C_0->OAR2     = 0x%08x", I2C_0->OAR2);
-    debug_line("I2C_0->DR       = 0x%08x", I2C_0->DR);
-    debug_line("I2C_0->SR1      = 0x%08x", I2C_0->SR1);
-    debug_line("I2C_0->SR2      = 0x%08x", I2C_0->SR2);
-    debug_line("I2C_0->CCR      = 0x%08x", I2C_0->CCR);
-    debug_line("I2C_0->TRISE    = 0x%08x", I2C_0->TRISE);
-    debug_line("I2C_0->FLTR     = 0x%08x", I2C_0->FLTR);
+    debug_line("I2C_0->CR1    = 0x%08x", I2C_0->CR1);
+    debug_line("I2C_0->CR2    = 0x%08x", I2C_0->CR2);
+    debug_line("I2C_0->OAR1   = 0x%08x", I2C_0->OAR1);
+    debug_line("I2C_0->OAR2   = 0x%08x", I2C_0->OAR2);
+    debug_line("I2C_0->DR     = 0x%08x", I2C_0->DR);
+    debug_line("I2C_0->SR1    = 0x%08x", I2C_0->SR1);
+    debug_line("I2C_0->SR2    = 0x%08x", I2C_0->SR2);
+    debug_line("I2C_0->CCR    = 0x%08x", I2C_0->CCR);
+    debug_line("I2C_0->TRISE  = 0x%08x", I2C_0->TRISE);
+    debug_line("I2C_0->FLTR   = 0x%08x", I2C_0->FLTR);
     // GPIO
     debug_line("SCL Pin:");
-    print_gpio_configuration(I2C_0_SCL_GPIO_PORT);
+    print_gpio_pin_configuration(I2C_0_SCL_GPIO_PORT, I2C_0_SCL_GPIO_PIN);
     debug_line("SDA Pin:");
-    print_gpio_configuration(I2C_0_SDA_GPIO_PORT);
+    print_gpio_pin_configuration(I2C_0_SCL_GPIO_PORT, I2C_0_SDA_GPIO_PIN);
+}
+
+// Interrupt Handlers
+void I2C1_EV_IRQHandler(void)
+{
+    switch(cur_state)
+    {
+    case idle:
+        // debug_line("ERROR: Interrupt in Idle! (SR1: 0x%08x SR2: 0x%08x)", I2C_0->SR1, I2C_0->SR2);
+        I2C_0->SR1 = 0;
+        I2C_0->CR1 = I2C_CR1_STOP;
+        break;
+
+    case start_send:
+        // MSL Bit = 1 and SB bit = 1 -> just send a start as beginning of transaction.
+        // -> send Slave Device Address now. (Read SR1 then write DR)
+        if(I2C_SR1_SB == (I2C_SR1_SB & I2C_0->SR1))
+        {
+            I2C_0->DR = cur_transfer.i2cAddress;
+            cur_state = device_address_send;
+        }
+        else
+        {
+            debug_line("ERROR: No start send ! (SR1: 0x%08x SR2: 0x%08x)", I2C_0->SR1, I2C_0->SR2);
+            cur_state = idle;
+            I2C_0->CR1 = I2C_CR1_STOP;
+        }
+        break;
+
+    case device_address_send:
+        // ADDR Bit = 1; Read SR1 then read SR2
+        // TRA bit decides if read oder write
+        if(I2C_SR1_ADDR == (I2C_SR1_ADDR & I2C_0->SR1))
+        {
+            if(I2C_SR2_MSL != (I2C_SR2_MSL & I2C_0->SR2))
+            {
+                debug_line("ERROR(da): We are not master !");
+                cur_state = idle;
+                I2C_0->CR1 = I2C_CR1_STOP;
+            }
+            else
+            {
+                I2C_0->DR = cur_transfer.dataAddress;
+                cur_state = byte_send;
+            }
+        }
+        else
+        {
+            debug_line("ERROR: No address send ! (SR1: 0x%08x SR2: 0x%08x)", I2C_0->SR1, I2C_0->SR2);
+            cur_state = idle;
+            I2C_0->CR1 = I2C_CR1_STOP;
+        }
+        break;
+
+    case byte_send:
+        // TxE
+        // debug_line("Info: (SR1: 0x%08x SR2: 0x%08x)", I2C_0->SR1, I2C_0->SR2);
+        if(I2C_SR1_TXE == (I2C_SR1_TXE & I2C_0->SR1))
+        {
+            if(true == cur_transfer.read)
+            {
+                // send repeated Start
+                I2C_0->CR1 |= I2C_CR1_START;
+                cur_state = repeated_start_send;
+            }
+            else
+            {
+                if(cur_transfer.send_bytes == cur_transfer.num_bytes)
+                {
+                    // send stop
+                    transaction_successfull = true;
+                    I2C_0->CR1 |= I2C_CR1_STOP;
+                    cur_state = idle;
+                }
+                else
+                {
+                    // send next byte
+                    I2C_0->DR = cur_transfer.data[cur_transfer.send_bytes];
+                    cur_transfer.send_bytes ++;
+                    cur_state = byte_send;
+                }
+            }
+        }
+        else
+        {
+            debug_line("ERROR: byte send failed ! (SR1: 0x%08x SR2: 0x%08x)", I2C_0->SR1, I2C_0->SR2);
+            cur_state = idle;
+            I2C_0->CR1 = I2C_CR1_STOP;
+        }
+        break;
+
+    case repeated_start_send:
+        if(I2C_SR1_SB == (I2C_SR1_SB & I2C_0->SR1))
+        {
+            I2C_0->DR = cur_transfer.i2cAddress | 1;
+            cur_state = device_read_address_send;
+        }
+        else
+        {
+            // TODO check that this does not happen too often ?
+            /* TxE interrupts will happen before the Start is finished,..
+            debug_line("ERROR: No repeated start send ! (SR1: 0x%08x SR2: 0x%08x)", I2C_0->SR1, I2C_0->SR2);
+            cur_state = idle;
+            I2C_0->CR1 = I2C_CR1_STOP;
+            */
+        }
+        break;
+
+    case device_read_address_send:
+        if(I2C_SR1_ADDR == (I2C_SR1_ADDR & I2C_0->SR1))
+        {
+            if(I2C_SR2_MSL != (I2C_SR2_MSL & I2C_0->SR2)) // need to read SR2
+            {
+                debug_line("ERROR(dra): We are not master !");
+                cur_state = idle;
+                I2C_0->CR1 = I2C_CR1_STOP;
+            }
+            else
+            {
+                I2C_0->CR1 |= I2C_CR1_ACK;
+                cur_state = read_a_byte;
+            }
+        }
+        else
+        {
+            debug_line("ERROR: No address send ! (SR1: 0x%08x SR2: 0x%08x)", I2C_0->SR1, I2C_0->SR2);
+            cur_state = idle;
+            I2C_0->CR1 = I2C_CR1_STOP;
+        }
+        break;
+
+    case read_a_byte:
+        // read next byte
+        cur_transfer.data[cur_transfer.send_bytes] = (uint8_t)(0xff & I2C_0->DR);
+        cur_transfer.send_bytes ++;
+        if(cur_transfer.send_bytes == cur_transfer.num_bytes - 1)
+        {
+            I2C_0->CR1 = (I2C_0->CR1 & ~I2C_CR1_ACK);
+        }
+        if(cur_transfer.send_bytes == cur_transfer.num_bytes)
+        {
+            // send stop
+            transaction_successfull = true;
+            I2C_0->CR1 |= I2C_CR1_STOP;
+            cur_state = idle;
+        }
+        // else wait for next byte
+        break;
+    }
+}
+
+void I2C1_ER_IRQHandler(void)
+{
+    if(I2C_SR1_BERR == (I2C_SR1_BERR & I2C_0->SR1))
+    {
+        cur_state = idle;
+        debug_line("ERROR IRQ: Bus Error !");
+        I2C_0->SR1 = I2C_0->SR1 &~I2C_SR1_BERR;
+        I2C_0->CR1 = 0;
+    }
+    if(I2C_SR1_ARLO == (I2C_SR1_ARLO & I2C_0->SR1))
+    {
+        cur_state = idle;
+        debug_line("ERROR IRQ: Arbitration lost !");
+        I2C_0->SR1 = I2C_0->SR1 &~I2C_SR1_ARLO;
+        I2C_0->CR1 = 0;
+    }
+    if(I2C_SR1_AF == (I2C_SR1_AF & I2C_0->SR1))
+    {
+        cur_state = idle;
+        debug_line("ERROR IRQ: Acknowledge failure !");
+        I2C_0->SR1 = I2C_0->SR1 &~I2C_SR1_AF;
+        I2C_0->CR1 = 0;
+    }
+    if(I2C_SR1_OVR == (I2C_SR1_OVR & I2C_0->SR1))
+    {
+        cur_state = idle;
+        debug_line("ERROR IRQ: Overrun / Underrun !");
+        I2C_0->SR1 = I2C_0->SR1 &~I2C_SR1_OVR;
+        I2C_0->CR1 = 0;
+    }
+    if(I2C_SR1_PECERR == (I2C_SR1_PECERR & I2C_0->SR1))
+    {
+        cur_state = idle;
+        debug_line("ERROR IRQ: PEC error in Reception !");
+        I2C_0->SR1 = I2C_0->SR1 &~I2C_SR1_PECERR;
+        I2C_0->CR1 = 0;
+    }
+    if(I2C_SR1_TIMEOUT == (I2C_SR1_TIMEOUT & I2C_0->SR1))
+    {
+        cur_state = idle;
+        debug_line("ERROR IRQ: Timeout / Tlow !");
+        I2C_0->SR1 = I2C_0->SR1 &~I2C_SR1_TIMEOUT;
+        I2C_0->CR1 = 0;
+    }
+    if(I2C_SR1_SMBALERT == (I2C_SR1_SMBALERT & I2C_0->SR1))
+    {
+        cur_state = idle;
+        debug_line("ERROR IRQ: SMB Alert !");
+        I2C_0->SR1 = I2C_0->SR1 &~I2C_SR1_SMBALERT;
+        I2C_0->CR1 = 0;
+    }
 }
 
 bool hal_do_i2c_transaction(bool read,
@@ -63,7 +331,7 @@ bool hal_do_i2c_transaction(bool read,
 {
     uint32_t curTime = hal_time_get_ms_tick();
     uint32_t endTime = curTime + TIMEOUT_MS;
-    while((false == idle) && (endTime > curTime))
+    while((cur_state != idle) && (endTime > curTime))
     {
         curTime = hal_time_get_ms_tick(); // wait until we can send the data out
     }
@@ -77,7 +345,7 @@ bool hal_do_i2c_transaction(bool read,
 
     curTime = hal_time_get_ms_tick();
     endTime = curTime + TIMEOUT_MS;
-    while((false == idle) && (endTime > curTime))
+    while((cur_state != idle) && (endTime > curTime))
     {
         curTime = hal_time_get_ms_tick(); // wait until we have the data back
     }
@@ -86,7 +354,7 @@ bool hal_do_i2c_transaction(bool read,
         debug_line("I2C Transaction never finished!");
         return false;
     }
-    return successfully_received;
+    return transaction_successfull;
 }
 
 void hal_start_i2c_transaction(bool read,
@@ -95,12 +363,31 @@ void hal_start_i2c_transaction(bool read,
                                uint8_t*     data,
                                uint_fast8_t num_bytes )
 {
-    return false;
+    if(idle != cur_state)
+    {
+        return;
+    }
+    I2C_0->CR1 = I2C_CR1_PE;
+    cur_transfer.i2cAddress = i2cAddress;
+    I2C_0->CR1 |= I2C_CR1_START;
+    cur_transfer.read = read;
+    cur_transfer.dataAddress = dataAddress;
+    cur_transfer.data = data;
+    cur_transfer.num_bytes = num_bytes;
+    cur_transfer.send_bytes = 0; // no bytes send out yet
+    cur_state = start_send;
+
 }
 
 bool hal_i2c_is_idle(void)
 {
-    return idle;
+    if(idle == cur_state)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
-
 

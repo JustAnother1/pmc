@@ -13,29 +13,39 @@
  *
  */
 
-#ifndef HAL_I2C_H_
-#define HAL_I2C_H_
+#include "hal_i2c.h"
 
-#include <inttypes.h>
-#include <stdbool.h>
+void hal_init_i2c(void)
+{
 
-// I2C Bus
+}
 
-void hal_init_i2c(void);
-void hal_print_i2c_configuration(void);
+void hal_print_i2c_configuration(void)
+{
+
+}
 
 bool hal_do_i2c_transaction(bool read,
                             uint_fast8_t i2cAddress,
                             uint_fast8_t dataAddress,
                             uint8_t*     data,
-                            uint_fast8_t num_bytes );
+                            uint_fast8_t num_bytes)
+{
+    return false;
+}
 
 void hal_start_i2c_transaction(bool read,
                                uint_fast8_t i2cAddress,
                                uint_fast8_t dataAddress,
                                uint8_t*     data,
-                               uint_fast8_t num_bytes );
+                               uint_fast8_t num_bytes )
+{
 
-bool hal_i2c_is_idle(void);
+}
 
-#endif /* HAL_I2C_H_ */
+bool hal_i2c_is_idle(void)
+{
+    return true;
+}
+
+

@@ -24,14 +24,16 @@
 #include "hal_cpu.h"
 #include "hal_debug.h"
 #include "hal_din.h"
+#include "hal_i2c.h"
 #include "hal_spi.h"
 #include "hal_time.h"
 #include "hal_uart.h"
-#include "device_stepper.h"
 #include "hal_usb_device_cdc.h"
 #include "command_queue.h"
-#include "trinamic.h"
+#include "device_stepper.h"
 #include "device_temperature_sensor.h"
+#include "trinamic.h"
+
 
 
 // ticks per millisecond
@@ -304,6 +306,7 @@ static void order_help(void)
 #ifdef HAS_USB
     debug_line("pb                         : print USB configuration");
 #endif
+    debug_line("pi                         : print I2C configuration");
     debug_line("pin<Port,idx>              : print state of the pin");
     debug_line("pse                        : print expansion SPI configuration");
     debug_line("pss                        : print stepper SPI configuration");
@@ -478,11 +481,21 @@ static void parse_order(int length)
     uint8_t cmd_buf[30] = {0};
     int pos_in_buf = 0;
     pos_in_buf = get_next_word(pos_in_buf, length, &cmd_buf[0]);
+    if(0 == pos_in_buf)
+    {
+        debug_line("Invalid command ! try h for help");
+        return;
+    }
     switch(cmd_buf[0])
     {
 
     case 'C':
     case 'c':
+        if(1 == pos_in_buf)
+        {
+            debug_line("Invalid command ! try h for help");
+            return;
+        }
         switch (cmd_buf[1])
         {
 
@@ -532,6 +545,11 @@ static void parse_order(int length)
 
     case 'M':
     case 'm':
+        if(1 == pos_in_buf)
+        {
+            debug_line("Invalid command ! try h for help");
+            return;
+        }
         switch (cmd_buf[1])
         {
         case 'D':
@@ -563,6 +581,11 @@ static void parse_order(int length)
 
     case 'P':
     case 'p': // print configuration
+        if(1 == pos_in_buf)
+        {
+            debug_line("Invalid command ! try h for help");
+            return;
+        }
         switch (cmd_buf[1])
         {
         case 'A':
@@ -578,6 +601,10 @@ static void parse_order(int length)
 
         case 'I':
         case 'i':
+            if(2 == pos_in_buf)
+            {
+                hal_print_i2c_configuration();
+            }
             switch(cmd_buf[2])
             {
             case 'N':
@@ -593,6 +620,11 @@ static void parse_order(int length)
 
         case 'S':
         case 's':
+            if(2 == pos_in_buf)
+            {
+                debug_line("Invalid command ! try h for help");
+                return;
+            }
             switch(cmd_buf[2])
             {
             case 'S':
@@ -613,10 +645,20 @@ static void parse_order(int length)
 #ifdef USE_STEP_DIR
         case 'T':
         case 't':
+            if(2 == pos_in_buf)
+            {
+                debug_line("Invalid command ! try h for help");
+                return;
+            }
             switch(cmd_buf[2])
             {
             case 'I':
             case 'i':
+                if(3 == pos_in_buf)
+                {
+                    debug_line("Invalid command ! try h for help");
+                    return;
+                }
                 switch(cmd_buf[3])
                 {
                 case 'M':
@@ -632,6 +674,11 @@ static void parse_order(int length)
 
             case 'R':
             case 'r':
+                if(3 == pos_in_buf)
+                {
+                    debug_line("Invalid command ! try h for help");
+                    return;
+                }
                 switch(cmd_buf[3])
                 {
                 case 'I':
@@ -653,6 +700,11 @@ static void parse_order(int length)
 #endif
         case 'U':
         case 'u':
+            if(2 == pos_in_buf)
+            {
+                debug_line("Invalid command ! try h for help");
+                return;
+            }
             switch(cmd_buf[2])
             {
             case 'D':
@@ -683,6 +735,11 @@ static void parse_order(int length)
         uint8_t receive_data[(length -2)/2];
         uint8_t send_data[(length -2)/2];
         int i;
+        if(1 == pos_in_buf)
+        {
+            debug_line("Invalid command ! try h for help");
+            return;
+        }
         switch (cmd_buf[1])
         {
         case 'S':
@@ -731,6 +788,11 @@ static void parse_order(int length)
 
     case 'S':
     case 's': // stepper
+        if(1 == pos_in_buf)
+        {
+            debug_line("Invalid command ! try h for help");
+            return;
+        }
         switch (cmd_buf[1])
         {
         case 'C':
@@ -754,7 +816,6 @@ static void parse_order(int length)
     case 'x': // current testing
         curTest(atoi((char *)&(cmd_buf[1])));
         break;
-
 
     default: // invalid command
         debug_line("Invalid command ! try h for help");

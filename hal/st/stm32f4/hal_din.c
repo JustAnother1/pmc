@@ -172,7 +172,6 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
 
 void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
 {
-    uint32_t val;
     GPIO_TypeDef * PortRegisters;
     debug_line("Configuration of pin %c %d :", port, idx);
     switch(port)
@@ -226,123 +225,7 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
         debug_line("Invalid PortRegisters !");
         return;
     }
-    if((0 > idx) || (15 < idx))
-    {
-        debug_line("Invalid Index !");
-        return;
-    }
-    // Moder
-    debug_line("GPIO->MODER     = 0x%08x", PortRegisters->MODER);
-    val = (PortRegisters->MODER) >> (idx*2);
-    val = val &3;
-    switch(val)
-    {
-    case 0: debug_line("type     : Input Pin"); break;
-    case 1: debug_line("type     : Output Pin"); break;
-    case 2: debug_line("type     : Alternate Function Pin"); break;
-    case 3: debug_line("type     : Analog Pin"); break;
-    }
-    // Typer
-    debug_line("GPIO->OTYPER     = 0x%08x", PortRegisters->OTYPER);
-    val = (PortRegisters->OTYPER) >> idx;
-    val = val &1;
-    switch(val)
-    {
-    case 0: debug_line("Output   : Push Pull"); break;
-    case 1: debug_line("Output   : Open Drain"); break;
-    }
-    // Speedr
-    debug_line("GPIO->OSPEEDR     = 0x%08x", PortRegisters->OSPEEDR);
-    val = (PortRegisters->OSPEEDR) >> (idx*2);
-    val = val &3;
-    switch(val)
-    {
-    case 0: debug_line("Output   : low speed"); break;
-    case 1: debug_line("Output   : medium speed"); break;
-    case 2: debug_line("Output   : fast speed"); break;
-    case 3: debug_line("Output   : high speed"); break;
-    }
-    // pupdr
-    debug_line("GPIO->PUPDR     = 0x%08x", PortRegisters->PUPDR);
-    val = (PortRegisters->PUPDR) >> (idx*2);
-    val = val &3;
-    switch(val)
-    {
-    case 0: debug_line("pull up  : no"); debug_line("pull down: no"); break;
-    case 1: debug_line("pull up  : yes"); debug_line("pull down: no"); break;
-    case 2: debug_line("pull up  : no"); debug_line("pull down: yes"); break;
-    case 3: debug_line("pull up  : ERROR: r e s e r v e d"); debug_line("pull down: ERROR: r e s e r v e d"); break;
-    }
-    // IDR
-    debug_line("GPIO->IDR     = 0x%08x", PortRegisters->IDR);
-    val = (PortRegisters->IDR) >> idx;
-    val = val &1;
-    switch(val)
-    {
-    case 0: debug_line("Input    : Pin is Low"); break;
-    case 1: debug_line("Input    : Pin is High"); break;
-    }
-    // ODR
-    debug_line("GPIO->ODR     = 0x%08x", PortRegisters->ODR);
-    val = (PortRegisters->ODR) >> idx;
-    val = val &1;
-    switch(val)
-    {
-    case 0: debug_line("Output   : Pin should be Low"); break;
-    case 1: debug_line("Output   : Pin should be High"); break;
-    }
-    debug_line("GPIO->AFR[0]     = 0x%08x", PortRegisters->AFR[0]);
-    debug_line("GPIO->AFR[1]     = 0x%08x", PortRegisters->AFR[1]);
-    if(idx < 8)
-    {
-        val = (PortRegisters->AFR[0]) >> (idx*4);
-        val = val &15;
-        switch(val)
-        {
-        case  0: debug_line("Alternate Function 0" ); break;
-        case  1: debug_line("Alternate Function 1" ); break;
-        case  2: debug_line("Alternate Function 2" ); break;
-        case  3: debug_line("Alternate Function 3" ); break;
-        case  4: debug_line("Alternate Function 4" ); break;
-        case  5: debug_line("Alternate Function 5" ); break;
-        case  6: debug_line("Alternate Function 6" ); break;
-        case  7: debug_line("Alternate Function 7" ); break;
-        case  8: debug_line("Alternate Function 8" ); break;
-        case  9: debug_line("Alternate Function 9" ); break;
-        case 10: debug_line("Alternate Function 10"); break;
-        case 11: debug_line("Alternate Function 11"); break;
-        case 12: debug_line("Alternate Function 12"); break;
-        case 13: debug_line("Alternate Function 13"); break;
-        case 14: debug_line("Alternate Function 14"); break;
-        case 15: debug_line("Alternate Function 15"); break;
-        }
-    }
-    else
-    {
-        idx = idx -8;
-        val = (PortRegisters->AFR[1]) >> (idx*4);
-        val = val &15;
-        switch(val)
-        {
-        case  0: debug_line("Alternate Function 0" ); break;
-        case  1: debug_line("Alternate Function 1" ); break;
-        case  2: debug_line("Alternate Function 2" ); break;
-        case  3: debug_line("Alternate Function 3" ); break;
-        case  4: debug_line("Alternate Function 4" ); break;
-        case  5: debug_line("Alternate Function 5" ); break;
-        case  6: debug_line("Alternate Function 6" ); break;
-        case  7: debug_line("Alternate Function 7" ); break;
-        case  8: debug_line("Alternate Function 8" ); break;
-        case  9: debug_line("Alternate Function 9" ); break;
-        case 10: debug_line("Alternate Function 10"); break;
-        case 11: debug_line("Alternate Function 11"); break;
-        case 12: debug_line("Alternate Function 12"); break;
-        case 13: debug_line("Alternate Function 13"); break;
-        case 14: debug_line("Alternate Function 14"); break;
-        case 15: debug_line("Alternate Function 15"); break;
-        }
-    }
-
+    print_gpio_pin_configuration(PortRegisters, idx);
 }
 
 

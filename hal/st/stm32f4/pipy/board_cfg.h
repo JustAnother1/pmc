@@ -59,14 +59,18 @@
 // priority values can be 0..15
 #define UART_0_IRQ_NUMBER          USART1_IRQn
 #define UART_0_IRQ_PRIORITY        5
-#define UART_1_IRQ_NUMBER          USART6_IRQn
-#define UART_1_IRQ_PRIORITY        14
+#define USB_FS_IRQ_NUMBER          OTG_FS_IRQn
+#define USB_FS_IRQ_PRIORITY        6
 #define SPI_0_IRQ_NUMBER           SPI1_IRQn
 #define SPI_0_IRQ_PRIORITY         8
 #define SPI_1_IRQ_NUMBER           SPI2_IRQn
 #define SPI_1_IRQ_PRIORITY         12
-#define USB_FS_IRQ_NUMBER          OTG_FS_IRQn
-#define USB_FS_IRQ_PRIORITY        6
+#define UART_1_IRQ_NUMBER          USART6_IRQn
+#define UART_1_IRQ_PRIORITY        14
+#define I2C_0_EVENT_IRQ_NUMBER     I2C1_EV_IRQn
+#define I2C_0_EVENT_IRQ_PRIORITY   15
+#define I2C_0_ERROR_IRQ_NUMBER     I2C1_ER_IRQn
+#define I2C_0_ERROR_IRQ_PRIORITY   15
 
 /******************************************************************************/
 /*                                                                            */
@@ -686,9 +690,42 @@
 /*                                                                            */
 /******************************************************************************/
 #define I2C_0                     I2C1
-#define I2C_0_SCL_GPIO_PORT       GPIOB
-#define I2C_0_SDA_GPIO_PORT       GPIOB
 
+#define I2C_0_APB1ENR             RCC_APB1ENR_I2C1EN
+#define I2C_0_APB1_CLOCK          42
+#define I2C_0_SCL_GPIO_PORT_RCC   RCC_AHB1ENR_GPIOBEN
+#define I2C_0_SDA_GPIO_PORT_RCC   RCC_AHB1ENR_GPIOBEN
+#define I2C_0_SCL_GPIO_PORT       GPIOB
+#define I2C_0_SCL_GPIO_PIN        6
+#define I2C_0_SDA_GPIO_PORT       GPIOB
+#define I2C_0_SDA_GPIO_PIN        7
+
+// SCL
+#define I2C_0_SCL_GPIO_MODER_0    GPIO_MODER_6_ALTFUNC_0
+#define I2C_0_SCL_GPIO_MODER_1    GPIO_MODER_6_ALTFUNC_1
+#define I2C_0_SCL_GPIO_OTYPER_0   GPIO_OTYPER_6_OPEN_DRAIN_0
+#define I2C_0_SCL_GPIO_OTYPER_1   GPIO_OTYPER_6_OPEN_DRAIN_1
+#define I2C_0_SCL_GPIO_OSPEEDR_0  GPIO_OSPEEDER_6_HIGH_SPEED_0
+#define I2C_0_SCL_GPIO_OSPEEDR_1  GPIO_OSPEEDER_6_HIGH_SPEED_1
+#define I2C_0_SCL_GPIO_PUPD_0     GPIO_PUPDR_6_NONE_0
+#define I2C_0_SCL_GPIO_PUPD_1     GPIO_PUPDR_6_NONE_1
+#define I2C_0_SCL_GPIO_AFR_0_0    0x0b000000
+#define I2C_0_SCL_GPIO_AFR_0_1    0x04000000
+#define I2C_0_SCL_GPIO_AFR_1_0    0
+#define I2C_0_SCL_GPIO_AFR_1_1    0
+// SDA
+#define I2C_0_SDA_GPIO_MODER_0    GPIO_MODER_7_ALTFUNC_0
+#define I2C_0_SDA_GPIO_MODER_1    GPIO_MODER_7_ALTFUNC_1
+#define I2C_0_SDA_GPIO_OTYPER_0   GPIO_OTYPER_7_OPEN_DRAIN_0
+#define I2C_0_SDA_GPIO_OTYPER_1   GPIO_OTYPER_7_OPEN_DRAIN_1
+#define I2C_0_SDA_GPIO_OSPEEDR_0  GPIO_OSPEEDER_7_HIGH_SPEED_0
+#define I2C_0_SDA_GPIO_OSPEEDR_1  GPIO_OSPEEDER_7_HIGH_SPEED_1
+#define I2C_0_SDA_GPIO_PUPD_0     GPIO_PUPDR_7_NONE_0
+#define I2C_0_SDA_GPIO_PUPD_1     GPIO_PUPDR_7_NONE_1
+#define I2C_0_SDA_GPIO_AFR_0_0    0xb0000000
+#define I2C_0_SDA_GPIO_AFR_0_1    0x40000000
+#define I2C_0_SDA_GPIO_AFR_1_0    0
+#define I2C_0_SDA_GPIO_AFR_1_1    0
 
 /******************************************************************************/
 /*                                                                            */

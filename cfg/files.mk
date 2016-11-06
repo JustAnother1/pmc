@@ -33,12 +33,14 @@ SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_buzzer.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_cpu.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_din.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_dout.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_i2c.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_led.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_power.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_pwm.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_spi.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_time.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_watchdog.c
-SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_power.c
+
 
 # source files for specific features - only compiled if feature is activated
 ifeq ($(USE_UART), yes)

@@ -171,12 +171,13 @@ uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t tempe
     return 0;
 }
 
-
+/*
 void curTest(int value)
 {
     debug_line("Found Value %d !", value);
     dev_heater_set_temperature_sensor(1, 5);
     dev_heater_set_target_temperature(1, value * 10);
 }
+*/
 
 // end of File

@@ -27,6 +27,7 @@
 #include "hal_spi.h"
 #include "debug.h"
 #include "hal_cpu.h"
+#include "hal_i2c.h"
 
 #define ADC_USE_DMA 0
 
@@ -41,6 +42,7 @@ typedef uint_fast16_t (*ADCTicksToDegCFkt)(uint32_t DR);
 static ADCTicksToDegCFkt converters[NUM_TEMPERATURES];
 
 static bool start;
+static bool spi_ok;
 static int curDevice;
 static uint16_t res_buf[NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES];
 
@@ -61,8 +63,10 @@ void hal_adc_init(void)
     converters[4] = InternalTempSensorConverter;
 
     hal_init_expansion_spi();
+    hal_init_i2c();
 
     start = true;
+    spi_ok = true;
     curDevice = 0;
     for(i = 0; i < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES); i++)
     {
@@ -254,36 +258,71 @@ static void aquireValues(void)
                 // debug_msg("Received: 0x");
                 // debug_hex_buffer(&receive_data[0], 4);
                 // debug_line(".");
-                if(1 == (receive_data[3] & 0x01))
+                if(true == spi_ok)
                 {
-                    debug_line("Open Circut.");
-                }
-                if(2 == (receive_data[3] & 0x02))
-                {
-                    debug_line("Short to GND.");
-                }
-                if(4 == (receive_data[3] & 0x04))
-                {
-                    debug_line("Short to Vcc.");
-                }
-                if(1 == (receive_data[1] & 0x01))
-                {
-                    debug_line("Fault Bit.");
-                }
-                tempMeasured = (receive_data[1]>>2) + (receive_data[0] << 6);
-                tempMeasured = tempMeasured * 10;
-                tempMeasured = tempMeasured / 4;
+                    if(1 == (receive_data[3] & 0x01))
+                    {
+                        debug_line("Open Circuit.");
+                        spi_ok = false;
+                    }
+                    if(2 == (receive_data[3] & 0x02))
+                    {
+                        debug_line("Short to GND.");
+                        spi_ok = false;
+                    }
+                    if(4 == (receive_data[3] & 0x04))
+                    {
+                        debug_line("Short to Vcc.");
+                        spi_ok = false;
+                    }
+                    if(1 == (receive_data[1] & 0x01))
+                    {
+                        debug_line("Fault Bit.");
+                        spi_ok = false;
+                    }
 
-                tempReference = (receive_data[3]>>4) + (receive_data[2]<<4);
-                tempReference = tempReference * 100;
-                tempReference = tempReference / 16;
-                // debug_line("Temperature at Reference Junction = %d /100 °C", tempReference);
-                // debug_line("Done.");
-                if((10000 < tempMeasured ) || (tempMeasured < 0))
-                {
-                    tempMeasured = 0;
+                    tempMeasured = (receive_data[1]>>2) + (receive_data[0] << 6);
+                    tempMeasured = tempMeasured * 10;
+                    tempMeasured = tempMeasured / 4;
+
+                    tempReference = (receive_data[3]>>4) + (receive_data[2]<<4);
+                    tempReference = tempReference * 100;
+                    tempReference = tempReference / 16;
+                    // debug_line("Temperature at Reference Junction = %d /100 °C", tempReference);
+                    // debug_line("Done.");
+                    if((10000 < tempMeasured ) || (tempMeasured < 0))
+                    {
+                        tempMeasured = 0;
+                    }
+
+                    res_buf[curDevice] = tempMeasured;
                 }
-                res_buf[curDevice] = tempMeasured;
+                else
+                {
+                    if( (1 != (receive_data[3] & 0x01)) &&
+                        (2 != (receive_data[3] & 0x02)) &&
+                        (4 != (receive_data[3] & 0x04)) &&
+                        (1 != (receive_data[1] & 0x01)) )
+                    {
+                        spi_ok = true;
+                        tempMeasured = (receive_data[1]>>2) + (receive_data[0] << 6);
+                        tempMeasured = tempMeasured * 10;
+                        tempMeasured = tempMeasured / 4;
+
+                        tempReference = (receive_data[3]>>4) + (receive_data[2]<<4);
+                        tempReference = tempReference * 100;
+                        tempReference = tempReference / 16;
+                        // debug_line("Temperature at Reference Junction = %d /100 °C", tempReference);
+                        // debug_line("Done.");
+                        if((10000 < tempMeasured ) || (tempMeasured < 0))
+                        {
+                            tempMeasured = 0;
+                        }
+
+                        res_buf[curDevice] = tempMeasured;
+                    }
+                    // else - SPI still fails
+                }
                 start = true;
             }
             break;

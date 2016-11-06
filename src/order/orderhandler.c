@@ -40,7 +40,7 @@ void oh_handle_request_information(uint_fast8_t parameter)
         break;
 
     case 1: // serial number string
-        i = fw_cfg_write_setting_to(SETTING_SERIAL_NUMBER, com_get_start_parameter());
+        i = fw_cfg_read_setting_to(SETTING_SERIAL_NUMBER, com_get_start_parameter());
         com_send_ok_with_prefilled_parameter(i);
         break;
 
@@ -50,7 +50,7 @@ void oh_handle_request_information(uint_fast8_t parameter)
         break;
 
     case 3: // given name / identity string
-        i = fw_cfg_write_setting_to(SETTING_GIVEN_NAME, com_get_start_parameter());
+        i = fw_cfg_read_setting_to(SETTING_GIVEN_NAME, com_get_start_parameter());
         com_send_ok_with_prefilled_parameter(i);
         break;
 
