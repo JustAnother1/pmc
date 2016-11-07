@@ -15,6 +15,7 @@
 
 #include "hal_i2c.h"
 #include "board_cfg.h"
+#include "hal_cpu.h"
 #include "hal_debug.h"
 #include "hal_time.h"
 #include "st_gpio.h"
@@ -329,11 +330,11 @@ bool hal_do_i2c_transaction(bool read,
                             uint8_t*     data,
                             uint_fast8_t num_bytes)
 {
-    uint32_t curTime = hal_time_get_ms_tick();
+    uint32_t curTime = hal_cpu_get_ms_tick();
     uint32_t endTime = curTime + TIMEOUT_MS;
     while((cur_state != idle) && (endTime > curTime))
     {
-        curTime = hal_time_get_ms_tick(); // wait until we can send the data out
+        curTime = hal_cpu_get_ms_tick(); // wait until we can send the data out
     }
     if(endTime == curTime)
     {
@@ -343,11 +344,11 @@ bool hal_do_i2c_transaction(bool read,
 
     hal_start_i2c_transaction(read, i2cAddress, dataAddress, data, num_bytes);
 
-    curTime = hal_time_get_ms_tick();
+    curTime = hal_cpu_get_ms_tick();
     endTime = curTime + TIMEOUT_MS;
     while((cur_state != idle) && (endTime > curTime))
     {
-        curTime = hal_time_get_ms_tick(); // wait until we have the data back
+        curTime = hal_cpu_get_ms_tick(); // wait until we have the data back
     }
     if(endTime == curTime)
     {

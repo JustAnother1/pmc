@@ -402,11 +402,11 @@ static bool hal_spi_do_transaction(uint_fast8_t device,
 {
     if(device < MAX_SPI)
     {
-        uint32_t curTime = hal_time_get_ms_tick();
+        uint32_t curTime = hal_cpu_get_ms_tick();
         uint32_t endTime = curTime + TIMEOUT_MS;
         while((false == devices[device].idle) && (endTime > curTime))
         {
-            curTime = hal_time_get_ms_tick(); // wait until we can send the data out
+            curTime = hal_cpu_get_ms_tick(); // wait until we can send the data out
         }
         if(endTime == curTime)
         {
@@ -418,11 +418,11 @@ static bool hal_spi_do_transaction(uint_fast8_t device,
                                       num_bytes_to_send,
                                       data_received);
 
-        curTime = hal_time_get_ms_tick();
+        curTime = hal_cpu_get_ms_tick();
         endTime = curTime + TIMEOUT_MS;
         while((false == devices[device].idle) && (endTime > curTime))
         {
-            curTime = hal_time_get_ms_tick(); // wait until we have the data back
+            curTime = hal_cpu_get_ms_tick(); // wait until we have the data back
         }
         if(endTime == curTime)
         {

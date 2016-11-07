@@ -35,6 +35,8 @@ struct tick_node {
 };
 typedef struct tick_node tick_entry;
 
+static volatile uint32_t now;
+
 static void hal_cpu_start_ms_timer(void);
 static tick_entry * allocateNewEntry(void);
 
@@ -59,6 +61,9 @@ void SystemInit(void)
 
 void hal_cpu_init_hal(void)
 {
+    // start time
+    now = 0;
+    hal_cpu_start_ms_timer();
     // CC Memory
     RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN;
     // Power
@@ -154,22 +159,17 @@ void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
                 }
             }
         } while(false == done);
-        hal_cpu_start_ms_timer();
     }
+}
+
+uint32_t hal_cpu_get_ms_tick(void)
+{
+    return now;
 }
 
 void SysTick_Handler(void)
 {
-    tick_entry *cur = tick_list;
-    while(NULL != cur)
-    {
-        if(NULL != cur->tick)
-        {
-            // Execute that function
-            (*cur->tick)();
-        }
-        cur = cur->next;
-    }
+    now++;
 }
 
 // Configure SysTick to generate an interrupt every millisecond
@@ -225,7 +225,17 @@ void hal_cpu_do_software_reset(void)
 
 void hal_cpu_tick(void)
 {
-    // nothing to do here
+
+    tick_entry *cur = tick_list;
+    while(NULL != cur)
+    {
+        if(NULL != cur->tick)
+        {
+            // Execute that function
+            (*cur->tick)();
+        }
+        cur = cur->next;
+    }
 }
 
 // end of file

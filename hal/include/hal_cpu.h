@@ -23,5 +23,6 @@ void hal_cpu_add_ms_tick_function(msTickFkt additional_function);
 void hal_cpu_die(void);
 void hal_cpu_do_software_reset(void);
 void hal_cpu_tick(void);
+uint32_t hal_cpu_get_ms_tick(void);
 
 #endif /* HAL_CPU_H_ */

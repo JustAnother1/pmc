@@ -32,10 +32,13 @@
 #define ADC_USE_DMA 0
 
 // Temperatures measured with internal ADC = Pins + Chip Temperature
-#define NUM_TEMPERATURES            (ADC_NUM_PINS + 1)
+#define NUM_TEMPERATURES                      (ADC_NUM_PINS + 1)
 // Temperatures measured by external chips ( Thermocouple, I2C Sensor)
-#define NUM_EXTERNAL_TEMPERATURES   2
-#define MAX_TRIES                   500
+#define NUM_EXTERNAL_TEMPERATURES             2
+#define MAX_TRIES                             500
+#define I2C_TEMP_POLL_MS                      240 // The I2C sensor measures only every 240ms
+#define I2C_TEMPERATURE_SENSOR_DEVICE_ADDRESS 0x90
+#define I2C_TEMPERATURE_SENSOR_DATA_ADDRESS   0
 
 
 typedef uint_fast16_t (*ADCTicksToDegCFkt)(uint32_t DR);
@@ -45,6 +48,7 @@ static bool start;
 static bool spi_ok;
 static int curDevice;
 static uint16_t res_buf[NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES];
+static uint32_t nextMeasurement;
 
 static void aquireValues(void);
 
@@ -61,6 +65,8 @@ void hal_adc_init(void)
     }
     converters[0] = SteinhartHartBOnlyConverter;
     converters[4] = InternalTempSensorConverter;
+
+    nextMeasurement = 0;
 
     hal_init_expansion_spi();
     hal_init_i2c();
@@ -156,7 +162,21 @@ void hal_adc_init(void)
 #else
     ADC1->CR1 = 0;
 #endif
-
+/*
+    // I2C
+    {
+        // 0x80 in Register 3 sets the resolution to 16bit.
+        uint8_t data[2] = {0x80, 0};
+        if(true == hal_do_i2c_transaction(false, 0x90, 3, &data[0], 1))
+        {
+                // debug_line("success!");
+        }
+        else
+        {
+            debug_line("ERROR: I2C write failed!");
+        }
+    }
+*/
     hal_cpu_add_ms_tick_function(aquireValues);
 }
 
@@ -262,22 +282,22 @@ static void aquireValues(void)
                 {
                     if(1 == (receive_data[3] & 0x01))
                     {
-                        debug_line("Open Circuit.");
+                        debug_line("ERROR SPI Thermo: Open Circuit.");
                         spi_ok = false;
                     }
                     if(2 == (receive_data[3] & 0x02))
                     {
-                        debug_line("Short to GND.");
+                        debug_line("ERROR SPI Thermo: Short to GND.");
                         spi_ok = false;
                     }
                     if(4 == (receive_data[3] & 0x04))
                     {
-                        debug_line("Short to Vcc.");
+                        debug_line("ERROR SPI Thermo: Short to Vcc.");
                         spi_ok = false;
                     }
                     if(1 == (receive_data[1] & 0x01))
                     {
-                        debug_line("Fault Bit.");
+                        debug_line("ERROR SPI Thermo: Fault Bit.");
                         spi_ok = false;
                     }
 
@@ -328,8 +348,36 @@ static void aquireValues(void)
             break;
 
         case 1: // I2C Temperature Sensor
-            // TODO I2C Temperature Sensor
-            res_buf[curDevice] = 6;
+            if(nextMeasurement < hal_cpu_get_ms_tick())
+            {
+                uint8_t data[2];
+
+                if(true == hal_do_i2c_transaction(true,
+                        I2C_TEMPERATURE_SENSOR_DEVICE_ADDRESS,
+                        I2C_TEMPERATURE_SENSOR_DATA_ADDRESS,
+                        &data[0], 2) )
+                {
+                    uint32_t res;
+                    // debug_line("read: 0x%02x, 0x%02x !", data[0], data[1]);
+                    // debug_line("success!");
+                    res = (data[0] <<8) + data[1];
+                    if(res > 32767)
+                    {
+                        // negative temperature
+                        res_buf[curDevice] = 0; // I don't care if below zero !
+                    }
+                    else
+                    {
+                        // positive temperature
+                        res_buf[curDevice] = (res/128) * 10; // 0.1°C resolution
+                    }
+                }
+                else
+                {
+                    debug_line("ERROR: I2C Temp failed!");
+                }
+                nextMeasurement = hal_cpu_get_ms_tick() + I2C_TEMP_POLL_MS;
+            }
             break;
 
         default:

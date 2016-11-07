@@ -83,7 +83,7 @@ void debug_tick(void)
 
 static void count_debug_ticks_per_ms(void)
 {
-    uint_fast32_t time =  hal_time_get_ms_tick();
+    uint_fast32_t time =  hal_cpu_get_ms_tick();
     if(tick_value == time)
     {
         // another tick in this ms
@@ -337,7 +337,7 @@ static void order_curTime(void)
     uint32_t seconds = 0;
     uint32_t minutes = 0;
     uint32_t hours = 0;
-    uint32_t now =  hal_time_get_ms_tick();
+    uint32_t now =  hal_cpu_get_ms_tick();
     debug_line("now : %d", now);
     if(now < 1000)
     {

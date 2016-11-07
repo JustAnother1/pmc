@@ -20,11 +20,6 @@ void hal_time_init(void)
 
 }
 
-uint32_t hal_time_get_ms_tick(void)
-{
-    return 0;
-}
-
 void hal_time_ms_sleep(uint_fast32_t ms)
 {
 

@@ -25,6 +25,7 @@
 #include "board_cfg.h"
 #include "hal_debug.h"
 #include "hal_led.h"
+#include "hal_cpu.h"
 
 // Baudrate is 115200 so a byte should transfere in less than one ms
 #define UART_BYTE_TIMEOUT_MS      5
@@ -65,72 +66,72 @@ static bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * fram
 
 bool hal_init_gcode_uart(uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size)
 {
-	return hal_uart_init(GCODE_UART, rec_buf_size, send_buf_size);
+    return hal_uart_init(GCODE_UART, rec_buf_size, send_buf_size);
 }
 
 void hal_print_configuration_gcode_uart(void)
 {
-	hal_uart_print_configuration(GCODE_UART);
+    hal_uart_print_configuration(GCODE_UART);
 }
 
 uint_fast8_t hal_get_gcode_uart_byte_at_offset(uint_fast16_t offset)
 {
-	return hal_uart_get_byte_at_offset(GCODE_UART, offset);
+    return hal_uart_get_byte_at_offset(GCODE_UART, offset);
 }
 
 uint_fast16_t hal_get_available_bytes_gcode_uart(void)
 {
-	return hal_uart_get_available_bytes(GCODE_UART);
+    return hal_uart_get_available_bytes(GCODE_UART);
 }
 
 void hal_forget_bytes_gcode_uart(uint_fast16_t how_many)
 {
-	hal_uart_forget_bytes(GCODE_UART, how_many);
+    hal_uart_forget_bytes(GCODE_UART, how_many);
 }
 
 void hal_send_frame_gcode_uart(uint8_t * frame, uint_fast16_t length)
 {
-	hal_uart_send_frame(GCODE_UART, frame, length);
+    hal_uart_send_frame(GCODE_UART, frame, length);
 }
 
 bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t length)
 {
-	return hal_uart_send_frame_non_blocking(GCODE_UART, frame, length);
+    return hal_uart_send_frame_non_blocking(GCODE_UART, frame, length);
 }
 
 bool hal_init_debug_uart(uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size)
 {
-	return hal_uart_init(DEBUG_UART, rec_buf_size, send_buf_size);
+    return hal_uart_init(DEBUG_UART, rec_buf_size, send_buf_size);
 }
 
 void hal_print_configuration_debug_uart(void)
 {
-	hal_uart_print_configuration(DEBUG_UART);
+    hal_uart_print_configuration(DEBUG_UART);
 }
 
 uint_fast8_t hal_get_debug_uart_byte_at_offset(uint_fast16_t offset)
 {
-	return hal_uart_get_byte_at_offset(DEBUG_UART, offset);
+    return hal_uart_get_byte_at_offset(DEBUG_UART, offset);
 }
 
 uint_fast16_t hal_get_available_bytes_debug_uart(void)
 {
-	return hal_uart_get_available_bytes(DEBUG_UART);
+    return hal_uart_get_available_bytes(DEBUG_UART);
 }
 
 void hal_forget_bytes_debug_uart(uint_fast16_t how_many)
 {
-	hal_uart_forget_bytes(DEBUG_UART, how_many);
+    hal_uart_forget_bytes(DEBUG_UART, how_many);
 }
 
 void hal_send_frame_debug_uart(uint8_t * frame, uint_fast16_t length)
 {
-	hal_uart_send_frame(DEBUG_UART, frame, length);
+    hal_uart_send_frame(DEBUG_UART, frame, length);
 }
 
 bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t length)
 {
-	return hal_uart_send_frame_non_blocking(DEBUG_UART, frame, length);
+    return hal_uart_send_frame_non_blocking(DEBUG_UART, frame, length);
 }
 
 
@@ -214,19 +215,19 @@ static void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast1
         uint_fast16_t bytesSend = 0;
         while(bytesSend < length)
         {
-            uint32_t timeout = hal_time_get_ms_tick() + UART_BYTE_TIMEOUT_MS;
-            if(timeout < hal_time_get_ms_tick())
+            uint32_t timeout = hal_cpu_get_ms_tick() + UART_BYTE_TIMEOUT_MS;
+            if(timeout < hal_cpu_get_ms_tick())
             {
                 // wrap around
                 // wait for TX to be ready for the next Byte
-                while(   (timeout < hal_time_get_ms_tick())
+                while(   (timeout < hal_cpu_get_ms_tick())
                       && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
                 {
                     ; // wait
                 }
             }
             // wait for TX to be ready for the next Byte
-            while(   (timeout > hal_time_get_ms_tick())
+            while(   (timeout > hal_cpu_get_ms_tick())
                   && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
             {
                 ; // wait

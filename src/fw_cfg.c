@@ -18,7 +18,7 @@
 
 void fw_cfg_init(void)
 {
-    hal_init_i2c();
+    // hal_init_i2c();
 }
 
 void fw_cfg_get_value_property(uint_fast8_t idx)
@@ -79,6 +79,7 @@ uint_fast8_t fw_cfg_read_setting_to(uint_fast8_t setting, uint8_t *position)
  */
 
 
+
 /* write
 void curTest(int value)
 {
@@ -96,6 +97,7 @@ void curTest(int value)
 
 
 // read
+
 void curTest(int value)
 {
     uint8_t data[3] = {0,0,0};

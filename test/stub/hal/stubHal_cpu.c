@@ -40,3 +40,8 @@ void hal_cpu_tick(void)
 {
 
 }
+
+uint32_t hal_cpu_get_ms_tick(void)
+{
+    return 0;
+}

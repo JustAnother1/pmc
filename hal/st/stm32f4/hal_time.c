@@ -26,14 +26,12 @@
 
 #define PWM_FREQUENCY 500000 // TODO
 
-static void hal_time_ISR(void);
 static TIM_TypeDef* get_timer_register_for(uint_fast8_t device);
 static void enable_clock_for_timer(uint_fast8_t device);
 static void disable_clock_for_timer(uint_fast8_t device);
 static void error_isr_on_stopped_timer(void);
 static uint32_t getClockFrequencyForTimer(uint_fast8_t device);
 
-static volatile uint32_t now = 0;
 static volatile TimerFkt tim_1_isr;
 static volatile TimerFkt tim_2_isr;
 static volatile TimerFkt tim_3_isr;
@@ -65,17 +63,6 @@ void hal_time_init(void)
     tim_12_isr =  &error_isr_on_stopped_timer;
     tim_13_isr =  &error_isr_on_stopped_timer;
     tim_14_isr =  &error_isr_on_stopped_timer;
-    hal_cpu_add_ms_tick_function(&hal_time_ISR);
-}
-
-static void hal_time_ISR(void)
-{
-    now++;
-}
-
-uint32_t hal_time_get_ms_tick(void)
-{
-    return now;
 }
 
 static void error_isr_on_stopped_timer(void)
@@ -85,11 +72,11 @@ static void error_isr_on_stopped_timer(void)
 
 void hal_time_ms_sleep(uint_fast32_t ms)
 {
-    uint32_t tickend = hal_time_get_ms_tick() + ms;
-    uint32_t curtick = hal_time_get_ms_tick();
+    uint32_t tickend = hal_cpu_get_ms_tick() + ms;
+    uint32_t curtick = hal_cpu_get_ms_tick();
     while(curtick < tickend)
     {
-        curtick = hal_time_get_ms_tick();
+        curtick = hal_cpu_get_ms_tick();
     }
 }
 
