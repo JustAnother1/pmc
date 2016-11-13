@@ -2159,9 +2159,9 @@ void EP_PrepareRx(uint8_t   ep_addr,
  */
 static void DataOutStage(uint8_t epnum)
 {
-    USB_OTG_EP *ep;
     if(epnum == 0)
     {
+        USB_OTG_EP *ep;
         ep = &out_ep[0];
         if(device_state == USB_OTG_EP0_DATA_OUT)
         {
@@ -2197,9 +2197,9 @@ static void DataOutStage(uint8_t epnum)
  */
 static void DataInStage(uint8_t epnum)
 {
-    USB_OTG_EP *ep;
     if(epnum == 0)
     {
+        USB_OTG_EP *ep;
         ep = &in_ep[0];
         if(device_state == USB_OTG_EP0_DATA_IN)
         {

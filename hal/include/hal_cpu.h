@@ -16,6 +16,8 @@
 #ifndef HAL_CPU_H_
 #define HAL_CPU_H_
 
+#include <inttypes.h>
+
 typedef void (*msTickFkt)(void);
 
 void hal_cpu_init_hal(void);

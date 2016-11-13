@@ -276,7 +276,6 @@ static void usb_cdc_DeInit(uint8_t cfgidx)
 static void usb_cdc_Setup(USB_SETUP_REQ *req)
 {
     uint16_t len;
-    uint8_t  *pbuf;
 
     switch (req->bmRequest & USB_REQ_TYPE_MASK)
     {
@@ -327,6 +326,7 @@ static void usb_cdc_Setup(USB_SETUP_REQ *req)
         case USB_REQ_GET_DESCRIPTOR:
             if( (req->wValue >> 8) == CDC_DESCRIPTOR_TYPE)
             {
+                uint8_t  *pbuf;
                 pbuf = usbd_cdc_CfgDesc + 9 + (9 * USBD_ITF_MAX_NUM);
                 len = MIN(USB_CDC_DESC_SIZ , req->wLength);
                 usb_CtlSendData(pbuf, len);

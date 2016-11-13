@@ -13,6 +13,7 @@
  *
  */
 
+#include <stdio.h>
 #include "device_buzzer.h"
 #include "protocol.h"
 #include "hal_adc.h"
@@ -20,6 +21,7 @@
 #include "hal_cfg.h"
 #include "hal_cpu.h"
 #include "hal_debug.h"
+#include "hal_time.h"
 #include "com.h"
 
 #define INVALID_SENSOR 255
@@ -27,8 +29,14 @@
 
 void TemperatureControlTick(void);
 
+static uint32_t count = 0;
+static uint32_t max_pwm = 0xffff;
+static uint32_t min_pwm = 0;
+static float last_iTerm = 0;
+static uint_fast16_t last_temperature_is = 0;
+
 static uint_fast8_t temperature_sensors[NUMBER_OF_HEATERS];
-static uint_fast16_t target_temperature[NUMBER_OF_HEATERS];
+volatile uint_fast16_t target_temperature[NUMBER_OF_HEATERS];
 static uint_fast16_t cur_pwm[NUMBER_OF_HEATERS];
 
 typedef uint_fast16_t (*RegulatorFkt)(uint_fast16_t temperature_should, uint_fast16_t temperature_is, uint_fast16_t curPwm);
@@ -46,7 +54,7 @@ void dev_heater_init(void)
         temperature_sensors[i] = INVALID_SENSOR;
         target_temperature[i] = 0;
         cur_pwm[i] = 0;
-        regulators[i] = BangBangRegulator;
+        regulators[i] = PidRegulator;
     }
     hal_cpu_add_ms_tick_function(TemperatureControlTick);
 }
@@ -135,13 +143,20 @@ void TemperatureControlTick(void)
             // Read Temperature
             uint_fast16_t curTemp = hal_adc_get_value(temperature_sensors[i]);
             // compute next PWM setting
-            newPwmValue = regulators[i](target_temperature[i], curTemp, cur_pwm[i]);
-            if(newPwmValue != cur_pwm[i])
+            if(NULL != regulators[i])
             {
-                 hal_pwm_set_on_time(i, newPwmValue);
-                 cur_pwm[i] = newPwmValue;
+                newPwmValue = regulators[i](target_temperature[i], curTemp, cur_pwm[i]);
+                if(newPwmValue != cur_pwm[i])
+                {
+                     hal_pwm_set_on_time(i, newPwmValue);
+                     cur_pwm[i] = newPwmValue;
+                }
+                // else already correct PWM set.
             }
-            // else already correct PWM set.
+            else
+            {
+                debug_line("ERROR: Regulator %d NULL !", i);
+            }
         }
     }
 }
@@ -167,17 +182,65 @@ uint_fast16_t BangBangRegulator(uint_fast16_t temperature_should, uint_fast16_t 
 
 uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t temperature_is, uint_fast16_t curPwm)
 {
-    // TODO
-    return 0;
+    float kp = 2086;
+    float ki = 0;
+    float kd = 0;
+    float nextPwm;
+
+
+    uint_fast16_t error = temperature_should - temperature_is;
+
+    float new_I = last_iTerm + (error * ki);
+    if(new_I > max_pwm)
+    {
+        new_I = max_pwm;
+    }
+    else if(new_I < 0.0)
+    {
+        new_I = 0;
+    }
+
+
+    int_fast16_t temperatureChange = (temperature_is - last_temperature_is);
+
+    // calculate the PID output
+    nextPwm = (kp * error) + new_I - (kd * temperatureChange);
+
+    if (nextPwm >= max_pwm)
+    {
+        nextPwm = max_pwm;
+    }
+    else if(nextPwm < min_pwm)
+    {
+        nextPwm = min_pwm;
+    }
+    else
+    {
+        last_iTerm = new_I; // Only update I term when output is not saturated.
+    }
+
+    last_temperature_is = temperature_is;
+    return (uint_fast16_t)nextPwm;
 }
 
-/*
+void reportTemperature(void)
+{
+    count++;
+    if(100 == count)
+    {
+        debug_line("time %d temp %d pwm %d", hal_cpu_get_ms_tick(), hal_adc_get_value(5), cur_pwm[1]);
+        count = 0;
+    }
+}
+
 void curTest(int value)
 {
     debug_line("Found Value %d !", value);
     dev_heater_set_temperature_sensor(1, 5);
     dev_heater_set_target_temperature(1, value * 10);
+    debug_line("Target Temperature %d !", target_temperature[1]);
+    count = 0;
+    hal_cpu_add_ms_tick_function(reportTemperature);
 }
-*/
 
 // end of File

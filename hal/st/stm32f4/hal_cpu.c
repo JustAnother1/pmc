@@ -119,11 +119,16 @@ static tick_entry * allocateNewEntry(void)
     tick_entry * theMsTick = (struct tick_node *) malloc(sizeof(struct tick_node));
     if(NULL == theMsTick)
     {
-        for(;;){;} // Time not yet working
+        debug_line("ERROR: malloc failed !");
+        // for(;;){;} // Time not yet working
+        return NULL;
     }
-    theMsTick->tick = NULL;
-    theMsTick->next = NULL;
-    return theMsTick;
+    else
+    {
+        theMsTick->tick = NULL;
+        theMsTick->next = NULL;
+        return theMsTick;
+    }
 }
 
 void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
@@ -133,6 +138,11 @@ void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
         if(NULL == tick_list)
         {
             tick_list = allocateNewEntry();
+            if(NULL == tick_list)
+            {
+                debug_line("ERROR: Could not add tick function!");
+                return;
+            }
         }
         tick_entry *cur = tick_list;
         bool done = false;
@@ -223,19 +233,75 @@ void hal_cpu_do_software_reset(void)
     NVIC_SystemReset();
 }
 
+static uint32_t lastTickAt = 0;
+
 void hal_cpu_tick(void)
 {
-
-    tick_entry *cur = tick_list;
-    while(NULL != cur)
+    // this gets called from the main loop.
+    // the main loop should spin multiple times each millisecond.
+    uint32_t curTick = hal_cpu_get_ms_tick();
+    if(curTick != lastTickAt)
     {
-        if(NULL != cur->tick)
+        tick_entry *cur = tick_list;
+        while(NULL != cur)
         {
-            // Execute that function
-            (*cur->tick)();
+            if(NULL != cur->tick)
+            {
+                // Execute that function
+                (*cur->tick)();
+            }
+            cur = cur->next;
         }
-        cur = cur->next;
+        lastTickAt = curTick;
     }
+}
+
+// my own Fault Handlers
+// TODO have them report the fault somewhere.
+
+void NMI_Handler(void)
+{
+    NVIC_SystemReset();
+}
+
+void HardFault_Handler(void)
+{
+    NVIC_SystemReset();
+}
+
+void MemManage_Handler(void)
+{
+    NVIC_SystemReset();
+}
+
+void BusFault_Handler(void)
+{
+    NVIC_SystemReset();
+}
+
+void UsageFault_Handler(void)
+{
+    NVIC_SystemReset();
+}
+
+void SVC_Handler(void)
+{
+    NVIC_SystemReset();
+}
+
+void DebugMon_Handler(void)
+{
+    NVIC_SystemReset();
+}
+
+void PendSV_Handler(void)
+{
+    NVIC_SystemReset();
+}
+
+void FPU_IRQHandler(void)
+{
+    NVIC_SystemReset();
 }
 
 // end of file

@@ -223,18 +223,6 @@ void hal_pwm_init(void)
 
 }
 
-/*
-void curTest(int value)
-{
-    PWM_0_GPIO_PORT->ODR        |= PWM_0_ODR;
-    PWM_1_GPIO_PORT->ODR        |= PWM_1_ODR;
-
-    PWM_2_GPIO_PORT->ODR        |= PWM_2_ODR;
-    PWM_3_GPIO_PORT->ODR        |= PWM_3_ODR;
-    PWM_4_GPIO_PORT->ODR        |= PWM_4_ODR;
-}
-*/
-
 uint_fast8_t hal_pwm_get_amount(void)
 {
     return PWM_NUM_PINS;
@@ -242,8 +230,6 @@ uint_fast8_t hal_pwm_get_amount(void)
 
 void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)
 {
-    debug_line("PWM Set on time!");
-    debug_line("device %d, onTime %d !", device, on_time);
     if(device < PWM_NUM_PINS)
     {
         if(0 == on_time)

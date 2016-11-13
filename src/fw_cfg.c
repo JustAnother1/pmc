@@ -97,7 +97,7 @@ void curTest(int value)
 
 
 // read
-
+/*
 void curTest(int value)
 {
     uint8_t data[3] = {0,0,0};
@@ -112,7 +112,7 @@ void curTest(int value)
         debug_line("failed!");
     }
 }
-
+*/
 
 
 // end of File

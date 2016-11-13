@@ -5,9 +5,13 @@ else
 	CCPREFIX = 
 endif 
 
-CC = $(CCPREFIX)gcc
-CP = $(CCPREFIX)objcopy
+ifeq ($(COMPILER),clang)
+	CC = clang
+else
+	CC = $(CCPREFIX)gcc
+endif
 AS = $(CCPREFIX)gcc -x assembler-with-cpp
+CP = $(CCPREFIX)objcopy
 DB = $(CCPREFIX)gdb
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S

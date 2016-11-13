@@ -13,9 +13,11 @@
  *
  */
 
-#include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
-
+#include <unistd.h>
+#include "stddef.h"
+#include "pthread.h"
 #include "hal_cpu.h"
 #include "hal_debug.h"
 

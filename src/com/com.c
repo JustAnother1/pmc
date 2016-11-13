@@ -91,7 +91,7 @@ static uint_fast8_t crc8(uint_fast8_t length);
 
 void com_init(void)
 {
-    bool res = false;
+    bool res;
     send_buffer[0] = CLIENT_FRAME_SYNC;
 #ifdef HAS_USB
     res = start_usb();
@@ -381,26 +381,26 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
                                                 com_get_parameter_byte(1),
                                                 com_get_parameter_byte(2) ))
                 {
-                	com_send_ok_response();
+                    com_send_ok_response();
                 }
                 // else - command already send error
             }
             else if(5 == parameter_length)
             {
                 // two switches
-            	if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
+                if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
                                                 com_get_parameter_byte(1),
                                                 com_get_parameter_byte(2) ) )
-            	{
-            		if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
+                {
+                    if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
                                                 com_get_parameter_byte(3),
                                                 com_get_parameter_byte(4) ))
-            		{
-            			com_send_ok_response();
-            		}
-            		// else - command already send error
-            	}
-            	// else - command already send error
+                    {
+                        com_send_ok_response();
+                    }
+                    // else - command already send error
+                }
+                // else - command already send error
             }
             else
             {
@@ -414,12 +414,12 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             if(2 == parameter_length)
             {
                 // one Switch
-            	if(true == dev_input_enable(com_get_parameter_byte(0),
+                if(true == dev_input_enable(com_get_parameter_byte(0),
                                  com_get_parameter_byte(1) ))
-            	{
-            		com_send_ok_response();
-            	}
-            	// else - command already send error
+                {
+                    com_send_ok_response();
+                }
+                // else - command already send error
             }
             else if(4 == parameter_length)
             {
@@ -427,12 +427,12 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
                 if(true == dev_input_enable(com_get_parameter_byte(0),
                                  com_get_parameter_byte(1) ) )
                 {
-                	if(true == dev_input_enable(com_get_parameter_byte(2),
+                    if(true == dev_input_enable(com_get_parameter_byte(2),
                                  com_get_parameter_byte(3) ) )
-                	{
-                		com_send_ok_response();
-                	}
-                	// else - command already send error
+                    {
+                        com_send_ok_response();
+                    }
+                    // else - command already send error
                 }
                 // else - command already send error
             }

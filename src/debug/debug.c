@@ -732,53 +732,61 @@ static void parse_order(int length)
     case 'W':
     case 'w': // write data
     {
-        uint8_t receive_data[(length -2)/2];
-        uint8_t send_data[(length -2)/2];
-        int i;
-        if(1 == pos_in_buf)
+        if(2 > (length - 2))
         {
-            debug_line("Invalid command ! try h for help");
-            return;
-        }
-        switch (cmd_buf[1])
-        {
-        case 'S':
-        case 's':
-            for (i = 0; i < (length -2)/2; i++)
-            {
-                send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
-            }
-            if(false == hal_do_stepper_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
-            {
-                debug_line("ERROR: Did not receive all bytes !");
-            }
-            // else OK
-            debug_msg("Received: 0x");
-            debug_hex_buffer(&receive_data[0], (length -2)/2);
-            debug_line("Done.");
-            break;
-
-        case 'E':
-        case 'e':
-            for (i = 0; i < (length -2)/2; i++)
-            {
-                send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
-            }
-            if(false == hal_do_expansion_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
-            {
-                debug_line("ERROR: Did not receive all bytes !");
-            }
-            // else OK
-            debug_msg("Received: 0x");
-            debug_hex_buffer(&receive_data[0], (length -2)/2);
-            debug_line("Done.");
-            break;
-
-        default:
             debug_line("Invalid command ! try h for help");
             break;
         }
-        break;
+        else
+        {
+            uint8_t receive_data[(length -2)/2];
+            uint8_t send_data[(length -2)/2];
+            int i;
+            if(1 == pos_in_buf)
+            {
+                debug_line("Invalid command ! try h for help");
+                return;
+            }
+            switch (cmd_buf[1])
+            {
+            case 'S':
+            case 's':
+                for (i = 0; i < (length -2)/2; i++)
+                {
+                    send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
+                }
+                if(false == hal_do_stepper_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
+                {
+                    debug_line("ERROR: Did not receive all bytes !");
+                }
+                // else OK
+                debug_msg("Received: 0x");
+                debug_hex_buffer(&receive_data[0], (length -2)/2);
+                debug_line("Done.");
+                break;
+
+            case 'E':
+            case 'e':
+                for (i = 0; i < (length -2)/2; i++)
+                {
+                    send_data[i] =  hexstr2byte(cmd_buf[2 + (i*2)], cmd_buf[2 + (i*2) + 1]);
+                }
+                if(false == hal_do_expansion_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
+                {
+                    debug_line("ERROR: Did not receive all bytes !");
+                }
+                // else OK
+                debug_msg("Received: 0x");
+                debug_hex_buffer(&receive_data[0], (length -2)/2);
+                debug_line("Done.");
+                break;
+
+            default:
+                debug_line("Invalid command ! try h for help");
+                break;
+            }
+            break;
+        }
     }
 
     case 'R':

@@ -29,6 +29,11 @@ OPT += -O0 -ffunction-sections -fdata-sections
 # -ftest-coverage -fprofile-arcs
 CFLAGS += $(OPT) -g -Wall -pedantic -std=gnu99
 # TODO CFLAGS += -mfloat-abi=hard
+ifeq ($(COMPILER),clang)
+#CFLAGS += --analyze
+else
+endif
+
 
 LDFLAGS +=  -g -Wall -fwhole-program $(LIB)
 

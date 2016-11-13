@@ -528,6 +528,8 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
         setBool(stepper_conf[i].doubleEdgeStepPulse, doubleEdge,          i);
         setInt( stepper_conf[i].microstepResolution, microstepResolution, i);
 #else
+        uint_fast8_t j;
+
         cfg_data[DRVCTRL][(i/2)*5 + 0] = 0x1f;
         cfg_data[DRVCTRL][(i/2)*5 + 1] = 0x00;
         cfg_data[DRVCTRL][(i/2)*5 + 2] = 0x01;
@@ -535,9 +537,9 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
         cfg_data[DRVCTRL][(i/2)*5 + 4] = 0x00;
 
         stepper_conf[i].step_mode = STEP_MODE_FULL_WAVE;
-        for(i = 0; i < 8; i++)
+        for(j = 0; j < 8; j++)
         {
-            cur_step[i] = 0;
+            cur_step[j] = 0;
         }
 #endif
 
@@ -682,6 +684,7 @@ bool trinamic_change_setting(uint8_t* setting)
         case 'v': settingToChange = disableSTEPDIR; break;
         case 'y': settingToChange = lowVoltageRsense; break;
         case 'z': settingToChange = responseFormat; break;
+        default: return false;
         }
 
         switch(settingToChange)
@@ -1259,7 +1262,7 @@ static void setInt(int value, enum cfgSetting setting, int stepper)
 
     default:
         debug_line("Tried to set unknown bool setting !");
-        break;
+        return;
     }
     writeInt(value, reg, bitPosition + (stepper * 20), numBits);
 }

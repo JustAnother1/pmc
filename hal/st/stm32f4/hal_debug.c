@@ -32,7 +32,7 @@ void hal_debug_init(void)
 {
     // TODO create alternative implementation that uses core_cm4.h:ITM_SendChar() / ITM_ReceiveChar()
     // UART
-    bool res = false;
+    bool res;
     res = hal_init_debug_uart(RECEIVE_BUFFER_SIZE, SEND_BUFFER_SIZE);
     if(false == res)
     {

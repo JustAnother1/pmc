@@ -274,10 +274,6 @@ static void aquireValues(void)
             else
             {
                 uint32_t tempMeasured;
-                uint32_t tempReference;
-                // debug_msg("Received: 0x");
-                // debug_hex_buffer(&receive_data[0], 4);
-                // debug_line(".");
                 if(true == spi_ok)
                 {
                     if(1 == (receive_data[3] & 0x01))
@@ -305,11 +301,6 @@ static void aquireValues(void)
                     tempMeasured = tempMeasured * 10;
                     tempMeasured = tempMeasured / 4;
 
-                    tempReference = (receive_data[3]>>4) + (receive_data[2]<<4);
-                    tempReference = tempReference * 100;
-                    tempReference = tempReference / 16;
-                    // debug_line("Temperature at Reference Junction = %d /100 °C", tempReference);
-                    // debug_line("Done.");
                     if((10000 < tempMeasured ) || (tempMeasured < 0))
                     {
                         tempMeasured = 0;
@@ -329,11 +320,6 @@ static void aquireValues(void)
                         tempMeasured = tempMeasured * 10;
                         tempMeasured = tempMeasured / 4;
 
-                        tempReference = (receive_data[3]>>4) + (receive_data[2]<<4);
-                        tempReference = tempReference * 100;
-                        tempReference = tempReference / 16;
-                        // debug_line("Temperature at Reference Junction = %d /100 °C", tempReference);
-                        // debug_line("Done.");
                         if((10000 < tempMeasured ) || (tempMeasured < 0))
                         {
                             tempMeasured = 0;
@@ -348,6 +334,7 @@ static void aquireValues(void)
             break;
 
         case 1: // I2C Temperature Sensor
+            /* Does not work under stress
             if(nextMeasurement < hal_cpu_get_ms_tick())
             {
                 uint8_t data[2];
@@ -358,8 +345,6 @@ static void aquireValues(void)
                         &data[0], 2) )
                 {
                     uint32_t res;
-                    // debug_line("read: 0x%02x, 0x%02x !", data[0], data[1]);
-                    // debug_line("success!");
                     res = (data[0] <<8) + data[1];
                     if(res > 32767)
                     {
@@ -378,6 +363,7 @@ static void aquireValues(void)
                 }
                 nextMeasurement = hal_cpu_get_ms_tick() + I2C_TEMP_POLL_MS;
             }
+            */
             break;
 
         default:
