@@ -42,30 +42,42 @@
 #define BOARD_HAS_ISR_2_LED
 
 // Timer
-// Step creation
-#define STEP_TIMER                 6
-#define STEP_BUFFER_TIMER          7
-#define BUZZER_TIMER               11
-#define PWM_0_TIMER                1
-#define PWM_0_Channel              2
-#define PWM_1_TIMER                2
-#define PWM_1_Channel              4
 #define PWM_2_TIMER                1
 #define PWM_2_Channel              1
-#define PWM_3_TIMER                4
-#define PWM_3_Channel              3
-#define PWM_4_TIMER                2
-#define PWM_4_Channel              3
+
 #define PWM_5_TIMER                1
 #define PWM_5_Channel              4
+
+#define PWM_4_TIMER                2
+#define PWM_4_Channel              3
+
+#define PWM_1_TIMER                2
+#define PWM_1_Channel              4
+
 #define PWM_6_TIMER                3
 #define PWM_6_Channel              3
+
 #define PWM_7_TIMER                3
 #define PWM_7_Channel              4
+
+#define PWM_3_TIMER                4
+#define PWM_3_Channel              3
+
+#define STEP_TIMER                 6
+
+#define STEP_BUFFER_TIMER          7
+
 #define PWM_8_TIMER                9
 #define PWM_8_Channel              1
+
 #define PWM_9_TIMER                9
 #define PWM_9_Channel              2
+
+#define BUZZER_TIMER               11
+#define BUZZER_Channel             1
+
+#define PWM_0_TIMER                12
+#define PWM_0_Channel              1
 
 
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */

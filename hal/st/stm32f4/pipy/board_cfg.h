@@ -193,7 +193,7 @@
 
 #define PWM_NUM_PINS               10
 #define PWM_0_NAME                 "Room Heater"
-// B14 - AF1
+// B14 - AF9
 #define PWM_0_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOBEN
 #define PWM_0_GPIO_PORT            GPIOB
 #define PWM_0_MODER_0              GPIO_MODER_14_ALTFUNC_0
@@ -209,8 +209,8 @@
 #define PWM_0_ODR                  GPIO_ODR_14
 #define PWM_0_AFR_0_0              0
 #define PWM_0_AFR_0_1              0
-#define PWM_0_AFR_1_0              0x0e000000
-#define PWM_0_AFR_1_1              0x01000000
+#define PWM_0_AFR_1_0              0x06000000
+#define PWM_0_AFR_1_1              0x09000000
 #define PWM_0_BSRR                 GPIO_BSRR_14
 #define PWM_1_NAME                 "Bed Heater"
 // B11 - AF1
@@ -376,17 +376,17 @@
 // E6 - AF3
 #define PWM_9_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOEEN
 #define PWM_9_GPIO_PORT            GPIOE
-#define PWM_9_MODER_0              GPIO_MODER_9_ALTFUNC_0
-#define PWM_9_MODER_1              GPIO_MODER_9_ALTFUNC_1
-#define PWM_9_MODER_OFF_0          GPIO_MODER_9_OUTPUT_0
-#define PWM_9_MODER_OFF_1          GPIO_MODER_9_OUTPUT_1
-#define PWM_9_OTYPER_0             GPIO_OTYPER_9_PUSH_PULL_0
-#define PWM_9_OTYPER_1             GPIO_OTYPER_9_PUSH_PULL_1
-#define PWM_9_OSPEEDR_0            GPIO_OSPEEDER_9_LOW_SPEED_0
-#define PWM_9_OSPEEDR_1            GPIO_OSPEEDER_9_LOW_SPEED_1
-#define PWM_9_PUPD_0               GPIO_PUPDR_9_NONE_0
-#define PWM_9_PUPD_1               GPIO_PUPDR_9_NONE_1
-#define PWM_9_ODR                  GPIO_ODR_9
+#define PWM_9_MODER_0              GPIO_MODER_6_ALTFUNC_0
+#define PWM_9_MODER_1              GPIO_MODER_6_ALTFUNC_1
+#define PWM_9_MODER_OFF_0          GPIO_MODER_6_OUTPUT_0
+#define PWM_9_MODER_OFF_1          GPIO_MODER_6_OUTPUT_1
+#define PWM_9_OTYPER_0             GPIO_OTYPER_6_PUSH_PULL_0
+#define PWM_9_OTYPER_1             GPIO_OTYPER_6_PUSH_PULL_1
+#define PWM_9_OSPEEDR_0            GPIO_OSPEEDER_6_LOW_SPEED_0
+#define PWM_9_OSPEEDR_1            GPIO_OSPEEDER_6_LOW_SPEED_1
+#define PWM_9_PUPD_0               GPIO_PUPDR_6_NONE_0
+#define PWM_9_PUPD_1               GPIO_PUPDR_6_NONE_1
+#define PWM_9_ODR                  GPIO_ODR_6
 #define PWM_9_AFR_0_0              0x0c000000
 #define PWM_9_AFR_0_1              0x03000000
 #define PWM_9_AFR_1_0              0
