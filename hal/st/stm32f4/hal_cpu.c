@@ -13,17 +13,19 @@
  *
  */
 
-#include <407discovery/board_cfg.h>
-#include <st_common.h>
-#include <st_flash.h>
-#include <st_rcc.h>
-#include <st_util.h>
-#include "hal_cpu.h"
-#include "hal_led.h"
-#include "hal_time.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include "hal_cfg.h"
+#include "hal_cpu.h"
+#include "hal_debug.h"
+#include "hal_led.h"
+#include "hal_time.h"
+#include "407discovery/board_cfg.h"
+#include "st_common.h""
+#include "st_flash.h"
+#include "st_rcc.h"
+#include "st_util.h""
+
 
 #define HEART_BEAT_FAST_LIMIT 5
 #define HEART_BEAT_SLOW_LIMIT 500
@@ -257,6 +259,44 @@ void hal_cpu_tick(void)
 }
 
 // my own Fault Handlers
+
+void hal_cpu_check_Reset_Reason(void)
+{
+    debug_msg("Reset Reason: ");
+    uint32_t resetSource = RCC->CSR;
+    if(0 != (resetSource & RCC_CSR_LPWRRSTF))
+    {
+        debug_line("Low Power");
+    }
+    if(0 != (resetSource & RCC_CSR_WWDGRSTF))
+    {
+        debug_line("Window Watchdog");
+    }
+    if(0 != (resetSource & RCC_CSR_WDGRSTF))
+    {
+        debug_line("Independent Watchdog");
+    }
+    if(0 != (resetSource & RCC_CSR_SFTRSTF))
+    {
+        debug_line("Software");
+    }
+    if(0 != (resetSource & RCC_CSR_PORRSTF))
+    {
+        debug_line("POR/PDR");
+    }
+    if(0 != (resetSource & RCC_CSR_PADRSTF))
+    {
+        debug_line("Pin");
+    }
+    if(0 != (resetSource & RCC_CSR_BORRSTF))
+    {
+        debug_line("BOR");
+    }
+    // reset Flags
+    resetSource    |= RCC_CSR_RMVF;
+    RCC->CSR = resetSource;
+}
+
 // TODO have them report the fault somewhere.
 
 void NMI_Handler(void)

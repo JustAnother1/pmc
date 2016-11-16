@@ -72,3 +72,8 @@ uint32_t hal_cpu_get_ms_tick(void)
 {
     return now;
 }
+
+void hal_cpu_check_Reset_Reason(void)
+{
+
+}

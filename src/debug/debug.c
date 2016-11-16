@@ -69,6 +69,7 @@ void debug_init(void)
     tick_max = 0;
     tick_min = 42424242;
     hal_debug_init();
+    hal_cpu_check_Reset_Reason();
     debug_line("Debug Console PMC");
     debug_msg("(db)");
 }
