@@ -30,6 +30,7 @@
 #include "hal_uart.h"
 #include "hal_usb_device_cdc.h"
 #include "command_queue.h"
+#include "device_buzzer.h"
 #include "device_stepper.h"
 #include "device_temperature_sensor.h"
 #include "trinamic.h"
@@ -289,7 +290,7 @@ static void order_help(void)
 {
     debug_line("available commands:");
     // a
-    // b
+    debug_line("b<frequency>               : activate buzzer (freq=0 ->off)");
     debug_line("c<setting>                 : change special setting");
     debug_line("d                          : die - stops the processor");
     // e
@@ -489,6 +490,11 @@ static void parse_order(int length)
     }
     switch(cmd_buf[0])
     {
+
+    case 'B':
+    case 'b':
+        dev_buzzer_set_frequency(0, atoi((char *)&(cmd_buf[1])));
+        break;
 
     case 'C':
     case 'c':

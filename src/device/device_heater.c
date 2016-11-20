@@ -155,6 +155,7 @@ void TemperatureControlTick(void)
             }
             else
             {
+                hal_pwm_set_on_time(i, 0); // OFF
                 debug_line("ERROR: Regulator %d NULL !", i);
             }
         }
@@ -188,7 +189,7 @@ uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t tempe
     float nextPwm;
 
 
-    uint_fast16_t error = temperature_should - temperature_is;
+    int_fast16_t error = temperature_should - temperature_is;
 
     float new_I = last_iTerm + (error * ki);
     if(new_I > max_pwm)
@@ -236,11 +237,20 @@ void reportTemperature(void)
 void curTest(int value)
 {
     debug_line("Found Value %d !", value);
+    hal_time_enable_pwm_for(1);
+    hal_pwm_set_on_time(1, value);
+    hal_time_print_Configuration(1);
+}
+
+/*
+void curTest(int value)
+{
+    debug_line("Found Value %d !", value);
     dev_heater_set_temperature_sensor(1, 5);
     dev_heater_set_target_temperature(1, value * 10);
     debug_line("Target Temperature %d !", target_temperature[1]);
     count = 0;
     hal_cpu_add_ms_tick_function(reportTemperature);
 }
-
+*/
 // end of File

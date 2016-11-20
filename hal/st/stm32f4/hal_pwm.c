@@ -25,7 +25,7 @@ void hal_pwm_init(void)
 {
     // configure timer for PWM
 #if PWM_NUM_PINS > 0
-    hal_time_enable_timer_for(PWM_0_TIMER);
+    hal_time_enable_pwm_for(PWM_0_TIMER);
     RCC->AHB1ENR |= PWM_0_RCC_GPIO_ENABLE;
     PWM_0_GPIO_PORT->MODER      &= ~PWM_0_MODER_OFF_0;
     PWM_0_GPIO_PORT->MODER      |=  PWM_0_MODER_OFF_1;
@@ -39,7 +39,7 @@ void hal_pwm_init(void)
     PWM_0_GPIO_PORT->BSRR_RESET  =  PWM_0_BSRR;
 #endif
 #if PWM_NUM_PINS > 1
-    hal_time_enable_timer_for(PWM_1_TIMER);
+    hal_time_enable_pwm_for(PWM_1_TIMER);
     RCC->AHB1ENR |= PWM_1_RCC_GPIO_ENABLE;
     PWM_1_GPIO_PORT->MODER      &= ~PWM_1_MODER_OFF_0;
     PWM_1_GPIO_PORT->MODER      |=  PWM_1_MODER_OFF_1;
@@ -53,7 +53,7 @@ void hal_pwm_init(void)
     PWM_1_GPIO_PORT->BSRR_RESET  =  PWM_1_BSRR;
 #endif
 #if PWM_NUM_PINS > 2
-    hal_time_enable_timer_for(PWM_2_TIMER);
+    hal_time_enable_pwm_for(PWM_2_TIMER);
     RCC->AHB1ENR |= PWM_2_RCC_GPIO_ENABLE;
     PWM_2_GPIO_PORT->MODER      &= ~PWM_2_MODER_OFF_0;
     PWM_2_GPIO_PORT->MODER      |=  PWM_2_MODER_OFF_1;
@@ -67,7 +67,7 @@ void hal_pwm_init(void)
     PWM_2_GPIO_PORT->BSRR_RESET  =  PWM_2_BSRR;
 #endif
 #if PWM_NUM_PINS > 3
-    hal_time_enable_timer_for(PWM_3_TIMER);
+    hal_time_enable_pwm_for(PWM_3_TIMER);
     RCC->AHB1ENR |= PWM_3_RCC_GPIO_ENABLE;
     PWM_3_GPIO_PORT->MODER      &= ~PWM_3_MODER_OFF_0;
     PWM_3_GPIO_PORT->MODER      |=  PWM_3_MODER_OFF_1;
@@ -81,7 +81,7 @@ void hal_pwm_init(void)
     PWM_3_GPIO_PORT->BSRR_RESET  =  PWM_3_BSRR;
 #endif
 #if PWM_NUM_PINS > 4
-    hal_time_enable_timer_for(PWM_4_TIMER);
+    hal_time_enable_pwm_for(PWM_4_TIMER);
     RCC->AHB1ENR |= PWM_4_RCC_GPIO_ENABLE;
     PWM_4_GPIO_PORT->MODER      &= ~PWM_4_MODER_OFF_0;
     PWM_4_GPIO_PORT->MODER      |=  PWM_4_MODER_OFF_1;
@@ -95,7 +95,7 @@ void hal_pwm_init(void)
     PWM_4_GPIO_PORT->BSRR_RESET  =  PWM_4_BSRR;
 #endif
 #if PWM_NUM_PINS > 5
-    hal_time_enable_timer_for(PWM_5_TIMER);
+    hal_time_enable_pwm_for(PWM_5_TIMER);
     RCC->AHB1ENR |= PWM_5_RCC_GPIO_ENABLE;
     PWM_5_GPIO_PORT->MODER      &= ~PWM_5_MODER_OFF_0;
     PWM_5_GPIO_PORT->MODER      |=  PWM_5_MODER_OFF_1;
@@ -109,7 +109,7 @@ void hal_pwm_init(void)
     PWM_5_GPIO_PORT->BSRR_RESET  =  PWM_5_BSRR;
 #endif
 #if PWM_NUM_PINS > 6
-    hal_time_enable_timer_for(PWM_6_TIMER);
+    hal_time_enable_pwm_for(PWM_6_TIMER);
     RCC->AHB1ENR |= PWM_6_RCC_GPIO_ENABLE;
     PWM_6_GPIO_PORT->MODER      &= ~PWM_6_MODER_OFF_0;
     PWM_6_GPIO_PORT->MODER      |=  PWM_6_MODER_OFF_1;
@@ -123,7 +123,7 @@ void hal_pwm_init(void)
     PWM_6_GPIO_PORT->BSRR_RESET  =  PWM_6_BSRR;
 #endif
 #if PWM_NUM_PINS > 7
-    hal_time_enable_timer_for(PWM_7_TIMER);
+    hal_time_enable_pwm_for(PWM_7_TIMER);
     RCC->AHB1ENR |= PWM_7_RCC_GPIO_ENABLE;
     PWM_7_GPIO_PORT->MODER      &= ~PWM_7_MODER_OFF_0;
     PWM_7_GPIO_PORT->MODER      |=  PWM_7_MODER_OFF_1;
@@ -137,7 +137,7 @@ void hal_pwm_init(void)
     PWM_7_GPIO_PORT->BSRR_RESET  =  PWM_7_BSRR;
 #endif
 #if PWM_NUM_PINS > 8
-    hal_time_enable_timer_for(PWM_8_TIMER);
+    hal_time_enable_pwm_for(PWM_8_TIMER);
     RCC->AHB1ENR |= PWM_8_RCC_GPIO_ENABLE;
     PWM_8_GPIO_PORT->MODER      &= ~PWM_8_MODER_OFF_0;
     PWM_8_GPIO_PORT->MODER      |=  PWM_8_MODER_OFF_1;
@@ -151,7 +151,7 @@ void hal_pwm_init(void)
     PWM_8_GPIO_PORT->BSRR_RESET  =  PWM_8_BSRR;
 #endif
 #if PWM_NUM_PINS > 9
-    hal_time_enable_timer_for(PWM_9_TIMER);
+    hal_time_enable_pwm_for(PWM_9_TIMER);
     RCC->AHB1ENR |= PWM_9_RCC_GPIO_ENABLE;
     PWM_9_GPIO_PORT->MODER      &= ~PWM_9_MODER_OFF_0;
     PWM_9_GPIO_PORT->MODER      |=  PWM_9_MODER_OFF_1;
@@ -165,7 +165,7 @@ void hal_pwm_init(void)
     PWM_9_GPIO_PORT->BSRR_RESET  =  PWM_9_BSRR;
 #endif
 #if PWM_NUM_PINS > 10
-    hal_time_enable_timer_for(PWM_10_TIMER);
+    hal_time_enable_pwm_for(PWM_10_TIMER);
     RCC->AHB1ENR |= PWM_10_RCC_GPIO_ENABLE;
     PWM_10_GPIO_PORT->MODER      &= ~PWM_10_MODER_OFF_0;
     PWM_10_GPIO_PORT->MODER      |=  PWM_10_MODER_OFF_1;
@@ -179,7 +179,7 @@ void hal_pwm_init(void)
     PWM_10_GPIO_PORT->BSRR_RESET  =  PWM_10_BSRR;
 #endif
 #if PWM_NUM_PINS > 11
-    hal_time_enable_timer_for(PWM_11_TIMER);
+    hal_time_enable_pwm_for(PWM_11_TIMER);
     RCC->AHB1ENR |= PWM_11_RCC_GPIO_ENABLE;
     PWM_11_GPIO_PORT->MODER      &= ~PWM_11_MODER_OFF_0;
     PWM_11_GPIO_PORT->MODER      |=  PWM_11_MODER_OFF_1;
@@ -193,7 +193,7 @@ void hal_pwm_init(void)
     PWM_11_GPIO_PORT->BSRR_RESET  =  PWM_11_BSRR;
 #endif
 #if PWM_NUM_PINS > 12
-    hal_time_enable_timer_for(PWM_12_TIMER);
+    hal_time_enable_pwm_for(PWM_12_TIMER);
     RCC->AHB1ENR |= PWM_12_RCC_GPIO_ENABLE;
     PWM_12_GPIO_PORT->MODER      &= ~PWM_12_MODER_OFF_0;
     PWM_12_GPIO_PORT->MODER      |=  PWM_12_MODER_OFF_1;
@@ -207,7 +207,7 @@ void hal_pwm_init(void)
     PWM_12_GPIO_PORT->BSRR_RESET  =  PWM_12_BSRR;
 #endif
 #if PWM_NUM_PINS > 13
-    hal_time_enable_timer_for(PWM_13_TIMER);
+    hal_time_enable_pwm_for(PWM_13_TIMER);
     RCC->AHB1ENR |= PWM_13_RCC_GPIO_ENABLE;
     PWM_13_GPIO_PORT->MODER      &= ~PWM_13_MODER_OFF_0;
     PWM_13_GPIO_PORT->MODER      |=  PWM_13_MODER_OFF_1;

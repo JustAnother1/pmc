@@ -67,7 +67,6 @@ void hal_time_init(void)
 
 static void error_isr_on_stopped_timer(void)
 {
-    // TODO ???
     debug_line("ERROR: ISR called on stopped Timer !");
 }
 
@@ -316,9 +315,10 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void)
     TIM14->SR &= ~TIM_SR_UIF;
 }
 
-bool hal_time_enable_timer_for(uint_fast8_t device)
+// used by hal_pwm:
+
+bool hal_time_enable_pwm_for(uint_fast8_t device)
 {
-    // TODO
     TIM_TypeDef* timer = get_timer_register_for(device);
     if((NULL == timer) || (0 == PWM_FREQUENCY))
     {
@@ -326,16 +326,21 @@ bool hal_time_enable_timer_for(uint_fast8_t device)
     }
     enable_clock_for_timer(device);
     set_irq_priority(device);
-    timer->PSC   = (uint16_t)(0xffff & ((getClockFrequencyForTimer(device) / PWM_FREQUENCY) - 1));
-    timer->ARR   = 0;
-    timer->CCR1  = 0;
+    timer->EGR   = 0x0021;  // ???
     timer->CNT   = 0; // start counting at 0
-    timer->CCMR1 = 0x6060;
-    timer->CCMR2 = 0x6060;
-    timer->CCER  = 0x1555;
-    timer->EGR   = 0x0021;
-    timer->BDTR  = 0xcc00;
-    timer->CR1   = 0x0081; // Timer enable + Interrupt on overflow
+    timer->PSC   = 1; // MAx frequency is best // (uint16_t)(0xffff & ((getClockFrequencyForTimer(device) / PWM_FREQUENCY) - 1));
+    timer->ARR   = 1;
+    timer->CCR1  = 0;
+    timer->CCR2  = 0;
+    timer->CCR3  = 0;
+    timer->CCR4  = 0;
+    timer->CCMR1 = 0x6060; // Output PWM Mode 1
+    timer->CCMR2 = 0x6060; // Output PWM Mode 1
+    timer->CCER  = 0x1111; // Output on, Negative off
+    timer->BDTR  = 0xc000; // no lock, no delay, Output enabled
+    // SMCR = 0; DIER = 0; SR = 0; RCR = 0; DCR = 0; DMAR = 0;
+    timer->CR2   = 0x2a34;
+    timer->CR1   = 0x0001; // Timer enable + ARR is buffered(0x80)
     return true;
 }
 
@@ -372,6 +377,10 @@ bool hal_time_stop_pwm_for(uint_fast8_t device, uint_fast8_t channel)
     }
     return true;
 }
+
+// end of used by hal_pwm
+
+// used by buzzer/ stepper:
 
 bool hal_time_start_timer(uint_fast8_t device,
                           uint32_t clock,
