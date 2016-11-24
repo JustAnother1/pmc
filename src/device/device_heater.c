@@ -56,7 +56,7 @@ void dev_heater_init(void)
         cur_pwm[i] = 0;
         regulators[i] = PidRegulator;
     }
-    hal_cpu_add_ms_tick_function(TemperatureControlTick);
+    hal_cpu_add_ms_tick_function_cycle(TemperatureControlTick, 25);
 }
 
 uint_fast8_t dev_heater_get_count(void)
@@ -201,7 +201,6 @@ uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t tempe
         new_I = 0;
     }
 
-
     int_fast16_t temperatureChange = (temperature_is - last_temperature_is);
 
     // calculate the PID output
@@ -229,28 +228,22 @@ void reportTemperature(void)
     count++;
     if(100 == count)
     {
-        debug_line("time %d temp %d pwm %d", hal_cpu_get_ms_tick(), hal_adc_get_value(5), cur_pwm[1]);
+        debug_line("time %d temp %d pwm %d", hal_cpu_get_ms_tick(), hal_adc_get_value(0), cur_pwm[0]);
         count = 0;
     }
 }
 
-void curTest(int value)
-{
-    debug_line("Found Value %d !", value);
-    hal_time_enable_pwm_for(1);
-    hal_pwm_set_on_time(1, value);
-    hal_time_print_Configuration(1);
-}
 
-/*
 void curTest(int value)
 {
     debug_line("Found Value %d !", value);
-    dev_heater_set_temperature_sensor(1, 5);
-    dev_heater_set_target_temperature(1, value * 10);
-    debug_line("Target Temperature %d !", target_temperature[1]);
+    // nozzle = 1, 5 ; Bed = 0, 0
+    dev_heater_set_temperature_sensor(0, 0);
+    // Nozzle = 1; Bed = 0
+    dev_heater_set_target_temperature(0, value * 10);
+    debug_line("Target Temperature %d !", target_temperature[0]);
     count = 0;
     hal_cpu_add_ms_tick_function(reportTemperature);
 }
-*/
+
 // end of File

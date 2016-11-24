@@ -33,6 +33,8 @@
 
 struct tick_node {
     msTickFkt tick;
+    int cycle;
+    int nextCall;
     struct tick_node * next;
 };
 typedef struct tick_node tick_entry;
@@ -135,6 +137,11 @@ static tick_entry * allocateNewEntry(void)
 
 void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
 {
+    hal_cpu_add_ms_tick_function_cycle(additional_function, 1);
+}
+
+void hal_cpu_add_ms_tick_function_cycle(msTickFkt additional_function, int everyMs)
+{
     if(NULL != additional_function)
     {
         if(NULL == tick_list)
@@ -154,6 +161,8 @@ void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
             {
                 // No tick in this Entry
                 cur->tick = additional_function;
+                cur->cycle = everyMs;
+                cur->nextCall = 1;
                 done = true;
             }
             else
@@ -247,10 +256,15 @@ void hal_cpu_tick(void)
         tick_entry *cur = tick_list;
         while(NULL != cur)
         {
-            if(NULL != cur->tick)
+            cur->nextCall--;
+            if(1 > cur->nextCall)
             {
-                // Execute that function
-                (*cur->tick)();
+                if(NULL != cur->tick)
+                {
+                    // Execute that function
+                    (*cur->tick)();
+                }
+                cur->nextCall = cur->cycle;
             }
             cur = cur->next;
         }

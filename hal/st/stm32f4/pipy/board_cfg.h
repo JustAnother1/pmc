@@ -118,8 +118,7 @@
 #define ADC_1_NAME                 "Temp_1"
 #define ADC_2_NAME                 "Temp_2"
 #define ADC_3_NAME                 "Temp_3"
-#define ADC_4_NAME                 "Temp_4"
-#define ADC_5_NAME                 "Temp_5"
+#define ADC_4_NAME                 "Temp_CPU"
 
 #define ADC_0_GPIO_PORT_RCC        RCC_AHB1ENR_GPIOAEN
 #define ADC_0_GPIO_PORT            GPIOA

@@ -408,7 +408,9 @@ uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
         case  2: return copy_string(ADC_2_NAME, position);
         case  3: return copy_string(ADC_3_NAME, position);
         case  4: return copy_string(ADC_4_NAME, position);
+#if NUM_TEMPERATURES > 5
         case  5: return copy_string(ADC_5_NAME, position);
+#endif
         default:
             return 0;
         }
