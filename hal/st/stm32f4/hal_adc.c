@@ -49,6 +49,7 @@ static bool spi_ok;
 static int curDevice;
 static uint16_t res_buf[NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES];
 static uint32_t nextMeasurement;
+static bool initialized = false;
 
 static void aquireValues(void);
 
@@ -58,6 +59,12 @@ static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR);
 
 void hal_adc_init(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
     int i;
     for(i = 0; i < NUM_TEMPERATURES; i++)
     {

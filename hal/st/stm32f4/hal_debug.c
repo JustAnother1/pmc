@@ -24,12 +24,20 @@
 
 #define RECEIVE_BUFFER_SIZE  50
 #define SEND_BUFFER_SIZE     2048
+#define MSG_BUFFER_LENGTH    100
 
-#define MSG_BUFFER_LENGTH 100
 uint8_t buffer[MSG_BUFFER_LENGTH];
+static bool initialized = false;
 
 void hal_debug_init(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
+
     // TODO create alternative implementation that uses core_cm4.h:ITM_SendChar() / ITM_ReceiveChar()
     // UART
     bool res;

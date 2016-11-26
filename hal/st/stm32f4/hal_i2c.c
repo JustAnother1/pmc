@@ -25,8 +25,6 @@
 
 #define TIMEOUT_MS   500
 
-static bool transaction_successfull;
-
 enum i2c_state  {idle, start_send, device_address_send, byte_send,
                  repeated_start_send, device_read_address_send, read_a_byte};
 
@@ -39,11 +37,19 @@ typedef struct{
     uint_fast8_t send_bytes;
 } transfer_Definition;
 
+static bool transaction_successfull;
 static enum i2c_state cur_state;
 static transfer_Definition cur_transfer;
+static bool initialized = false;
 
 void hal_init_i2c(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
     transaction_successfull = false;  // not yet
     cur_state = idle;// no activities yet, the bus is ours!
 

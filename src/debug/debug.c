@@ -290,7 +290,7 @@ static void order_help(void)
 {
     debug_line("available commands:");
     // a
-    debug_line("b<frequency>               : activate buzzer (freq=0 ->off)");
+    debug_line("b<frequency>               : activate buzzer (freq=0 -> off)");
     debug_line("c<setting>                 : change special setting");
     debug_line("d                          : die - stops the processor");
     // e

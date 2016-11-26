@@ -12,13 +12,24 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
+
+#include <stdbool.h>
 #include <st_gpio.h>
 #include <st_rcc.h>
 #include "hal_power.h"
 #include "board_cfg.h"
 
+static bool initialized = false;
+
 void hal_init_power(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
+
 #if (1 == POWER_HAS_HIGH_SWITCH)
     RCC->AHB1ENR |= POWER_HV_RCC_GPIO_ENABLE;
     POWER_HV_GPIO_PORT->MODER &= ~POWER_HV_MODER_0;

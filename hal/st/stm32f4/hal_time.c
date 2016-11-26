@@ -46,9 +46,17 @@ static volatile TimerFkt tim_11_isr;
 static volatile TimerFkt tim_12_isr;
 static volatile TimerFkt tim_13_isr;
 static volatile TimerFkt tim_14_isr;
+static bool initialized = false;
 
 void hal_time_init(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
+
     tim_1_isr  =  &error_isr_on_stopped_timer;
     tim_2_isr  =  &error_isr_on_stopped_timer;
     tim_3_isr  =  &error_isr_on_stopped_timer;

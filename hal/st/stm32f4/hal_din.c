@@ -13,6 +13,7 @@
  *
  */
 
+#include <stdbool.h>
 #include <st_gpio.h>
 #include <st_rcc.h>
 #include <st_util.h>
@@ -20,8 +21,17 @@
 #include "board_cfg.h"
 #include "hal_debug.h"
 
+static bool initialized = false;
+
 void hal_din_init(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
+
 #if D_IN_NUM_PINS > 0
         RCC->AHB1ENR |= D_IN_0_RCC_GPIO_ENABLE;
         D_IN_0_GPIO_PORT->MODER   &= ~D_IN_0_MODER_0;

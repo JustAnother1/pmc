@@ -22,9 +22,16 @@
 #include "hal_cfg.h"
 #include "hal_debug.h"
 
+static bool initialized = false;
 
 void hal_buzzer_init(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
 #if(BUZZER_NUM_PINS > 0)
         RCC->AHB1ENR |= BUZZER_0_RCC_GPIO_ENABLE;
         BUZZER_0_GPIO_PORT->MODER   &= ~BUZZER_0_MODER_0;

@@ -18,7 +18,7 @@
 
 void fw_cfg_init(void)
 {
-    // hal_init_i2c();
+    hal_init_i2c();
 }
 
 void fw_cfg_get_value_property(uint_fast8_t idx)

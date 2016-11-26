@@ -13,13 +13,23 @@
  *
  */
 
+#include <stdbool.h>
 #include <st_gpio.h>
 #include <st_rcc.h>
 #include "hal_stepper_port.h"
 #include "board_cfg.h"
 
+static bool initialized = false;
+
 void hal_stepper_port_init(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
+
     RCC->AHB1ENR |= STEPPER_PORT_RCC_GPIO_ENABLE;
     STEPPER_PORT_GPIO_PORT->MODER   = STEPPER_PORT_MODER;
     STEPPER_PORT_GPIO_PORT->OTYPER  = STEPPER_PORT_OTYPER;

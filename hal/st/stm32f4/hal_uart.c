@@ -13,23 +13,23 @@
  *
  */
 
+#include <stddef.h>
+#include <stdlib.h>
+#include "board_cfg.h"
+#include "hal_cfg.h"
+#include "hal_cpu.h"
+#include "hal_debug.h"
+#include "hal_led.h"
+#include "hal_time.h"
+#include "hal_uart.h"
 #include <st_common.h>
 #include <st_gpio.h>
 #include <st_rcc.h>
 #include <st_usart.h>
 #include <st_util.h>
-#include <stddef.h>
-#include <stdlib.h>
-#include "hal_uart.h"
-#include "hal_time.h"
-#include "board_cfg.h"
-#include "hal_debug.h"
-#include "hal_led.h"
-#include "hal_cpu.h"
 
 // Baudrate is 115200 so a byte should transfere in less than one ms
 #define UART_BYTE_TIMEOUT_MS      5
-
 
 typedef struct {
     // receive
@@ -49,9 +49,6 @@ typedef struct {
 
 static void device_IRQ_handler(uint_fast8_t device);
 static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
-
-static volatile uart_device_typ devices[MAX_UART];
-
 static bool hal_uart_init(uint_fast8_t device, uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size);
 static void hal_uart_print_configuration(uint_fast8_t device);
 static uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16_t offset);
@@ -60,12 +57,22 @@ static void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many);
 static void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
 static bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
 
+static volatile uart_device_typ devices[MAX_UART];
+static bool gcode_initialized = false;
+static bool debug_initialized = false;
 
 // Implementation of hal_uart_api
 
 
 bool hal_init_gcode_uart(uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size)
 {
+    if(true == gcode_initialized)
+    {
+        // initialize only once !
+        return false;
+    }
+    gcode_initialized = true;
+
     return hal_uart_init(GCODE_UART, rec_buf_size, send_buf_size);
 }
 
@@ -101,6 +108,13 @@ bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t lengt
 
 bool hal_init_debug_uart(uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size)
 {
+    if(true == debug_initialized)
+    {
+        // initialize only once !
+        return false;
+    }
+    debug_initialized = true;
+
     return hal_uart_init(DEBUG_UART, rec_buf_size, send_buf_size);
 }
 

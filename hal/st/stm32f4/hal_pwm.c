@@ -21,8 +21,17 @@
 #include "hal_time.h"
 #include "board_cfg.h"
 
+static bool initialized = false;
+
 void hal_pwm_init(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
+
     // configure timer for PWM
 #if PWM_NUM_PINS > 0
     hal_time_enable_pwm_for(PWM_0_TIMER);

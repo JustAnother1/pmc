@@ -13,6 +13,7 @@
  *
  */
 
+#include <stdbool.h>
 #include <st_gpio.h>
 #include <st_rcc.h>
 #include <st_util.h>
@@ -22,9 +23,16 @@
 #include "protocol.h"
 
 static uint_fast8_t curState[D_OUT_NUM_PINS];
+static bool initialized = false;
 
 void hal_dout_init(void)
 {
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
 #if(D_OUT_NUM_PINS > 0)
         RCC->AHB1ENR |= D_OUT_0_RCC_GPIO_ENABLE;
         D_OUT_0_GPIO_PORT->MODER   &= ~D_OUT_0_MODER_0;

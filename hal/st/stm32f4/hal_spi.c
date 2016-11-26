@@ -64,12 +64,20 @@ static void hal_spi_start_spi_transaction(uint_fast8_t device,
 
 
 static spi_device_typ devices[MAX_SPI];
-
+static bool stepper_initialized = false;
+static bool expansion_initialized = false;
 
 // Implementation of hal_api_api
 
 void hal_init_stepper_spi(void)
 {
+    if(true == stepper_initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    stepper_initialized = true;
+
     hal_spi_init(STEPPER_SPI);
 }
 
@@ -102,6 +110,12 @@ bool hal_stepper_spi_is_idle(void)
 
 void hal_init_expansion_spi(void)
 {
+    if(true == expansion_initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    expansion_initialized = true;
     hal_spi_init(EXPANSION_SPI);
 }
 
