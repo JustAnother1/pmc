@@ -35,6 +35,7 @@ SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_din.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_dout.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_i2c.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_led.c
+SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_nvram.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_power.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_pwm.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_spi.c

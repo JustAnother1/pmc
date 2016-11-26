@@ -21,10 +21,10 @@
 #include "hal_led.h"
 #include "hal_time.h"
 #include "407discovery/board_cfg.h"
-#include "st_common.h""
+#include "st_common.h"
 #include "st_flash.h"
 #include "st_rcc.h"
-#include "st_util.h""
+#include "st_util.h"
 
 
 #define HEART_BEAT_FAST_LIMIT 5
