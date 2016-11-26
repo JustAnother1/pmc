@@ -300,11 +300,11 @@ void hal_cpu_check_Reset_Reason(void)
     }
     if(0 != (resetSource & RCC_CSR_PADRSTF))
     {
-        debug_line("Pin");
+        debug_line("Reset Pin Signal");
     }
     if(0 != (resetSource & RCC_CSR_BORRSTF))
     {
-        debug_line("BOR");
+        debug_line("Brown out Reset");
     }
     // reset Flags
     resetSource    |= RCC_CSR_RMVF;

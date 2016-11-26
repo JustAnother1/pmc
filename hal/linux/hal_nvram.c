@@ -41,22 +41,22 @@ void hal_nvram_setUInt32Value(uint32_t addr, uint32_t value)
 
 }
 
-bool hal_nvram_getUInt16Value(uint32_t addr, uint_fast16_t* value)
+bool hal_nvram_getUInt16Value(uint32_t addr, uint16_t* value)
 {
     return false;
 }
 
-void hal_nvram_setUInt16Value(uint32_t addr, uint_fast16_t value)
+void hal_nvram_setUInt16Value(uint32_t addr, uint16_t value)
 {
 
 }
 
-bool hal_nvram_getUInt8Value(uint32_t addr, uint_fast8_t* value)
+bool hal_nvram_getUInt8Value(uint32_t addr, uint8_t* value)
 {
     return false;
 }
 
-void hal_nvram_setUInt8Value(uint32_t addr, uint_fast8_t value)
+void hal_nvram_setUInt8Value(uint32_t addr, uint8_t value)
 {
 
 }

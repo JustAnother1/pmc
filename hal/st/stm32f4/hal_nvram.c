@@ -13,6 +13,7 @@
  *
  */
 
+#include "hal_debug.h"
 #include "hal_i2c.h"
 #include "hal_nvram.h"
 
@@ -31,7 +32,7 @@ bool hal_nvram_getString(uint32_t addr, char* buf, int maxLength)
             true, // read and not write
             get_i2c_device_address_for(addr), // read from this i2C device
             get_i2c_data_address_for(addr), // read from this address in the device
-            buf,  // read the data into this buffer
+            (uint8_t* )buf, // read the data into this buffer
             maxLength)) // read not more than this number of bytes
     {
         // -> OK
@@ -51,7 +52,7 @@ void hal_nvram_setString(uint32_t addr, char* buf, int length)
             false, // write and not read
             get_i2c_device_address_for(addr), // write to this device
             get_i2c_data_address_for(addr), // write to this address in the device
-            buf, // the data to write
+            (uint8_t* )buf, // the data to write
             length)) // number of Bytes to write
     {
         // OK
@@ -68,7 +69,7 @@ bool hal_nvram_getUInt32Value(uint32_t addr, uint32_t* value)
             true, // read and not write
             get_i2c_device_address_for(addr), // read from this i2C device
             get_i2c_data_address_for(addr), // read from this address in the device
-            value,  // read the data into this buffer
+            (uint8_t* )value,  // read the data into this buffer
             4)) // read 4 bytes
     {
         // -> OK
@@ -88,7 +89,7 @@ void hal_nvram_setUInt32Value(uint32_t addr, uint32_t value)
             false, // write and not read
             get_i2c_device_address_for(addr), // write to this device
             get_i2c_data_address_for(addr), // write to this address in the device
-            &value, // the data to write
+            (uint8_t* )&value, // the data to write
             4)) // 4 Bytes to write
     {
         // OK
@@ -99,13 +100,13 @@ void hal_nvram_setUInt32Value(uint32_t addr, uint32_t value)
     }
 }
 
-bool hal_nvram_getUInt16Value(uint32_t addr, uint_fast16_t* value)
+bool hal_nvram_getUInt16Value(uint32_t addr, uint16_t* value)
 {
     if(true == hal_do_i2c_transaction(
             true, // read and not write
             get_i2c_device_address_for(addr), // read from this i2C device
             get_i2c_data_address_for(addr), // read from this address in the device
-            value,  // read the data into this buffer
+            (uint8_t* )value,  // read the data into this buffer
             2)) // read 2 bytes
     {
         // -> OK
@@ -118,14 +119,14 @@ bool hal_nvram_getUInt16Value(uint32_t addr, uint_fast16_t* value)
     }
 }
 
-void hal_nvram_setUInt16Value(uint32_t addr, uint_fast16_t value)
+void hal_nvram_setUInt16Value(uint32_t addr, uint16_t value)
 {
     //TODO alignment !
     if(true == hal_do_i2c_transaction(
             false, // write and not read
             get_i2c_device_address_for(addr), // write to this device
             get_i2c_data_address_for(addr), // write to this address in the device
-            &value, // the data to write
+            (uint8_t* )&value, // the data to write
             2)) // 2 Bytes to write
     {
         // OK
@@ -136,7 +137,7 @@ void hal_nvram_setUInt16Value(uint32_t addr, uint_fast16_t value)
     }
 }
 
-bool hal_nvram_getUInt8Value(uint32_t addr, uint_fast8_t* value)
+bool hal_nvram_getUInt8Value(uint32_t addr, uint8_t* value)
 {
     if(true == hal_do_i2c_transaction(
             true, // read and not write
@@ -155,7 +156,7 @@ bool hal_nvram_getUInt8Value(uint32_t addr, uint_fast8_t* value)
     }
 }
 
-void hal_nvram_setUInt8Value(uint32_t addr, uint_fast8_t value)
+void hal_nvram_setUInt8Value(uint32_t addr, uint8_t value)
 {
     if(true == hal_do_i2c_transaction(
             false, // write and not read
@@ -178,7 +179,7 @@ bool hal_nvram_getfloat(uint32_t addr, float* value)
             true, // read and not write
             get_i2c_device_address_for(addr), // read from this i2C device
             get_i2c_data_address_for(addr), // read from this address in the device
-            value,  // read the data into this buffer
+            (uint8_t* )value,  // read the data into this buffer
             4)) // read 4 bytes
     {
         // -> OK
@@ -198,7 +199,7 @@ void hal_nvram_setfloat(uint32_t addr, float value)
             false, // write and not read
             get_i2c_device_address_for(addr), // write to this device
             get_i2c_data_address_for(addr), // write to this address in the device
-            &value, // the data to write
+            (uint8_t* )&value, // the data to write
             4)) // 4 Bytes to write
     {
         // OK

@@ -149,6 +149,7 @@ static uint8_t cfg_data[5][SPI_BUFFER_LENGTH];
 static uint_fast8_t num_bytes_used;
 static uint_fast8_t steppers_detected_on_last_detection;
 static uint8_t spi_receive_buffer[SPI_BUFFER_LENGTH];
+static bool initialized = false;
 
 #ifdef USE_STEP_DIR
 
@@ -292,6 +293,12 @@ static const uint8_t DRVCONTROL_Buffer_2[32][3] = {
 void trinamic_init(void)
 {
     uint_fast8_t i;
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+
     hal_init_stepper_spi();
     steppers_detected_on_last_detection = 0;
 

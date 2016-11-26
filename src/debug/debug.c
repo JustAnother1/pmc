@@ -837,9 +837,10 @@ static void parse_order(int length)
         break;
     }
 }
-/*
-void curTest(int value)
+
+void  __attribute__((weak)) curTest(int value)
 {
     debug_line("Found Value %d !", value);
+    debug_line("Currently no Test is active !!");
 }
-*/
+

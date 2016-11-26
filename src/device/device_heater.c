@@ -233,7 +233,7 @@ void reportTemperature(void)
     }
 }
 
-
+/*
 void curTest(int value)
 {
     debug_line("Found Value %d !", value);
@@ -245,5 +245,6 @@ void curTest(int value)
     count = 0;
     hal_cpu_add_ms_tick_function(reportTemperature);
 }
+*/
 
 // end of File
