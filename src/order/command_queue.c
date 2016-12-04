@@ -88,11 +88,7 @@ static bool enabled = false;
 
 void cmd_queue_init(void)
 {
-#ifdef STEPPER_MODULE_TEST
-    dev_stepper_enable_motor(0, 1);
-#else
     cmd_queue_clear();
-#endif
 }
 
 void cmd_queue_reset_executed_commands(void)
@@ -673,27 +669,27 @@ static void handle_wrapped_command(void)
         if(2 == queue[read_pos][POS_OF_LENGTH])
         {
             // one Switch
-        	if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0],
+            if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0],
                                         queue[read_pos][POS_OF_PARAMETER_START + 1]) )
-        	{
-        		com_send_ok_response();
-        	}
-        	// else - command already send error
+            {
+                com_send_ok_response();
+            }
+            // else - command already send error
         }
         else if(4 == queue[read_pos][POS_OF_LENGTH])
         {
             // two switches
-        	if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0],
+            if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0],
                                         queue[read_pos][POS_OF_PARAMETER_START + 1] ) )
-        	{
-            	if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 2],
+            {
+                if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 2],
                                             queue[read_pos][POS_OF_PARAMETER_START + 3]) )
-            	{
-            		com_send_ok_response();
-            	}
-            	// else - command already send error
-        	}
-        	// else - command already send error
+                {
+                    com_send_ok_response();
+                }
+                // else - command already send error
+            }
+            // else - command already send error
         }
         else
         {

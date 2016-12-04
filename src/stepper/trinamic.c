@@ -81,40 +81,35 @@
     }lstepper_configuration_typ;
 
     enum cfgSetting {
-        // DRVCTRL
-        stepInterpolation,
-        doubleEdge,
-        microstepResolution,
-        // CHOPCONF
-        blankingTime,
-        chopperMode,
-        randomToff,
-        hysteresisDecrementTime,
-        fastDecayMode,
-        hysteresisEnd,
-        sineWaveOffset,
-        hysteresisStartOffset,
-        fastDecayTime,
-        toff,
-        // SMARTEN
-        seIMin,
-        decrementSpeed,
-        seUpper,
-        seUpStep,
-        seLower,
-        // SGCSCONF
-        sgFilter,
-        sgThreshold,
-        sgCS,
-        // DRVCONF
-        test,
-        slopeHigh,
-        slopeLow,
-        shortGNDdisabled,
-        shortGNDtimer,
-        disableSTEPDIR,
-        lowVoltageRsense,
-        responseFormat,
+        stepInterpolation       = 0,
+        doubleEdge              = 1,
+        microstepResolution     = 2,
+        blankingTime            = 3,
+        chopperMode             = 4,
+        randomToff              = 5,
+        hysteresisDecrementTime = 6,
+        fastDecayMode           = 7,
+        hysteresisEnd           = 8,
+        sineWaveOffset          = 9,
+        hysteresisStartOffset   = 10,
+        fastDecayTime           = 11,
+        toff                    = 12,
+        seIMin                  = 13,
+        decrementSpeed          = 14,
+        seUpper                 = 15,
+        seUpStep                = 16,
+        seLower                 = 17,
+        sgFilter                = 18,
+        sgThreshold             = 19,
+        sgCS                    = 20,
+        test                    = 21,
+        slopeHigh               = 22,
+        slopeLow                = 23,
+        shortGNDdisabled        = 24,
+        shortGNDtimer           = 25,
+        disableSTEPDIR          = 26,
+        lowVoltageRsense        = 27,
+        responseFormat          = 28,
     };
 
     enum cfgRegisters {
@@ -125,6 +120,45 @@
         DRVCONF  = 4,
     };
 
+    typedef struct {
+        enum cfgRegisters reg; // which register
+        int bitPosition;       // Which bit in the addressed Register
+        int numBits;           // the number of bits the int consumes
+    }setting_location_type;
+
+    static setting_location_type setingsLocations[] = {
+     /* cfgSetting                 Register    Bit Position    number of Bits */
+    {/* stepInterpolation */       DRVCTRL,    9,              1 },
+    {/* doubleEdge */              DRVCTRL,    8,              1 },
+    {/* microstepResolution */     DRVCTRL,    0,              4 },
+    {/* blankingTime */            CHOPCONF,   15,             2 },
+    {/* chopperMode */             CHOPCONF,   14,             1 },
+    {/* randomToff */              CHOPCONF,   13,             1 },
+    {/* hysteresisDecrementTime */ CHOPCONF,   11,             2 },
+    {/* fastDecayMode */           CHOPCONF,   12,             1 },
+    {/* hysteresisEnd */           CHOPCONF,   7,              4 },
+    {/* sineWaveOffset */          CHOPCONF,   7,              4 },
+    {/* hysteresisStartOffset */   CHOPCONF,   4,              3 },
+    {/* fastDecayTime */           CHOPCONF,   3,              4 },
+    {/* toff */                    CHOPCONF,   0,              4 },
+    {/* seIMin */                  SMARTEN,    15,             1 },
+    {/* decrementSpeed */          SMARTEN,    13,             3 },
+    {/* seUpper */                 SMARTEN,    8,              4 },
+    {/* seUpStep */                SMARTEN,    5,              2 },
+    {/* seLower */                 SMARTEN,    0,              4 },
+    {/* sgFilter */                SGCSCONF,   16,             1 },
+    {/* sgThreshold */             SGCSCONF,   8,              7 },
+    {/* sgCS */                    SGCSCONF,   0,              5 },
+    {/* test */                    DRVCONF,    16,             1 },
+    {/* slopeHigh */               DRVCONF,    14,             2 },
+    {/* slopeLow */                DRVCONF,    12,             2 },
+    {/* shortGNDdisabled */        DRVCONF,    10,             1 },
+    {/* shortGNDtimer */           DRVCONF,    8,              2 },
+    {/* disableSTEPDIR */          DRVCONF,    7,              1 },
+    {/* lowVoltageRsense */        DRVCONF,    6,              1 },
+    {/* responseFormat */          DRVCONF,    4,              2 },
+    };
+
 /*
  * S T A T I C   F U N C T I O N S
  */
@@ -132,7 +166,11 @@ static void setBit(enum cfgRegisters reg, int bit);
 static void resetBit(enum cfgRegisters reg, int bit);
 static void writeInt(int value,enum cfgRegisters reg, int bit, int bits);
 static void setInt(int value, enum cfgSetting Setting, int stepper);
-static void setBool(bool value, enum cfgSetting Setting, int stepper);
+static bool changeMotorSetting(uint8_t* setting);
+static bool printMotorConfiguration(void);
+static int getBit(enum cfgRegisters reg, int bit);
+static int readInt(enum cfgRegisters reg, int bit, int bits);
+static int getInt(enum cfgSetting setting, int stepper);
 
 #ifdef USE_STEP_DIR
     static void periodic_status_check(void);
@@ -531,8 +569,8 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
     {
         // DRVCTRL
 #ifdef USE_STEP_DIR
-        setBool(stepper_conf[i].stepInterpolation,   stepInterpolation,   i);
-        setBool(stepper_conf[i].doubleEdgeStepPulse, doubleEdge,          i);
+        setInt( stepper_conf[i].stepInterpolation,   stepInterpolation,   i);
+        setInt( stepper_conf[i].doubleEdgeStepPulse, doubleEdge,          i);
         setInt( stepper_conf[i].microstepResolution, microstepResolution, i);
 #else
         uint_fast8_t j;
@@ -552,8 +590,8 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
 
         // CHOPCONF
         setInt( stepper_conf[i].blankingTime,        blankingTime,        i);
-        setBool(stepper_conf[i].chopperMode,         chopperMode,         i);
-        setBool(stepper_conf[i].randomToff,          randomToff,          i);
+        setInt( stepper_conf[i].chopperMode,         chopperMode,         i);
+        setInt( stepper_conf[i].randomToff,          randomToff,          i);
         if(false == stepper_conf[i].chopperMode)
         {
             setInt( stepper_conf[i].hysteresisDecrementTime, hysteresisDecrementTime, i);
@@ -562,29 +600,29 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
         }
         else
         {
-            setBool(stepper_conf[i].fastDecayMode,  fastDecayMode,  i);
+            setInt( stepper_conf[i].fastDecayMode,  fastDecayMode,  i);
             setInt( stepper_conf[i].sineWaveOffset, sineWaveOffset, i);
             setInt( stepper_conf[i].fastDecayTime,  fastDecayTime,  i);
         }
         setInt( stepper_conf[i].toff,           toff,           i);
         //SMARTEN
-        setBool(stepper_conf[i].seIMin,         seIMin,         i);
+        setInt( stepper_conf[i].seIMin,         seIMin,         i);
         setInt( stepper_conf[i].decrementSpeed, decrementSpeed, i);
         setInt( stepper_conf[i].seUpper,        seUpper,        i);
         setInt( stepper_conf[i].seUpStep,       seUpStep,       i);
         setInt( stepper_conf[i].seLower,        seLower,        i);
         // SGCSCONF
-        setBool(stepper_conf[i].sgFilter,       sgFilter,       i);
+        setInt( stepper_conf[i].sgFilter,       sgFilter,       i);
         setInt( stepper_conf[i].sgThreshold,    sgThreshold,    i);
         setInt( stepper_conf[i].sgCS,           sgCS,           i);
         // DRVCONF
-        setBool(stepper_conf[i].test,             test,             i);
+        setInt( stepper_conf[i].test,             test,             i);
         setInt( stepper_conf[i].slopeHigh,        slopeHigh,        i);
         setInt( stepper_conf[i].slopeLow,         slopeLow,         i);
-        setBool(stepper_conf[i].shortGNDdisabled, shortGNDdisabled, i);
+        setInt( stepper_conf[i].shortGNDdisabled, shortGNDdisabled, i);
         setInt( stepper_conf[i].shortGNDtimer,    shortGNDtimer,    i);
-        setBool(stepper_conf[i].disableSTEPDIR,   disableSTEPDIR,   i);
-        setBool(stepper_conf[i].lowVoltageRsense, lowVoltageRsense, i);
+        setInt( stepper_conf[i].disableSTEPDIR,   disableSTEPDIR,   i);
+        setInt( stepper_conf[i].lowVoltageRsense, lowVoltageRsense, i);
         setInt( stepper_conf[i].responseFormat,   responseFormat,   i);
     }
 
@@ -608,149 +646,12 @@ bool trinamic_change_setting(uint8_t* setting)
     {
     case 'S':
     case 's':
-        debug_line("detected %d Steppers !", steppers_detected_on_last_detection);
-
-        debug_msg("DRVCTRL  hex: ");
-        for(int i = 0; i < num_bytes_used; i++)
-        {
-            debug_msg("%02X ", cfg_data[DRVCTRL][i]);
-        }
-        debug_line(" ");
-
-        debug_msg("CHOPCONF hex: ");
-        for(int i = 0; i < num_bytes_used; i++)
-        {
-            debug_msg("%02X ", cfg_data[CHOPCONF][i]);
-        }
-        debug_line(" ");
-
-        debug_msg("SMARTEN  hex: ");
-        for(int i = 0; i < num_bytes_used; i++)
-        {
-            debug_msg("%02X ", cfg_data[SMARTEN][i]);
-        }
-        debug_line(" ");
-
-        debug_msg("SGCSCONF hex: ");
-        for(int i = 0; i < num_bytes_used; i++)
-        {
-            debug_msg("%02X ", cfg_data[SGCSCONF][i]);
-        }
-        debug_line(" ");
-
-        debug_msg("DRVCONF  hex: ");
-        for(int i = 0; i < num_bytes_used; i++)
-        {
-            debug_msg("%02X ", cfg_data[DRVCONF][i]);
-        }
-        debug_line(" ");
+        printMotorConfiguration();
         break;
 
     case 'C':
     case 'c':
-    {
-        enum cfgSetting settingToChange;
-        uint_fast8_t numSteppers = trinamic_detect_number_of_steppers();
-        setting++;
-
-        //  3 4 5 6 7 8 9
-
-        switch(*setting)
-        {
-        // DRVCTRL
-        case 'i': settingToChange = stepInterpolation; break;
-        case 'e': settingToChange = doubleEdge; break;
-        case 'm': settingToChange = microstepResolution; break;
-        // CHOPCONF
-        case 'b': settingToChange = blankingTime; break;
-        case 'c': settingToChange = chopperMode; break;
-        case 'r': settingToChange = randomToff; break;
-        case 'd': settingToChange = hysteresisDecrementTime; break;
-        case 'f': settingToChange = fastDecayMode; break;
-        case 'h': settingToChange = hysteresisEnd; break;
-        case 'w': settingToChange = sineWaveOffset; break;
-        case 's': settingToChange = hysteresisStartOffset; break;
-        case 't': settingToChange = fastDecayTime; break;
-        case 'o': settingToChange = toff; break;
-        // SMARTEN
-        case 'n': settingToChange = seIMin; break;
-        case 'p': settingToChange = decrementSpeed; break;
-        case 'u': settingToChange = seUpper; break;
-        case '1': settingToChange = seUpStep; break;
-        case '0': settingToChange = seLower; break;
-        // SGCSCONF
-        case 'g': settingToChange = sgFilter; break;
-        case 'l': settingToChange = sgThreshold; break;
-        case '2': settingToChange = sgCS; break;
-        // DRVCONF
-        case 'x': settingToChange = test; break;
-        case 'a': settingToChange = slopeHigh; break;
-        case 'j': settingToChange = slopeLow; break;
-        case 'k': settingToChange = shortGNDdisabled; break;
-        case 'q': settingToChange = shortGNDtimer; break;
-        case 'v': settingToChange = disableSTEPDIR; break;
-        case 'y': settingToChange = lowVoltageRsense; break;
-        case 'z': settingToChange = responseFormat; break;
-        default: return false;
-        }
-
-        switch(settingToChange)
-        {
-        // DRVCTRL
-        case stepInterpolation:
-        case doubleEdge:
-        // CHOPCONF
-        case chopperMode:
-        case randomToff:
-        case fastDecayMode:
-        // SMARTEN
-        case seIMin:
-        // SGCSCONF
-        case sgFilter:
-        // DRVCONF
-        case test:
-        case shortGNDdisabled:
-        case disableSTEPDIR:
-        case lowVoltageRsense:
-            // BOOL
-            if(*(++setting) == 't')
-            {
-                setBool(true, settingToChange, 1); // stepper 1
-            }
-            break;
-
-        // DRVCTRL
-        case microstepResolution:
-        // CHOPCONF
-        case blankingTime:
-        case hysteresisDecrementTime:
-        case hysteresisEnd:
-        case sineWaveOffset:
-        case hysteresisStartOffset:
-        case fastDecayTime:
-        case toff:
-        // SMARTEN
-        case decrementSpeed:
-        case seUpper:
-        case seUpStep:
-        case seLower:
-        // SGCSCONF
-        case sgThreshold:
-        case sgCS:
-        // DRVCONF
-        case slopeHigh:
-        case slopeLow:
-        case shortGNDtimer:
-        case responseFormat:
-            // Int
-            setInt(atoi((char *)++setting), settingToChange, 1); // stepper 1
-            break;
-
-        }
-
-        debug_line("configuring %d Steppers !", numSteppers);
-        trinamic_configure_steppers(numSteppers);
-    }
+        changeMotorSetting(setting);
         break;
 
     default:
@@ -773,6 +674,10 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
         // 0xfffff will be send back if the loop is open (No SPI Device connected)
         // 0x00000 will be send back for each missing stepper
         // any other value is the current status of a stepper.
+        // -> this is a write to driveCTRL
+        // in SPI -> no Power in both coils
+        // in StepDir Mode -> NO step interpolation, Step pulse only high active,
+        //                    1/256 microstepping
         detect_data[i] = 0x00;
     }
     debug_line("detecting Steppers with  %d bytes !", SPI_BUFFER_LENGTH);
@@ -1057,6 +962,399 @@ void trinamic_make_step_using_SPI(uint_fast8_t stepper_num, bool direction_is_in
  * P R I V A T E   F U N C T I O N S
  */
 
+static bool changeMotorSetting(uint8_t* setting)
+{
+    enum cfgSetting settingToChange;
+    uint_fast8_t numSteppers = trinamic_detect_number_of_steppers();
+    setting++;
+
+    //  3 4 5 6 7 8 9
+
+    switch(*setting)
+    {
+    // DRVCTRL
+    case 'i': settingToChange = stepInterpolation; break;
+    case 'e': settingToChange = doubleEdge; break;
+    case 'm': settingToChange = microstepResolution; break;
+    // CHOPCONF
+    case 'b': settingToChange = blankingTime; break;
+    case 'c': settingToChange = chopperMode; break;
+    case 'r': settingToChange = randomToff; break;
+    case 'd': settingToChange = hysteresisDecrementTime; break;
+    case 'f': settingToChange = fastDecayMode; break;
+    case 'h': settingToChange = hysteresisEnd; break;
+    case 'w': settingToChange = sineWaveOffset; break;
+    case 's': settingToChange = hysteresisStartOffset; break;
+    case 't': settingToChange = fastDecayTime; break;
+    case 'o': settingToChange = toff; break;
+    // SMARTEN
+    case 'n': settingToChange = seIMin; break;
+    case 'p': settingToChange = decrementSpeed; break;
+    case 'u': settingToChange = seUpper; break;
+    case '1': settingToChange = seUpStep; break;
+    case '0': settingToChange = seLower; break;
+    // SGCSCONF
+    case 'g': settingToChange = sgFilter; break;
+    case 'l': settingToChange = sgThreshold; break;
+    case '2': settingToChange = sgCS; break;
+    // DRVCONF
+    case 'x': settingToChange = test; break;
+    case 'a': settingToChange = slopeHigh; break;
+    case 'j': settingToChange = slopeLow; break;
+    case 'k': settingToChange = shortGNDdisabled; break;
+    case 'q': settingToChange = shortGNDtimer; break;
+    case 'v': settingToChange = disableSTEPDIR; break;
+    case 'y': settingToChange = lowVoltageRsense; break;
+    case 'z': settingToChange = responseFormat; break;
+    default: return false;
+    }
+
+    setInt(atoi((char *)++setting), settingToChange, 1); // stepper 1
+
+    debug_line("configuring %d Steppers !", numSteppers);
+    trinamic_configure_steppers(numSteppers);
+    return true;
+}
+
+static void printRegisterHex(enum cfgRegisters reg)
+{
+    for(int i = 0; i < /*num_bytes_used*/ SPI_BUFFER_LENGTH; )
+    {
+        debug_msg("%02X", cfg_data[reg][i]);
+        i++;
+        debug_msg("%02X", cfg_data[reg][i]);
+        i++;
+        debug_msg("%01X %01X", (cfg_data[reg][i]>>4), cfg_data[reg][i]);
+        i++;
+        debug_msg("%02X", cfg_data[reg][i]);
+        i++;
+        debug_msg("%02X ", cfg_data[reg][i]);
+        i++;
+    }
+}
+
+static bool printMotorConfiguration(void)
+{
+    int stepperNumber = 0;
+    // TODO stepper number
+    debug_line("detected %d Steppers !", steppers_detected_on_last_detection);
+
+    debug_msg("DRVCTRL  hex: ");
+    printRegisterHex(DRVCTRL);
+    debug_line(" ");
+
+#ifdef USE_STEP_DIR
+    debug_msg("[i]");
+    if(0 == getInt(stepInterpolation, stepperNumber))
+    {
+        debug_line("Step Interpolation      : disabled  (=0)");
+    }
+    else
+    {
+        debug_line("Step Interpolation      : enabled (=1)");
+    }
+
+    debug_msg("[e]");
+    if(0 == getInt(doubleEdge, stepperNumber))
+    {
+        debug_line("Double Edge             : rising only (=0)");
+    }
+    else
+    {
+        debug_line("Double Edge             : rising and falling (=1)");
+    }
+    debug_msg("[m]");
+    switch(getInt(microstepResolution, stepperNumber))
+    {
+    case 0 : debug_line("Microstep Res.          : 1/256 (=0)"); break;
+    case 1 : debug_line("Microstep Res.          : 1/128 (=1)"); break;
+    case 2 : debug_line("Microstep Res.          : 1/64"); break;
+    case 3 : debug_line("Microstep Res.          : 1/32"); break;
+    case 4 : debug_line("Microstep Res.          : 1/16"); break;
+    case 5 : debug_line("Microstep Res.          : 1/8"); break;
+    case 6 : debug_line("Microstep Res.          : 1/4"); break;
+    case 7 : debug_line("Microstep Res.          : 1/2 - half steps"); break;
+    case 8 : debug_line("Microstep Res.          : 1/1 - full steps"); break;
+    default: debug_line("Microstep Res.          : %d <- invalid !", getInt(microstepResolution, stepperNumber));break;
+    }
+
+#else
+    // TODO
+#endif
+
+    debug_msg("CHOPCONF hex: ");
+    printRegisterHex(CHOPCONF);
+    debug_line(" ");
+    debug_msg("[b]");
+    switch(getInt(blankingTime, stepperNumber))
+    {
+    case 0: debug_line("blanking Time           : 16 * sys clk (=0)"); break;
+    case 1: debug_line("blanking Time           : 24 * sys clk (=1)"); break;
+    case 2: debug_line("blanking Time           : 36 * sys clk"); break;
+    case 3: debug_line("blanking Time           : 54 * sys clk"); break;
+    }
+    debug_msg("[c]");
+    if(0 == getInt(chopperMode, stepperNumber))
+    {
+        int hend = 0;
+        int hstof = 0;
+        debug_line("chopper Mode            : spread cycle (=0)");
+
+        debug_msg("[d]");
+        switch(getInt(hysteresisDecrementTime, stepperNumber))
+        {
+        case 0 : debug_line("hysteresis Decr.Time    : 16 (=0)"); break;
+        case 1 : debug_line("hysteresis Decr.Time    : 32 (=1)"); break;
+        case 2 : debug_line("hysteresis Decr.Time    : 48"); break;
+        case 3 : debug_line("hysteresis Decr.Time    : 64"); break;
+        }
+
+        debug_msg("[h]");
+        hend = getInt(hysteresisEnd, stepperNumber) -3;
+        debug_line("hysteresis End          : %d (=%d)", hend, hend+3);
+
+        debug_msg("[s]");
+        hstof = getInt(hysteresisStartOffset, stepperNumber);
+        debug_line("hysteresis Start Offset : %d (=%d)", hstof + 1, hstof);
+        if(getInt(hysteresisStartOffset, stepperNumber) + 1 + hend > 15)
+        {
+            debug_line("ERROR: Hysteresis End + hysteresis Start Offset must be less than 16 !");
+        }
+        //else OK
+    }
+    else
+    {
+        int fastDecay = getInt(fastDecayTime, stepperNumber);
+        debug_line("chopper Mode            : constant toff (=1)");
+        debug_msg("[f]");
+        if(0 == getInt(fastDecayMode, stepperNumber))
+        {
+         debug_line("fast Decay Mode         : cur. comp. can terminate fast decay (=0)");
+        }
+        else
+        {
+         debug_line("fast Decay Mode         : only timer can terminate fast decay (=1)");
+        }
+
+        debug_msg("[w]");
+        switch(getInt(sineWaveOffset, stepperNumber))
+        {
+        case  0: debug_line("sine Wave Offset        : -3 (=0)");break;
+        case  1: debug_line("sine Wave Offset        : -2 (=1)");break;
+        case  2: debug_line("sine Wave Offset        : -1");break;
+        case  3: debug_line("sine Wave Offset        : 0");break;
+        case  4: debug_line("sine Wave Offset        : 1");break;
+        case  5: debug_line("sine Wave Offset        : 2");break;
+        case  6: debug_line("sine Wave Offset        : 3");break;
+        case  7: debug_line("sine Wave Offset        : 4");break;
+        case  8: debug_line("sine Wave Offset        : 5");break;
+        case  9: debug_line("sine Wave Offset        : 6");break;
+        case 10: debug_line("sine Wave Offset        : 7");break;
+        case 11: debug_line("sine Wave Offset        : 8");break;
+        case 12: debug_line("sine Wave Offset        : 9");break;
+        case 13: debug_line("sine Wave Offset        : 10");break;
+        case 14: debug_line("sine Wave Offset        : 11");break;
+        case 15: debug_line("sine Wave Offset        : 12");break;
+        }
+
+        debug_msg("[t]");
+        debug_line("fast Decay Time         : %d sys clk (=%d)", 32 * fastDecay, fastDecay);
+    }
+
+    debug_msg("[r]");
+    {
+    int timeOff = getInt(toff, stepperNumber);
+    if(0 == getInt(randomToff, stepperNumber))
+    {
+        debug_line("Toff is                 : constant (=0)");
+    }
+    else
+    {
+        debug_line("Toff is                 : random (=1)");
+    }
+    debug_msg("[o]");
+    if(0 == timeOff)
+    {
+        debug_line("Toff                    : MOSFETS are OFF (=0)");
+    }
+    else
+    {
+        timeOff = 12 + (32*timeOff);
+        if(0 == getInt(randomToff, stepperNumber))
+        {
+            debug_line("Toff                    : %d sys clk", timeOff);
+        }
+        else
+        {
+            debug_line("Toff                    : %d - %d sys clk", timeOff-12, timeOff+3);
+        }
+    }
+    }
+
+    debug_msg("SMARTEN  hex: ");
+    printRegisterHex(SMARTEN);
+    debug_line(" ");
+
+    debug_msg("[n]");
+    if(0 == getInt(seIMin, stepperNumber))
+    {
+        debug_line("I min                   : 1/2 CS (=0)");
+    }
+    else
+    {
+        debug_line("I min                   : 1/4 CS (=1)");
+    }
+    debug_msg("[p]");
+    switch(getInt(decrementSpeed, stepperNumber))
+    {
+    case 0: debug_line("decrement Speed         : 32 samples needed per decrement (=0)"); break;
+    case 1: debug_line("decrement Speed         : 8 samples needed per decrement (=1)"); break;
+    case 2: debug_line("decrement Speed         : 2 samples needed per decrement (=2)"); break;
+    case 3: debug_line("decrement Speed         : 1 samples needed per decrement (=3)"); break;
+    }
+
+    {
+    int upThr = getInt(seUpper, stepperNumber);
+    int loThr = getInt(seLower, stepperNumber);
+    debug_msg("[0]");
+    if(0 == loThr)
+    {
+        debug_line("Cool Step               : disabled (lower Thr.)");
+    }
+    else
+    {
+        debug_line("Cool Step               : enabled (lower Thr.)");
+    }
+    debug_msg("[u]");
+    debug_line("upper threshold         : %d (=%d)", (loThr+upThr+1) * 32, upThr);
+    debug_msg("[0]");
+    debug_line("lower threshold         : %d", loThr);
+    }
+
+    debug_msg("[1]");
+    switch(getInt(seUpStep, stepperNumber))
+    {
+    case 0: debug_line("I up-step size          : 1 (=0)");break;
+    case 1: debug_line("I up-step size          : 2 (=1)");break;
+    case 2: debug_line("I up-step size          : 4 (=2)");break;
+    case 3: debug_line("I up-step size          : 8 (=3)");break;
+    }
+
+    debug_msg("SGCSCONF hex: ");
+    printRegisterHex(SGCSCONF);
+    debug_line(" ");
+
+    debug_msg("[g]");
+    if(0 ==  getInt(sgFilter, stepperNumber))
+    {
+        debug_line("Filter                  : standard Mode (=0)");
+    }
+    else
+    {
+        debug_line("Filter                  : Filtered Mode (=1)");
+    }
+
+    debug_msg("[l]");
+    {
+    int thr = getInt(sgThreshold, stepperNumber);
+    if(64 > thr)
+    {
+        debug_line("threshold               : %d (=%d)", thr, thr);
+    }
+    else
+    {
+        debug_line("threshold               : %d (=%d)", thr -128, thr);
+    }
+    }
+
+    debug_msg("[2]");
+    {
+    int cs = getInt(sgCS, stepperNumber);
+    debug_line("current scale           : %d/32 (=%d)", cs+1, cs);
+    }
+
+    debug_msg("DRVCONF  hex: ");
+    printRegisterHex(DRVCONF);
+    debug_line(" ");
+
+    debug_msg("[x]");
+    if(0 == getInt(test, stepperNumber))
+    {
+        debug_line("test mode               : normal mode (=0)");
+    }
+    else
+    {
+        debug_line("test mode               : test mode (=1)");
+    }
+
+    debug_msg("[a]");
+    switch(getInt(slopeHigh, stepperNumber))
+    {
+    case 0: debug_line("slope High              : Minimum (=0)"); break;
+    case 1: debug_line("slope High              : Minimum temperature compensation mode (=1)"); break;
+    case 2: debug_line("slope High              : Medium temperature compensation mode (=2)"); break;
+    case 3: debug_line("slope High              : Maximum (=3)"); break;
+    }
+
+    debug_msg("[j]");
+    switch(getInt(slopeLow, stepperNumber))
+    {
+    case 0: debug_line("slope Low               : Minimum (=0)"); break;
+    case 1: debug_line("slope Low               : Minimum (=1)"); break;
+    case 2: debug_line("slope Low               : Medium  (=2)"); break;
+    case 3: debug_line("slope Low               : Maximum (=3)"); break;
+    }
+
+    debug_msg("[k]");
+    if(0 == getInt(shortGNDdisabled, stepperNumber))
+    {
+        debug_line("short to GND protection : enabled");
+    }
+    else
+    {
+        debug_line("short to GND protection : disabled");
+    }
+
+    debug_msg("[q]");
+    switch(getInt(shortGNDtimer, stepperNumber))
+    {
+    case 0: debug_line("short to GND timer      : 3.2 µs (=0)");break;
+    case 1: debug_line("short to GND timer      : 1.6 µs (=1)");break;
+    case 2: debug_line("short to GND timer      : 1.2 µs (=2)");break;
+    case 3: debug_line("short to GND timer      : 0.8 µs (=3)");break;
+    }
+
+    debug_msg("[v]");
+    if(0 == getInt(disableSTEPDIR, stepperNumber))
+    {
+        debug_line("STEP/DIR Interface      : enabled (=0)");
+    }
+    else
+    {
+        debug_line("STEP/DIR Interface      : disabled (=1)");
+    }
+
+    debug_msg("[y]");
+    if(0 == getInt(lowVoltageRsense, stepperNumber))
+    {
+        debug_line("Voltage Rsense          : 0 - 305 mV (=0)");
+    }
+    else
+    {
+        debug_line("Voltage Rsense          : 0 - 165 mV (=1)");
+    }
+
+    debug_msg("[z]");
+    switch(getInt(responseFormat, stepperNumber))
+    {
+    case 0: debug_line("response Format         : micro step position (=0)");break;
+    case 1: debug_line("response Format         : stall Guard level (=1)");break;
+    case 2: debug_line("response Format         : stall guard and cool step (=3)");break;
+    case 3: debug_line("response Format         : ERROR ! (=3)");break;
+    }
+
+    return true;
+}
 
 // SPI:
 // ----
@@ -1087,7 +1385,25 @@ static void resetBit(enum cfgRegisters reg, int bit)
     cfg_data[reg][byte] &= ~(1<<bitShift);
 }
 
-static void writeInt(int value,enum cfgRegisters reg, int bit, int bits)
+static int getBit(enum cfgRegisters reg, int bit)
+{
+    int byte;
+    int bitShift;
+    int dataByte = 0;
+    byte = 19 - (bit/8);
+    bitShift = bit%8;
+    dataByte = cfg_data[reg][byte];
+    if(0 == (dataByte & (1<<bitShift)))
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+static void writeInt(int value, enum cfgRegisters reg, int bit, int bits)
 {
     int bitmask;
     int byte;
@@ -1137,52 +1453,65 @@ static void writeInt(int value,enum cfgRegisters reg, int bit, int bits)
     }
 }
 
+static int readInt(enum cfgRegisters reg, int bit, int bits)
+{
+    int bitmask;
+    int byte;
+    int bitShift;
+    int result = 0;
+    byte = 19 - (bit/8);
+    bitShift = bit%8;
+    switch(bits)
+    {
+    case 0: return 0;
+    case 1: bitmask = 0x01; break;
+    case 2: bitmask = 0x03; break;
+    case 3: bitmask = 0x07; break;
+    case 4: bitmask = 0x0f; break;
+    case 5: bitmask = 0x1f; break;
+    case 6: bitmask = 0x3f; break;
+    case 7: bitmask = 0x7f; break;
+    case 8: bitmask = 0xff; break;
+    default: return 0;
+    }
+
+    result = (cfg_data[reg][byte] & (bitmask<<bitShift)) >> bitShift;
+    // write all used bits to 0
+    if(bitShift + bits > 8)
+    {
+        // next byte is also effected
+        int shift = 8 -bitShift;
+        int additional_bits = (bitShift + bits) -8;
+        switch(additional_bits)
+        {
+        case 0: return 0;
+        case 1: bitmask = 0x01; break;
+        case 2: bitmask = 0x03; break;
+        case 3: bitmask = 0x07; break;
+        case 4: bitmask = 0x0f; break;
+        case 5: bitmask = 0x1f; break;
+        case 6: bitmask = 0x3f; break;
+        case 7: bitmask = 0x7f; break;
+        case 8: bitmask = 0xff; break;
+        default: return 0;
+        }
+        result =  result + (cfg_data[reg][byte-1] & bitmask) >> shift;
+    }
+    return result;
+}
+
 static void setInt(int value, enum cfgSetting setting, int stepper)
 {
     enum cfgRegisters reg; // which register
     int bitPosition;       // Which bit in the addressed Register
     int numBits;           // the number of bits the int consumes
-    switch(setting)
+
+    numBits = setingsLocations[setting].numBits;
+    bitPosition = setingsLocations[setting].bitPosition;
+    reg = setingsLocations[setting].reg;
+
+    if( fastDecayTime == setting)
     {
-    // DRVCTRL
-    case microstepResolution:
-        reg = DRVCTRL;
-        bitPosition = 0;
-        numBits = 4;
-        break;
-
-    // CHOPCONF
-    case blankingTime:
-        reg = CHOPCONF;
-        bitPosition = 15;
-        numBits = 2;
-        break;
-
-    case hysteresisDecrementTime:
-        reg = CHOPCONF;
-        bitPosition = 11;
-        numBits = 2;
-        break;
-
-    case hysteresisEnd:
-        reg = CHOPCONF;
-        bitPosition = 7;
-        numBits = 4;
-        break;
-
-    case sineWaveOffset:
-        reg = CHOPCONF;
-        bitPosition = 7;
-        numBits = 4;
-        break;
-
-    case hysteresisStartOffset:
-        reg = CHOPCONF;
-        bitPosition = 4;
-        numBits = 3;
-        break;
-
-    case fastDecayTime:
         reg = CHOPCONF;
         bitPosition = 3;
         // handle 4th bit
@@ -1196,162 +1525,61 @@ static void setInt(int value, enum cfgSetting setting, int stepper)
         }
         value = value %8;
         numBits = 3;
-        break;
-
-    case toff:
-        reg = CHOPCONF;
-        bitPosition = 0;
-        numBits = 4;
-        break;
-
-    // SMARTEN
-    case decrementSpeed:
-        reg = SMARTEN;
-        bitPosition = 13;
-        numBits = 3;
-        break;
-
-    case seUpper:
-        reg = SMARTEN;
-        bitPosition = 8;
-        numBits = 4;
-        break;
-
-    case seUpStep:
-        reg = SMARTEN;
-        bitPosition = 5;
-        numBits = 2;
-        break;
-
-    case seLower:
-        reg = SMARTEN;
-        bitPosition = 0;
-        numBits = 4;
-        break;
-
-    // SGCSCONF
-    case sgThreshold:
-        reg = SGCSCONF;
-        bitPosition = 8;
-        numBits = 7;
-        break;
-
-    case sgCS:
-        reg = SGCSCONF;
-        bitPosition = 0;
-        numBits = 5;
-        break;
-
-    // DRVCONF
-    case slopeHigh:
-        reg = DRVCONF;
-        bitPosition = 14;
-        numBits = 2;
-        break;
-
-    case slopeLow:
-        reg = DRVCONF;
-        bitPosition = 12;
-        numBits = 2;
-        break;
-
-    case shortGNDtimer:
-        reg = DRVCONF;
-        bitPosition = 8;
-        numBits = 2;
-        break;
-
-    case responseFormat:
-        reg = DRVCONF;
-        bitPosition = 4;
-        numBits = 2;
-        break;
-
-    default:
-        debug_line("Tried to set unknown bool setting !");
-        return;
     }
-    writeInt(value, reg, bitPosition + (stepper * 20), numBits);
-}
 
-static void setBool(bool value, enum cfgSetting setting, int stepper)
-{
-    enum cfgRegisters reg; // which register
-    int bitPosition;       // Which bit in the addressed Register
-
-    switch(setting)
+    if(1 == numBits)
     {
-    // DRVCTRL
-    case stepInterpolation:
-        reg = DRVCTRL;
-        bitPosition = 9;
-        break;
-
-    case doubleEdge:
-        reg = DRVCTRL;
-        bitPosition = 8;
-        break;
-
-    // CHOPCONF
-    case chopperMode:
-        reg = CHOPCONF;
-        bitPosition = 14;
-        break;
-
-    case randomToff:
-        reg = CHOPCONF;
-        bitPosition = 13;
-        break;
-
-    case fastDecayMode:
-        reg = CHOPCONF;
-        bitPosition = 12;
-        break;
-
-    // SMARTEN
-    case seIMin:
-        reg = SMARTEN;
-        bitPosition = 15;
-        break;
-
-    // SGCSCONF
-    case sgFilter:
-        reg = SGCSCONF;
-        bitPosition = 16;
-        break;
-
-    // DRVCONF
-    case test:
-        reg = DRVCONF;
-        bitPosition = 16;
-        break;
-
-    case shortGNDdisabled:
-        reg = DRVCONF;
-        bitPosition = 10;
-        break;
-
-    case disableSTEPDIR:
-        reg = DRVCONF;
-        bitPosition = 7;
-        break;
-
-    case lowVoltageRsense:
-        reg = DRVCONF;
-        bitPosition = 6;
-        break;
-
-    default:
-        debug_line("Tried to set unknown bool setting !");
-        return;
-    }
-    if(true == value)
-    {
-        setBit(  reg, bitPosition + (stepper * 20));
+        if(true == value)
+        {
+            setBit(  reg, bitPosition + (stepper * 20));
+        }
+        else
+        {
+            resetBit(reg, bitPosition + (stepper * 20));
+        }
     }
     else
     {
-        resetBit(reg, bitPosition + (stepper * 20));
+        writeInt(value, reg, bitPosition + (stepper * 20), numBits);
+    }
+}
+
+static int getInt(enum cfgSetting setting, int stepper)
+{
+    enum cfgRegisters reg; // which register
+    int bitPosition;       // Which bit in the addressed Register
+    int numBits;           // the number of bits the int consumes
+
+    numBits = setingsLocations[setting].numBits;
+    bitPosition = setingsLocations[setting].bitPosition;
+    reg = setingsLocations[setting].reg;
+
+    if( fastDecayTime == setting)
+    {
+        int result;
+        reg = CHOPCONF;
+        bitPosition = 3;
+        // handle 4th bit
+        if(0 == getBit(reg, bitPosition + 7 + ((MAX_NUM_STEPPERS -(stepper +1)) * 20)))
+        {
+            result = 0;
+        }
+        else
+        {
+            result = 8;
+        }
+        numBits = 3;
+        result = result + readInt(reg, bitPosition + (stepper * 20), numBits);
+        return result;
+    }
+
+    if(1 == numBits)
+    {
+        return getBit(reg, bitPosition + (stepper * 20));
+    }
+    else
+    {
+        return readInt(reg, bitPosition + (stepper * 20), numBits);
     }
 }
 
