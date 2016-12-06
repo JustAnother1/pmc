@@ -14,6 +14,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include "board_cfg.h"
 #include "trinamic.h"
 #include "hal_cfg.h"
 #include "hal_spi.h"
@@ -763,6 +764,13 @@ void trinamic_print_stepper_status(void)
     int i;
     int step = 1;
     int num = steppers_detected_on_last_detection;
+
+
+    debug_line("Pin:");
+    print_gpio_pin_configuration(STEPPER_PORT_GPIO_PORT, 0);
+
+    step_print_state();
+
     // raw data
     debug_line("Number of detected Steppers: %d", num);
     if(0 == num)

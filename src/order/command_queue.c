@@ -428,17 +428,6 @@ void cmd_queue_tick(void)
         if(false == step_is_busy())
         {
             // prepare next move
-            uint_fast8_t move_data[9] = {
-                   0, /* 0 : Don't care*/
-                   1, /* 1: Axis selection field*/
-                   0, /* 2: num bytes per Step, directions on axis*/
-                   0, /* 3: primary axis, homing */
-                   0, /* 4: nominal speed - dynamic */
-                   0, /* 5: end speed - dynamic change */
-                0xff, /* 6: Accelleration steps - becomes 0 when full speed is reached*/
-                   0, /* 7: decelleration steps - who breaks losses ;-) */
-                0xff  /* 8: steps on axis 0 */
-            };
             if(start_speed < max_speed)
             {
                 start_speed = start_speed + speed_increment;

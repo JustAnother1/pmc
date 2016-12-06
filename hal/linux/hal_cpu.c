@@ -82,3 +82,8 @@ void hal_cpu_check_Reset_Reason(void)
 {
 
 }
+
+void hal_cpu_print_Interrupt_information(void)
+{
+
+}

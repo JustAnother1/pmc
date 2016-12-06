@@ -308,6 +308,7 @@ static void order_help(void)
 #ifdef HAS_USB
     debug_line("pb                         : print USB configuration");
 #endif
+    debug_line("pc                         : print CPU configuration");
     debug_line("pi                         : print I2C configuration");
     debug_line("pin<Port,idx>              : print state of the pin");
     debug_line("pse                        : print expansion SPI configuration");
@@ -598,6 +599,7 @@ static void parse_order(int length)
         case 'A':
         case 'a':
             hal_print_configuration_adc();
+
             break;
 #ifdef HAS_USB
         case 'B':
@@ -605,6 +607,11 @@ static void parse_order(int length)
             hal_usb_print_configuration();
             break;
 #endif
+
+        case 'C':
+        case 'c':
+            hal_cpu_print_Interrupt_information();
+            break;
 
         case 'I':
         case 'i':

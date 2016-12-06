@@ -28,5 +28,6 @@ void hal_cpu_do_software_reset(void);
 void hal_cpu_tick(void);
 uint32_t hal_cpu_get_ms_tick(void);
 void hal_cpu_check_Reset_Reason(void);
+void hal_cpu_print_Interrupt_information(void);
 
 #endif /* HAL_CPU_H_ */

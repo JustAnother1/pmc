@@ -34,4 +34,6 @@ bool step_has_reached_tag(void);
 void step_disable_all_motors(void);
 void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off);
 
+void step_print_state(void);
+
 #endif /* STEP_H_ */

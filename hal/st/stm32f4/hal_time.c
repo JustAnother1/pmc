@@ -75,6 +75,7 @@ void hal_time_init(void)
 
 static void error_isr_on_stopped_timer(void)
 {
+    hal_set_error_led(true);
     debug_line("ERROR: ISR called on stopped Timer !");
 }
 
@@ -330,10 +331,10 @@ bool hal_time_enable_pwm_for(uint_fast8_t device)
     TIM_TypeDef* timer = get_timer_register_for(device);
     if((NULL == timer) || (0 == PWM_FREQUENCY))
     {
+        hal_set_error_led(true);
         return false;
     }
     enable_clock_for_timer(device);
-    set_irq_priority(device);
     timer->EGR   = 0x0021;  // ???
     timer->CNT   = 0; // start counting at 0
     timer->PSC   = 1; // MAx frequency is best // (uint16_t)(0xffff & ((getClockFrequencyForTimer(device) / PWM_FREQUENCY) - 1));
@@ -489,7 +490,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_1_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_1_isr));
         }
         break;
 
@@ -501,7 +502,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_2_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_2_isr));
         }
         break;
 
@@ -513,7 +514,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_3_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_3_isr));
         }
         break;
 
@@ -525,7 +526,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_4_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_4_isr));
         }
         break;
 
@@ -537,7 +538,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_5_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_5_isr));
         }
         break;
 
@@ -549,7 +550,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_6_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_6_isr));
         }
         break;
 
@@ -561,7 +562,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_7_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_7_isr));
         }
         break;
 
@@ -573,7 +574,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_8_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_8_isr));
         }
         break;
 
@@ -585,7 +586,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_9_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_9_isr));
         }
         break;
 
@@ -597,7 +598,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_10_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_10_isr));
         }
         break;
 
@@ -609,7 +610,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_11_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_11_isr));
         }
         break;
 
@@ -621,7 +622,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_12_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_12_isr));
         }
         break;
 
@@ -633,7 +634,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_13_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_13_isr));
         }
         break;
 
@@ -645,7 +646,7 @@ void hal_time_print_Configuration(int timerNumber)
         }
         else
         {
-            debug_line("ISR Function : at address 0x%08x", &tim_14_isr);
+            debug_line("ISR Function : at address 0x%08x", &(*tim_14_isr));
         }
         break;
 

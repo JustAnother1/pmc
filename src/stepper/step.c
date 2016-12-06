@@ -192,6 +192,7 @@ static uint_fast16_t speed_reloads[256] ={
  */
 static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 {
+    debug_msg("Step ISR");
     if(step_pos == stop_pos)
     {
         // we are done nothing more to do
@@ -297,6 +298,7 @@ static void finished_cur_slot(void)
  */
 static void refill_step_buffer(void)
 {
+    debug_msg("Buffer ISR");
     uint_fast8_t free_slots = get_number_of_free_slots();
     if(free_slots > STEP_CHUNK_SIZE)
     {
@@ -310,7 +312,10 @@ static void refill_step_buffer(void)
         // if we have some steps then start the timer
         if(step_pos != stop_pos)
         {
-            if(false == hal_time_start_timer(STEP_TIMER, TICKS_PER_SECOND, 1, step_isr))
+            if(false == hal_time_start_timer(STEP_TIMER,
+                                             TICKS_PER_SECOND,
+                                             5,
+                                             &step_isr))
             {
                 error_fatal_error("Failed to start Timer !");
             }
@@ -937,5 +942,43 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
     }
     // else invalid stepper
 }
+
+void step_print_state(void)
+{
+    debug_line("Step State:");
+    debug_line("available steppers : %d", available_steppers);
+    debug_msg("Step Timer : ");
+    if(true == step_timer_running)
+    {
+        debug_line("running");
+    }
+    else
+    {
+        debug_line("not running");
+    }
+    debug_line("Step Position : %d", step_pos);
+    debug_line("Stop Position : %d", stop_pos);
+
+    debug_msg("Buffer Timer : ");
+    if(true == buffer_timer_running)
+    {
+        debug_line("running");
+    }
+    else
+    {
+        debug_line("not running");
+    }
+
+    if(true == busy)
+    {
+        debug_line("busy");
+    }
+    else
+    {
+        debug_line("not busy");
+    }
+    debug_line("free slots : %d", get_number_of_free_slots());
+}
+
 
 // end of File

@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <st_gpio.h>
 #include <st_rcc.h>
+#include "hal_debug.h"
 #include "hal_stepper_port.h"
 #include "board_cfg.h"
 

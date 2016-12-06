@@ -16,6 +16,8 @@
 #ifndef CPU_CFG_H_
 #define CPU_CFG_H_
 
+#include "st_gpio.h"
+
 /******************************************************************************/
 /*                                                                            */
 /*         Clock Configuration                                                */
@@ -865,10 +867,15 @@
 
 #define STEPPER_PORT_RCC_GPIO_ENABLE  RCC_AHB1ENR_GPIODEN
 #define STEPPER_PORT_GPIO_PORT        GPIOD
+// MODER : General Purpose Output
 #define STEPPER_PORT_MODER            0x55555555
+// OTYPER: Push Pull
 #define STEPPER_PORT_OTYPER           0x00000000
+// OSPEEDR: 00 = 2MHz, 01 = 25MHz, 10 = 50MHz, 11 = 100MHz
 #define STEPPER_PORT_OSPEEDR          0x00000000
+// Pull Up Pull Down : no
 #define STEPPER_PORT_PUPD             0x00000000
+// Output Data = 0
 #define STEPPER_PORT_ODR              0x00000000
 
 /******************************************************************************/

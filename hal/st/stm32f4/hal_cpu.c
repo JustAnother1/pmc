@@ -311,6 +311,56 @@ void hal_cpu_check_Reset_Reason(void)
     RCC->CSR = resetSource;
 }
 
+
+void hal_cpu_print_Interrupt_information(void)
+{
+    int i = 0;
+    // NVIC
+
+    debug_line("NVIC :");
+    debug_line("NVIC->ISER[0] :%08X", NVIC->ISER[0]);
+    debug_line("NVIC->ISER[1] :%08X", NVIC->ISER[1]);
+    debug_line("NVIC->ISER[2] :%08X", NVIC->ISER[2]);
+
+    debug_line("NVIC->ICER[0] :%08X", NVIC->ICER[0]);
+    debug_line("NVIC->ICER[1] :%08X", NVIC->ICER[1]);
+    debug_line("NVIC->ICER[2] :%08X", NVIC->ICER[2]);
+
+    debug_line("NVIC->ISPR[0] :%08X", NVIC->ISPR[0]);
+    debug_line("NVIC->ISPR[1] :%08X", NVIC->ISPR[1]);
+    debug_line("NVIC->ISPR[2] :%08X", NVIC->ISPR[2]);
+
+    debug_line("NVIC->ICPR[0] :%08X", NVIC->ICPR[0]);
+    debug_line("NVIC->ICPR[1] :%08X", NVIC->ICPR[1]);
+    debug_line("NVIC->ICPR[2] :%08X", NVIC->ICPR[2]);
+
+
+    debug_line("NVIC->IABR[0] :%08X", NVIC->IABR[0]);
+    debug_line("NVIC->IABR[1] :%08X", NVIC->IABR[1]);
+    debug_line("NVIC->IABR[2] :%08X", NVIC->IABR[2]);
+
+    for(i = 0; i < 240; i++)
+    {
+        if(0 != NVIC->IP[i])
+        {
+            debug_line("NVIC->IP[%2d]  :%02X", i, NVIC->IP[i]);
+        }
+    }
+
+    // My "Tasks"
+    tick_entry *cur = tick_list;
+    i = 0;
+    debug_line("Tasks :");
+    while(NULL != cur)
+    {
+        cur->nextCall--;
+        i++;
+        debug_line("Task with Cycle Time %3d and function %X", cur->cycle, &(cur->tick));
+        cur = cur->next;
+    }
+    debug_line("%d tasks.", i);
+}
+
 // TODO have them report the fault somewhere.
 
 void NMI_Handler(void)
