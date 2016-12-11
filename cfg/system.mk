@@ -13,7 +13,7 @@ ifeq ($(COMPILER),clang)
 else
 	CC = $(CCPREFIX)gcc
 	LD = $(CCPREFIX)gcc
-	SIZE = echo
+	SIZE = size
 endif
 AS = $(CCPREFIX)gcc -x assembler-with-cpp
 CP = $(CCPREFIX)objcopy
