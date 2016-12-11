@@ -425,7 +425,7 @@ typedef struct
   __IO uint32_t ALRMASSR;/*!< RTC alarm A sub second register,                          Address offset: 0x44 */
   __IO uint32_t ALRMBSSR;/*!< RTC alarm B sub second register,                          Address offset: 0x48 */
   uint32_t RESERVED7;    /*!< Reserved, 0x4C                                                                 */
-  __IO uint32_t BKP0R;   /*!< RTC backup register 1,                                    Address offset: 0x50 */
+  __IO uint32_t BKP0R;   /*!< RTC backup register 0,                                    Address offset: 0x50 */
   __IO uint32_t BKP1R;   /*!< RTC backup register 1,                                    Address offset: 0x54 */
   __IO uint32_t BKP2R;   /*!< RTC backup register 2,                                    Address offset: 0x58 */
   __IO uint32_t BKP3R;   /*!< RTC backup register 3,                                    Address offset: 0x5C */
