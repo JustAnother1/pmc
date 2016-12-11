@@ -13,15 +13,15 @@
  *
  */
 
-#include "step.h"
 #include "error.h"
 #include "hal_cfg.h"
-#include "hal_spi.h"
-#include "trinamic.h"
-#include "hal_time.h"
-#include "hal_cfg.h"
-#include "hal_stepper_port.h"
+#include "hal_debug.h"
 #include "hal_led.h"
+#include "hal_spi.h"
+#include "hal_stepper_port.h"
+#include "hal_time.h"
+#include "step.h"
+#include "trinamic.h"
 
 
 #define STEP_CHUNK_SIZE             10

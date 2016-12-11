@@ -622,7 +622,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
         case ORDER_RESET:
             com_send_ok_response(); // it might get through
             hal_time_ms_sleep(20); // give the Response a realistic chance
-            hal_cpu_do_software_reset();
+            hal_cpu_do_software_reset(RESET_REASON_HOST_ORDER);
             break;
 
         // new orders go here...

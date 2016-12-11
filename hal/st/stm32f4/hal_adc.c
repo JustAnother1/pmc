@@ -308,7 +308,7 @@ static void aquireValues(void)
                     tempMeasured = tempMeasured * 10;
                     tempMeasured = tempMeasured / 4;
 
-                    if((10000 < tempMeasured ) || (tempMeasured < 0))
+                    if(10000 < tempMeasured)  // 10,000 == 1,000°C -> much too high! -> something went wrong!
                     {
                         tempMeasured = 0;
                     }
@@ -327,7 +327,7 @@ static void aquireValues(void)
                         tempMeasured = tempMeasured * 10;
                         tempMeasured = tempMeasured / 4;
 
-                        if((10000 < tempMeasured ) || (tempMeasured < 0))
+                        if(10000 < tempMeasured)// 10,000 == 1,000°C -> much too high! -> something went wrong!
                         {
                             tempMeasured = 0;
                         }

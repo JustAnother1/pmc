@@ -7,8 +7,13 @@ endif
 
 ifeq ($(COMPILER),clang)
 	CC = clang
+	LD = $(CCPREFIX)ld
+	SIZE = llvm-size
+	# INCDIRS += 
 else
 	CC = $(CCPREFIX)gcc
+	LD = $(CCPREFIX)gcc
+	SIZE = echo
 endif
 AS = $(CCPREFIX)gcc -x assembler-with-cpp
 CP = $(CCPREFIX)objcopy

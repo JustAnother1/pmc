@@ -805,7 +805,7 @@ static void parse_order(int length)
 
     case 'R':
     case 'r': // reset the CPU
-        hal_cpu_do_software_reset();
+        hal_cpu_do_software_reset(RESET_REASON_DEBUG_USER_REQUEST);
         break;
 
     case 'S':

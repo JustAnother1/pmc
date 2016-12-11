@@ -53,6 +53,7 @@ help:
 	@echo "make clean                  - delete all created files"
 	@echo "make doxygen                - create documentation"
 	@echo "make test                   - run unit tests"
+	@echo "make list                   - readelf + objdump"
 	@echo "make all BOARD=linux        - build project to run on Linux"
 	@echo "make all BOARD=stm407disco  - build project to run on STM32F4 discovery board"
 	@echo "make all BOARD=pipy         - build project to run on pipy board"
@@ -72,7 +73,8 @@ $(BIN_FOLDER)%o: %s
 	$(AS) -c $(ASFLAGS) $(OPTIONS_ARCH) $< -o $@
 
 %elf: $(OBJS)
-	$(CC) $(OBJS) $(LDFLAGS) $(OPTIONS_ARCH) $(LIB) -o $@
+	$(LD) $(OBJS) $(LDFLAGS) $(OPTIONS_ARCH) $(LIB) -o $@
+	$(SIZE) $(BIN_FOLDER)$(PROJECT).elf
 
 %hex: %elf
 	$(HEX) $< $@
@@ -102,6 +104,12 @@ directories:
 clean:
 	-rm -rf $(TEST_BIN_FOLDER)
 	-rm -rf $(BIN_FOLDER)
+	
+list:
+	@echo " READ -> $(BIN_FOLDER)$(PROJECT).rd"
+	@arm-none-eabi-readelf -Wall $(BIN_FOLDER)$(PROJECT).elf > $(BIN_FOLDER)$(PROJECT).rd
+	@echo " LIST -> $(BIN_FOLDER)$(PROJECT).lst"
+	@arm-none-eabi-objdump -axdDSstr $(BIN_FOLDER)$(PROJECT).elf > $(BIN_FOLDER)$(PROJECT).lst
 
 ifeq ($(BOARD),stm407disco)
 burn: 
@@ -123,6 +131,6 @@ debug:
 	$(STLINK_FOLDER)/st-util&
 	$(DB) $(BIN_FOLDER)$(PROJECT).elf
 endif
-.PHONY: all clean directories
+.PHONY: all clean directories list
 
 # end of file

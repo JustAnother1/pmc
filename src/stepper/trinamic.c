@@ -20,6 +20,7 @@
 #include "hal_spi.h"
 #include "hal_cpu.h"
 #include "hal_debug.h"
+#include "step.h"
 
 /*
  * D E F I N E S
@@ -765,10 +766,10 @@ void trinamic_print_stepper_status(void)
     int step = 1;
     int num = steppers_detected_on_last_detection;
 
-
+/*
     debug_line("Pin:");
     print_gpio_pin_configuration(STEPPER_PORT_GPIO_PORT, 0);
-
+*/
     step_print_state();
 
     // raw data
@@ -1503,7 +1504,7 @@ static int readInt(enum cfgRegisters reg, int bit, int bits)
         case 8: bitmask = 0xff; break;
         default: return 0;
         }
-        result =  result + (cfg_data[reg][byte-1] & bitmask) >> shift;
+        result =  result + ((cfg_data[reg][byte-1] & bitmask) >> shift);
     }
     return result;
 }

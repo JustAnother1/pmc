@@ -41,7 +41,7 @@ void hal_cpu_die(void)
     exit(1);
 }
 
-void hal_cpu_do_software_reset(void)
+void hal_cpu_do_software_reset(uint32_t reason)
 {
     debug_line("not implemented!");
 }

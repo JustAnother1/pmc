@@ -24,12 +24,14 @@
 #include "st_common.h"
 #include "st_flash.h"
 #include "st_rcc.h"
+#include "st_rtc.h"
 #include "st_util.h"
 
 
 #define HEART_BEAT_FAST_LIMIT 5
 #define HEART_BEAT_SLOW_LIMIT 500
 #define HEART_BEAT_STEP_SIZE  5
+
 
 struct tick_node {
     msTickFkt tick;
@@ -239,8 +241,9 @@ void hal_cpu_die(void)
     }
 }
 
-void hal_cpu_do_software_reset(void)
+void hal_cpu_do_software_reset(uint32_t reason)
 {
+    RTC->BKP10R = reason;
     NVIC_SystemReset();
 }
 
@@ -309,6 +312,12 @@ void hal_cpu_check_Reset_Reason(void)
     // reset Flags
     resetSource    |= RCC_CSR_RMVF;
     RCC->CSR = resetSource;
+
+    RCC->APB1ENR |= RCC_APB1ENR_PWREN;
+    PWR->CR |= PWR_CR_DBP;
+
+    debug_line("Reason Detail: 0x%08X", RTC->BKP10R);
+    RTC->BKP10R = RESET_REASON_NO_REASON;
 }
 
 
@@ -361,50 +370,57 @@ void hal_cpu_print_Interrupt_information(void)
     debug_line("%d tasks.", i);
 }
 
-// TODO have them report the fault somewhere.
-
 void NMI_Handler(void)
 {
+    RTC->BKP10R = RESET_REASON_HAL | 1;
     NVIC_SystemReset();
 }
 
 void HardFault_Handler(void)
 {
+    RTC->BKP10R = RESET_REASON_HAL | 2;
     NVIC_SystemReset();
 }
 
 void MemManage_Handler(void)
 {
+    RTC->BKP10R = RESET_REASON_HAL | 3;
     NVIC_SystemReset();
 }
 
 void BusFault_Handler(void)
 {
+    RTC->BKP10R = RESET_REASON_HAL | 4;
     NVIC_SystemReset();
 }
 
 void UsageFault_Handler(void)
 {
+    RTC->BKP10R = RESET_REASON_HAL | 5;
     NVIC_SystemReset();
 }
 
 void SVC_Handler(void)
 {
+    RTC->BKP10R = RESET_REASON_HAL | 6;
     NVIC_SystemReset();
 }
 
 void DebugMon_Handler(void)
 {
+    RTC->BKP10R = RESET_REASON_HAL | 7;
     NVIC_SystemReset();
 }
 
 void PendSV_Handler(void)
 {
+    RTC->BKP10R = RESET_REASON_HAL | 8;
     NVIC_SystemReset();
 }
 
 void FPU_IRQHandler(void)
 {
+    RTC->BKP10R = RESET_REASON_HAL | 9;
     NVIC_SystemReset();
 }
 
