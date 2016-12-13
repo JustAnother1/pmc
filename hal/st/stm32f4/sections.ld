@@ -58,8 +58,6 @@ SECTIONS
         . = ALIGN(4);
         KEEP(*(.isr_vector))         /* Interrupt vectors */
 
-        KEEP(*(.cfmconfig))            /* Freescale configuration words */
-
         /*
          * This section is here for convenience, to store the
          * startup code at the beginning of the flash area, hoping that
@@ -287,57 +285,6 @@ SECTIONS
     {
         *(.bss.CCMRAM .bss.CCMRAM.*)
     } > CCMRAM
-
-    /*
-     * The FLASH Bank1.
-     * The C or assembly source must explicitly place the code
-     * or data there using the "section" attribute.
-     */
-    .b1text :
-    {
-        *(.b1text)                   /* remaining code */
-        *(.b1rodata)                 /* read-only data (constants) */
-        *(.b1rodata.*)
-    } >FLASHB1
-
-    /*
-     * The EXTMEM.
-     * The C or assembly source must explicitly place the code or data there
-     * using the "section" attribute.
-     */
-
-    /* EXTMEM Bank0 */
-    .eb0text :
-    {
-        *(.eb0text)                   /* remaining code */
-        *(.eb0rodata)                 /* read-only data (constants) */
-        *(.eb0rodata.*)
-    } >EXTMEMB0
-
-    /* EXTMEM Bank1 */
-    .eb1text :
-    {
-        *(.eb1text)                   /* remaining code */
-        *(.eb1rodata)                 /* read-only data (constants) */
-        *(.eb1rodata.*)
-    } >EXTMEMB1
-
-    /* EXTMEM Bank2 */
-    .eb2text :
-    {
-        *(.eb2text)                   /* remaining code */
-        *(.eb2rodata)                 /* read-only data (constants) */
-        *(.eb2rodata.*)
-    } >EXTMEMB2
-
-    /* EXTMEM Bank0 */
-    .eb3text :
-    {
-        *(.eb3text)                   /* remaining code */
-        *(.eb3rodata)                 /* read-only data (constants) */
-        *(.eb3rodata.*)
-    } >EXTMEMB3
-
 
     /* After that there are only debugging sections. */
 

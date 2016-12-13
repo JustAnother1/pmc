@@ -28,6 +28,9 @@ OPT += -O0 -ffunction-sections -fdata-sections
 # coverage
 # -ftest-coverage -fprofile-arcs
 CFLAGS += $(OPT) -g -Wall -pedantic -std=gnu99
+# to get reproduceable builds: 
+CFLAGS += -save-temps
+ASFLAGS += -save-temps
 # TODO CFLAGS += -mfloat-abi=hard
 ifeq ($(COMPILER),clang)
 #CFLAGS += --analyze
