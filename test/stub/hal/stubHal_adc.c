@@ -13,37 +13,31 @@
  *
  */
 
-#include "hal_time.h"
+#include <inttypes.h>
 
-void hal_time_init(void)
+void hal_adc_init(void)
 {
 
 }
 
-void hal_time_ms_sleep(uint_fast32_t ms)
+uint_fast8_t hal_adc_get_amount(void)
+{
+    return 0;
+}
+
+uint_fast16_t hal_adc_get_value(uint_fast8_t device)
+{
+    return 0;
+}
+
+uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
+{
+    return 0;
+}
+
+void hal_print_configuration_adc(void)
 {
 
 }
 
-bool hal_time_start_timer(uint_fast8_t device,
-                          uint32_t clock,
-                          uint_fast16_t reload_value,
-                          TimerFkt function)
-{
-    return true;
-}
 
-bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
-{
-    return true;
-}
-
-void hal_time_stop_timer(uint_fast8_t device)
-{
-
-}
-
-void hal_time_print_Configuration(int timerNumber)
-{
-
-}

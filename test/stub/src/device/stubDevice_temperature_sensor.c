@@ -13,37 +13,35 @@
  *
  */
 
-#include "hal_time.h"
+#include <inttypes.h>
 
-void hal_time_init(void)
+void dev_temperature_sensor_init(void)
 {
 
 }
 
-void hal_time_ms_sleep(uint_fast32_t ms)
+uint_fast8_t dev_temperature_sensor_get_count(void)
+{
+    return 0;
+}
+
+uint_fast8_t dev_temperature_sensor_get_name(uint_fast8_t number, uint8_t *position)
+{
+    return 0;
+}
+
+uint_fast8_t dev_temperature_sensor_get_status(uint_fast8_t number)
+{
+    return 0;
+}
+
+uint_fast16_t dev_temperature_sensor_get_temperature(uint_fast8_t number)
+{
+    return 0;
+}
+
+void dev_temperature_sensor_print_status(void)
 {
 
 }
 
-bool hal_time_start_timer(uint_fast8_t device,
-                          uint32_t clock,
-                          uint_fast16_t reload_value,
-                          TimerFkt function)
-{
-    return true;
-}
-
-bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
-{
-    return true;
-}
-
-void hal_time_stop_timer(uint_fast8_t device)
-{
-
-}
-
-void hal_time_print_Configuration(int timerNumber)
-{
-
-}

@@ -4,9 +4,9 @@ $(TEST_BIN_FOLDER)%o: %c
 	$(CC) -c $(CFLAGS) $(DDEFS) $(OPTIONS_ARCH) $(TEST_INCDIR) $< -o $@
 
 # link tests
-$(TEST_BIN_FOLDER)test/debug/test_debug : $(TEST_OBJS)
+$(TEST_BIN_FOLDER)test/src/debug/test_debug : $(TEST_OBJS)
 	$(CC) $(TEST_OBJS) $(TEST_LDFLAGS) $(OPTIONS_ARCH) $(LIB) -o $@
 
 # execute tests
-test: clean $(TEST_BIN_FOLDER)test/debug/test_debug
-	$(TEST_BIN_FOLDER)test/debug/test_debug
+test: clean $(TEST_BIN_FOLDER)test/src/debug/test_debug
+	$(TEST_BIN_FOLDER)test/src/debug/test_debug

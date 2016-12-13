@@ -56,7 +56,7 @@ void hal_print_expansion_spi_configuration(void)
 
 }
 
-bool hal_do_exansion_spi_transaction(uint8_t*     data_to_send,
+bool hal_do_expansion_spi_transaction(uint8_t*     data_to_send,
                                      uint_fast8_t num_bytes_to_send,
                                      uint8_t*     data_received)
 {
@@ -74,4 +74,3 @@ bool hal_expansion_spi_is_idle(void)
 {
     return true;
 }
-
