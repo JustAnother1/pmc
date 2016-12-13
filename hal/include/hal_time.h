@@ -32,5 +32,7 @@ void hal_time_stop_timer(uint_fast8_t device);
 bool hal_time_enable_pwm_for(uint_fast8_t device);
 bool hal_time_set_PWM_for(uint_fast8_t device, uint_fast8_t channel, uint16_t pwm_value);
 bool hal_time_stop_pwm_for(uint_fast8_t device, uint_fast8_t channel);
+#ifdef DEBUG_ACTIVE
 void hal_time_print_Configuration(int timerNumber);
+#endif
 #endif /* HAL_TIME_H_ */

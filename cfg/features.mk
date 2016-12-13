@@ -4,8 +4,11 @@
 USE_UART = yes
 USE_USB = no
 USE_STEP_DIR = yes
-# enables / disables the debug console and debug_msg()
-ACTIVATE_DEBUG = yes
+# ACTIVATE_DEBUG enables / disables the debug console and debug_msg()
+# if it is not defined then debug is active!
+ifndef ACTIVATE_DEBUG
+	ACTIVATE_DEBUG = yes
+endif
 
 
 # List all C defines here

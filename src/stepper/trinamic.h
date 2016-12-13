@@ -35,7 +35,9 @@
 #endif
 
 void trinamic_init(void);
+#ifdef DEBUG_ACTIVE
 bool trinamic_change_setting(uint8_t* setting);
+#endif
 uint_fast8_t trinamic_detect_number_of_steppers(void);
 void trinamic_configure_steppers(uint_fast8_t num_steppers);
 void trinamic_enable_stepper(uint_fast8_t stepper_num);

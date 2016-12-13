@@ -46,7 +46,9 @@ int main (void)
     hal_cpu_init_hal();
     hal_init_leds();
     hal_time_init();
+#ifdef DEBUG_ACTIVE
     debug_init();
+#endif
     // initialize Pacemaker Client Firmware
     hal_init_power();
     hal_power_on_5V();
@@ -67,14 +69,18 @@ int main (void)
     com_init();
     dev_stepper_init();
     endStopHandling_init();
+#ifdef DEBUG_ACTIVE
     debug_line("Reached end of initialization!");
+#endif
     for(;;)
     {
         hal_set_debug_led(on);
         on = !on;
         com_tick();
         cmd_queue_tick();
+#ifdef DEBUG_ACTIVE
         debug_tick();
+#endif
         hal_cpu_tick();
 #ifdef WATCHDOG_ACTIVE
         watchdog_tick();

@@ -50,6 +50,8 @@ uint_fast16_t dev_temperature_sensor_get_temperature(uint_fast8_t number)
     return hal_adc_get_value(number);
 }
 
+#ifdef DEBUG_ACTIVE
+
 void dev_temperature_sensor_print_status(void)
 {
     uint_fast16_t temperature;
@@ -63,5 +65,7 @@ void dev_temperature_sensor_print_status(void)
         debug_line("%d: %d.%01d°C", i, temperature/10, temperature%10);
     }
 }
+
+#endif // debug
 
 // end of File

@@ -22,10 +22,6 @@
 void debug_init(void);
 void debug_tick(void);
 void debug_hex_buffer(uint8_t* buf, int length);
-#else
-void debug_init(void) {}
-void debug_tick(void) {}
-void debug_hex_buffer(uint8_t* buf, int length) {}
 #endif
 
 #endif /* DEBUG_H_ */

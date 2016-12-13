@@ -477,6 +477,8 @@ bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
     return true;
 }
 
+#ifdef DEBUG_ACTIVE
+
 void hal_time_print_Configuration(int timerNumber)
 {
     TIM_TypeDef* timer = get_timer_register_for(timerNumber);
@@ -680,3 +682,6 @@ void hal_time_print_Configuration(int timerNumber)
     debug_line("Timer->DMAR    = 0x%08x", timer->DMAR);
 }
 
+#endif // debug
+
+// end of file

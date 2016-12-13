@@ -168,11 +168,13 @@ static void setBit(enum cfgRegisters reg, int bit);
 static void resetBit(enum cfgRegisters reg, int bit);
 static void writeInt(int value,enum cfgRegisters reg, int bit, int bits);
 static void setInt(int value, enum cfgSetting Setting, int stepper);
+#ifdef DEBUG_ACTIVE
 static bool changeMotorSetting(uint8_t* setting);
 static bool printMotorConfiguration(void);
 static int getBit(enum cfgRegisters reg, int bit);
 static int readInt(enum cfgRegisters reg, int bit, int bits);
 static int getInt(enum cfgSetting setting, int stepper);
+#endif // debug
 
 #ifdef USE_STEP_DIR
     static void periodic_status_check(void);
@@ -642,6 +644,8 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
 #endif
 }
 
+#ifdef DEBUG_ACTIVE
+
 bool trinamic_change_setting(uint8_t* setting)
 {
     switch(*setting)
@@ -661,6 +665,8 @@ bool trinamic_change_setting(uint8_t* setting)
     }
     return true;
 }
+
+#endif // debug
 
 uint_fast8_t trinamic_detect_number_of_steppers(void)
 {
@@ -760,6 +766,7 @@ void trinamic_disable_stepper(uint_fast8_t stepper_num)
 
 #ifdef USE_STEP_DIR
 
+#ifdef DEBUG_ACTIVE
 void trinamic_print_stepper_status(void)
 {
     int i;
@@ -921,6 +928,7 @@ void trinamic_print_stepper_status(void)
         i = i+5;
     }
 }
+#endif // Debug
 
 #else
 
@@ -970,6 +978,8 @@ void trinamic_make_step_using_SPI(uint_fast8_t stepper_num, bool direction_is_in
 /*
  * P R I V A T E   F U N C T I O N S
  */
+
+#ifdef DEBUG_ACTIVE
 
 static bool changeMotorSetting(uint8_t* setting)
 {
@@ -1365,6 +1375,8 @@ static bool printMotorConfiguration(void)
     return true;
 }
 
+#endif // debug
+
 // SPI:
 // ----
 // - Most significant Bit First
@@ -1394,6 +1406,8 @@ static void resetBit(enum cfgRegisters reg, int bit)
     cfg_data[reg][byte] &= ~(1<<bitShift);
 }
 
+#ifdef DEBUG_ACTIVE
+
 static int getBit(enum cfgRegisters reg, int bit)
 {
     int byte;
@@ -1411,6 +1425,8 @@ static int getBit(enum cfgRegisters reg, int bit)
         return 1;
     }
 }
+
+#endif
 
 static void writeInt(int value, enum cfgRegisters reg, int bit, int bits)
 {
@@ -1462,6 +1478,8 @@ static void writeInt(int value, enum cfgRegisters reg, int bit, int bits)
     }
 }
 
+#ifdef DEBUG_ACTIVE
+
 static int readInt(enum cfgRegisters reg, int bit, int bits)
 {
     int bitmask;
@@ -1509,6 +1527,8 @@ static int readInt(enum cfgRegisters reg, int bit, int bits)
     return result;
 }
 
+#endif // debug
+
 static void setInt(int value, enum cfgSetting setting, int stepper)
 {
     enum cfgRegisters reg; // which register
@@ -1553,6 +1573,8 @@ static void setInt(int value, enum cfgSetting setting, int stepper)
     }
 }
 
+#ifdef DEBUG_ACTIVE
+
 static int getInt(enum cfgSetting setting, int stepper)
 {
     enum cfgRegisters reg; // which register
@@ -1591,6 +1613,8 @@ static int getInt(enum cfgSetting setting, int stepper)
         return readInt(reg, bitPosition + (stepper * 20), numBits);
     }
 }
+
+#endif // debug
 
 #ifdef USE_STEP_DIR
 

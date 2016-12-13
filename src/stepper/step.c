@@ -943,6 +943,8 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
     // else invalid stepper
 }
 
+#ifdef DEBUG_ACTIVE
+
 void step_print_state(void)
 {
     debug_line("Step State:");
@@ -980,5 +982,6 @@ void step_print_state(void)
     debug_line("free slots : %d", get_number_of_free_slots());
 }
 
+#endif
 
 // end of File

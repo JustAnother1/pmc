@@ -374,6 +374,8 @@ static void send_queue_ok_response(void)
     com_send_ok_with_prefilled_parameter(6);
 }
 
+#ifdef DEBUG_ACTIVE
+
 bool cmd_queue_chnage_setting(uint8_t* setting)
 {
     switch(*setting)
@@ -416,6 +418,8 @@ bool cmd_queue_chnage_setting(uint8_t* setting)
         return false;
     }
 }
+
+#endif
 
 // removing from the Queue:
 // ========================

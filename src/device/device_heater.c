@@ -29,7 +29,10 @@
 
 void TemperatureControlTick(void);
 
+#ifdef DEBUG_ACTIVE
 static uint32_t count = 0;
+#endif // debug
+
 static uint32_t max_pwm = 0xffff;
 static uint32_t min_pwm = 0;
 static float last_iTerm = 0;
@@ -223,6 +226,8 @@ uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t tempe
     return (uint_fast16_t)nextPwm;
 }
 
+#ifdef DEBUG_ACTIVE
+
 void reportTemperature(void)
 {
     count++;
@@ -232,6 +237,8 @@ void reportTemperature(void)
         count = 0;
     }
 }
+
+#endif
 
 /*
 void curTest(int value)
