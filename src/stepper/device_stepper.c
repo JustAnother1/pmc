@@ -213,7 +213,7 @@ void dev_stepper_configure_mvmnt_unrun_avoid_para(uint_fast8_t stepper_number,
 
 static void detectSteppers(void)
 {
-    int i;
+    unsigned int i;
     available_steppers = trinamic_detect_number_of_steppers();
     if((0 < available_steppers) && (MAX_NUMBER+1 > available_steppers))
     {

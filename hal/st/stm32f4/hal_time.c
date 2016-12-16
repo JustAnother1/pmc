@@ -19,7 +19,7 @@
 #include "hal_cpu.h"
 #include "hal_time.h"
 #include "hal_led.h"
-#include "stddef.h"
+#include <stdio.h>
 #include "board_cfg.h"
 #include "hal_debug.h"
 
@@ -75,6 +75,7 @@ void hal_time_init(void)
 
 static void error_isr_on_stopped_timer(void)
 {
+    hal_cpu_report_issue(1);
     hal_set_error_led(true);
     debug_line("ERROR: ISR called on stopped Timer !");
 }
@@ -331,6 +332,7 @@ bool hal_time_enable_pwm_for(uint_fast8_t device)
     TIM_TypeDef* timer = get_timer_register_for(device);
     if((NULL == timer) || (0 == PWM_FREQUENCY))
     {
+        hal_cpu_report_issue(2);
         hal_set_error_led(true);
         return false;
     }

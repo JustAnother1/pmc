@@ -19,26 +19,40 @@ include cfg/system.mk
 include cfg/files.mk
 include test/test_cfg.mk
 
-# lib math used for log() in ADC to temperature calculation.
-LIB += -lm 
-LIB +=  -u _printf_float
-
 # Define optimisation level here -O3 or -O0 for no optimisation
-OPT += -O0 -ffunction-sections -fdata-sections 
+OPT += -O3
+OPT += -ffunction-sections
+OPT += -fdata-sections 
 # coverage
-# -ftest-coverage -fprofile-arcs
-CFLAGS += $(OPT) -g -Wall -pedantic -std=gnu99
+#OPT += -ftest-coverage
+#OPT += -fprofile-arcs
+#LDFLAGS += -lgcov
+CFLAGS += $(OPT)
+# -g: produce debugging information 
+CFLAGS += -g
+#enable warnings
+CFLAGS += -Wall
+#do all checks according to C standard.
+CFLAGS += -pedantic
+# Use C99 with GNU extensions
+CFLAGS += -std=gnu99
+# print warnings in color
+CFLAGS += -fdiagnostics-color
 # to get reproduceable builds: 
-CFLAGS += -save-temps
-ASFLAGS += -save-temps
-# TODO CFLAGS += -mfloat-abi=hard
+CFLAGS += -save-temps=obj
+ASFLAGS += -save-temps=obj
 ifeq ($(COMPILER),clang)
 #CFLAGS += --analyze
 else
 endif
 
+CFLAGS += -nostdinc
+LDFLAGS += -nostdinc
 
-LDFLAGS +=  -g -Wall -fwhole-program $(LIB)
+LDFLAGS += -g
+LDFLAGS += -Wall
+LDFLAGS += -fwhole-program
+LDFLAGS += $(LIB)
 
 # preparing the variables
 INCDIR = $(patsubst %,-I%, $(INCDIRS))
@@ -114,7 +128,7 @@ list:
 	@echo " LIST -> $(BIN_FOLDER)$(PROJECT).lst"
 	@arm-none-eabi-objdump -axdDSstr $(BIN_FOLDER)$(PROJECT).elf > $(BIN_FOLDER)$(PROJECT).lst
 
-ifeq ($(BOARD),stm407disco)
+ifeq ($(BOARD),$(filter $(BOARD),stm407disco pipy))
 burn: 
 # needs https://github.com/texane/stlink
 	$(STLINK_FOLDER)/st-flash write $(BIN_FOLDER)$(PROJECT).bin 0x8000000
@@ -125,15 +139,6 @@ debug:
 	$(DB) $(BIN_FOLDER)$(PROJECT).elf
 endif
 
-ifeq ($(BOARD),pipy)
-burn: 
-# needs https://github.com/texane/stlink
-	$(STLINK_FOLDER)/st-flash write $(BIN_FOLDER)$(PROJECT).bin 0x8000000
-debug:
-# needs https://github.com/texane/stlink
-	$(STLINK_FOLDER)/st-util&
-	$(DB) $(BIN_FOLDER)$(PROJECT).elf
-endif
 .PHONY: all clean directories list
 
 # end of file

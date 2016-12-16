@@ -13,24 +13,8 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+int isalpha (int c)
+{
+    return ((c >= 'A') && (c <= 'Z')) || ((c >= 'a') && (c <= 'z'));
+}
 
-#include <inttypes.h>
-
-#ifdef DEBUG_ACTIVE
-
-#include "printf.h"
-
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
-
-void hal_debug_init(void);
-void debug_print32(uint32_t num);
-void debug_printChar(char c);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
-
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */

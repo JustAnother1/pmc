@@ -12,9 +12,7 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
-
-#include <stddef.h>
-#include <stdlib.h>
+#include <stdio.h>
 #include "hal_cfg.h"
 #include "hal_cpu.h"
 #include "hal_debug.h"
@@ -31,22 +29,21 @@
 #define HEART_BEAT_FAST_LIMIT 5
 #define HEART_BEAT_SLOW_LIMIT 500
 #define HEART_BEAT_STEP_SIZE  5
+#define MAX_TICK_FUNC         10
 
 
 struct tick_node {
     msTickFkt tick;
     int cycle;
     int nextCall;
-    struct tick_node * next;
 };
 typedef struct tick_node tick_entry;
 
 static volatile uint32_t now;
 
 static void hal_cpu_start_ms_timer(void);
-static tick_entry * allocateNewEntry(void);
 
-static tick_entry * tick_list = NULL;
+static tick_entry  tick_list[MAX_TICK_FUNC];
 
 
 /**
@@ -67,6 +64,11 @@ void SystemInit(void)
 
 void hal_cpu_init_hal(void)
 {
+    int i;
+    for(i=0; i < MAX_TICK_FUNC; i++)
+    {
+        tick_list[i].tick = NULL;
+    }
     // start time
     now = 0;
     hal_cpu_start_ms_timer();
@@ -120,23 +122,6 @@ void hal_cpu_init_hal(void)
     }while(0x00000008 != (RCC->CFGR & RCC_CFGR_SWS));
 }
 
-static tick_entry * allocateNewEntry(void)
-{
-    tick_entry * theMsTick = (struct tick_node *) malloc(sizeof(struct tick_node));
-    if(NULL == theMsTick)
-    {
-        debug_line("ERROR: malloc failed !");
-        // for(;;){;} // Time not yet working
-        return NULL;
-    }
-    else
-    {
-        theMsTick->tick = NULL;
-        theMsTick->next = NULL;
-        return theMsTick;
-    }
-}
-
 void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
 {
     hal_cpu_add_ms_tick_function_cycle(additional_function, 1);
@@ -146,42 +131,23 @@ void hal_cpu_add_ms_tick_function_cycle(msTickFkt additional_function, int every
 {
     if(NULL != additional_function)
     {
-        if(NULL == tick_list)
+        int i;
+        for(i = 0; i < MAX_TICK_FUNC; i++)
         {
-            tick_list = allocateNewEntry();
-            if(NULL == tick_list)
-            {
-                debug_line("ERROR: Could not add tick function!");
-                return;
-            }
-        }
-        tick_entry *cur = tick_list;
-        bool done = false;
-        do
-        {
-            if(NULL == cur->tick)
+            if(NULL == tick_list[i].tick)
             {
                 // No tick in this Entry
-                cur->tick = additional_function;
-                cur->cycle = everyMs;
-                cur->nextCall = 1;
-                done = true;
+                tick_list[i].tick = additional_function;
+                tick_list[i].cycle = everyMs;
+                tick_list[i].nextCall = 1;
+                return;
             }
-            else
-            {
-                if(NULL == cur->next)
-                {
-                    // create a new entry
-                    cur->next = allocateNewEntry();
-                    cur = cur->next;
-                }
-                else
-                {
-                    // goto next entry
-                    cur = cur->next;
-                }
-            }
-        } while(false == done);
+            // else check next slot
+        }
+        // no more free slots
+        debug_line("ERROR: Could not add ms Tick Function!");
+        hal_cpu_report_issue(7);
+        hal_set_error_led(true);
     }
 }
 
@@ -210,10 +176,15 @@ static void hal_cpu_start_ms_timer(void)
 
 void hal_cpu_die(void)
 {
+    // TODO FIX
     uint_fast32_t i = HEART_BEAT_FAST_LIMIT;
     bool direction_is_increment = true;
     // Disable all System Tick( = 1ms) services
-    tick_list = NULL;
+    hal_cpu_report_issue(8);
+    for(i=0; i < MAX_TICK_FUNC; i++)
+    {
+        tick_list[i].tick = NULL;
+    }
     hal_set_error_led(direction_is_increment);
     for(;;)
     {
@@ -243,7 +214,7 @@ void hal_cpu_die(void)
 
 void hal_cpu_do_software_reset(uint32_t reason)
 {
-    RTC->BKP10R = reason;
+    RTC->BKP0R = reason;
     NVIC_SystemReset();
 }
 
@@ -256,21 +227,23 @@ void hal_cpu_tick(void)
     uint32_t curTick = hal_cpu_get_ms_tick();
     if(curTick != lastTickAt)
     {
-        tick_entry *cur = tick_list;
-        while(NULL != cur)
+        int i;
+        for(i = 0; i < MAX_TICK_FUNC; i++)
         {
-            cur->nextCall--;
-            if(1 > cur->nextCall)
+            tick_list[i].nextCall--;
+            if(1 > tick_list[i].nextCall)
             {
-                if(NULL != cur->tick)
+                if(NULL != tick_list[i].tick)
                 {
                     // Execute that function
-                    (*cur->tick)();
+                    (*tick_list[i].tick)();
                 }
-                cur->nextCall = cur->cycle;
+                tick_list[i].nextCall = tick_list[i].cycle;
             }
-            cur = cur->next;
         }
+        // for safety here:
+        // If the tick functions take more than ms then we rather skip a ms than
+        // to never stop ticking anymore.
         lastTickAt = curTick;
     }
 }
@@ -279,6 +252,8 @@ void hal_cpu_tick(void)
 
 void hal_cpu_check_Reset_Reason(void)
 {
+    // Reset Reason in RCC:
+    // ====================
     debug_msg("Reset Reason: ");
     uint32_t resetSource = RCC->CSR;
     if(0 != (resetSource & RCC_CSR_LPWRRSTF))
@@ -313,17 +288,90 @@ void hal_cpu_check_Reset_Reason(void)
     resetSource    |= RCC_CSR_RMVF;
     RCC->CSR = resetSource;
 
+    // Reset Reason reported by this software :
+    // ========================================
+
     RCC->APB1ENR |= RCC_APB1ENR_PWREN;
     PWR->CR |= PWR_CR_DBP;
 
-    debug_line("Reason Detail: 0x%08X", RTC->BKP10R);
-    RTC->BKP10R = RESET_REASON_NO_REASON;
+    switch(RTC->BKP0R)
+    {
+
+    case RESET_REASON_NO_REASON:
+        debug_line("Reason Detail: No Reason reported");
+        break;
+
+    case RESET_REASON_HOST_ORDER:
+        debug_line("Reason Detail: Reset ordered by Host");
+        break;
+
+    case RESET_REASON_DEBUG_USER_REQUEST:
+        debug_line("Reason Detail: Reset ordered by Debug User");
+        break;
+
+    case RESET_REASON_HAL:
+        debug_line("Reason Detail: HAL with no Reason reported");
+        break;
+
+    case RESET_REASON_HAL | 1:
+        debug_line("Reason Detail: Non Maskable Interrupt");
+        break;
+
+    case RESET_REASON_HAL | 2:
+        debug_line("Reason Detail: Hard Fault");
+        break;
+
+    case RESET_REASON_HAL | 3:
+        debug_line("Reason Detail: Memory Management");
+        break;
+
+    case RESET_REASON_HAL | 4:
+        debug_line("Reason Detail: Bus Fault");
+        break;
+
+    case RESET_REASON_HAL | 5:
+        debug_line("Reason Detail: Usage Fault");
+        break;
+
+    case RESET_REASON_HAL | 6:
+        debug_line("Reason Detail: System Service call via SWI instruction (SVC)");
+        break;
+
+    case RESET_REASON_HAL | 7:
+        debug_line("Reason Detail: Debug Monitor");
+        break;
+
+    case RESET_REASON_HAL | 8:
+        debug_line("Reason Detail: Pendable request for system service (Pend SV)");
+        break;
+
+    case RESET_REASON_HAL | 9:
+        debug_line("Reason Detail: Floating Point Unit Interrupt");
+        break;
+
+    default:
+        debug_line("Reason Detail: 0x%08X", RTC->BKP0R);
+        break;
+    }
+    RTC->BKP0R = RESET_REASON_NO_REASON;
+
+    // Issue reported by this software :
+    // =================================
+    // Issue numbers 1-8 !
+    debug_line("Reported issue: %d", RTC->BKP1R);
+    RTC->BKP1R = 0;
 }
 
+void hal_cpu_report_issue(uint32_t issue_number)
+{
+    RTC->BKP1R = issue_number;
+    // TODO allow for more than one issue
+}
 
 void hal_cpu_print_Interrupt_information(void)
 {
     int i = 0;
+    int numTasks = 0;
     // NVIC
 
     debug_line("NVIC :");
@@ -357,70 +405,71 @@ void hal_cpu_print_Interrupt_information(void)
     }
 
     // My "Tasks"
-    tick_entry *cur = tick_list;
     i = 0;
     debug_line("Tasks :");
-    while(NULL != cur)
+    for(i = 0; i < MAX_TICK_FUNC; i++)
     {
-        cur->nextCall--;
-        i++;
-        debug_line("Task with Cycle Time %3d and function %X", cur->cycle, &(cur->tick));
-        cur = cur->next;
+        if(NULL != tick_list[i].tick)
+        {
+            debug_line("Task with Cycle Time %3d and function at 0x%X", tick_list[i].cycle, &(tick_list[i].tick));
+            numTasks++;
+        }
+        // else empty slot
     }
     debug_line("%d tasks.", i);
 }
 
 void NMI_Handler(void)
 {
-    RTC->BKP10R = RESET_REASON_HAL | 1;
+    RTC->BKP0R = RESET_REASON_HAL | 1;
     NVIC_SystemReset();
 }
 
 void HardFault_Handler(void)
 {
-    RTC->BKP10R = RESET_REASON_HAL | 2;
+    RTC->BKP0R = RESET_REASON_HAL | 2;
     NVIC_SystemReset();
 }
 
 void MemManage_Handler(void)
 {
-    RTC->BKP10R = RESET_REASON_HAL | 3;
+    RTC->BKP0R = RESET_REASON_HAL | 3;
     NVIC_SystemReset();
 }
 
 void BusFault_Handler(void)
 {
-    RTC->BKP10R = RESET_REASON_HAL | 4;
+    RTC->BKP0R = RESET_REASON_HAL | 4;
     NVIC_SystemReset();
 }
 
 void UsageFault_Handler(void)
 {
-    RTC->BKP10R = RESET_REASON_HAL | 5;
+    RTC->BKP0R = RESET_REASON_HAL | 5;
     NVIC_SystemReset();
 }
 
 void SVC_Handler(void)
 {
-    RTC->BKP10R = RESET_REASON_HAL | 6;
+    RTC->BKP0R = RESET_REASON_HAL | 6;
     NVIC_SystemReset();
 }
 
 void DebugMon_Handler(void)
 {
-    RTC->BKP10R = RESET_REASON_HAL | 7;
+    RTC->BKP0R = RESET_REASON_HAL | 7;
     NVIC_SystemReset();
 }
 
 void PendSV_Handler(void)
 {
-    RTC->BKP10R = RESET_REASON_HAL | 8;
+    RTC->BKP0R = RESET_REASON_HAL | 8;
     NVIC_SystemReset();
 }
 
 void FPU_IRQHandler(void)
 {
-    RTC->BKP10R = RESET_REASON_HAL | 9;
+    RTC->BKP0R = RESET_REASON_HAL | 9;
     NVIC_SystemReset();
 }
 

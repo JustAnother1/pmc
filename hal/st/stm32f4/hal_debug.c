@@ -21,10 +21,11 @@
 #include "hal_uart.h"
 #include "hal_led.h"
 #include "hal_cpu.h"
+#include "printf.h"
 
-#define RECEIVE_BUFFER_SIZE  50
-#define SEND_BUFFER_SIZE     2048
 #define MSG_BUFFER_LENGTH    100
+
+static void debug_putc( void* p, char c);
 
 uint8_t buffer[MSG_BUFFER_LENGTH];
 static bool initialized = false;
@@ -41,52 +42,16 @@ void hal_debug_init(void)
     // TODO create alternative implementation that uses core_cm4.h:ITM_SendChar() / ITM_ReceiveChar()
     // UART
     bool res;
-    res = hal_init_debug_uart(RECEIVE_BUFFER_SIZE, SEND_BUFFER_SIZE);
+    res = hal_init_debug_uart();
     if(false == res)
     {
+        hal_cpu_report_issue(3);
         hal_set_error_led(true);
         hal_cpu_die();
     }
-}
 
-void debug_msg(const char* format, ...)
-{
-    int nwritten = 0;
-    va_list args;
-    va_start(args, format);
-    nwritten = vsnprintf((char *)buffer, MSG_BUFFER_LENGTH, format, args );
-    va_end(args);
-    if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], nwritten))
-    {
-        hal_set_error_led(true);
-    }
-}
+    init_printf(NULL, debug_putc);
 
-void debug_line(const char* format, ...)
-{
-    int nwritten = 0;
-    va_list args;
-    va_start(args, format);
-    nwritten = vsnprintf((char *)buffer, MSG_BUFFER_LENGTH, format, args );
-    va_end(args);
-    if(nwritten < MSG_BUFFER_LENGTH)
-    {
-        buffer[nwritten] = '\r';
-        buffer[nwritten + 1] = '\n';
-        nwritten += 2;
-    }
-    else
-    {
-        buffer[MSG_BUFFER_LENGTH -4] = '.';
-        buffer[MSG_BUFFER_LENGTH -3] = '.';
-        buffer[MSG_BUFFER_LENGTH -2] = '\r';
-        buffer[MSG_BUFFER_LENGTH -1] = '\n';
-        nwritten = MSG_BUFFER_LENGTH;
-    }
-    if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], nwritten))
-    {
-        hal_set_error_led(true);
-    }
 }
 
 void debug_print32(uint32_t num)
@@ -99,6 +64,16 @@ void debug_print32(uint32_t num)
     buffer[5] = '+';
     if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], 6))
     {
+        hal_cpu_report_issue(4);
+        hal_set_error_led(true);
+    }
+}
+
+static void debug_putc(void* p, char c)
+{
+    if(false == hal_send_frame_non_blocking_debug_uart((uint8_t *)&c, 1))
+    {
+        hal_cpu_report_issue(5);
         hal_set_error_led(true);
     }
 }
@@ -107,6 +82,7 @@ void debug_printChar(char c)
 {
     if(false == hal_send_frame_non_blocking_debug_uart((uint8_t *)&c, 1))
     {
+        hal_cpu_report_issue(6);
         hal_set_error_led(true);
     }
 }

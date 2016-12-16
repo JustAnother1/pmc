@@ -15,6 +15,7 @@ else
 	LD = $(CCPREFIX)gcc
 	SIZE = size
 endif
+
 AS = $(CCPREFIX)gcc -x assembler-with-cpp
 CP = $(CCPREFIX)objcopy
 DB = $(CCPREFIX)gdb

@@ -192,7 +192,7 @@ static uint_fast16_t speed_reloads[256] ={
  */
 static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 {
-    debug_msg("Step ISR");
+    debug_line("Step ISR");
     if(step_pos == stop_pos)
     {
         // we are done nothing more to do
@@ -298,7 +298,7 @@ static void finished_cur_slot(void)
  */
 static void refill_step_buffer(void)
 {
-    debug_msg("Buffer ISR");
+    debug_line("Buffer ISR");
     uint_fast8_t free_slots = get_number_of_free_slots();
     if(free_slots > STEP_CHUNK_SIZE)
     {
@@ -396,7 +396,7 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
 
 static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
 {
-    int i;
+    unsigned int i;
     for(i = 0; i < num_slots; i++)
     {
         // check if we have more steps in this move / this phase

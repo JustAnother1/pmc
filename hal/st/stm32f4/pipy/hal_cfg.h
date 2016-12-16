@@ -26,6 +26,10 @@
 #define DEBUG_UART  1
 #define MAX_UART    2
 
+#define UART_RECEIVE_BUFFER_SIZE  512
+#define UART_SEND_BUFFER_SIZE     2048
+
+
 // Heaters
 #define NUMBER_OF_HEATERS 5
 

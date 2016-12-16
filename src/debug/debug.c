@@ -15,8 +15,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <ctype.h>
 #include <stdarg.h>
+#include <ctype.h>
 #include "error.h"
 #include "debug.h"
 #include "hal_adc.h"
@@ -114,7 +114,7 @@ static void count_debug_ticks_per_ms(void)
 
 static void search_for_orders(void)
 {
-    int i;
+    unsigned int i;
     uint_fast16_t num_bytes_received = hal_get_available_bytes_debug_uart();
     if(checked_bytes == num_bytes_received)
     {
@@ -293,7 +293,7 @@ static void order_help(void)
     debug_line("b<frequency>               : activate buzzer (freq=0 -> off)");
     debug_line("c<setting>                 : change special setting");
     debug_line("d                          : die - stops the processor");
-    // e
+    debug_line("e                          : show errors that have been reported.");
     // f
     // g
     debug_line("h                          : print this information");
@@ -469,7 +469,7 @@ static uint32_t getNumBytesNextWord(uint8_t* buf, uint32_t length)
 static uint32_t getHexNumber(uint8_t* buf, uint32_t length)
 {
     uint32_t res = 0;
-    int i;
+    unsigned int i;
     for(i = 0; i < length; i++)
     {
         res = res << 4;
@@ -481,7 +481,7 @@ static uint32_t getHexNumber(uint8_t* buf, uint32_t length)
 
 static void parse_order(int length)
 {
-    uint8_t cmd_buf[30] = {0};
+    uint8_t cmd_buf[10] = {0};
     int pos_in_buf = 0;
     pos_in_buf = get_next_word(pos_in_buf, length, &cmd_buf[0]);
     if(0 == pos_in_buf)
@@ -536,6 +536,11 @@ static void parse_order(int length)
     case 'D':
     case 'd': // die
         hal_cpu_die();
+        break;
+
+    case 'E':
+    case 'e': // report the already occurred problems
+        hal_cpu_check_Reset_Reason();
         break;
 
     case 'H':

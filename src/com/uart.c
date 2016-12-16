@@ -19,8 +19,6 @@
 #include "hal_uart.h"
 #include "hal_cfg.h"
 
-#define RECEIVE_BUFFER_SIZE  512
-#define SEND_BUFFER_SIZE     100
 
 static bool crc_is_valid(void);
 
@@ -34,7 +32,7 @@ static uint_fast8_t length;
 
 bool start_uart(void)
 {
-    return hal_init_gcode_uart(RECEIVE_BUFFER_SIZE, SEND_BUFFER_SIZE);
+    return hal_init_gcode_uart();
 }
 
 void uart_send_frame(uint8_t * frame, uint_fast16_t length)
@@ -46,7 +44,7 @@ void uart_send_frame(uint8_t * frame, uint_fast16_t length)
     // else :
     if(false == hal_send_frame_non_blocking_gcode_uart(frame, length))
     {
-    	hal_send_frame_gcode_uart(frame, length);
+        hal_send_frame_gcode_uart(frame, length);
     }
 }
 
@@ -78,7 +76,7 @@ bool uart_has_next_frame(void)
     // starts with a sync byte
     if(HOST_SYNC_REQUEST != hal_get_gcode_uart_byte_at_offset(0))
     {
-    	hal_forget_bytes_gcode_uart(1);
+        hal_forget_bytes_gcode_uart(1);
         checked_bytes = 0;
         return false;
     }
@@ -120,7 +118,7 @@ uint_fast8_t uart_get_parameter_byte(uint_fast8_t index)
 
 void uart_forget_frame(void)
 {
-	hal_forget_bytes_gcode_uart(MIN_BYTES_HOST_FRAME + uart_get_parameter_length());
+    hal_forget_bytes_gcode_uart(MIN_BYTES_HOST_FRAME + uart_get_parameter_length());
     checked_bytes = 0;
     has_a_frame = false;
 }

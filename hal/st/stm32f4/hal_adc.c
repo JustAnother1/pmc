@@ -13,7 +13,6 @@
  *
  */
 
-#include <math.h>
 #include <st_util.h>
 #include <stdbool.h>
 #include "st_adc.h"
@@ -462,6 +461,7 @@ static uint_fast16_t InternalTempSensorConverter(uint32_t DR)
 
 static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR)
 {
+    /*
     int ires;
     // debug_line("ADC value: %d", DR);
     float res = VCC_OF_ADC/4095 * DR;
@@ -474,6 +474,8 @@ static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR)
     // debug_line("Temperature: %f", res);
     ires = res * 10;
     return (uint_fast16_t)0xffff & ires;
+    */
+    return 7; //TODO find log implementation
 }
 
 static uint_fast16_t NoConverter(uint32_t DR)
