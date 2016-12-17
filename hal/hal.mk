@@ -94,9 +94,6 @@ ifeq ($(BOARD), pipy)
 	LDFLAGS += -gdwarf-2
 	LDFLAGS +=  $(LINKER_SCRIPT)
 	LDFLAGS += -Wl,-Map=$(BIN_FOLDER)$(PROJECT).map,--gc-sections,--cref
-	SRC += $(HAL_FOLDER)/printf.c
-	SRC += $(HAL_FOLDER)/atoi.c
-	SRC += $(HAL_FOLDER)/isalpha.c
 	ifeq ($(USE_USB), yes)
 		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/st_usb_device.c
 		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/st_usb_descriptor.c

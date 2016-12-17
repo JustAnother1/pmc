@@ -23,16 +23,6 @@ void hal_debug_init(void)
 {
 }
 
-void debug_msg(const char* format, ...)
-{
-
-}
-
-void debug_line(const char* format, ...)
-{
-
-}
-
 void debug_print32(uint32_t num)
 {
 

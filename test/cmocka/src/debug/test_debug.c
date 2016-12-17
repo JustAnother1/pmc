@@ -18,7 +18,7 @@
 #include <setjmp.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <inttypes.h>
+#include <stdint.h>
 #include "cmocka.h"
 
 

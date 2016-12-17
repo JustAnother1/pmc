@@ -15,7 +15,7 @@
 
 #include "hal_uart.h"
 
-bool hal_init_gcode_uart(uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size)
+bool hal_init_gcode_uart(void)
 {
     return true;
 }
@@ -50,7 +50,7 @@ bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t lengt
     return false;
 }
 
-bool hal_init_debug_uart(uint_fast16_t rec_buf_size, uint_fast16_t send_buf_size)
+bool hal_init_debug_uart(void)
 {
     return true;
 }
