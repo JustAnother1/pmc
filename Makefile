@@ -38,6 +38,7 @@ CFLAGS += -pedantic
 CFLAGS += -std=gnu99
 # print warnings in color
 CFLAGS += -fdiagnostics-color
+CPPFLAGS += -g -Wall -pedantic -fdiagnostics-color
 # to get reproduceable builds: 
 CFLAGS += -save-temps=obj
 ASFLAGS += -save-temps=obj
@@ -51,12 +52,10 @@ LDFLAGS += -nostdinc
 
 LDFLAGS += -g
 LDFLAGS += -Wall
-LDFLAGS += -fwhole-program
 LDFLAGS += $(LIB)
 
 # preparing the variables
 INCDIR = $(patsubst %,-I%, $(INCDIRS))
-TEST_INCDIR = $(patsubst %,-I%, $(TEST_INCDIRS))
 OBJS = $(addprefix $(BIN_FOLDER),$(STARTUP:.s=.o) $(SRC:.c=.o))
 
 
@@ -69,7 +68,8 @@ help:
 	@echo "  "
 	@echo "make clean                  - delete all created files"
 	@echo "make doxygen                - create documentation"
-	@echo "make test                   - run unit tests"
+	@echo "make cmocka_test            - run cmocka unit tests"
+	@echo "make cpputest_test          - run CppUTest unit tests"
 	@echo "make list                   - readelf + objdump"
 	@echo "make all BOARD=linux        - build project to run on Linux"
 	@echo "make all BOARD=stm407disco  - build project to run on STM32F4 discovery board"

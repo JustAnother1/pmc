@@ -1,12 +1,12 @@
 #compile tests
-$(TEST_BIN_FOLDER)%o: %c
+$(TEST_BIN_FOLDER)%o: test/%c
 	@$(MKDIR_P) $(@D)
-	$(CC) -c $(CFLAGS) $(DDEFS) $(OPTIONS_ARCH) $(TEST_INCDIR) $< -o $@
+	$(CC) -c $(CFLAGS) $(DDEFS) $(OPTIONS_ARCH) $(CMOCKA_TEST_INCDIRS) $< -o $@
 
 # link tests
-$(TEST_BIN_FOLDER)test/cmocka/src/debug/test_debug : $(TEST_OBJS)
-	$(CC) $(TEST_OBJS) $(TEST_LDFLAGS) $(OPTIONS_ARCH) $(LIB) -o $@
+$(TEST_BIN_FOLDER)cmocka/src/debug/test_debug : $(CMOCKA_TEST_OBJS)
+	$(CC) $(CMOCKA_TEST_OBJS) $(CMOCKA_TEST_LDFLAGS) $(OPTIONS_ARCH) $(LIB) -o $@
 
 # execute tests
-test: clean $(TEST_BIN_FOLDER)test/cmocka/src/debug/test_debug
-	$(TEST_BIN_FOLDER)test/cmocka/src/debug/test_debug
+cmocka_test: clean $(TEST_BIN_FOLDER)cmocka/src/debug/test_debug
+	$(TEST_BIN_FOLDER)cmocka/src/debug/test_debug

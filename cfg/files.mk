@@ -8,7 +8,10 @@ INCDIRS +=$(SRC_FOLDER)lib/
 INCDIRS +=$(SRC_FOLDER)order/
 INCDIRS +=$(SRC_FOLDER)stepper/
 INCDIRS +=$(HAL_FOLDER)include/
-INCDIRS +=$(HAL_FOLDER)$(BOARD_FOLDER)/
+INCDIRS +=$(HAL_FOLDER)
+ifdef BOARD_FOLDER
+	INCDIRS +=$(HAL_FOLDER)$(BOARD_FOLDER)/
+endif
 
 # general source files - always compiled
 SRC += $(SRC_FOLDER)main.c
