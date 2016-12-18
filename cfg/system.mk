@@ -7,11 +7,13 @@ endif
 
 ifeq ($(COMPILER),clang)
 	CC = clang
+	CPP = clang
 	LD = $(CCPREFIX)ld
 	SIZE = llvm-size
 	# INCDIRS += 
 else
 	CC = $(CCPREFIX)gcc
+	CPP =$(CCPREFIX)g++
 	LD = $(CCPREFIX)gcc
 	SIZE = size
 endif

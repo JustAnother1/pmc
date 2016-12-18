@@ -157,7 +157,7 @@ static uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16
         uint_fast16_t target_pos = devices[device].read_pos + offset;
         if((UART_RECEIVE_BUFFER_SIZE -1) < target_pos)
         {
-            target_pos = target_pos - (UART_RECEIVE_BUFFER_SIZE -1);
+            target_pos = target_pos - UART_RECEIVE_BUFFER_SIZE;
         }
         res = devices[device].receive_buffer[target_pos];
         return res;
@@ -165,7 +165,7 @@ static uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16
     else
     {
         // invalid Interface Specified
-        return ' ';
+        return 0;
     }
 }
 
@@ -182,7 +182,7 @@ static uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device)
             }
             else
             {
-                res = UART_RECEIVE_BUFFER_SIZE - devices[device].read_pos + (0 - devices[device].write_pos);
+                res = UART_RECEIVE_BUFFER_SIZE - devices[device].read_pos + devices[device].write_pos;
             }
         }
         // else res = 0;
@@ -202,7 +202,7 @@ static void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many)
         uint_fast16_t target_pos = devices[device].read_pos + how_many;
         if((UART_RECEIVE_BUFFER_SIZE -1) < target_pos)
         {
-            target_pos = target_pos - (UART_RECEIVE_BUFFER_SIZE -1);
+            target_pos = target_pos - UART_RECEIVE_BUFFER_SIZE;
         }
         devices[device].read_pos = target_pos;
     }
@@ -216,6 +216,11 @@ static void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast1
         if(1 > length)
         {
             // no data
+            return;
+        }
+        if(NULL == frame)
+        {
+            // no frame -> no data
             return;
         }
         // TODO add timeout 1ms for each byte of the send buffer size
@@ -297,6 +302,10 @@ default:
 
 static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
+    if(NULL == frame)
+    {
+        return false;
+    }
     // TODO simplify
     if(devices[device].send_end_pos < devices[device].send_pos)
     {
