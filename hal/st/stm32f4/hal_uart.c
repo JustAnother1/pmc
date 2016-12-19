@@ -33,13 +33,13 @@
 typedef struct {
     // receive
     uint8_t         receive_buffer[UART_RECEIVE_BUFFER_SIZE];
-    uint_fast16_t   read_pos;
-    uint_fast16_t   write_pos;
+    uint_fast16_t   receive_read_pos;
+    uint_fast16_t   receive_write_pos;
     // send
     uint8_t         send_buffer[UART_SEND_BUFFER_SIZE];
     bool            is_sending;
-    uint_fast16_t   send_pos; // the byte that will be send next
-    uint_fast16_t   send_end_pos; // free slot after data to send
+    uint_fast16_t   send_read_pos; // the byte that will be send next
+    uint_fast16_t   send_write_pos; // free slot after data to send
     // the port
     USART_TypeDef * port;
 }uart_device_typ;
@@ -53,6 +53,7 @@ static uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device);
 static void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many);
 static void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
 static bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
+static uint_fast16_t get_available_bytes_in_send_Buffer(uint_fast8_t device);
 
 static volatile uart_device_typ devices[MAX_UART];
 static bool gcode_initialized = false;
@@ -154,7 +155,7 @@ static uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16
     if(device < MAX_UART)
     {
         uint_fast8_t res;
-        uint_fast16_t target_pos = devices[device].read_pos + offset;
+        uint_fast16_t target_pos = devices[device].receive_read_pos + offset;
         if((UART_RECEIVE_BUFFER_SIZE -1) < target_pos)
         {
             target_pos = target_pos - UART_RECEIVE_BUFFER_SIZE;
@@ -174,15 +175,15 @@ static uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device)
     if(device < MAX_UART)
     {
         uint_fast16_t res = 0;
-        if(devices[device].read_pos != devices[device].write_pos)
+        if(devices[device].receive_read_pos != devices[device].receive_write_pos)
         {
-            if(devices[device].write_pos > devices[device].read_pos)
+            if(devices[device].receive_write_pos > devices[device].receive_read_pos)
             {
-                res = devices[device].write_pos - devices[device].read_pos;
+                res = devices[device].receive_write_pos - devices[device].receive_read_pos;
             }
             else
             {
-                res = UART_RECEIVE_BUFFER_SIZE - devices[device].read_pos + devices[device].write_pos;
+                res = UART_RECEIVE_BUFFER_SIZE - devices[device].receive_read_pos + devices[device].receive_write_pos;
             }
         }
         // else res = 0;
@@ -199,12 +200,12 @@ static void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many)
 {
     if(device < MAX_UART)
     {
-        uint_fast16_t target_pos = devices[device].read_pos + how_many;
+        uint_fast16_t target_pos = devices[device].receive_read_pos + how_many;
         if((UART_RECEIVE_BUFFER_SIZE -1) < target_pos)
         {
             target_pos = target_pos - UART_RECEIVE_BUFFER_SIZE;
         }
-        devices[device].read_pos = target_pos;
+        devices[device].receive_read_pos = target_pos;
     }
     // else invalid Interface Specified
 }
@@ -223,34 +224,10 @@ static void hal_uart_send_frame(uint_fast8_t device, uint8_t * frame, uint_fast1
             // no frame -> no data
             return;
         }
-        // TODO add timeout 1ms for each byte of the send buffer size
-        while(true == devices[device].is_sending)
+
+        while(false == copy_data_to_send(device, frame, length))
         {
             ; // wait
-        }
-        uint_fast16_t bytesSend = 0;
-        while(bytesSend < length)
-        {
-            uint32_t timeout = hal_cpu_get_ms_tick() + UART_BYTE_TIMEOUT_MS;
-            if(timeout < hal_cpu_get_ms_tick())
-            {
-                // wrap around
-                // wait for TX to be ready for the next Byte
-                while(   (timeout < hal_cpu_get_ms_tick())
-                      && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
-                {
-                    ; // wait
-                }
-            }
-            // wait for TX to be ready for the next Byte
-            while(   (timeout > hal_cpu_get_ms_tick())
-                  && (USART_SR_TXE != (devices[device].port->SR & USART_SR_TXE)) )
-            {
-                ; // wait
-            }
-            // send one Byte
-            devices[device].port->DR = (uint16_t)frame[bytesSend];
-            bytesSend++;
         }
     }
     // else invalid Interface Specified
@@ -300,72 +277,69 @@ default:
 }
 */
 
+static uint_fast16_t get_available_bytes_in_send_Buffer(uint_fast8_t device)
+{
+    if(device < MAX_UART)
+    {
+        uint_fast16_t res;
+        if(devices[device].send_read_pos != devices[device].send_write_pos)
+        {
+            if(devices[device].send_write_pos > devices[device].send_read_pos)
+            {
+                res = UART_SEND_BUFFER_SIZE - devices[device].send_read_pos + devices[device].send_write_pos;
+            }
+            else
+            {
+                res = devices[device].send_write_pos - devices[device].send_read_pos;
+            }
+        }
+        else
+        {
+            // Buffer is empty
+            res = UART_SEND_BUFFER_SIZE;
+        }
+        return res;
+    }
+    else
+    {
+        // invalid Interface Specified
+        return 0;
+    }
+}
+
+
 static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
+    uint_fast16_t i;
     if(NULL == frame)
     {
         return false;
     }
-    // TODO simplify
-    if(devices[device].send_end_pos < devices[device].send_pos)
+    if(0 == length)
     {
-        // buffer already wrapped
-        if(length < (devices[device].send_pos - devices[device].send_end_pos))
-        {
-            // but this still fits in
-            // copy data
-            uint_fast16_t i;
-            for(i = 0; i < length; i++)
-            {
-                devices[device].send_buffer[i+ devices[device].send_end_pos] = frame[i];
-            }
-            devices[device].send_end_pos = devices[device].send_end_pos + length;
-        }
-        else
-        {
-            // already wrapped and not fitting -> blocking
-            return false;
-        }
+        return true;
     }
-    else
+    if(!(device < MAX_UART))
     {
-        // not wrapped yet
-        if(length < (UART_SEND_BUFFER_SIZE - devices[device].send_end_pos))
+        return false;
+    }
+    if(length > get_available_bytes_in_send_Buffer(device))
+    {
+        // not enough free bytes in the buffer
+        return false;
+    }
+    for(i = 0; i < length; i++)
+    {
+        devices[device].send_buffer[devices[device].send_write_pos] = frame[i];
+        devices[device].send_write_pos++;
+        if(devices[device].send_write_pos < UART_SEND_BUFFER_SIZE)
         {
-            // and we can put it in without wrapping
-            // copy data
-            uint_fast16_t i;
-            for(i = 0; i < length; i++)
-            {
-                devices[device].send_buffer[i + devices[device].send_end_pos] = frame[i];
-            }
-            devices[device].send_end_pos = devices[device].send_end_pos + length;
+            // OK
         }
         else
         {
-            uint_fast16_t new_end_position;
-            new_end_position = length - (UART_SEND_BUFFER_SIZE - devices[device].send_end_pos);
-            if(new_end_position < devices[device].send_pos)
-            {
-                // it fits wrapped
-                // copy data
-                uint_fast16_t data_before_wrap = length - new_end_position;
-                uint_fast16_t i;
-                for(i = 0; i < data_before_wrap; i++)
-                {
-                    devices[device].send_buffer[i + devices[device].send_end_pos] = frame[i];
-                }
-                for(; i < length; i++)
-                {
-                    devices[device].send_buffer[i - data_before_wrap] = frame[i];
-                }
-                devices[device].send_end_pos = new_end_position;
-            }
-            else
-            {
-                // doesn't fit -> blocking !
-                return false;
-            }
+            // wrap around
+            devices[device].send_write_pos = 0;
         }
     }
     return true;
@@ -384,6 +358,7 @@ static bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * fram
     {
         // invalid Interface Specified or
         // no data
+        hal_cpu_report_issue(9);
         return false;
     }
 
@@ -391,6 +366,7 @@ static bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * fram
     if(false == copy_data_to_send(device, frame, length))
     {
         // Send buffer is full
+        hal_cpu_report_issue(10);
         return false;
     }
 
@@ -403,16 +379,16 @@ static bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * fram
     {
         // start sending now
         devices[device].is_sending = true;
-        devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_pos];
-        devices[device].send_pos++;
-        if(devices[device].send_pos < UART_SEND_BUFFER_SIZE)
+        devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_read_pos];
+        devices[device].send_read_pos++;
+        if(devices[device].send_read_pos < UART_SEND_BUFFER_SIZE)
         {
             // ok
         }
         else
         {
             // wrap around
-            devices[device].send_pos = 0;
+            devices[device].send_read_pos = 0;
         }
         // The next line activates the Interrupt. The Interrupt may become
         // active immediately. It therefore must be the last line !
@@ -429,11 +405,11 @@ static void device_IRQ_handler(uint_fast8_t device)
         uint32_t reg = devices[device].port->DR;
         uint8_t received_byte = (reg & 0xff);
         devices[device].port->SR &= ~USART_SR_RXNE;
-        devices[device].receive_buffer[devices[device].write_pos] = received_byte;
-        devices[device].write_pos ++;
-        if(UART_RECEIVE_BUFFER_SIZE == devices[device]. write_pos)
+        devices[device].receive_buffer[devices[device].receive_write_pos] = received_byte;
+        devices[device].receive_write_pos ++;
+        if(UART_RECEIVE_BUFFER_SIZE == devices[device]. receive_write_pos)
         {
-            devices[device].write_pos = 0;
+            devices[device].receive_write_pos = 0;
         }
     }
     if(USART_SR_TXE == (USART_SR_TXE & devices[device].port->SR))
@@ -441,18 +417,18 @@ static void device_IRQ_handler(uint_fast8_t device)
         // we can send a byte
         if(true == devices[device].is_sending)
         {
-            devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_pos];
-            devices[device].send_pos++;
-            if(devices[device].send_pos < UART_SEND_BUFFER_SIZE)
+            devices[device].port->DR = (uint16_t)devices[device].send_buffer[devices[device].send_read_pos];
+            devices[device].send_read_pos++;
+            if(devices[device].send_read_pos < UART_SEND_BUFFER_SIZE)
             {
                 // ok
             }
             else
             {
                 // wrap around
-                devices[device].send_pos = 0;
+                devices[device].send_read_pos = 0;
             }
-            if(devices[device].send_pos == devices[device].send_end_pos)
+            if(devices[device].send_read_pos == devices[device].send_write_pos)
             {
                 devices[device].is_sending = false;
                 devices[device].port->CR1 &= ~USART_CR1_TXEIE;
@@ -518,11 +494,11 @@ static bool hal_uart_init(uint_fast8_t device)
 {
     if(device < MAX_UART)
     {
-        devices[device].read_pos = 0;
-        devices[device].write_pos = 0;
+        devices[device].receive_read_pos = 0;
+        devices[device].receive_write_pos = 0;
         devices[device].is_sending = false;
-        devices[device].send_end_pos = 0;
-        devices[device].send_pos = 0;
+        devices[device].send_write_pos = 0;
+        devices[device].send_read_pos = 0;
 
         switch(device)
         {

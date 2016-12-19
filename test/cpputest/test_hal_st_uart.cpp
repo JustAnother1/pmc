@@ -209,4 +209,10 @@ void hal_send_frame_debug_uart(uint8_t * frame, uint_fast16_t length);
 
 bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t length);
 bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t length);
+
+void device_IRQ_handler(uint_fast8_t device)
+bool hal_uart_send_frame_non_blocking(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
+bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
+
+
 */
