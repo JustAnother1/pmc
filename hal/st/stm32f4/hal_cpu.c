@@ -357,14 +357,105 @@ void hal_cpu_check_Reset_Reason(void)
 
     // Issue reported by this software :
     // =================================
-    // Issue numbers 1-8 !
-    debug_line("Reported issue: %d", RTC->BKP1R);
-    RTC->BKP1R = 0;
+    // Issue numbers 1-10 !
+    if(0 != RTC->BKP1R)
+    {
+        debug_line("Reported issue 1: %d", RTC->BKP1R);
+        RTC->BKP1R = 0;
+    }
+    if(0 != RTC->BKP2R)
+    {
+        debug_line("Reported issue 2: %d", RTC->BKP2R);
+        RTC->BKP2R = 0;
+    }
+    if(0 != RTC->BKP3R)
+    {
+        debug_line("Reported issue 3: %d", RTC->BKP3R);
+        RTC->BKP3R = 0;
+    }
+    if(0 != RTC->BKP4R)
+    {
+        debug_line("Reported issue 4: %d", RTC->BKP4R);
+        RTC->BKP4R = 0;
+    }
+    if(0 != RTC->BKP5R)
+    {
+        debug_line("Reported issue 5: %d", RTC->BKP5R);
+        RTC->BKP5R = 0;
+    }
+    if(0 != RTC->BKP6R)
+    {
+        debug_line("Reported issue 6: %d", RTC->BKP6R);
+        RTC->BKP6R = 0;
+    }
+    if(0 != RTC->BKP7R)
+    {
+        debug_line("Reported issue 7: %d", RTC->BKP7R);
+        RTC->BKP7R = 0;
+    }
+    if(0 != RTC->BKP8R)
+    {
+        debug_line("Reported issue 8: %d", RTC->BKP8R);
+        RTC->BKP8R = 0;
+    }
+    if(0 != RTC->BKP9R)
+    {
+        debug_line("Reported issue 9: %d", RTC->BKP9R);
+        RTC->BKP9R = 0;
+    }
+    if(0 != RTC->BKP10R)
+    {
+        debug_line("Reported issue 10: %d", RTC->BKP10R);
+        RTC->BKP10R = 0;
+    }
 }
 
 void hal_cpu_report_issue(uint32_t issue_number)
 {
-    RTC->BKP1R = issue_number;
+    if(0 == RTC->BKP1R)
+    {
+        RTC->BKP1R = issue_number;
+    }
+    else if(0 == RTC->BKP2R)
+    {
+        RTC->BKP2R = issue_number;
+    }
+    else if(0 == RTC->BKP3R)
+    {
+        RTC->BKP3R = issue_number;
+    }
+    else if(0 == RTC->BKP4R)
+    {
+        RTC->BKP4R = issue_number;
+    }
+    else if(0 == RTC->BKP5R)
+    {
+        RTC->BKP5R = issue_number;
+    }
+    else if(0 == RTC->BKP6R)
+    {
+        RTC->BKP6R = issue_number;
+    }
+    else if(0 == RTC->BKP7R)
+    {
+        RTC->BKP7R = issue_number;
+    }
+    else if(0 == RTC->BKP8R)
+    {
+        RTC->BKP8R = issue_number;
+    }
+    else if(0 == RTC->BKP9R)
+    {
+        RTC->BKP9R = issue_number;
+    }
+    else if(0 == RTC->BKP10R)
+    {
+        RTC->BKP10R = issue_number;
+    }
+    else
+    {
+        RTC->BKP10R = 0xffffffff;
+    }
     // TODO allow for more than one issue
 }
 
