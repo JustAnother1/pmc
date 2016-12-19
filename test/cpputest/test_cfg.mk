@@ -9,6 +9,9 @@ CPPFLAGS += -std=c++11
 # tests
 CPPUTEST_TEST_SRCS  += cpputest/test_hal_st_uart.cpp
 CPPUTEST_TEST_SRCS  += cpputest/wrap_hal_st_uart.cpp
+CPPUTEST_TEST_SRCS  += cpputest/test_hal_st_spi.cpp
+CPPUTEST_TEST_SRCS  += cpputest/wrap_hal_st_spi.cpp
+# stubs
 CPPUTEST_TEST_SRCS  += cpputest/stub/stub_st_util.cpp
 CPPUTEST_TEST_SRCS  += cpputest/stub/stub_arm_c4.cpp
 CPPUTEST_TEST_SRCS  += cpputest/stub/stub_hal_cpu.cpp

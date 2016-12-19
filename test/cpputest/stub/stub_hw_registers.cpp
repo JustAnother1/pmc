@@ -18,6 +18,7 @@
 #include "st_gpio.h"
 #include "st_rcc.h"
 #include "st_usart.h"
+#include "st_spi.h"
 #include "st_common.h"
 
 
@@ -42,6 +43,12 @@ USART_TypeDef USART3_BASE;
 USART_TypeDef UART4_BASE;
 USART_TypeDef UART5_BASE;
 USART_TypeDef USART6_BASE;
+
+// SPI
+SPI_TypeDef SPI2_BASE;
+SPI_TypeDef SPI3_BASE;
+SPI_TypeDef SPI1_BASE;
+
 
 // common
 // SPI_TypeDef I2S2ext_BASE;

@@ -16,6 +16,9 @@
 #ifndef TEST_CPPUTEST_STUB_ST_COMMON_H_
 #define TEST_CPPUTEST_STUB_ST_COMMON_H_
 
+#include <inttypes.h>
+#include <stdbool.h>
+
 typedef enum
 {
   RESET = 0,

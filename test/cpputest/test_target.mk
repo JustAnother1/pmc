@@ -9,4 +9,7 @@ $(TEST_BIN_FOLDER)cpputest/allTests : $(CPPUTEST_TEST_OBJS)
 
 # execute tests
 cpputest_test: clean $(TEST_BIN_FOLDER)cpputest/allTests
-	$(TEST_BIN_FOLDER)cpputest/allTests
+	@echo ""
+	@echo "Now running the tests"
+	@echo "====================="
+	@$(TEST_BIN_FOLDER)cpputest/allTests -c -v
