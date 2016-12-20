@@ -47,7 +47,9 @@ typedef struct {
 static void device_IRQ_handler(uint_fast8_t device);
 static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
 static bool hal_uart_init(uint_fast8_t device);
+#ifdef DEBUG_ACTIVE
 static void hal_uart_print_configuration(uint_fast8_t device);
+#endif
 static uint_fast8_t hal_uart_get_byte_at_offset(uint_fast8_t device, uint_fast16_t offset);
 static uint_fast16_t hal_uart_get_available_bytes(uint_fast8_t device);
 static void hal_uart_forget_bytes(uint_fast8_t device, uint_fast16_t how_many);
@@ -74,10 +76,12 @@ bool hal_init_gcode_uart(void)
     return hal_uart_init(GCODE_UART);
 }
 
+#ifdef DEBUG_ACTIVE
 void hal_print_configuration_gcode_uart(void)
 {
     hal_uart_print_configuration(GCODE_UART);
 }
+#endif
 
 uint_fast8_t hal_get_gcode_uart_byte_at_offset(uint_fast16_t offset)
 {
@@ -116,10 +120,12 @@ bool hal_init_debug_uart(void)
     return hal_uart_init(DEBUG_UART);
 }
 
+#ifdef DEBUG_ACTIVE
 void hal_print_configuration_debug_uart(void)
 {
     hal_uart_print_configuration(DEBUG_UART);
 }
+#endif
 
 uint_fast8_t hal_get_debug_uart_byte_at_offset(uint_fast16_t offset)
 {
@@ -449,6 +455,7 @@ void UART_1_IRQ_HANDLER(void)
     device_IRQ_handler(1);
 }
 
+#ifdef DEBUG_ACTIVE
 static void hal_uart_print_configuration(uint_fast8_t device)
 {
     if(device < MAX_UART)
@@ -489,6 +496,7 @@ static void hal_uart_print_configuration(uint_fast8_t device)
     }
     // else invalid Interface Specified
 }
+#endif
 
 static bool hal_uart_init(uint_fast8_t device)
 {

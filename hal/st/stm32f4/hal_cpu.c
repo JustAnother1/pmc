@@ -249,7 +249,7 @@ void hal_cpu_tick(void)
 }
 
 // my own Fault Handlers
-
+#ifdef DEBUG_ACTIVE
 void hal_cpu_check_Reset_Reason(void)
 {
     // Reset Reason in RCC:
@@ -409,6 +409,7 @@ void hal_cpu_check_Reset_Reason(void)
         RTC->BKP10R = 0;
     }
 }
+#endif
 
 void hal_cpu_report_issue(uint32_t issue_number)
 {
@@ -459,6 +460,7 @@ void hal_cpu_report_issue(uint32_t issue_number)
     // TODO allow for more than one issue
 }
 
+#ifdef DEBUG_ACTIVE
 void hal_cpu_print_Interrupt_information(void)
 {
     int i = 0;
@@ -509,6 +511,7 @@ void hal_cpu_print_Interrupt_information(void)
     }
     debug_line("%d tasks.", i);
 }
+#endif
 
 void NMI_Handler(void)
 {

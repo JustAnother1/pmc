@@ -22,7 +22,9 @@
 // SPI Bus that is connected to the Trinamic Stepper controllers
 
 void hal_init_stepper_spi(void);
+#ifdef DEBUG_ACTIVE
 void hal_print_stepper_spi_configuration(void);
+#endif
 bool hal_do_stepper_spi_transaction(uint8_t*     data_to_send,
                                     uint_fast8_t num_bytes_to_send,
                                     uint8_t*     data_received);
@@ -35,7 +37,9 @@ bool hal_stepper_spi_is_idle(void);
 // the "other" SPI
 
 void hal_init_expansion_spi(void);
+#ifdef DEBUG_ACTIVE
 void hal_print_expansion_spi_configuration(void);
+#endif
 bool hal_do_expansion_spi_transaction(uint8_t*     data_to_send,
                                       uint_fast8_t num_bytes_to_send,
                                       uint8_t*     data_received);

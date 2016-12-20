@@ -18,11 +18,16 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include "hal_cfg.h"
+#include "lib/printf.h"
+
+static void debug_putc( void* p, char c);
 
 void hal_debug_init(void)
 {
+    init_printf(NULL, debug_putc);
 }
 
+/*
 void debug_msg(const char* format, ...)
 {
     va_list args;
@@ -38,6 +43,12 @@ void debug_line(const char* format, ...)
     vprintf(format, args );
     va_end(args);
     printf("\r\n");
+}
+*/
+
+static void debug_putc(void* p, char c)
+{
+    putc(c, stdout);
 }
 
 void debug_print32(uint32_t num)

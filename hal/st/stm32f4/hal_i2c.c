@@ -103,6 +103,7 @@ void hal_init_i2c(void)
     I2C_0_SDA_GPIO_PORT->AFR[1]  &= ~I2C_0_SDA_GPIO_AFR_1_0;
 }
 
+#ifdef DEBUG_ACTIVE
 void hal_print_i2c_configuration(void)
 {
     debug_line("Configuration of I2C :");
@@ -127,6 +128,7 @@ void hal_print_i2c_configuration(void)
     debug_line("SDA Pin:");
     print_gpio_pin_configuration(I2C_0_SCL_GPIO_PORT, I2C_0_SDA_GPIO_PIN);
 }
+#endif
 
 // Interrupt Handlers
 void I2C1_EV_IRQHandler(void)

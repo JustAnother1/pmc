@@ -81,10 +81,12 @@ void hal_init_stepper_spi(void)
     hal_spi_init(STEPPER_SPI);
 }
 
+#ifdef DEBUG_ACTIVE
 void hal_print_stepper_spi_configuration(void)
 {
     hal_spi_print_configuration(STEPPER_SPI);
 }
+#endif
 
 bool hal_do_stepper_spi_transaction(uint8_t*     data_to_send,
                                     uint_fast8_t num_bytes_to_send,
@@ -119,10 +121,12 @@ void hal_init_expansion_spi(void)
     hal_spi_init(EXPANSION_SPI);
 }
 
+#ifdef DEBUG_ACTIVE
 void hal_print_expansion_spi_configuration(void)
 {
     hal_spi_print_configuration(EXPANSION_SPI);
 }
+#endif
 
 bool hal_do_expansion_spi_transaction(uint8_t*     data_to_send,
                                       uint_fast8_t num_bytes_to_send,
@@ -307,6 +311,7 @@ static void hal_spi_init(uint_fast8_t device)
     // else invalid Interface Specified
 }
 
+#ifdef DEBUG_ACTIVE
 static void hal_spi_print_configuration(uint_fast8_t device)
 {
     if(device < MAX_SPI)
@@ -350,6 +355,7 @@ static void hal_spi_print_configuration(uint_fast8_t device)
     }
     // else invalid Interface Specified
 }
+#endif
 
 void SPI_0_IRQ_HANDLER(void)
 {

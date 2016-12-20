@@ -186,6 +186,7 @@ void hal_adc_init(void)
     hal_cpu_add_ms_tick_function(aquireValues);
 }
 
+#ifdef DEBUG_ACTIVE
 void hal_print_configuration_adc(void)
 {
     debug_line("Configuration of ADC :");
@@ -234,6 +235,7 @@ void hal_print_configuration_adc(void)
     print_gpio_configuration(GPIOA);
     print_gpio_configuration(GPIOC);
 }
+#endif
 
 uint_fast8_t hal_adc_get_amount(void)
 {

@@ -32,8 +32,10 @@ void hal_cpu_die(void);
 void hal_cpu_do_software_reset(uint32_t reason);
 void hal_cpu_tick(void);
 uint32_t hal_cpu_get_ms_tick(void);
+#ifdef DEBUG_ACTIVE
 void hal_cpu_check_Reset_Reason(void);
 void hal_cpu_print_Interrupt_information(void);
+#endif
 void hal_cpu_report_issue(uint32_t issue_number);
 
 #endif /* HAL_CPU_H_ */

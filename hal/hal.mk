@@ -59,7 +59,7 @@ ifeq ($(BOARD), pipy)
 	CFLAGS += -Wdouble-promotion
 	# warn if more then this amount of bytes on the stack are used
 	CFLAGS += -Wstack-usage=256
-	# crete *.su files with the funtion based information about the stack usage 
+	# -fstack-usage: crete *.su files with the funtion based information about the stack usage 
 	CFLAGS += -fstack-usage
 	CFLAGS += -Wunsafe-loop-optimizations
 	CFLAGS += -Wjump-misses-init
@@ -67,7 +67,6 @@ ifeq ($(BOARD), pipy)
 	CFLAGS +=  -Wmissing-field-initializers
 	# -ffreestanding: stdlib not available, start not at main.
 	CFLAGS += -ffreestanding
-	#CFLAGS += --specs=nano.specs
 	CFLAGS += -nostdlib
 	CFLAGS += -gdwarf-2
 	CFLAGS += -Wstrict-prototypes
@@ -86,11 +85,7 @@ ifeq ($(BOARD), pipy)
 		LDFLAGS += -fsingle-precision-constant
 	endif
 	LDFLAGS += -flto
-	#LDFLAGS += --specs=nano.specs
 	LDFLAGS += --specs=nosys.specs
-	#lgcc for memset
-	#LDFLAGS += -lgcc
-	#LDFLAGS += -lc
 	LDFLAGS += -gdwarf-2
 	LDFLAGS +=  $(LINKER_SCRIPT)
 	LDFLAGS += -fwhole-program
@@ -106,8 +101,16 @@ ifeq ($(BOARD), linux)
 	ARCHITECTURE = x86
 	BOARD_FOLDER = linux
 	INCDIRS +=$(HAL_FOLDER)$(BOARD_FOLDER)/
+	INCDIRS += /usr/lib/gcc/x86_64-linux-gnu/5/include/
+	INCDIRS += /usr/include
+	#INCDIRS += /usr/include/c++/5/tr1/
+	#INCDIRS += /usr/include/c++/5/
+	#INCDIRS += $(HAL_FOLDER)arm/
 	# -fhosted: stdlib is available. main returns int
 	CFLAGS += -fhosted
+	#lgcc for memset
+	LDFLAGS += -lgcc
+	LDFLAGS += -lc
 	LDFLAGS += -Wl,-Map=$(BIN_FOLDER)$(PROJECT).map,--gc-sections
 	LIB += -lpthread
 endif

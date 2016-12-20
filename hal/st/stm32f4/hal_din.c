@@ -180,6 +180,7 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
     return 0;
 }
 
+#ifdef DEBUG_ACTIVE
 void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
 {
     GPIO_TypeDef * PortRegisters;
@@ -237,5 +238,5 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
     }
     print_gpio_pin_configuration(PortRegisters, idx);
 }
-
+#endif
 

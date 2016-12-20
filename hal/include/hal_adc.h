@@ -26,6 +26,8 @@ uint_fast8_t hal_adc_get_amount(void);
  */
 uint_fast16_t hal_adc_get_value(uint_fast8_t device);
 uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position);
+#ifdef DEBUG_ACTIVE
 void hal_print_configuration_adc(void);
+#endif
 
 #endif /* HAL_INCLUDE_HAL_ADC_H_ */

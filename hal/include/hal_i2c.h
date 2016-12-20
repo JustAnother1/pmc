@@ -22,7 +22,9 @@
 // I2C Bus
 
 void hal_init_i2c(void);
+#ifdef DEBUG_ACTIVE
 void hal_print_i2c_configuration(void);
+#endif
 
 bool hal_do_i2c_transaction(bool read,
                             uint_fast8_t i2cAddress,
