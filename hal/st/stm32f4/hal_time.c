@@ -76,7 +76,6 @@ void hal_time_init(void)
 static void error_isr_on_stopped_timer(void)
 {
     hal_cpu_report_issue(1);
-    hal_set_error_led(true);
     debug_line("ERROR: ISR called on stopped Timer !");
 }
 
@@ -333,7 +332,6 @@ bool hal_time_enable_pwm_for(uint_fast8_t device)
     if((NULL == timer) || (0 == PWM_FREQUENCY))
     {
         hal_cpu_report_issue(2);
-        hal_set_error_led(true);
         return false;
     }
     enable_clock_for_timer(device);

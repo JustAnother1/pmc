@@ -147,7 +147,6 @@ void hal_cpu_add_ms_tick_function_cycle(msTickFkt additional_function, int every
         // no more free slots
         debug_line("ERROR: Could not add ms Tick Function!");
         hal_cpu_report_issue(7);
-        hal_set_error_led(true);
     }
 }
 
@@ -413,6 +412,7 @@ void hal_cpu_check_Reset_Reason(void)
 
 void hal_cpu_report_issue(uint32_t issue_number)
 {
+    hal_set_error_led(true);
     if(0 == RTC->BKP1R)
     {
         RTC->BKP1R = issue_number;

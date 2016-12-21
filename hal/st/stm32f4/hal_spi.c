@@ -25,7 +25,7 @@
 #include "hal_cfg.h"
 #include "hal_time.h"
 
-#define TIMEOUT_MS   500
+#define TIMEOUT_MS   2
 
 // On the Wire : Most Significant Bit First (CR1)
 // When a master is communicating with SPI slaves which need to be de-selected between
@@ -51,7 +51,9 @@ static void slave_select_end(uint_fast8_t device);
 static void spi_device_IRQ_handler(uint_fast8_t device);
 
 static void hal_spi_init(uint_fast8_t device);
+#ifdef DEBUG_ACTIVE
 static void hal_spi_print_configuration(uint_fast8_t device);
+#endif
 static bool hal_spi_do_transaction(uint_fast8_t device,
                                    uint8_t *data_to_send,
                                    uint_fast8_t num_bytes_to_send,
@@ -61,6 +63,7 @@ static void hal_spi_start_spi_transaction(uint_fast8_t device,
                                           uint8_t *data_to_send,
                                           uint_fast8_t num_bytes_to_send,
                                           uint8_t *data_received);
+static void waitForEndOfSpiTransaction(uint_fast8_t device);
 
 
 static spi_device_typ spi_devices[MAX_SPI];
@@ -410,6 +413,21 @@ static void spi_device_IRQ_handler(uint_fast8_t device)
     }
 }
 
+static void waitForEndOfSpiTransaction(uint_fast8_t device)
+{
+    uint32_t curTime = hal_cpu_get_ms_tick();
+    uint32_t endTime = curTime + TIMEOUT_MS;
+    while((false == spi_devices[device].idle) && (endTime > curTime))  // TODO overflow (prio low: uint32 = 2^32ms = more than 49 days!)
+    {
+        curTime = hal_cpu_get_ms_tick(); // wait until we can send the data out
+    }
+    if(endTime == curTime)
+    {
+        debug_line("SPI not Idle !");
+        hal_cpu_report_issue(12);
+    }
+}
+
 static bool hal_spi_do_transaction(uint_fast8_t device,
                                    uint8_t *data_to_send,
                                    uint_fast8_t num_bytes_to_send,
@@ -417,33 +435,12 @@ static bool hal_spi_do_transaction(uint_fast8_t device,
 {
     if(device < MAX_SPI)
     {
-        uint32_t curTime = hal_cpu_get_ms_tick();
-        uint32_t endTime = curTime + TIMEOUT_MS;
-        while((false == spi_devices[device].idle) && (endTime > curTime))
-        {
-            curTime = hal_cpu_get_ms_tick(); // wait until we can send the data out
-        }
-        if(endTime == curTime)
-        {
-            debug_line("SPI not Idle !");
-            return false;
-        }
+        waitForEndOfSpiTransaction(device);
         hal_spi_start_spi_transaction(device,
                                       data_to_send,
                                       num_bytes_to_send,
                                       data_received);
-
-        curTime = hal_cpu_get_ms_tick();
-        endTime = curTime + TIMEOUT_MS;
-        while((false == spi_devices[device].idle) && (endTime > curTime))
-        {
-            curTime = hal_cpu_get_ms_tick(); // wait until we have the data back
-        }
-        if(endTime == curTime)
-        {
-            debug_line("SPI Transaction never finished!");
-            return false;
-        }
+        waitForEndOfSpiTransaction(device);
         return spi_devices[device].successfully_received;
     }
     // else invalid Interface Specified
@@ -484,7 +481,7 @@ static void hal_spi_start_spi_transaction(uint_fast8_t device,
 {
     if(false == spi_devices[device].idle)
     {
-        // TODO report the error
+        hal_cpu_report_issue(11);
     }
     spi_devices[device].idle = false;
     spi_devices[device].bus->CR2 |= SPI_CR2_TXEIE;

@@ -46,8 +46,6 @@ void hal_debug_init(void)
     if(false == res)
     {
         hal_cpu_report_issue(3);
-        hal_set_error_led(true);
-        hal_cpu_die();
     }
 
     init_printf(NULL, debug_putc);
@@ -65,7 +63,6 @@ void debug_print32(uint32_t num)
     if(false == hal_send_frame_non_blocking_debug_uart(&buffer[0], 6))
     {
         hal_cpu_report_issue(4);
-        hal_set_error_led(true);
     }
 }
 
@@ -74,7 +71,6 @@ static void debug_putc(void* p, char c)
     if(false == hal_send_frame_non_blocking_debug_uart((uint8_t *)&c, 1))
     {
         hal_cpu_report_issue(5);
-        hal_set_error_led(true);
     }
 }
 
@@ -83,7 +79,6 @@ void debug_printChar(char c)
     if(false == hal_send_frame_non_blocking_debug_uart((uint8_t *)&c, 1))
     {
         hal_cpu_report_issue(6);
-        hal_set_error_led(true);
     }
 }
 

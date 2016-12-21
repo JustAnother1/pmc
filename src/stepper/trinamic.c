@@ -633,11 +633,26 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
 
     num_bytes_used =((num_steppers+1)/2)*5; // 20 bits per Stepper
 
-    hal_do_stepper_spi_transaction(&cfg_data[DRVCTRL] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
-    hal_do_stepper_spi_transaction(&cfg_data[CHOPCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
-    hal_do_stepper_spi_transaction(&cfg_data[SMARTEN] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
-    hal_do_stepper_spi_transaction(&cfg_data[SGCSCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
-    hal_do_stepper_spi_transaction(&cfg_data[DRVCONF] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]);
+    if(false == hal_do_stepper_spi_transaction(&cfg_data[DRVCTRL] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+    {
+        hal_cpu_report_issue(14);
+    }
+    if(false == hal_do_stepper_spi_transaction(&cfg_data[CHOPCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+    {
+        hal_cpu_report_issue(15);
+    }
+    if(false == hal_do_stepper_spi_transaction(&cfg_data[SMARTEN] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+    {
+        hal_cpu_report_issue(16);
+    }
+    if(false == hal_do_stepper_spi_transaction(&cfg_data[SGCSCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+    {
+        hal_cpu_report_issue(17);
+    }
+    if(false == hal_do_stepper_spi_transaction(&cfg_data[DRVCONF] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+    {
+        hal_cpu_report_issue(18);
+    }
 
 #ifdef USE_STEP_DIR
     hal_cpu_add_ms_tick_function(&periodic_status_check);
@@ -690,9 +705,14 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
         detect_data[i] = 0x00;
     }
     debug_line("detecting Steppers with  %d bytes !", SPI_BUFFER_LENGTH);
-    hal_do_stepper_spi_transaction(&detect_data[0],          // data to send
+
+    if(false == hal_do_stepper_spi_transaction(&detect_data[0],          // data to send
                                    SPI_BUFFER_LENGTH,        // number of bytes to send
-                                   &spi_receive_buffer[0] ); // where to put the response
+                                   &spi_receive_buffer[0] ) ) // where to put the response
+    {
+        hal_cpu_report_issue(19);
+        return 0;
+    }
     debug_msg("received : ");
     for(i = 0; i < SPI_BUFFER_LENGTH; i++)
     {
