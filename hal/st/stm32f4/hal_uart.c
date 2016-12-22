@@ -44,6 +44,9 @@ typedef struct {
     USART_TypeDef * port;
 }uart_device_typ;
 
+void UART_0_IRQ_HANDLER(void) __attribute__ ((interrupt ("IRQ")));
+void UART_1_IRQ_HANDLER(void) __attribute__ ((interrupt ("IRQ")));
+
 static void device_IRQ_handler(uint_fast8_t device);
 static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
 static bool hal_uart_init(uint_fast8_t device);
@@ -447,12 +450,16 @@ static void device_IRQ_handler(uint_fast8_t device)
 
 void UART_0_IRQ_HANDLER(void)
 {
+    hal_set_isr1_led(true);
     device_IRQ_handler(0);
+    hal_set_isr1_led(false);
 }
 
 void UART_1_IRQ_HANDLER(void)
 {
+    hal_set_isr1_led(true);
     device_IRQ_handler(1);
+    hal_set_isr1_led(false);
 }
 
 #ifdef DEBUG_ACTIVE

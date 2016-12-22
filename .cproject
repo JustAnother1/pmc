@@ -21,13 +21,14 @@
 							<builder arguments="-j 4 BOARD=stm407disco" command="make" id="cdt.managedbuild.target.gnu.builder.base.149847405" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.374963843" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1663548485" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
-								<option id="gnu.cpp.compiler.option.preprocessor.def.1638688896" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+								<option id="gnu.cpp.compiler.option.preprocessor.def.1638688896" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_STEP_DIR=1"/>
+									<listOptionValue builtIn="false" value="DEBUG_ACTIVE=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.72680237" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.2071925017" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.paths.173093849" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.173093849" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/arm}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/st/stm32f4}&quot;"/>
@@ -38,9 +39,10 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/src/debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/st/stm32f4/407Discovery}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.335565153" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.335565153" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MAX_STEP_RATE=40000"/>
 									<listOptionValue builtIn="false" value="USE_STEP_DIR=1"/>
+									<listOptionValue builtIn="false" value="DEBUG_ACTIVE=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1829167494" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -80,13 +82,14 @@
 							<builder arguments="-j 4 BOARD=linux" command="make" id="cdt.managedbuild.target.gnu.builder.base.688342971" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.1987889348" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.238543720" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
-								<option id="gnu.cpp.compiler.option.preprocessor.def.435310505" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+								<option id="gnu.cpp.compiler.option.preprocessor.def.435310505" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="USE_STEP_DIR=1"/>
+									<listOptionValue builtIn="false" value="DEBUG_ACTIVE=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.700378269" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.220085869" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.paths.920249191" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.920249191" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/arm}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/st/stm32f4}&quot;"/>
@@ -97,9 +100,10 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/src/debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/st/stm32f4/407Discovery}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.899753592" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.899753592" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MAX_STEP_RATE=40000"/>
 									<listOptionValue builtIn="false" value="USE_STEP_DIR=1"/>
+									<listOptionValue builtIn="false" value="DEBUG_ACTIVE=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.46059881" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -139,11 +143,13 @@
 							<builder arguments="-j 4 BOARD=stm407disco" command="make" id="cdt.managedbuild.target.gnu.builder.base.1174054375" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.base.319879922" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.base"/>
 							<tool id="cdt.managedbuild.tool.gnu.cpp.compiler.base.1504516850" name="GCC C++ Compiler" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.base">
-								<option id="gnu.cpp.compiler.option.preprocessor.def.634393861" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols"/>
+								<option id="gnu.cpp.compiler.option.preprocessor.def.634393861" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="DEBUG_ACTIVE=1"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1402059508" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.c.compiler.base.1451741306" name="GCC C Compiler" superClass="cdt.managedbuild.tool.gnu.c.compiler.base">
-								<option id="gnu.c.compiler.option.include.paths.55659692" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option id="gnu.c.compiler.option.include.paths.55659692" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/arm}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/st/stm32f4}&quot;"/>
@@ -154,8 +160,9 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/src/debug}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/pmc/hal/st/stm32f4/407Discovery}&quot;"/>
 								</option>
-								<option id="gnu.c.compiler.option.preprocessor.def.symbols.911538351" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option id="gnu.c.compiler.option.preprocessor.def.symbols.911538351" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="MAX_STEP_RATE=40000"/>
+									<listOptionValue builtIn="false" value="DEBUG_ACTIVE=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1847173946" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -212,4 +219,5 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 </cproject>

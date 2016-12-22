@@ -65,6 +65,9 @@ static void hal_spi_start_spi_transaction(uint_fast8_t device,
                                           uint8_t *data_received);
 static void waitForEndOfSpiTransaction(uint_fast8_t device);
 
+void SPI_0_IRQ_HANDLER(void) __attribute__ ((interrupt ("IRQ")));
+void SPI_1_IRQ_HANDLER(void) __attribute__ ((interrupt ("IRQ")));
+
 
 static spi_device_typ spi_devices[MAX_SPI];
 static bool stepper_initialized = false;
@@ -320,6 +323,26 @@ static void hal_spi_print_configuration(uint_fast8_t device)
     if(device < MAX_SPI)
     {
         debug_line("Configuration of SPI_%d :", device);
+        // State
+        debug_line("send_pos = %d", spi_devices[device].send_pos);
+        debug_line("rec_pos = %d", spi_devices[device].rec_pos);
+        debug_line("length = %d", spi_devices[device].length);
+        if(true == spi_devices[device].idle)
+        {
+            debug_line("SPI is idle");
+        }
+        else
+        {
+            debug_line("SPI is busy");
+        }
+        if(true == spi_devices[device].successfully_received)
+        {
+            debug_line("No SPI error detected");
+        }
+        else
+        {
+            debug_line("SPI error detected !");
+        }
         // Clock
         debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
         debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
@@ -362,12 +385,18 @@ static void hal_spi_print_configuration(uint_fast8_t device)
 
 void SPI_0_IRQ_HANDLER(void)
 {
+    hal_set_isr1_led(true);
     spi_device_IRQ_handler(0);
+    asm volatile("" : "+r" (spi_devices[0].idle));
+    hal_set_isr1_led(false);
 }
 
 void SPI_1_IRQ_HANDLER(void)
 {
+    hal_set_isr1_led(true);
     spi_device_IRQ_handler(1);
+    asm volatile("" : "+r" (spi_devices[1].idle));
+    hal_set_isr1_led(false);
 }
 
 static void spi_device_IRQ_handler(uint_fast8_t device)

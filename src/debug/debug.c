@@ -825,6 +825,7 @@ static void parse_order(int length)
         case 'C':
         case 'c':
             // scan for number of Steppers
+            trinamic_init(); // make sure that the SPI Interface to the Trinamic chips is initialized.
             debug_line("Detected %d Steppers !", trinamic_detect_number_of_steppers());
             break;
 

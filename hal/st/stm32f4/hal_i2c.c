@@ -37,6 +37,9 @@ typedef struct{
     uint_fast8_t send_bytes;
 } transfer_Definition;
 
+void I2C1_EV_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void I2C1_ER_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+
 static bool transaction_successfull;
 static enum i2c_state cur_state;
 static transfer_Definition cur_transfer;
@@ -133,6 +136,7 @@ void hal_print_i2c_configuration(void)
 // Interrupt Handlers
 void I2C1_EV_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     switch(cur_state)
     {
     case idle:
@@ -277,10 +281,12 @@ void I2C1_EV_IRQHandler(void)
         // else wait for next byte
         break;
     }
+    hal_set_isr1_led(false);
 }
 
 void I2C1_ER_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     if(I2C_SR1_BERR == (I2C_SR1_BERR & I2C_0->SR1))
     {
         cur_state = idle;
@@ -330,6 +336,7 @@ void I2C1_ER_IRQHandler(void)
         I2C_0->SR1 = I2C_0->SR1 &~I2C_SR1_SMBALERT;
         I2C_0->CR1 = 0;
     }
+    hal_set_isr1_led(false);
 }
 
 bool hal_do_i2c_transaction(bool read,

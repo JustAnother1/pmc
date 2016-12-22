@@ -276,7 +276,7 @@ static void aquireValues(void)
         case 0: // SPI - Thermocouple
             if(true == start)
             {
-                hal_start_expansion_spi_transaction(&send_data[0], 4, &receive_data[0]);
+                // hal_start_expansion_spi_transaction(&send_data[0], 4, &receive_data[0]);
                 start = false;
             }
             else

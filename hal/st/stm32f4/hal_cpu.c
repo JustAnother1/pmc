@@ -39,9 +39,14 @@ struct tick_node {
 };
 typedef struct tick_node tick_entry;
 
+void SysTick_Handler(void) __attribute__ ((interrupt ("IRQ")));
+
 static volatile uint32_t now;
 
 static void hal_cpu_start_ms_timer(void);
+#ifdef DEBUG_ACTIVE
+static void checkBitsOne(uint32_t data, int offset, char* descriptionP1);
+#endif
 
 static tick_entry  tick_list[MAX_TICK_FUNC];
 
@@ -155,9 +160,12 @@ uint32_t hal_cpu_get_ms_tick(void)
     return now;
 }
 
+
 void SysTick_Handler(void)
 {
+    hal_set_isr1_led(true);
     now++;
+    hal_set_isr1_led(false);
 }
 
 // Configure SysTick to generate an interrupt every millisecond
@@ -461,6 +469,20 @@ void hal_cpu_report_issue(uint32_t issue_number)
 }
 
 #ifdef DEBUG_ACTIVE
+static void checkBitsOne(uint32_t data, int offset, char* descriptionP1)
+{
+    int i;
+    for(i = 0; i < 32; i++)
+    {
+        if(0 != (data &(1<<i)))
+        {
+            // the ith bit is one
+            debug_line(descriptionP1, i + offset);
+        }
+        // else no printout
+    }
+}
+
 void hal_cpu_print_Interrupt_information(void)
 {
     int i = 0;
@@ -472,28 +494,50 @@ void hal_cpu_print_Interrupt_information(void)
     debug_line("NVIC->ISER[1] :%08X", NVIC->ISER[1]);
     debug_line("NVIC->ISER[2] :%08X", NVIC->ISER[2]);
 
+    checkBitsOne( NVIC->ISER[0], 0, "The Interrupt Number %d is enabled");
+    checkBitsOne( NVIC->ISER[1], 32, "The Interrupt Number %d is enabled");
+    checkBitsOne( NVIC->ISER[2], 64, "The Interrupt Number %d is enabled");
+
     debug_line("NVIC->ICER[0] :%08X", NVIC->ICER[0]);
     debug_line("NVIC->ICER[1] :%08X", NVIC->ICER[1]);
     debug_line("NVIC->ICER[2] :%08X", NVIC->ICER[2]);
+
+    checkBitsOne( NVIC->ICER[0], 0, "The Interrupt Number %d is enabled");
+    checkBitsOne( NVIC->ICER[1], 32, "The Interrupt Number %d is enabled");
+    checkBitsOne( NVIC->ICER[2], 64, "The Interrupt Number %d is enabled");
 
     debug_line("NVIC->ISPR[0] :%08X", NVIC->ISPR[0]);
     debug_line("NVIC->ISPR[1] :%08X", NVIC->ISPR[1]);
     debug_line("NVIC->ISPR[2] :%08X", NVIC->ISPR[2]);
 
+    checkBitsOne( NVIC->ISPR[0], 0, "The Interrupt Number %d is pending");
+    checkBitsOne( NVIC->ISPR[1], 32, "The Interrupt Number %d is pending");
+    checkBitsOne( NVIC->ISPR[2], 64, "The Interrupt Number %d is pending");
+
     debug_line("NVIC->ICPR[0] :%08X", NVIC->ICPR[0]);
     debug_line("NVIC->ICPR[1] :%08X", NVIC->ICPR[1]);
     debug_line("NVIC->ICPR[2] :%08X", NVIC->ICPR[2]);
 
+    checkBitsOne( NVIC->ICPR[0], 0, "The Interrupt Number %d is pending");
+    checkBitsOne( NVIC->ICPR[1], 32, "The Interrupt Number %d is pending");
+    checkBitsOne( NVIC->ICPR[2], 64, "The Interrupt Number %d is pending");
 
     debug_line("NVIC->IABR[0] :%08X", NVIC->IABR[0]);
     debug_line("NVIC->IABR[1] :%08X", NVIC->IABR[1]);
     debug_line("NVIC->IABR[2] :%08X", NVIC->IABR[2]);
 
+    checkBitsOne( NVIC->IABR[0], 0, "The Interrupt Number %d is active");
+    checkBitsOne( NVIC->IABR[1], 32, "The Interrupt Number %d is active");
+    checkBitsOne( NVIC->IABR[2], 64, "The Interrupt Number %d is active");
+
+    debug_line("Interrupt priorities (lower number = more important)");
     for(i = 0; i < 240; i++)
     {
         if(0 != NVIC->IP[i])
         {
             debug_line("NVIC->IP[%2d]  :%02X", i, NVIC->IP[i]);
+            // lower 4 bits not used and always zero.
+            debug_line("Interrupt %d has Priority: %d", i, (NVIC->IP[i] >> 4));
         }
     }
 
@@ -509,7 +553,7 @@ void hal_cpu_print_Interrupt_information(void)
         }
         // else empty slot
     }
-    debug_line("%d tasks.", i);
+    debug_line("%d tasks.", numTasks);
 }
 #endif
 
