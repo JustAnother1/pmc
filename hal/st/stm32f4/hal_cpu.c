@@ -45,7 +45,102 @@ static volatile uint32_t now;
 
 static void hal_cpu_start_ms_timer(void);
 #ifdef DEBUG_ACTIVE
-static void checkBitsOne(uint32_t data, int offset, char* descriptionP1);
+
+static char* InterruptNames[] = {
+        /*  0 */ &("Window Watchdog"),
+        /*  1 */ &("PVD"),
+        /*  2 */ &("Tamper - Time Stamp"),
+        /*  3 */ &("RTC Wakeup"),
+        /*  4 */ &("Flash"),
+        /*  5 */ &("RCC"),
+        /*  6 */ &("Exti Line 0"),
+        /*  7 */ &("Exti Line 1"),
+        /*  8 */ &("Exti Line 2"),
+        /*  9 */ &("Exti Line 3"),
+
+        /* 10 */ &("Exti Line 4"),
+        /* 11 */ &("DMA 1 Stream 0"),
+        /* 12 */ &("DMA 1 Stream 1"),
+        /* 13 */ &("DMA 1 Stream 2"),
+        /* 14 */ &("DMA 1 Stream 3"),
+        /* 15 */ &("DMA 1 Stream 4"),
+        /* 16 */ &("DMA 1 Stream 5"),
+        /* 17 */ &("DMA 1 Stream 6"),
+        /* 18 */ &("ADC"),
+        /* 19 */ &("CAN 1 TX"),
+
+        /* 20 */ &("CAN1 RX0"),
+        /* 21 */ &("CAN1 RX1"),
+        /* 22 */ &("CAN1 SCE"),
+        /* 23 */ &("Exti Line 5-9"),
+        /* 24 */ &("Timer 1 Break, Timer 9"),
+        /* 25 */ &("Timer1 Up, Timer 10"),
+        /* 26 */ &("Timer 1 Trig. + Com., Timer 11"),
+        /* 27 */ &("Timer 1 Capture Compare"),
+        /* 28 */ &("Timer 2"),
+        /* 29 */ &("Timer 3"),
+
+        /* 30 */ &("Timer 4"),
+        /* 31 */ &("I2C 1 Event"),
+        /* 32 */ &("I2C 1 Error"),
+        /* 33 */ &("I2C 2 Event"),
+        /* 34 */ &("I2C 2 Error"),
+        /* 35 */ &("SPI 1"),
+        /* 36 */ &("SPI 2"),
+        /* 37 */ &("USART 1"),
+        /* 38 */ &("USART 2"),
+        /* 39 */ &("USART 3"),
+
+        /* 40 */ &("Exti Line 10-15"),
+        /* 41 */ &("RTC Alarm"),
+        /* 42 */ &("USB On-The-Go Wakeup"),
+        /* 43 */ &("Timer 8 Break, Timer 12"),
+        /* 44 */ &("Timer 8 Up, Timer 13"),
+        /* 45 */ &("Timer 8 Trig.+Com., Timer 14"),
+        /* 46 */ &("Timer 8 Capture Compare"),
+        /* 47 */ &("DMA 1 Stream 7"),
+        /* 48 */ &("FSMC"),
+        /* 49 */ &("SDIO"),
+
+        /* 50 */ &("Timer 5"),
+        /* 51 */ &("SPI 3"),
+        /* 52 */ &("UART 4"),
+        /* 53 */ &("UART 5"),
+        /* 54 */ &("Timer 6, DAC"),
+        /* 55 */ &("Timer 7"),
+        /* 56 */ &("DMA 2 Stream 0"),
+        /* 57 */ &("DMA 2 Stream 1"),
+        /* 58 */ &("DMA 2 Stream 2"),
+        /* 59 */ &("DMA 2 Stream 3"),
+
+        /* 60 */ &("DMA 2 Stream 4"),
+        /* 61 */ &("Ethernet"),
+        /* 62 */ &("Ethernet Wakeup"),
+        /* 63 */ &("CAN 2 TX"),
+        /* 64 */ &("CAN 2 RX0"),
+        /* 65 */ &("CAN 2 RX1"),
+        /* 66 */ &("CAN2 SCE"),
+        /* 67 */ &("USB On-The-Go Full Speed"),
+        /* 68 */ &("DMA 2 Stream 5"),
+        /* 69 */ &("DMA 2 Stream 6"),
+
+        /* 70 */ &("DMA 2 Stream 7"),
+        /* 71 */ &("USART 6"),
+        /* 72 */ &("I2C 3 Event"),
+        /* 73 */ &("I2C 3 Error"),
+        /* 74 */ &("USB On-The-Go End Point 1 Out"),
+        /* 75 */ &("USB On-The-Go End Point 1 In"),
+        /* 76 */ &("USB On-The-Go High Speed Wakeup"),
+        /* 77 */ &("USB On-The-Go High Speed"),
+        /* 78 */ &("DCMI"),
+        /* 79 */ &("Crypto"),
+
+        /* 80 */ &("Hash + Random Number Generator"),
+        /* 81 */ &("Floating Point Unit"),
+
+};
+
+static void checkBitsOne(uint32_t data, int offset, char* descriptionP1, char**nameLookUp);
 #endif
 
 static tick_entry  tick_list[MAX_TICK_FUNC];
@@ -469,7 +564,7 @@ void hal_cpu_report_issue(uint32_t issue_number)
 }
 
 #ifdef DEBUG_ACTIVE
-static void checkBitsOne(uint32_t data, int offset, char* descriptionP1)
+static void checkBitsOne(uint32_t data, int offset, char* descriptionP1, char**nameLookUp)
 {
     int i;
     for(i = 0; i < 32; i++)
@@ -478,6 +573,10 @@ static void checkBitsOne(uint32_t data, int offset, char* descriptionP1)
         {
             // the ith bit is one
             debug_line(descriptionP1, i + offset);
+            if(NULL != nameLookUp[i])
+            {
+                debug_line("%d = %s", i + offset, nameLookUp[i + offset]);
+            }
         }
         // else no printout
     }
@@ -494,41 +593,41 @@ void hal_cpu_print_Interrupt_information(void)
     debug_line("NVIC->ISER[1] :%08X", NVIC->ISER[1]);
     debug_line("NVIC->ISER[2] :%08X", NVIC->ISER[2]);
 
-    checkBitsOne( NVIC->ISER[0], 0, "The Interrupt Number %d is enabled");
-    checkBitsOne( NVIC->ISER[1], 32, "The Interrupt Number %d is enabled");
-    checkBitsOne( NVIC->ISER[2], 64, "The Interrupt Number %d is enabled");
+    checkBitsOne( NVIC->ISER[0], 0, "The Interrupt Number %d is enabled", &InterruptNames[0]);
+    checkBitsOne( NVIC->ISER[1], 32, "The Interrupt Number %d is enabled", &InterruptNames[0]);
+    checkBitsOne( NVIC->ISER[2], 64, "The Interrupt Number %d is enabled", &InterruptNames[0]);
 
     debug_line("NVIC->ICER[0] :%08X", NVIC->ICER[0]);
     debug_line("NVIC->ICER[1] :%08X", NVIC->ICER[1]);
     debug_line("NVIC->ICER[2] :%08X", NVIC->ICER[2]);
 
-    checkBitsOne( NVIC->ICER[0], 0, "The Interrupt Number %d is enabled");
-    checkBitsOne( NVIC->ICER[1], 32, "The Interrupt Number %d is enabled");
-    checkBitsOne( NVIC->ICER[2], 64, "The Interrupt Number %d is enabled");
+    checkBitsOne( NVIC->ICER[0], 0, "The Interrupt Number %d is enabled", &InterruptNames[0]);
+    checkBitsOne( NVIC->ICER[1], 32, "The Interrupt Number %d is enabled", &InterruptNames[0]);
+    checkBitsOne( NVIC->ICER[2], 64, "The Interrupt Number %d is enabled", &InterruptNames[0]);
 
     debug_line("NVIC->ISPR[0] :%08X", NVIC->ISPR[0]);
     debug_line("NVIC->ISPR[1] :%08X", NVIC->ISPR[1]);
     debug_line("NVIC->ISPR[2] :%08X", NVIC->ISPR[2]);
 
-    checkBitsOne( NVIC->ISPR[0], 0, "The Interrupt Number %d is pending");
-    checkBitsOne( NVIC->ISPR[1], 32, "The Interrupt Number %d is pending");
-    checkBitsOne( NVIC->ISPR[2], 64, "The Interrupt Number %d is pending");
+    checkBitsOne( NVIC->ISPR[0], 0, "The Interrupt Number %d is pending", &InterruptNames[0]);
+    checkBitsOne( NVIC->ISPR[1], 32, "The Interrupt Number %d is pending", &InterruptNames[0]);
+    checkBitsOne( NVIC->ISPR[2], 64, "The Interrupt Number %d is pending", &InterruptNames[0]);
 
     debug_line("NVIC->ICPR[0] :%08X", NVIC->ICPR[0]);
     debug_line("NVIC->ICPR[1] :%08X", NVIC->ICPR[1]);
     debug_line("NVIC->ICPR[2] :%08X", NVIC->ICPR[2]);
 
-    checkBitsOne( NVIC->ICPR[0], 0, "The Interrupt Number %d is pending");
-    checkBitsOne( NVIC->ICPR[1], 32, "The Interrupt Number %d is pending");
-    checkBitsOne( NVIC->ICPR[2], 64, "The Interrupt Number %d is pending");
+    checkBitsOne( NVIC->ICPR[0], 0, "The Interrupt Number %d is pending", &InterruptNames[0]);
+    checkBitsOne( NVIC->ICPR[1], 32, "The Interrupt Number %d is pending", &InterruptNames[0]);
+    checkBitsOne( NVIC->ICPR[2], 64, "The Interrupt Number %d is pending", &InterruptNames[0]);
 
     debug_line("NVIC->IABR[0] :%08X", NVIC->IABR[0]);
     debug_line("NVIC->IABR[1] :%08X", NVIC->IABR[1]);
     debug_line("NVIC->IABR[2] :%08X", NVIC->IABR[2]);
 
-    checkBitsOne( NVIC->IABR[0], 0, "The Interrupt Number %d is active");
-    checkBitsOne( NVIC->IABR[1], 32, "The Interrupt Number %d is active");
-    checkBitsOne( NVIC->IABR[2], 64, "The Interrupt Number %d is active");
+    checkBitsOne( NVIC->IABR[0], 0, "The Interrupt Number %d is active", &InterruptNames[0]);
+    checkBitsOne( NVIC->IABR[1], 32, "The Interrupt Number %d is active", &InterruptNames[0]);
+    checkBitsOne( NVIC->IABR[2], 64, "The Interrupt Number %d is active", &InterruptNames[0]);
 
     debug_line("Interrupt priorities (lower number = more important)");
     for(i = 0; i < 240; i++)
