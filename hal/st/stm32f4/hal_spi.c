@@ -13,19 +13,21 @@
  *
  */
 
+#include <stdbool.h>
+#include "board_cfg.h"
+#include "hal_cfg.h"
+#include "hal_cpu.h"
+#include "hal_debug.h"
+#include "hal_led.h"
+#include "hal_spi.h"
+#include "hal_time.h"
 #include <st_gpio.h>
 #include <st_rcc.h>
 #include <st_spi.h>
 #include <st_util.h>
-#include "hal_spi.h"
-#include "hal_cpu.h"
-#include <stdbool.h>
-#include "board_cfg.h"
-#include "hal_debug.h"
-#include "hal_cfg.h"
-#include "hal_time.h"
 
-#define TIMEOUT_MS   2
+
+#define TIMEOUT_MS   20
 
 // On the Wire : Most Significant Bit First (CR1)
 // When a master is communicating with SPI slaves which need to be de-selected between
@@ -434,11 +436,12 @@ static void spi_device_IRQ_handler(uint_fast8_t device)
             spi_devices[device].bus->DR = spi_devices[device].send_buffer[spi_devices[device].send_pos];
             spi_devices[device].send_pos++;
         }
-        else if(spi_devices[device].length == spi_devices[device].send_pos)
+        else
         {
             // we send the last byte
             spi_devices[device].bus->CR2 &= ~SPI_CR2_TXEIE;
         }
+        spi_devices[device].bus->CR2 &= ~SPI_CR2_TXEIE;
     }
 }
 
