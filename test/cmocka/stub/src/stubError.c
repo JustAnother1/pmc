@@ -13,22 +13,15 @@
  *
  */
 
-#include "hal_debug.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include "hal_cfg.h"
-#include "lib/printf.h"
+#include "error.h"
 
-static void debug_putc( void* p, char c);
 
-void hal_debug_init(void)
+void error_fatal_error(char* msg)
 {
-    init_printf(NULL, debug_putc);
+
 }
 
-static void debug_putc(void* p, char c)
+void error_signal_error_and_die(void)
 {
-    putc(c, stdout);
-}
 
+}

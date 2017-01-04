@@ -53,7 +53,7 @@ void dev_stepper_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 
 bool dev_stepper_configure_end_stops(uint_fast8_t StepperNumber, uint_fast8_t switch_number, uint_fast8_t min_Max)
 {
-	return true;
+    return true;
 }
 
 void dev_stepper_configure_both_end_stops(uint_fast8_t stepper_number, uint_fast8_t switch_number, uint_fast8_t min_max,
@@ -70,6 +70,11 @@ void dev_stepper_configure_axis_movement_rate(uint_fast8_t stepper_number, uint_
 void dev_stepper_configure_mvmnt_unrun_avoid_para(uint_fast8_t stepper_number,
                                                   uint_fast32_t max_steps,
                                                   uint_fast32_t max_decelleration)
+{
+
+}
+
+void dev_stepper_detectSteppers(void)
 {
 
 }

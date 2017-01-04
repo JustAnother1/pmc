@@ -460,7 +460,7 @@ void USB_FS_IRQ_HANDLER(void)
         num_same++;
         if(10 < num_same)
         {
-            debug_print32(irqs);
+            debug_msg("%08x", irqs);
             num_same = 0;
         }
     }

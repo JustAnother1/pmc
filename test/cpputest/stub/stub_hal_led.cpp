@@ -13,22 +13,54 @@
  *
  */
 
-#include "hal_debug.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include "hal_cfg.h"
-#include "lib/printf.h"
+// Implementation of hal_led_api
 
-static void debug_putc( void* p, char c);
 
-void hal_debug_init(void)
+void hal_init_leds(void)
 {
-    init_printf(NULL, debug_putc);
+
 }
 
-static void debug_putc(void* p, char c)
+
+void hal_toggle_debug_led(void)
 {
-    putc(c, stdout);
+
 }
+
+void hal_set_debug_led(bool on)
+{
+
+}
+
+void hal_toggle_error_led(void)
+{
+
+}
+
+void hal_set_error_led(bool on)
+{
+
+}
+
+void hal_toggle_isr1_led(void)
+{
+
+}
+
+void hal_set_isr1_led(bool on)
+{
+
+}
+
+void hal_toggle_isr2_led(void)
+{
+
+}
+
+void hal_set_isr2_led(bool on)
+{
+
+}
+
+
 

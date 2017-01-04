@@ -13,22 +13,7 @@
  *
  */
 
-#include "hal_debug.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include "hal_cfg.h"
-#include "lib/printf.h"
 
-static void debug_putc( void* p, char c);
+#define static
 
-void hal_debug_init(void)
-{
-    init_printf(NULL, debug_putc);
-}
-
-static void debug_putc(void* p, char c)
-{
-    putc(c, stdout);
-}
-
+#include "step.c"

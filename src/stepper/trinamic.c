@@ -637,19 +637,19 @@ void trinamic_configure_steppers(uint_fast8_t num_steppers)
     {
         hal_cpu_report_issue(14);
     }
-    if(false == hal_do_stepper_spi_transaction(&cfg_data[CHOPCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+    else if(false == hal_do_stepper_spi_transaction(&cfg_data[CHOPCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
     {
         hal_cpu_report_issue(15);
     }
-    if(false == hal_do_stepper_spi_transaction(&cfg_data[SMARTEN] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+    else if(false == hal_do_stepper_spi_transaction(&cfg_data[SMARTEN] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
     {
         hal_cpu_report_issue(16);
     }
-    if(false == hal_do_stepper_spi_transaction(&cfg_data[SGCSCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+    else if(false == hal_do_stepper_spi_transaction(&cfg_data[SGCSCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
     {
         hal_cpu_report_issue(17);
     }
-    if(false == hal_do_stepper_spi_transaction(&cfg_data[DRVCONF] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+    else if(false == hal_do_stepper_spi_transaction(&cfg_data[DRVCONF] [20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
     {
         hal_cpu_report_issue(18);
     }

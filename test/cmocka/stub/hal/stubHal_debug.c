@@ -22,14 +22,3 @@
 void hal_debug_init(void)
 {
 }
-
-void debug_print32(uint32_t num)
-{
-
-}
-
-void debug_printChar(char c)
-{
-
-}
-

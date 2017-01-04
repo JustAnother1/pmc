@@ -16,6 +16,9 @@ CPPUTEST_TEST_SRCS  += cpputest/stub/stub_st_util.cpp
 CPPUTEST_TEST_SRCS  += cpputest/stub/stub_arm_c4.cpp
 CPPUTEST_TEST_SRCS  += cpputest/stub/stub_hal_cpu.cpp
 CPPUTEST_TEST_SRCS  += cpputest/stub/stub_hw_registers.cpp
+CPPUTEST_TEST_SRCS  += cpputest/stub/stub_hal_led.cpp
+CPPUTEST_TEST_SRCS  += cpputest/stub/stub_src_lib_printf.cpp
+# test suite
 CPPUTEST_TEST_SRCS  += cpputest/AllTests.cpp
 
 

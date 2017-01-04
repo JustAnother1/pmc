@@ -26,8 +26,6 @@
 #define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
 
 void hal_debug_init(void);
-void debug_print32(uint32_t num);
-void debug_printChar(char c);
 #else
 #define debug_msg(...)
 #define debug_line(...)

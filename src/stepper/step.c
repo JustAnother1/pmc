@@ -24,22 +24,6 @@
 #include "trinamic.h"
 
 
-#define STEP_CHUNK_SIZE             10
-#define STEP_BUFFER_SIZE            10 * STEP_CHUNK_SIZE
-
-#define SLOT_TYPE_EMPTY             0
-#define SLOT_TYPE_DELAY             1
-#define SLOT_TYPE_BASIC_LINEAR_MOVE 2
-
-#define MOVE_PHASE_ACCELLERATE      0
-#define MOVE_PHASE_CONSTANT_SPEED   1
-#define MOVE_PHASE_DECELERATE       2
-// Timer runs on 12 MHz clock.
-#define TICKS_PER_SECOND            (12*1000*1000)
-#define STEP_TIME_ONE_MS            (TICKS_PER_SECOND/1000)
-#define REFILL_BUFFER_RELOAD        3000
-
-
 static void caclculate_basic_move_chunk(uint_fast8_t num_slots);
 static uint_fast16_t get_reload_primary_axis(void);
 static void get_steps_for_this_phase(float factor);
@@ -58,8 +42,8 @@ static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value);
 
 // Step Timer
 static volatile bool step_timer_running;
-static volatile uint_fast8_t step_pos = 0;
-static volatile uint_fast8_t stop_pos = 0;
+static volatile uint_fast8_t read_pos = 0;
+static volatile uint_fast8_t write_pos = 0;
 
 // step buffer timer
 static volatile bool buffer_timer_running;
@@ -158,42 +142,41 @@ static uint_fast16_t speed_reloads[256] ={
 
 
 /*
-
- How this works:
-
- We use two Interrupt service routines. Both are connected to a timer. The
- step_isr() is high priority. the refill_step_buffer() is low priority.
- step_isr() will happen more often than refill_step_buffer().
-
- The cmd_queue_tick() function checks the queued commands. If there is something
- in the Queue cmd_queue_tick() will take it out. If that has been a move then it
- will try to add that move to the queue(max length = 1) inside this file.
-
- If it was a queued command but not a move then this command is either executed
- directly if there is no movement ongoing. Or if a move is happening then a tag
- is set at this position in the queue. And the non move command is put in the
- nonmove queue. Once the movement before the tag has been executed a flag is
- set to signal that the marked position has been reached. cmd_queue_tick()
- checks that flag. once it has been set the queued commands in the nonmove queue
- are executed.
-
- If cmd_queue_tick() has put something into the internal queue then this will
- also start the refill_step_buffer()'s timer and the step_isr()'s timer. That
- causes refill_step_buffer() and the step_isr() to execute.
-
- refill_step_buffer() will take the move data and calculate the times when the
- steps need to happen. It will store the calculated values in the
- variables[STEP_BUFFER_SIZE]. It will try to fill that buffer.
-
- Once the variables[STEP_BUFFER_SIZE] have been filled the step_isr() will
- execute the steps, by writing the calculated values out to the port pins. It
- will sleep between the Steps for the times specified.
-
+ * How this works:
+ *
+ * We use two Interrupt service routines. Both are connected to a timer. The
+ * step_isr() is high priority. the refill_step_buffer() is low priority.
+ * step_isr() will happen more often than refill_step_buffer().
+ *
+ * The cmd_queue_tick() function checks the queued commands. If there is
+ * something in the Queue cmd_queue_tick() will take it out. If that has been a
+ * move then it will try to add that move to the queue(max length = 1) inside
+ * this file.
+ *
+ * If it was a queued command but not a move then this command is either
+ * executed directly if there is no movement ongoing. Or if a move is happening
+ * then a tag is set at this position in the queue. And the non move command is
+ * put in the nonmove queue. Once the movement before the tag has been executed
+ * a flag is set to signal that the marked position has been reached.
+ * cmd_queue_tick() checks that flag. once it has been set the queued commands
+ * in the nonmove queue are executed.
+ *
+ * If cmd_queue_tick() has put something into the internal queue then this will
+ * also start the refill_step_buffer()'s timer and the step_isr()'s timer. That
+ * causes refill_step_buffer() and the step_isr() to execute.
+ *
+ * refill_step_buffer() will take the move data and calculate the times when the
+ * steps need to happen. It will store the calculated values in the
+ * variables[STEP_BUFFER_SIZE]. It will try to fill that buffer.
+ *
+ * Once the variables[STEP_BUFFER_SIZE] have been filled the step_isr() will
+ * execute the steps, by writing the calculated values out to the port pins. It
+ * will sleep between the Steps for the times specified.
  */
 static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 {
-    debug_line("Step ISR");
-    if(step_pos == stop_pos)
+    // debug_line("Step ISR");
+    if(read_pos == write_pos)
     {
         // we are done nothing more to do
         // -> disable Interrupt Stop Timer
@@ -203,7 +186,7 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
     else
     {
 #ifdef USE_STEP_DIR
-        hal_stepper_set_Output(next_step[step_pos]);
+        hal_stepper_set_Output(next_step[read_pos]);
 #else
         int i;
         uint_fast8_t mask;
@@ -222,10 +205,10 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
             case 7: mask = 0x80; break;
             }
 
-            if(0 != (move_on_axis[step_pos] & mask))
+            if(0 != (move_on_axis[read_pos] & mask))
             {
                 // step on this axis
-                if(0 != (next_direction[step_pos] & mask))
+                if(0 != (next_direction[read_pos] & mask))
                 {
                     trinamic_make_step_using_SPI(i, true);
                 }
@@ -238,11 +221,11 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
             // A delay is just a move that has no steps on all axis.
         }
 #endif
-        hal_time_set_timer_reload(STEP_TIMER, next_reload[step_pos]);
-        step_pos++;
-        if(step_pos == STEP_BUFFER_SIZE)
+        hal_time_set_timer_reload(STEP_TIMER, next_reload[read_pos]);
+        read_pos++;
+        if(read_pos == STEP_BUFFER_SIZE)
         {
-            step_pos = 0;
+            read_pos = 0;
         }
     }
 }
@@ -251,19 +234,18 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
 
 static uint_fast8_t get_number_of_free_slots(void)
 {
-    // The slot stop_pos can not be used ! -> no data in buffer stop_pos = step_pos
     uint_fast8_t free_slots;
-    if(stop_pos > step_pos)
+    if(write_pos > read_pos)
     {
-        free_slots = STEP_BUFFER_SIZE - (stop_pos - step_pos) - 1;
+        free_slots = STEP_BUFFER_SIZE - (write_pos - read_pos);
     }
-    else if(stop_pos == step_pos)
+    else if(write_pos == read_pos)
     {
         free_slots = STEP_BUFFER_SIZE;
     }
-    else // stop_pos < step_pos
+    else // write_pos < read_pos
     {
-        free_slots = step_pos - (stop_pos + 1);
+        free_slots = read_pos - write_pos;
     }
     return free_slots;
 }
@@ -271,7 +253,7 @@ static uint_fast8_t get_number_of_free_slots(void)
 static void finished_cur_slot(void)
 {
     busy = false;
-    reached_tag = true;
+    reached_tag = true; // TODO check
     cur_slot_type = SLOT_TYPE_EMPTY;
 }
 
@@ -298,7 +280,7 @@ static void finished_cur_slot(void)
  */
 static void refill_step_buffer(void)
 {
-    debug_line("Buffer ISR");
+    // debug_line("Buffer ISR");
     uint_fast8_t free_slots = get_number_of_free_slots();
     if(free_slots > STEP_CHUNK_SIZE)
     {
@@ -310,7 +292,7 @@ static void refill_step_buffer(void)
     if(false == step_timer_running)
     {
         // if we have some steps then start the timer
-        if(step_pos != stop_pos)
+        if(read_pos != write_pos)
         {
             if(false == hal_time_start_timer(STEP_TIMER,
                                              TICKS_PER_SECOND,
@@ -374,16 +356,16 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
                 return;
             }
 #ifdef USE_STEP_DIR
-            next_step[stop_pos] = cur_step;
+            next_step[write_pos] = cur_step;
 #else
-            move_on_axis[stop_pos] = 0;
-            next_direction[stop_pos] = 0;
+            move_on_axis[write_pos] = 0;
+            next_direction[write_pos] = 0;
 #endif
-            next_reload[stop_pos] = STEP_TIME_ONE_MS;
-            stop_pos ++;
-            if(stop_pos == STEP_BUFFER_SIZE)
+            next_reload[write_pos] = STEP_TIME_ONE_MS;
+            write_pos ++;
+            if(write_pos == STEP_BUFFER_SIZE)
             {
-                stop_pos = 0;
+                write_pos = 0;
             }
         }
     }
@@ -564,15 +546,15 @@ static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time)
     {
         uint_fast16_t half_reload = reload_time /2;
         reload_time = reload_time - half_reload;
-        next_step[stop_pos] = (0x00ff & last_step) | (0xff00 & cur_step);
-        next_reload[stop_pos] = half_reload;
-        stop_pos ++;
-        if(stop_pos == STEP_BUFFER_SIZE)
+        next_step[write_pos] = (0x00ff & last_step) | (0xff00 & cur_step);
+        next_reload[write_pos] = half_reload;
+        write_pos ++;
+        if(write_pos == STEP_BUFFER_SIZE)
         {
-            stop_pos = 0;
+            write_pos = 0;
         }
     }
-    next_step[stop_pos] = cur_step;
+    next_step[write_pos] = cur_step;
 #else
     uint_fast8_t axis_mask = 0;
     switch(i)
@@ -587,16 +569,16 @@ static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time)
     case 6: axis_mask = 0x40; break;
     case 7: axis_mask = 0x80; break;
     }
-    move_on_axis[stop_pos] |= axis_mask;
-    next_direction[stop_pos] = 0;
+    move_on_axis[write_pos] |= axis_mask;
+    next_direction[write_pos] = 0;
 #endif
     steps_already_made[i]++;
     // write values out
-    next_reload[stop_pos] = reload_time;
-    stop_pos ++;
-    if(stop_pos == STEP_BUFFER_SIZE)
+    next_reload[write_pos] = reload_time;
+    write_pos ++;
+    if(write_pos == STEP_BUFFER_SIZE)
     {
-        stop_pos = 0;
+        write_pos = 0;
     }
 }
 
@@ -645,7 +627,14 @@ void step_init(uint_fast8_t num_stepper)
     cur_slot_type = SLOT_TYPE_EMPTY;
     busy = false;
     delay_ms = 0;
-    available_steppers = num_stepper;
+    if(num_stepper < MAX_NUMBER)
+    {
+        available_steppers = num_stepper;
+    }
+    else
+    {
+        available_steppers = MAX_NUMBER;
+    }
     buffer_timer_running = false;
     step_timer_running = false;
     for(i = 0; i < STEP_BUFFER_SIZE; i++)
@@ -702,6 +691,7 @@ static void auto_activate_usedAxis(void)
 
 bool step_add_basic_linear_move(uint_fast8_t *move_data)
 {
+    debug_line("Adding Basic Linear Move!");
     bool eight_Bit_Steps;
     uint_fast8_t offset;
     uint_fast8_t i;
@@ -958,8 +948,8 @@ void step_print_state(void)
     {
         debug_line("not running");
     }
-    debug_line("Step Position : %d", step_pos);
-    debug_line("Stop Position : %d", stop_pos);
+    debug_line("Step Position : %d", read_pos);
+    debug_line("Stop Position : %d", write_pos);
 
     debug_msg("Buffer Timer : ");
     if(true == buffer_timer_running)

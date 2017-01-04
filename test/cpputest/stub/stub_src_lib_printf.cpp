@@ -13,22 +13,27 @@
  *
  */
 
-#include "hal_debug.h"
-#include <stdbool.h>
-#include <stdio.h>
 #include <stdarg.h>
-#include "hal_cfg.h"
-#include "lib/printf.h"
 
-static void debug_putc( void* p, char c);
-
-void hal_debug_init(void)
+void init_printf(void* putp,void (*putf) (void*,char))
 {
-    init_printf(NULL, debug_putc);
+
 }
 
-static void debug_putc(void* p, char c)
+void tfp_printf(char *fmt, ...)
 {
-    putc(c, stdout);
+
 }
+
+void tfp_sprintf(char* s,char *fmt, ...)
+{
+
+}
+
+void tfp_format(void* putp,void (*putf) (void*,char),char *fmt, va_list va)
+{
+
+}
+
+
 

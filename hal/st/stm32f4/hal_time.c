@@ -397,7 +397,7 @@ bool hal_time_start_timer(uint_fast8_t device,
                           TimerFkt function)
 {
     TIM_TypeDef* timer = get_timer_register_for(device);
-    debug_line("Start timer %d", device);
+    debug_line("Start timer %d (%x)", device, function);
     if((NULL == timer) || (0 == clock))
     {
         return false;

@@ -415,7 +415,7 @@ static void printMemory(uint8_t* buf, uint32_t length)
         {
             if(isalpha(*(buf + i)))
             {
-                debug_printChar(*(buf + i));
+                debug_msg("%s", *(buf + i));
             }
             else
             {
@@ -826,7 +826,8 @@ static void parse_order(int length)
         case 'c':
             // scan for number of Steppers
             trinamic_init(); // make sure that the SPI Interface to the Trinamic chips is initialized.
-            debug_line("Detected %d Steppers !", trinamic_detect_number_of_steppers());
+            dev_stepper_detectSteppers();  // re scan steppers
+            debug_line("Detected %d Steppers !", dev_stepper_get_count());
             break;
 
         default:

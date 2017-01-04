@@ -35,13 +35,23 @@ typedef struct {
     volatile SPI_TypeDef * bus;
 }spi_device_typ;
 
-extern spi_device_typ devices[MAX_SPI];
+extern spi_device_typ spi_devices[MAX_SPI];
 extern bool stepper_initialized;
 extern bool expansion_initialized;
 
 TEST_GROUP(HalStSpiTestGroup)
 {
+       void setup()
+       {
+           SPI2_BASE.CR1 = 23;
+           spi_devices[0].bus = &SPI1_BASE;
+           spi_devices[1].bus = &SPI2_BASE;
+       }
 
+       void teardown()
+       {
+          // Uninit stuff
+       }
 };
 
 TEST(HalStSpiTestGroup, hal_print_stepper_spi_configuration)

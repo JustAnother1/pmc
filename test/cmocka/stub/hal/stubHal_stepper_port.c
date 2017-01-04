@@ -13,22 +13,15 @@
  *
  */
 
-#include "hal_debug.h"
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include "hal_cfg.h"
-#include "lib/printf.h"
+#include "hal_stepper_port.h"
 
-static void debug_putc( void* p, char c);
-
-void hal_debug_init(void)
+void hal_stepper_port_init(void)
 {
-    init_printf(NULL, debug_putc);
+
 }
 
-static void debug_putc(void* p, char c)
+void hal_stepper_set_Output(uint32_t value)
 {
-    putc(c, stdout);
+
 }
 

@@ -326,6 +326,7 @@ static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_
     }
     if(0 == length)
     {
+        // another job well done !
         return true;
     }
     if(!(device < MAX_UART))
