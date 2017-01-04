@@ -1,7 +1,7 @@
 #compile tests
 $(TEST_BIN_FOLDER)%.o: test/%.cpp
 	@$(MKDIR_P) $(@D)
-	$(CPP) -c $(CPPFLAGS) $(CPPUTEST_TEST_INCDIRS) $< -o $@
+	$(CPP) -c $(CPPFLAGS) $(DDEFS) $(CPPUTEST_TEST_INCDIRS) $< -o $@
 
 # link tests
 $(TEST_BIN_FOLDER)cpputest/allTests : $(CPPUTEST_TEST_OBJS)
@@ -12,4 +12,4 @@ cpputest_test: clean $(TEST_BIN_FOLDER)cpputest/allTests
 	@echo ""
 	@echo "Now running the tests"
 	@echo "====================="
-	@$(TEST_BIN_FOLDER)cpputest/allTests -c -v
+	@$(TEST_BIN_FOLDER)cpputest/allTests -v
