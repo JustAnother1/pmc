@@ -12,5 +12,5 @@ $(TEST_BIN_FOLDER)cmocka/src/stepper/test_step : $(CMOCKA_SRC_STEPPER_STEP_OBJS)
 
 # execute tests
 cmocka_test: clean $(TEST_BIN_FOLDER)cmocka/src/debug/test_debug $(TEST_BIN_FOLDER)cmocka/src/stepper/test_step
-	$(TEST_BIN_FOLDER)cmocka/src/debug/test_debug
-	$(TEST_BIN_FOLDER)cmocka/src/stepper/test_step
+	CMOCKA_XML_FILE=cm_debug.xml $(TEST_BIN_FOLDER)cmocka/src/debug/test_debug
+	CMOCKA_XML_FILE=cm_step.xml $(TEST_BIN_FOLDER)cmocka/src/stepper/test_step

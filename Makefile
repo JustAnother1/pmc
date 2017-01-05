@@ -19,14 +19,16 @@ include cfg/system.mk
 include cfg/files.mk
 include test/test_cfg.mk
 
-# Define optimisation level here -O3 or -O0 for no optimisation
+# Define optimisation level here -O3 for best or -O0 for no optimisation
 OPT += -O3
 OPT += -ffunction-sections
 OPT += -fdata-sections 
 # coverage
-#OPT += -ftest-coverage
-#OPT += -fprofile-arcs
+ifeq ($(JENKINS),yes)
+OPT += -ftest-coverage
+OPT += -fprofile-arcs
 #LDFLAGS += -lgcov
+endif
 CFLAGS += $(OPT)
 # -g: produce debugging information 
 CFLAGS += -g
@@ -121,7 +123,7 @@ directories:
 clean:
 	-rm -rf $(TEST_BIN_FOLDER)
 	-rm -rf $(BIN_FOLDER)
-	
+
 list:
 	@echo " READ -> $(BIN_FOLDER)$(PROJECT).rd"
 	@arm-none-eabi-readelf -Wall $(BIN_FOLDER)$(PROJECT).elf > $(BIN_FOLDER)$(PROJECT).rd
