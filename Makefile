@@ -27,6 +27,8 @@ OPT += -fdata-sections
 ifeq ($(JENKINS),yes)
 OPT += -ftest-coverage
 OPT += -fprofile-arcs
+CPPFLAGS += -ftest-coverage
+CPPFLAGS += -fprofile-arcs
 LDFLAGS += -ftest-coverage
 LDFLAGS += -fprofile-arcs
 LIB += -lgcov
@@ -56,7 +58,6 @@ LDFLAGS += -nostdinc
 
 LDFLAGS += -g
 LDFLAGS += -Wall
-LDFLAGS += $(LIB)
 
 # preparing the variables
 INCDIR = $(patsubst %,-I%, $(INCDIRS))
