@@ -27,7 +27,9 @@ OPT += -fdata-sections
 ifeq ($(JENKINS),yes)
 OPT += -ftest-coverage
 OPT += -fprofile-arcs
-#LDFLAGS += -lgcov
+LDFLAGS += -ftest-coverage
+LDFLAGS += -fprofile-arcs
+LIB += -lgcov
 endif
 CFLAGS += $(OPT)
 # -g: produce debugging information 
