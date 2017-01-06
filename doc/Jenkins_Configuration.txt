@@ -1,0 +1,61 @@
+Jenkins
+=======
+
+Jenkins is a continuous Integration (CI) server. This file documents the settings used to test pacemaker.
+
+pmc
+===
+Description:
+Project for Pacemaker Client (C) software.
+
+Type: Multiconfig
+
+User Axis:
+Name: Board
+Values: pipy linux stm407disco
+
+Name: Debug
+Values: yes no
+
+Build:
+execute Shell:
+make all ACTIVATE_DEBUG=$Debug BOARD=$Board
+cppcheck -j 4 --enable=all --inconclusive --xml --xml-version=2 src hal 2> cppcheck.xml
+
+Post Build:
+Compiler Warnings: Gnu Make + gcc
+publish Cppcheck Results: cppcheck.xml
+
+
+pmc-cmocka
+==========
+Description:
+Unit Tests for pmc with unit test framework cmocka (cmocka.org).
+
+Build:
+executeShell:
+export CMOCKA_MESSAGE_OUTPUT=XML
+export CMOCKA_XML_FILE=cm_g.xml
+make cmocka_test JENKINS=yes
+gcovr -k -r . -x --gcov-exclude=test.* -o gcovr.report
+
+Post Build:
+Compiler Warnings: Gnu Make + gcc
+JUnit: *.xml
+Cobertura: gcovr.report
+
+
+pmc_CppUTest
+============
+Description:
+Unit Test for pmc using the Unit test framework CppUtest.
+
+Build:
+executeShell:
+make cpputest_test JENKINS=yes
+gcovr -k -r . -x --gcov-exclude=test.* -o gcovr.report
+
+Post Build:
+Compiler Warnings: Gnu Make + gcc
+JUnit: *.xml
+Cobertura: gcovr.report

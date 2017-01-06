@@ -1,0 +1,47 @@
+GDB Server
+==========
+
+st-util == gdb server :4242
+
+~/git/stlink/build $ ./st-util --h
+./st-util - usage:
+
+  -h, --help        Print this help
+  -vXX, --verbose=XX    Specify a specific verbosity level (0..99)
+  -v, --verbose        Specify generally verbose logging
+  -s X, --stlink_version=X
+            Choose what version of stlink to use, (defaults to 2)
+  -1, --stlinkv1    Force stlink version 1
+  -p 4242, --listen_port=1234
+            Set the gdb server listen port. (default port: 4242)
+  -m, --multi
+            Set gdb server to extended mode.
+            st-util will continue listening for connections after disconnect.
+  -n, --no-reset
+            Do not reset board on connection.
+  --semihosting
+            Enable semihosting support.
+
+The STLINKv2 device to use can be specified in the environment
+variable STLINK_DEVICE on the format <USB_BUS>:<USB_ADDR>.
+
+
+Eclipse Debug Configuration:
+============================
+
+New Configuration under "C/C++ Remote Application"
+
+Using GDB (DSF) _Manual_ Remote Debugging Launcher
+
+Main:
+C/C++ Application : /home/lars/git/pmc/bin/pmc.elf
+Disable Auto build
+
+Debug:
+X Stop on Startup at: main
+Main:
+GDB Debugger: /home/lars/bin/arm-none-eabi-gdb
+Connection:
+Type: TCP
+Host name or IP address: localhost
+Port Number: 4242

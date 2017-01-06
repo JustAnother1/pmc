@@ -23,11 +23,11 @@ The firmware can be build using make. The generated Files will be placed in the 
 for this to work you (obviously) need to have make installed.
 Depending on the target you are building for you might need to have additionaltools installed:
 
-- For linux (Posix systems) you need pthreads and gcc.
+- For linux (Posix systems) you need pthreads and gcc. You can debug using gdb.
 - To build for ARM Cortex-M Targets you need https://launchpad.net/gcc-arm-embedded[GCC ARM Embedded]
 - for automatic generated documentation you need http://www.stack.nl/~dimitri/doxygen/[Doxygen]
-- for unit testing you need https://cmocka.org/[cmocka]
-- for flashing the target you need https://github.com/texane/stlink[stlink]
+- for unit testing you need https://cmocka.org/[cmocka] and/or https://cpputest.github.io/[CppUTest]
+- for programming the flash and debugging the STM32 chips you need https://github.com/texane/stlink[stlink]
 
 License
 -------

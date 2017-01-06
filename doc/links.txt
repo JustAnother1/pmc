@@ -1,0 +1,29 @@
+GNU ARM Eclipse (OpenOCD Plugin)
+http://gnuarmeclipse.livius.net/blog/openocd-debugging/
+
+GNU Tools for ARM Embedded Processors (gcc, gdb,..)
+https://launchpad.net/gcc-arm-embedded/+download
+
+STM32F4DISCOVERY (cheap dev board including Debugger)
+http://www.st.com/web/catalog/tools/FM116/SC959/SS1532/LN1848/PF252419
+
+Processor Data Sheet
+http://www.st.com/web/catalog/mmc/FM141/SC1169/SS1577/LN1035/PF252142
+
+Reference Manual
+http://www.st.com/web/en/resource/technical/document/reference_manual/DM00031020.pdf
+
+Programming Manual
+http://www.st.com/web/en/resource/technical/document/programming_manual/DM00046982.pdf
+
+USB Standard
+http://www.usb.org/developers/docs/usb20_docs/
+
+
+Temperature Sensors:
+https://arduinodiy.wordpress.com/2015/11/10/measuring-temperature-with-ntc-the-steinhart-hart-formula/
+https://learn.adafruit.com/thermistor/using-a-thermistor
+http://home.roboticlab.eu/de/examples/sensor/thermistor
+http://www.daycounter.com/Calculators/Steinhart-Hart-Thermistor-Calculator.phtml
+https://en.wikipedia.org/wiki/Steinhart%E2%80%93Hart_equation
+
