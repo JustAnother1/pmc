@@ -33,7 +33,6 @@ extern volatile bool buffer_timer_running;
 
 // step queue
 extern volatile bool busy;
-extern volatile bool reached_tag;
 extern volatile uint_fast8_t cur_slot_type;
 // to handle delays:
 extern volatile uint_fast16_t delay_ms;
@@ -111,11 +110,9 @@ static void test_get_number_of_free_slots(void **state)
 static void test_finished_cur_slot(void **state)
 {
     busy = true;
-    reached_tag = false;
     cur_slot_type = SLOT_TYPE_DELAY;
     finished_cur_slot();
     assert_false(busy);
-    assert_true(reached_tag);
     assert_int_equal(SLOT_TYPE_EMPTY, cur_slot_type);
 }
 
