@@ -136,9 +136,7 @@ static void test_finished_cur_slot(void **state)
 // // returns FALSE when ready for the next move
 // bool step_is_busy(void);
 // bool step_add_basic_linear_move(uint_fast8_t *move_data);
-// bool step_add_delay(uint_fast8_t msb,uint_fast8_t lsb);
-// void step_request_tag(void);
-// bool step_has_reached_tag(void);
+// bool step_add_delay(uint_fast16_t ms);
 // void step_disable_all_motors(void);
 // void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off);
 

@@ -35,6 +35,7 @@ static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time);
 static void auto_activate_usedAxis(void);
 static void step_isr(void);
 static void refill_step_buffer(void);
+static void increment_write_pos(void);
 #ifdef USE_STEP_DIR
 static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value);
 #else
@@ -50,7 +51,6 @@ static volatile bool buffer_timer_running;
 
 // step queue
 static volatile bool busy;
-static volatile bool reached_tag;
 static volatile uint_fast8_t cur_slot_type;
 // to handle delays:
 static volatile uint_fast16_t delay_ms;
@@ -58,7 +58,7 @@ static volatile uint_fast16_t delay_ms;
 static volatile uint_fast16_t active_axes_map;
 static volatile uint_fast8_t primary_axis;
 static bool is_a_homing_move;
-static uint_fast8_t direction_for_move;
+static uint_fast8_t direction_for_move;  // bitmap
 static volatile uint_fast8_t start_speed;
 static volatile float start_speed_ticks;
 static volatile uint_fast8_t nominal_speed;
@@ -75,31 +75,19 @@ static volatile uint_fast32_t curTime;
 static volatile float speed_increse_acc_tick;
 static volatile float speed_decrese_decel_tick;
 
-
-
 // enable / disable Stepper
 static uint_fast8_t available_steppers;
 static bool enabled[MAX_NUMBER];
 
-
-
 #ifdef USE_STEP_DIR
 static volatile uint32_t next_step[STEP_BUFFER_SIZE];
 static volatile uint32_t cur_step;
-static volatile uint_fast8_t last_direction_axis;
+static volatile uint_fast8_t last_direction_axis; // bitmap
 #else
 static volatile uint_fast8_t move_on_axis[STEP_BUFFER_SIZE];
 static volatile uint_fast8_t next_direction[STEP_BUFFER_SIZE];
 #endif
 static volatile uint_fast16_t next_reload[STEP_BUFFER_SIZE];
-
-/*
-static uint_fast8_t start_speed;
-
-static uint_fast16_t next_move_on_axis_in[MAX_NUMBER];
-*/
-
-
 
 // 16bit Timer running at 12MHz
 static uint_fast16_t speed_reloads[256] ={
@@ -139,7 +127,6 @@ static uint_fast16_t speed_reloads[256] ={
          319,   317,   316,   315,   314,   312,   311,   310,
          308,   307,   306,   305,   304,   302,   301,   300
 };
-
 
 /*
  * How this works:
@@ -230,7 +217,61 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
     }
 }
 
-// TODO deal with more than one axis
+static void refill_step_buffer(void)
+{
+    // debug_line("Buffer ISR");
+    uint_fast8_t free_slots = get_number_of_free_slots();
+    if(free_slots > STEP_CHUNK_SIZE)
+    {
+        // calculate next chunk
+        calculate_step_chunk(STEP_CHUNK_SIZE);
+    }
+
+    // check if we need to restart the step timer
+    if(false == step_timer_running)
+    {
+        // if we have some steps then start the timer
+        if(read_pos != write_pos)
+        {
+            if(false == hal_time_start_timer(STEP_TIMER,
+                                             TICKS_PER_SECOND,
+                                             5,
+                                             &step_isr))
+            {
+                error_fatal_error("Failed to start step Timer !");
+            }
+            step_timer_running = true;
+        }
+        // else nothing to do for the step timer -> no need to start it
+    }
+
+    // start this timer if not already running -> first move after pause in movement
+    if(false == buffer_timer_running)
+    {
+        // but only if we have something to do
+        if(SLOT_TYPE_EMPTY != cur_slot_type)
+        {
+            if(false == hal_time_start_timer(STEP_BUFFER_TIMER,
+                                             TICKS_PER_SECOND,
+                                             REFILL_BUFFER_RELOAD,
+                                             &refill_step_buffer))
+            {
+                error_fatal_error("Failed to start stepBuffer Timer !");
+            }
+            buffer_timer_running = true;
+        }
+        // else nothing more to do -> no need to start this timer.
+    }
+    else
+    {
+        // stop this timer if we have nothing to do
+        if(SLOT_TYPE_EMPTY == cur_slot_type)
+        {
+            hal_time_stop_timer(STEP_BUFFER_TIMER);
+            buffer_timer_running = false;
+        }
+    }
+}
 
 static uint_fast8_t get_number_of_free_slots(void)
 {
@@ -253,84 +294,15 @@ static uint_fast8_t get_number_of_free_slots(void)
 static void finished_cur_slot(void)
 {
     busy = false;
-    reached_tag = true; // TODO check
     cur_slot_type = SLOT_TYPE_EMPTY;
 }
 
-/*
-                    +-----+
- STEP_BUFFER_SIZE - |     |<- already used data - free
-                    +-----+
-                    | ... |<- already used data - free
-                    +-----+
-                    |     |<- stop_pos - free - will be filled next
-                    +-----+
-                    | ... |<- valid data
-                    +-----+
-                    |     |<- step_pos  - data that will now be used
-                    +-----+
-                2 - | ... |<- already used data - free
-                    +-----+
-                1 - | ... |<- already used data - free
-                    +-----+
-                0 - |     |<- already used data - free
-                    +-----+
-
-
- */
-static void refill_step_buffer(void)
+static void increment_write_pos(void)
 {
-    // debug_line("Buffer ISR");
-    uint_fast8_t free_slots = get_number_of_free_slots();
-    if(free_slots > STEP_CHUNK_SIZE)
+    write_pos ++;
+    if(write_pos == STEP_BUFFER_SIZE)
     {
-        // calculate next chunk
-        calculate_step_chunk(STEP_CHUNK_SIZE);
-    }
-
-    // check if we need to restart the step timer
-    if(false == step_timer_running)
-    {
-        // if we have some steps then start the timer
-        if(read_pos != write_pos)
-        {
-            if(false == hal_time_start_timer(STEP_TIMER,
-                                             TICKS_PER_SECOND,
-                                             5,
-                                             &step_isr))
-            {
-                error_fatal_error("Failed to start Timer !");
-            }
-            step_timer_running = true;
-        }
-        // else nothing to do for the step timer -> no need to start it
-    }
-
-    // start this timer if not already running -> first move after pause in movement
-    if(false == buffer_timer_running)
-    {
-        // but only if we have something to do
-        if(SLOT_TYPE_EMPTY != cur_slot_type)
-        {
-            if(false == hal_time_start_timer(STEP_BUFFER_TIMER,
-                                             TICKS_PER_SECOND,
-                                             REFILL_BUFFER_RELOAD,
-                                             &refill_step_buffer))
-            {
-                error_fatal_error("Failed to start Timer !");
-            }
-            buffer_timer_running = true;
-        }
-        // else nothing more to do -> no need to start this timer.
-    }
-    else
-    {
-        // stop this timer if we have nothing to do
-        if(SLOT_TYPE_EMPTY == cur_slot_type)
-        {
-            hal_time_stop_timer(STEP_BUFFER_TIMER);
-            buffer_timer_running = false;
-        }
+        write_pos = 0;
     }
 }
 
@@ -362,11 +334,7 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
             next_direction[write_pos] = 0;
 #endif
             next_reload[write_pos] = STEP_TIME_ONE_MS;
-            write_pos ++;
-            if(write_pos == STEP_BUFFER_SIZE)
-            {
-                write_pos = 0;
-            }
+            increment_write_pos();
         }
     }
     else if(SLOT_TYPE_EMPTY == cur_slot_type)
@@ -530,7 +498,7 @@ static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time)
 #ifdef USE_STEP_DIR
     bool cur_step_has_direction_change = false;
     uint32_t last_step = cur_step;
-    // direction
+    // direction  //TODO do we need to check this with every step ?
     if( (direction_for_move & (1 << i))
             !=
         (last_direction_axis & (1 << i)) )
@@ -548,11 +516,7 @@ static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time)
         reload_time = reload_time - half_reload;
         next_step[write_pos] = (0x00ff & last_step) | (0xff00 & cur_step);
         next_reload[write_pos] = half_reload;
-        write_pos ++;
-        if(write_pos == STEP_BUFFER_SIZE)
-        {
-            write_pos = 0;
-        }
+        increment_write_pos();
     }
     next_step[write_pos] = cur_step;
 #else
@@ -575,11 +539,7 @@ static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time)
     steps_already_made[i]++;
     // write values out
     next_reload[write_pos] = reload_time;
-    write_pos ++;
-    if(write_pos == STEP_BUFFER_SIZE)
-    {
-        write_pos = 0;
-    }
+    increment_write_pos();
 }
 
 static void get_steps_for_this_phase(float factor)
@@ -608,49 +568,6 @@ static void get_steps_for_this_phase(float factor)
             }
         }
     }
-}
-
-// public functions
-
-void step_init(uint_fast8_t num_stepper)
-{
-    int i;
-    for(i = 0; i < MAX_NUMBER; i++)
-    {
-        steps_on_axis[i] = 0;
-        steps_in_this_phase_on_axis[i] = 0;
-        steps_already_made[i] = 0;
-        enabled[i] = false;
-    }
-    start_speed = 0;
-    reached_tag = true;
-    cur_slot_type = SLOT_TYPE_EMPTY;
-    busy = false;
-    delay_ms = 0;
-    if(num_stepper < MAX_NUMBER)
-    {
-        available_steppers = num_stepper;
-    }
-    else
-    {
-        available_steppers = MAX_NUMBER;
-    }
-    buffer_timer_running = false;
-    step_timer_running = false;
-    for(i = 0; i < STEP_BUFFER_SIZE; i++)
-    {
-        next_reload[i] = 0xfffe;
-#ifdef USE_STEP_DIR
-        next_step[i] = 0;
-    }
-    cur_step = 0;
-    last_direction_axis = 0;
-    hal_stepper_port_init();
-#else
-        move_on_axis[i] = 0;
-        next_direction[i] = 0;
-    }
-#endif
 }
 
 static void auto_activate_usedAxis(void)
@@ -687,6 +604,48 @@ static void auto_activate_usedAxis(void)
     {
         step_enable_motor(7, 1);
     }
+}
+
+// public functions
+
+void step_init(uint_fast8_t num_stepper)
+{
+    int i;
+    for(i = 0; i < MAX_NUMBER; i++)
+    {
+        steps_on_axis[i] = 0;
+        steps_in_this_phase_on_axis[i] = 0;
+        steps_already_made[i] = 0;
+        enabled[i] = false;
+    }
+    start_speed = 0;
+    cur_slot_type = SLOT_TYPE_EMPTY;
+    busy = false;
+    delay_ms = 0;
+    if(num_stepper < MAX_NUMBER)
+    {
+        available_steppers = num_stepper;
+    }
+    else
+    {
+        available_steppers = MAX_NUMBER;
+    }
+    buffer_timer_running = false;
+    step_timer_running = false;
+    for(i = 0; i < STEP_BUFFER_SIZE; i++)
+    {
+        next_reload[i] = 0xfffe;
+#ifdef USE_STEP_DIR
+        next_step[i] = 0;
+    }
+    cur_step = 0;
+    last_direction_axis = 0;
+    hal_stepper_port_init();
+#else
+        move_on_axis[i] = 0;
+        next_direction[i] = 0;
+    }
+#endif
 }
 
 bool step_add_basic_linear_move(uint_fast8_t *move_data)
@@ -863,13 +822,13 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
     return true;
 }
 
-bool step_add_delay(uint_fast8_t msb,uint_fast8_t lsb)
+bool step_add_delay(uint_fast16_t ms)
 {
     if(true == busy)
     {
         return false;
     }
-    delay_ms = msb * 256 + lsb;
+    delay_ms = ms;
     cur_slot_type = SLOT_TYPE_DELAY;
     busy = true;
     refill_step_buffer();
@@ -879,20 +838,6 @@ bool step_add_delay(uint_fast8_t msb,uint_fast8_t lsb)
 bool step_is_busy(void)
 {
     return busy;
-}
-
-void step_request_tag(void)
-{
-    // TODO current position in the local queue gets marked
-    // and once the moves until that position are executed
-    // the variable reachedTag becomes true.
-    // currently the Queue has only one element.
-    reached_tag = false;
-}
-
-bool step_has_reached_tag(void)
-{
-    return reached_tag;
 }
 
 void step_disable_all_motors(void)
@@ -918,7 +863,7 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
             {
                 trinamic_enable_stepper(stepper_number);
             }
-            // already enabled
+            // else already enabled
         }
         else if(0 == on_off)
         {
@@ -926,7 +871,7 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
             {
                 trinamic_disable_stepper(stepper_number);
             }
-            // already disabled
+            // else  already disabled
         }
         // else invalid state
     }

@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include "error.h"
 #include "com.h"
+#include "hal_debug.h"
 #include "hal_cpu.h"
 #include "hal_led.h"
 #include "hal_cfg.h"
@@ -25,12 +26,13 @@ void error_fatal_error(char* msg)
 {
     uint_fast8_t i = com_copy_string_to_parameter(msg, com_get_start_parameter());
     com_send_debug_frame_with_filled_parameter(i);
+    debug_line("Fatal ERROR: %s", msg);
     error_signal_error_and_die();
 }
 
 void error_signal_error_and_die(void)
 {
-	hal_set_error_led(true);
+    hal_set_error_led(true);
 #ifdef HAS_USB
     hal_usb_device_cdc_disconnect();
 #endif

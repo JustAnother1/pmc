@@ -51,17 +51,13 @@ static void send_queue_failed_response(uint_fast8_t cause,
                                        uint_fast8_t enqueued_commands,
                                        char* error_reason);
 static void handle_wrapped_command(void);
-static void finished_current_stacked_block(void);
 
 static uint_fast8_t queue[MAX_QUEUE_ELEMENTS][MAX_BLOCK_LENGTH];
 static uint_fast8_t queue_type[MAX_QUEUE_ELEMENTS];
 // Index to Queue for:
 static uint_fast8_t read_pos; // reading
 static uint_fast8_t write_pos; // writing
-static uint_fast8_t stacked_pos; // start position of skipped and not executed commands
-static uint_fast8_t stacked_non_move_orders = 0; // number of commands that have been skipped
 static uint_fast16_t finished_blocks = 0; // number of successfully executed Blocks
-static bool move_since_last_tag = false;
 
 #define STEPPER_MODULE_TEST
 
@@ -204,7 +200,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             // wrap around
             next_write_position = 0;
         }
-        if((read_pos == next_write_position) || ((0 != stacked_non_move_orders) && (stacked_pos == next_write_position)))
+        if(read_pos == next_write_position)
         {
             // Queue is full
             send_queue_failed_response(QUEUE_CAUSE_QUEUE_FULL,
@@ -457,32 +453,7 @@ void cmd_queue_tick(void)
     }
 #else
 #endif
-    if(0 < stacked_non_move_orders)
-    {
-        if(true == step_has_reached_tag())
-        {
-            // execute all stacked Orders
-            uint_fast8_t i;
-            // TODO better only once command at a time?
-            for(i = 0; i < stacked_non_move_orders; i++)
-            {
-                // Queue has something -> execute that
-                switch(queue_type[stacked_pos])
-                {
-                case MOVEMENT_BLOCK_TYPE_COMMAND_WRAPPER:
-                    handle_wrapped_command();
-                    break;
 
-                default: // invalid type
-                    // TODO Event
-                    break;
-                }
-                finished_current_stacked_block();
-            }
-            stacked_non_move_orders = 0;
-        }
-        // else Tag not reached yet -> wait for it.
-    }
     if(false == step_is_busy())
     {
         if(read_pos != write_pos)
@@ -491,37 +462,19 @@ void cmd_queue_tick(void)
             switch(queue_type[read_pos])
             {
             case MOVEMENT_BLOCK_TYPE_COMMAND_WRAPPER:
-                if(0 == stacked_non_move_orders)
-                {
-                    // first non move command
-                    step_request_tag();
-                    stacked_non_move_orders = 1;
-                    stacked_pos = read_pos;
-                    move_since_last_tag = false;
-                    finished_current_queued_block();
-                }
-                else
-                {
-                    if(false == move_since_last_tag)
-                    {
-                        stacked_non_move_orders++;
-                        finished_current_queued_block();
-                    }
-                    // else we can not execute this until the Tag has been reached
-                    // -> same as queue Busy - no finishedCurrentQueuedBlock();
-                }
+                handle_wrapped_command();
+                finished_current_queued_block();
                 break;
 
             case MOVEMENT_BLOCK_TYPE_DELAY:
-                move_since_last_tag = true;
-                if(true == step_add_delay(queue[read_pos][POS_OF_DELAY_MSB], queue[read_pos][POS_OF_DELAY_LSB]))
+                if(true == step_add_delay( (queue[read_pos][POS_OF_DELAY_MSB]<<8)
+                                          + queue[read_pos][POS_OF_DELAY_LSB]     ) )
                 {
                     finished_current_queued_block();
                 }
                 break;
 
             case MOVEMENT_BLOCK_TYPE_BASIC_LINEAR_MOVE:
-                move_since_last_tag = true;
                 if(true == step_add_basic_linear_move(&queue[read_pos][0]))
                 {
                     finished_current_queued_block();
@@ -529,7 +482,6 @@ void cmd_queue_tick(void)
                 break;
 
             case MOVEMENT_BLOCK_TYPE_SET_ACTIVE_TOOLHEAD:
-                move_since_last_tag = true;
                 // TODO
                 // This is an extension point if a Firmware needs to do something
                 // every time the Print head changes. This can then be implemented here.
@@ -538,7 +490,6 @@ void cmd_queue_tick(void)
                 break;
 
             case MOVEMENT_BLOCK_TYPE_MOVEMENT_CHECKPOINT:
-                move_since_last_tag = true;
                 // TODO
                 // This is an extension point if a Firmware needs to do something
                 // every time the Print head changes. This can then be implemented here.
@@ -694,16 +645,6 @@ static void handle_wrapped_command(void)
         // TODO event
         break;
     }
-}
-
-static void finished_current_stacked_block(void)
-{
-    stacked_pos++;
-    if(MAX_QUEUE_ELEMENTS == stacked_pos)
-    {
-        stacked_pos = 0;
-    }
-    // finished_blocks++; Block has already been counted when put into Stack
 }
 
 static void finished_current_queued_block(void)
