@@ -101,6 +101,7 @@ void hal_led_init(void)
     }
     initialized = true;
 
+#if NUMBER_OF_LED > 0
     RCC->AHB1ENR |= LED_0_RCC_GPIO_ENABLE;
     // LEDS are general purpose outputs
     LED_0_GPIO_PORT->MODER &= ~LED_0_MODER_0;
@@ -119,7 +120,9 @@ void hal_led_init(void)
     devices[0].port = LED_0_GPIO_PORT;
     devices[0].mask = LED_0_BSRR;
     devices[0].is_on = false;
+#endif
 
+#if NUMBER_OF_LED > 1
     RCC->AHB1ENR |= LED_1_RCC_GPIO_ENABLE;
     // LEDS are general purpose outputs
     LED_1_GPIO_PORT->MODER &= ~LED_1_MODER_0;
@@ -138,7 +141,9 @@ void hal_led_init(void)
     devices[1].port = LED_1_GPIO_PORT;
     devices[1].mask = LED_1_BSRR;
     devices[1].is_on = false;
+#endif
 
+#if NUMBER_OF_LED > 2
     RCC->AHB1ENR |= LED_2_RCC_GPIO_ENABLE;
     // LEDS are general purpose outputs
     LED_2_GPIO_PORT->MODER &= ~LED_2_MODER_0;
@@ -157,7 +162,9 @@ void hal_led_init(void)
     devices[2].port = LED_2_GPIO_PORT;
     devices[2].mask = LED_2_BSRR;
     devices[2].is_on = false;
+#endif
 
+#if NUMBER_OF_LED > 3
     RCC->AHB1ENR |= LED_3_RCC_GPIO_ENABLE;
     // LEDS are general purpose outputs
     LED_3_GPIO_PORT->MODER &= ~LED_3_MODER_0;
@@ -176,6 +183,7 @@ void hal_led_init(void)
     devices[3].port = LED_3_GPIO_PORT;
     devices[3].mask = LED_3_BSRR;
     devices[3].is_on = false;
+#endif
 }
 
 void hal_led_toggle_led(uint_fast8_t device)
