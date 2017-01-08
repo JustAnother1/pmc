@@ -400,7 +400,7 @@
 /*                                                                            */
 /******************************************************************************/
 
-#define NUMBER_OF_LED              4
+#define NUMBER_OF_LED              3
 // green - E12
 #define LED_0_GPIO_PORT            GPIOE
 #define LED_0_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOEEN
@@ -440,19 +440,6 @@
 #define LED_2_PUPD_1               GPIO_PUPDR_10_NONE_1
 #define LED_2_ODR                  GPIO_ODR_10
 #define LED_2_BSRR                 GPIO_BSRR_10
-
-#define LED_3_GPIO_PORT            GPIOE
-#define LED_3_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOEEN
-#define LED_3_MODER_0              GPIO_MODER_10_OUTPUT_0
-#define LED_3_MODER_1              GPIO_MODER_10_OUTPUT_1
-#define LED_3_OTYPER_0             GPIO_OTYPER_10_PUSH_PULL_0
-#define LED_3_OTYPER_1             GPIO_OTYPER_10_PUSH_PULL_1
-#define LED_3_OSPEEDR_0            GPIO_OSPEEDER_10_LOW_SPEED_0
-#define LED_3_OSPEEDR_1            GPIO_OSPEEDER_10_LOW_SPEED_1
-#define LED_3_PUPD_0               GPIO_PUPDR_10_NONE_0
-#define LED_3_PUPD_1               GPIO_PUPDR_10_NONE_1
-#define LED_3_ODR                  GPIO_ODR_10
-#define LED_3_BSRR                 GPIO_BSRR_10
 
 
 /******************************************************************************/
