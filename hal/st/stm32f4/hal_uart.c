@@ -27,7 +27,7 @@
 #include <st_usart.h>
 #include <st_util.h>
 
-// Baudrate is 115200 so a byte should transfere in less than one ms
+// Baudrate is 115200 so a byte should transfer in less than one ms
 #define UART_BYTE_TIMEOUT_MS      5
 
 typedef struct {
@@ -295,17 +295,17 @@ static uint_fast16_t get_available_bytes_in_send_Buffer(uint_fast8_t device)
         {
             if(devices[device].send_write_pos > devices[device].send_read_pos)
             {
-                res = UART_SEND_BUFFER_SIZE - devices[device].send_read_pos + devices[device].send_write_pos;
+                res = (UART_SEND_BUFFER_SIZE -1) - devices[device].send_read_pos + devices[device].send_write_pos;
             }
             else
             {
-                res = devices[device].send_write_pos - devices[device].send_read_pos;
+                res = (devices[device].send_write_pos - devices[device].send_read_pos) -1;
             }
         }
         else
         {
             // Buffer is empty
-            res = UART_SEND_BUFFER_SIZE;
+            res = UART_SEND_BUFFER_SIZE -1;
         }
         return res;
     }
