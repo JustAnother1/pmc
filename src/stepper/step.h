@@ -23,7 +23,7 @@
 #define MAX_NUMBER 8
 
 #define STEP_CHUNK_SIZE             10
-#define STEP_BUFFER_SIZE            10 * STEP_CHUNK_SIZE
+#define STEP_BUFFER_SIZE            (10 * STEP_CHUNK_SIZE) + 1
 
 #define SLOT_TYPE_EMPTY             0
 #define SLOT_TYPE_DELAY             1

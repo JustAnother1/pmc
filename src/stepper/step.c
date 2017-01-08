@@ -31,7 +31,6 @@ static void calculate_step_chunk(uint_fast8_t num_slots);
 static uint_fast8_t get_number_of_free_slots(void);
 static void finished_cur_slot(void);
 static void make_the_needed_steps(uint_fast16_t reload_time);
-static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time);
 static void auto_activate_usedAxis(void);
 static void step_isr(void);
 static void refill_step_buffer(void);
@@ -40,6 +39,7 @@ static void increment_write_pos(void);
 static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value);
 #else
 #endif
+
 
 // Step Timer
 static volatile bool step_timer_running;
@@ -71,6 +71,8 @@ static volatile uint_fast16_t steps_on_axis[MAX_NUMBER];
 static volatile uint_fast8_t phase_of_move;
 static volatile uint_fast16_t steps_in_this_phase_on_axis[MAX_NUMBER];
 static volatile uint_fast16_t steps_already_made[MAX_NUMBER];
+static volatile float error_on_axis[MAX_NUMBER];
+static volatile float increment_on_axis[MAX_NUMBER];
 static volatile uint_fast32_t curTime;
 static volatile float speed_increse_acc_tick;
 static volatile float speed_decrese_decel_tick;
@@ -127,6 +129,7 @@ static uint_fast16_t speed_reloads[256] ={
          319,   317,   316,   315,   314,   312,   311,   310,
          308,   307,   306,   305,   304,   302,   301,   300
 };
+
 
 /*
  * How this works:
@@ -275,18 +278,19 @@ static void refill_step_buffer(void)
 
 static uint_fast8_t get_number_of_free_slots(void)
 {
+    // one slot must be free at all times because (write_pos == read_pos) means no data!
     uint_fast8_t free_slots;
     if(write_pos > read_pos)
     {
-        free_slots = STEP_BUFFER_SIZE - (write_pos - read_pos);
+        free_slots = (STEP_BUFFER_SIZE - 1) - (write_pos - read_pos);
     }
     else if(write_pos == read_pos)
     {
-        free_slots = STEP_BUFFER_SIZE;
+        free_slots = STEP_BUFFER_SIZE -1;
     }
     else // write_pos < read_pos
     {
-        free_slots = read_pos - write_pos;
+        free_slots = (read_pos - write_pos) -1;
     }
     return free_slots;
 }
@@ -341,7 +345,10 @@ static void calculate_step_chunk(uint_fast8_t num_slots)
     {
         // do nothing ! - should not happen
     }
-    // else invalid Slot Type -> TODO Event
+    else
+    {
+        error_fatal_error("Step:invalid slot type");
+    }
 }
 
 static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
@@ -417,7 +424,6 @@ static void caclculate_basic_move_chunk(uint_fast8_t num_slots)
     }
 }
 
-
 static uint_fast16_t get_reload_primary_axis(void)
 {
     uint_fast16_t curReload;
@@ -453,29 +459,6 @@ static uint_fast16_t get_reload_primary_axis(void)
     return 0xfffd;
 }
 
-
-static void make_the_needed_steps(uint_fast16_t reload_time)
-{
-    uint_fast8_t i;
-    for(i = 0; i < MAX_NUMBER; i++)
-    {
-        if(0 != steps_in_this_phase_on_axis[i])
-        {
-            if(i == primary_axis)
-            {
-                // we step on the primary axis every time
-                do_step_on_axis(i, reload_time);
-            }
-            else
-            {
-                // non primary axis
-                // TODO
-            }
-        }
-        // no steps on this axis
-    }
-}
-
 #ifdef USE_STEP_DIR
 static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value)
 {
@@ -493,30 +476,46 @@ static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value)
 #else
 #endif
 
-static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time)
+static void make_the_needed_steps(uint_fast16_t reload_time)
 {
 #ifdef USE_STEP_DIR
+    int i;
     bool cur_step_has_direction_change = false;
-    uint32_t last_step = cur_step;
-    // direction  //TODO do we need to check this with every step ?
-    if( (direction_for_move & (1 << i))
-            !=
-        (last_direction_axis & (1 << i)) )
+
+    // direction
+    // TODO do we need to check this with every step ?
+    // -> only on first step of Move? -> new Phase?
+    for(i = 0; i < MAX_NUMBER; i++)
     {
-        // change of direction on this axis
-        cur_step_has_direction_change = true;
-        cur_step = toggle_bit(i + 8, cur_step);
-        last_direction_axis = toggle_bit(i, last_direction_axis);
+        if( (direction_for_move & (1 << i))
+                !=
+            (last_direction_axis & (1 << i)) )
+        {
+            // change of direction on this axis
+            cur_step_has_direction_change = true;
+            cur_step = toggle_bit(i + 8, cur_step);
+            last_direction_axis = toggle_bit(i, last_direction_axis);
+        }
     }
-    // step
-    cur_step = toggle_bit(i, cur_step);
     if(true == cur_step_has_direction_change)
     {
         uint_fast16_t half_reload = reload_time /2;
         reload_time = reload_time - half_reload;
-        next_step[write_pos] = (0x00ff & last_step) | (0xff00 & cur_step);
+        next_step[write_pos] = cur_step;
         next_reload[write_pos] = half_reload;
         increment_write_pos();
+    }
+    // step
+    for(i = 0; i < MAX_NUMBER; i++)
+    {
+        error_on_axis[i] += increment_on_axis[i];
+        if(error_on_axis[i] >= 1.0)
+        {
+            error_on_axis[i] -= 1.0;
+            cur_step = toggle_bit(i, cur_step);
+            steps_already_made[i]++;
+        }
+        // else wait for next step
     }
     next_step[write_pos] = cur_step;
 #else
@@ -536,7 +535,6 @@ static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time)
     move_on_axis[write_pos] |= axis_mask;
     next_direction[write_pos] = 0;
 #endif
-    steps_already_made[i]++;
     // write values out
     next_reload[write_pos] = reload_time;
     increment_write_pos();
@@ -544,6 +542,7 @@ static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time)
 
 static void get_steps_for_this_phase(float factor)
 {
+    int maxSteps = 0;
     uint_fast8_t i;
     for(i = 0; i < 8; i++)
     {
@@ -559,14 +558,27 @@ static void get_steps_for_this_phase(float factor)
             {
                 steps_in_this_phase_on_axis[i] = steps_on_axis[i];
                 steps_on_axis[i] = 0;
+                if(maxSteps < steps_in_this_phase_on_axis[i])
+                {
+                    maxSteps = steps_in_this_phase_on_axis[i];
+                }
             }
             else
             {
                 uint_fast16_t steps_to_copy = steps_on_axis[i] * factor;
                 steps_in_this_phase_on_axis[i] = steps_to_copy;
                 steps_on_axis[i] = steps_on_axis[i] - steps_to_copy;
+                if(maxSteps < steps_in_this_phase_on_axis[i])
+                {
+                    maxSteps = steps_in_this_phase_on_axis[i];
+                }
             }
         }
+    }
+    for(i = 0; i < 8; i++)
+    {
+        error_on_axis[i] = 0;
+        increment_on_axis[i] = steps_in_this_phase_on_axis[i]/maxSteps;
     }
 }
 
@@ -650,7 +662,6 @@ void step_init(uint_fast8_t num_stepper)
 
 bool step_add_basic_linear_move(uint_fast8_t *move_data)
 {
-    debug_line("Adding Basic Linear Move!");
     bool eight_Bit_Steps;
     uint_fast8_t offset;
     uint_fast8_t i;
@@ -658,6 +669,7 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
     {
         return false;
     }
+    debug_line("Adding Basic Linear Move!");
     active_axes_map = 0;
     primary_axis = 0;
     if(0x80 == (0x80 & move_data[1]))
@@ -770,7 +782,6 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
             }
         }
     }
-    // TODO test if length of packet matches
 
     curTime = 0;
     nominal_speed_ticks = (float)TICKS_PER_SECOND/(float)speed_reloads[nominal_speed];

@@ -87,19 +87,19 @@ static void test_get_number_of_free_slots(void **state)
     // empty buffer
     write_pos = 0;
     read_pos = 0;
-    assert_int_equal(STEP_BUFFER_SIZE, get_number_of_free_slots());
+    assert_int_equal(STEP_BUFFER_SIZE -1, get_number_of_free_slots());
     // one element in the buffer
     write_pos = 1;
     read_pos = 0;
-    assert_int_equal(STEP_BUFFER_SIZE - 1, get_number_of_free_slots());
+    assert_int_equal(STEP_BUFFER_SIZE - 2, get_number_of_free_slots());
     // Data at element 3 and 4
     write_pos = 5;
     read_pos = 3;
-    assert_int_equal(STEP_BUFFER_SIZE - 2, get_number_of_free_slots());
+    assert_int_equal(STEP_BUFFER_SIZE - 3, get_number_of_free_slots());
     // already used but empty buffer
     write_pos = 5;
     read_pos = 5;
-    assert_int_equal(STEP_BUFFER_SIZE, get_number_of_free_slots());
+    assert_int_equal(STEP_BUFFER_SIZE -1, get_number_of_free_slots());
     // wrap around
     write_pos = 3;
     read_pos = 5;
@@ -120,10 +120,7 @@ static void test_finished_cur_slot(void **state)
 // static uint_fast16_t get_reload_primary_axis(void);
 // static void get_steps_for_this_phase(float factor);
 // static void calculate_step_chunk(uint_fast8_t num_slots);
-
-
 // static void make_the_needed_steps(uint_fast16_t reload_time);
-// static void do_step_on_axis(uint_fast8_t i, uint_fast16_t reload_time);
 // static void auto_activate_usedAxis(void);
 // static void step_isr(void);
 // static void refill_step_buffer(void);
