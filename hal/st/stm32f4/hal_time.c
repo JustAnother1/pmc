@@ -32,6 +32,22 @@ static void disable_clock_for_timer(uint_fast8_t device);
 static void error_isr_on_stopped_timer(void);
 static uint32_t getClockFrequencyForTimer(uint_fast8_t device);
 
+void TIM1_CC_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM2_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM3_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM4_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM5_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM6_DAC_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM7_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM8_CC_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM1_BRK_TIM9_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM1_UP_TIM10_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM1_TRG_COM_TIM11_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM8_BRK_TIM12_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM8_UP_TIM13_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void TIM8_TRG_COM_TIM14_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+
+
 static volatile TimerFkt tim_1_isr;
 static volatile TimerFkt tim_2_isr;
 static volatile TimerFkt tim_3_isr;
@@ -242,86 +258,128 @@ static void set_irq_priority(uint_fast8_t device)
 
 void TIM1_CC_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_1_isr();
     TIM1->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM2_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_2_isr();
     TIM2->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM3_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_3_isr();
     TIM3->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM4_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_4_isr();
     TIM4->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM5_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_5_isr();
     TIM5->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM6_DAC_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_6_isr();
     TIM6->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM7_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_7_isr();
     TIM7->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM8_CC_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_8_isr();
     TIM8->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM1_BRK_TIM9_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_9_isr();
     TIM9->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM1_UP_TIM10_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_10_isr();
     TIM10->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM1_TRG_COM_TIM11_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_11_isr();
     TIM11->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM8_BRK_TIM12_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_12_isr();
     TIM12->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM8_UP_TIM13_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_13_isr();
     TIM13->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 void TIM8_TRG_COM_TIM14_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     tim_14_isr();
     TIM14->SR &= ~TIM_SR_UIF;
+    asm volatile("" : "+r" (initialized));
+    hal_set_isr1_led(false);
 }
 
 // used by hal_pwm:
@@ -402,6 +460,7 @@ bool hal_time_start_timer(uint_fast8_t device,
     {
         return false;
     }
+    enable_clock_for_timer(device);
     if(NULL != function)
     {
         switch(device)
@@ -422,16 +481,21 @@ bool hal_time_start_timer(uint_fast8_t device,
         case 14: tim_14_isr = function; break;
         }
         timer->DIER = TIM_DIER_UIE; // Interrupt enable
+        set_irq_priority(device);
     }
-    enable_clock_for_timer(device);
-    set_irq_priority(device);
     timer->PSC   = (uint16_t)(0xffff & ((getClockFrequencyForTimer(device) / clock) - 1));
     timer->ARR   = reload_value;
     timer->CCR1  = reload_value;
+    timer->CCR2  = 0;
+    timer->CCR3  = 0;
+    timer->CCR4  = 0;
     timer->CNT   = 0; // start counting at 0
     timer->CCMR1 = 0x0030;
+    timer->CCMR2 = 0;
+    timer->BDTR  = 0;
     timer->CCER  = 1;
     timer->EGR   = 3;
+    timer->CR2   = 0;
     timer->CR1   = 0x0081; // Timer enable + Interrupt on overflow
     return true;
 }
@@ -443,6 +507,7 @@ void hal_time_stop_timer(uint_fast8_t device)
     {
         return;
     }
+    debug_line("stopping timer %d", device);
     timer->CR1 = 0;
     timer->DIER = 0;
     timer->CNT = 0;
@@ -657,29 +722,26 @@ void hal_time_print_Configuration(int timerNumber)
         return;
     }
 
-    debug_line("Timer->CR1     = 0x%08x", timer->CR1);
-    debug_line("Timer->CR2     = 0x%08x", timer->CR2);
-    debug_line("Timer->SMCR    = 0x%08x", timer->SMCR);
-    debug_line("Timer->CR1     = 0x%08x", timer->CR1);
-    debug_line("Timer->DIER    = 0x%08x", timer->DIER);
-    debug_line("Timer->CR1     = 0x%08x", timer->CR1);
-    debug_line("Timer->SR      = 0x%08x", timer->SR);
-    debug_line("Timer->EGR     = 0x%08x", timer->EGR);
-    debug_line("Timer->CR1     = 0x%08x", timer->CR1);
+    debug_line("Timer->ARR     = 0x%08x", timer->ARR);
+    debug_line("Timer->BDTR    = 0x%08x", timer->BDTR);
+    debug_line("Timer->CCER    = 0x%08x", timer->CCER);
     debug_line("Timer->CCMR1   = 0x%08x", timer->CCMR1);
     debug_line("Timer->CCMR2   = 0x%08x", timer->CCMR2);
-    debug_line("Timer->CCER    = 0x%08x", timer->CCER);
-    debug_line("Timer->CNT     = 0x%08x", timer->CNT);
-    debug_line("Timer->PSC     = 0x%08x", timer->PSC);
-    debug_line("Timer->ARR     = 0x%08x", timer->ARR);
-    debug_line("Timer->RCR     = 0x%08x", timer->RCR);
     debug_line("Timer->CCR1    = 0x%08x", timer->CCR1);
     debug_line("Timer->CCR2    = 0x%08x", timer->CCR2);
     debug_line("Timer->CCR3    = 0x%08x", timer->CCR3);
     debug_line("Timer->CCR4    = 0x%08x", timer->CCR4);
-    debug_line("Timer->BDTR    = 0x%08x", timer->BDTR);
+    debug_line("Timer->CNT     = 0x%08x", timer->CNT);
+    debug_line("Timer->CR1     = 0x%08x", timer->CR1);
+    debug_line("Timer->CR2     = 0x%08x", timer->CR2);
     debug_line("Timer->DCR     = 0x%08x", timer->DCR);
+    debug_line("Timer->DIER    = 0x%08x", timer->DIER);
     debug_line("Timer->DMAR    = 0x%08x", timer->DMAR);
+    debug_line("Timer->EGR     = 0x%08x", timer->EGR);
+    debug_line("Timer->PSC     = 0x%08x", timer->PSC);
+    debug_line("Timer->RCR     = 0x%08x", timer->RCR);
+    debug_line("Timer->SMCR    = 0x%08x", timer->SMCR);
+    debug_line("Timer->SR      = 0x%08x", timer->SR);
 }
 
 #endif // debug

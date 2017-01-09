@@ -236,6 +236,7 @@ static void refill_step_buffer(void)
         // if we have some steps then start the timer
         if(read_pos != write_pos)
         {
+            step_timer_running = true;
             if(false == hal_time_start_timer(STEP_TIMER,
                                              TICKS_PER_SECOND,
                                              5,
@@ -243,7 +244,6 @@ static void refill_step_buffer(void)
             {
                 error_fatal_error("Failed to start step Timer !");
             }
-            step_timer_running = true;
         }
         // else nothing to do for the step timer -> no need to start it
     }
@@ -254,6 +254,7 @@ static void refill_step_buffer(void)
         // but only if we have something to do
         if(SLOT_TYPE_EMPTY != cur_slot_type)
         {
+            buffer_timer_running = true;
             if(false == hal_time_start_timer(STEP_BUFFER_TIMER,
                                              TICKS_PER_SECOND,
                                              REFILL_BUFFER_RELOAD,
@@ -261,14 +262,13 @@ static void refill_step_buffer(void)
             {
                 error_fatal_error("Failed to start stepBuffer Timer !");
             }
-            buffer_timer_running = true;
         }
         // else nothing more to do -> no need to start this timer.
     }
     else
     {
         // stop this timer if we have nothing to do
-        if(SLOT_TYPE_EMPTY == cur_slot_type)
+        if((SLOT_TYPE_EMPTY == cur_slot_type) && (read_pos == write_pos))
         {
             hal_time_stop_timer(STEP_BUFFER_TIMER);
             buffer_timer_running = false;
@@ -669,7 +669,6 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
     {
         return false;
     }
-    debug_line("Adding Basic Linear Move!");
     active_axes_map = 0;
     primary_axis = 0;
     if(0x80 == (0x80 & move_data[1]))
