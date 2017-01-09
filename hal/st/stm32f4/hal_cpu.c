@@ -222,6 +222,25 @@ void hal_cpu_init_hal(void)
     }while(0x00000008 != (RCC->CFGR & RCC_CFGR_SWS));
 }
 
+void hal_cpu_remove_ms_tick_function(msTickFkt function_to_remove)
+{
+    if(NULL != function_to_remove)
+    {
+        int i;
+        // Check if this function is new,...
+        for(i = 0; i < MAX_TICK_FUNC; i++)
+        {
+            if(function_to_remove == tick_list[i].tick)
+            {
+                // Function already in list
+                tick_list[i].tick = NULL;
+                return;
+            }
+            // else check next slot
+        }
+    }
+}
+
 void hal_cpu_add_ms_tick_function(msTickFkt additional_function)
 {
     hal_cpu_add_ms_tick_function_cycle(additional_function, 1);
@@ -232,6 +251,18 @@ void hal_cpu_add_ms_tick_function_cycle(msTickFkt additional_function, int every
     if(NULL != additional_function)
     {
         int i;
+        // Check if this function is new,...
+        for(i = 0; i < MAX_TICK_FUNC; i++)
+        {
+            if(additional_function == tick_list[i].tick)
+            {
+                // Function already in list
+                 debug_line("INFO: Tried to double add a Tick Function !");
+                return;
+            }
+            // else check next slot
+        }
+        // a new function so add to list
         for(i = 0; i < MAX_TICK_FUNC; i++)
         {
             if(NULL == tick_list[i].tick)

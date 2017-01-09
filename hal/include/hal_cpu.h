@@ -26,6 +26,7 @@
 typedef void (*msTickFkt)(void);
 
 void hal_cpu_init_hal(void);
+void hal_cpu_remove_ms_tick_function(msTickFkt function_to_remove);
 void hal_cpu_add_ms_tick_function(msTickFkt additional_function);
 void hal_cpu_add_ms_tick_function_cycle(msTickFkt additional_function, int everyMs);
 void hal_cpu_die(void);
