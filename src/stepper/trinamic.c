@@ -668,12 +668,14 @@ bool trinamic_change_setting(uint8_t* setting)
     {
     case 'S':
     case 's':
-        printMotorConfiguration();
+        // setting++;
+        return printMotorConfiguration();
         break;
 
     case 'C':
     case 'c':
-        changeMotorSetting(setting);
+        setting++;
+        return changeMotorSetting(setting);
         break;
 
     default:
@@ -1004,55 +1006,60 @@ void trinamic_make_step_using_SPI(uint_fast8_t stepper_num, bool direction_is_in
 
 static bool changeMotorSetting(uint8_t* setting)
 {
-    enum cfgSetting settingToChange;
-    uint_fast8_t numSteppers = trinamic_detect_number_of_steppers();
+    int i;
+    int v;
+    uint_fast8_t numSteppers;
+    uint_fast8_t setting_to_change;
+
+    setting_to_change = *setting;
     setting++;
+    v = atoi((char *)setting);
 
-    //  3 4 5 6 7 8 9
+    numSteppers = trinamic_detect_number_of_steppers();
 
-    switch(*setting)
+    debug_line("changing %c to %d", setting_to_change, v);
+
+    switch(setting_to_change)
     {
     // DRVCTRL
-    case 'i': settingToChange = stepInterpolation; break;
-    case 'e': settingToChange = doubleEdge; break;
-    case 'm': settingToChange = microstepResolution; break;
+    case 'i': for(i = 0; i < numSteppers; i++) {stepper_conf[i].stepInterpolation = v;} break;
+    case 'e': for(i = 0; i < numSteppers; i++) {stepper_conf[i].doubleEdgeStepPulse = v;} break;
+    case 'm': for(i = 0; i < numSteppers; i++) {stepper_conf[i].microstepResolution = v;} break;
     // CHOPCONF
-    case 'b': settingToChange = blankingTime; break;
-    case 'c': settingToChange = chopperMode; break;
-    case 'r': settingToChange = randomToff; break;
-    case 'd': settingToChange = hysteresisDecrementTime; break;
-    case 'f': settingToChange = fastDecayMode; break;
-    case 'h': settingToChange = hysteresisEnd; break;
-    case 'w': settingToChange = sineWaveOffset; break;
-    case 's': settingToChange = hysteresisStartOffset; break;
-    case 't': settingToChange = fastDecayTime; break;
-    case 'o': settingToChange = toff; break;
+    case 'b': for(i = 0; i < numSteppers; i++) {stepper_conf[i].blankingTime = v;} break;
+    case 'c': for(i = 0; i < numSteppers; i++) {stepper_conf[i].chopperMode = v;} break;
+    case 'r': for(i = 0; i < numSteppers; i++) {stepper_conf[i].randomToff = v;} break;
+    case 'd': for(i = 0; i < numSteppers; i++) {stepper_conf[i].hysteresisDecrementTime = v;} break;
+    case 'f': for(i = 0; i < numSteppers; i++) {stepper_conf[i].fastDecayMode = v;} break;
+    case 'h': for(i = 0; i < numSteppers; i++) {stepper_conf[i].hysteresisEnd = v;} break;
+    case 'w': for(i = 0; i < numSteppers; i++) {stepper_conf[i].sineWaveOffset = v;} break;
+    case 's': for(i = 0; i < numSteppers; i++) {stepper_conf[i].hysteresisStartOffset = v;} break;
+    case 't': for(i = 0; i < numSteppers; i++) {stepper_conf[i].fastDecayTime = v;} break;
+    case 'o': for(i = 0; i < numSteppers; i++) {stepper_conf[i].toff = v;} break;
     // SMARTEN
-    case 'n': settingToChange = seIMin; break;
-    case 'p': settingToChange = decrementSpeed; break;
-    case 'u': settingToChange = seUpper; break;
-    case '1': settingToChange = seUpStep; break;
-    case '0': settingToChange = seLower; break;
+    case 'n': for(i = 0; i < numSteppers; i++) {stepper_conf[i].seIMin = v;} break;
+    case 'p': for(i = 0; i < numSteppers; i++) {stepper_conf[i].decrementSpeed = v;} break;
+    case 'u': for(i = 0; i < numSteppers; i++) {stepper_conf[i].seUpper = v;} break;
+    case '1': for(i = 0; i < numSteppers; i++) {stepper_conf[i].seUpStep = v;} break;
+    case '0': for(i = 0; i < numSteppers; i++) {stepper_conf[i].seLower = v;} break;
     // SGCSCONF
-    case 'g': settingToChange = sgFilter; break;
-    case 'l': settingToChange = sgThreshold; break;
-    case '2': settingToChange = sgCS; break;
+    case 'g': for(i = 0; i < numSteppers; i++) {stepper_conf[i].sgFilter = v;} break;
+    case 'l': for(i = 0; i < numSteppers; i++) {stepper_conf[i].sgThreshold = v;} break;
+    case '2': for(i = 0; i < numSteppers; i++) {stepper_conf[i].sgCS = v;} break;
     // DRVCONF
-    case 'x': settingToChange = test; break;
-    case 'a': settingToChange = slopeHigh; break;
-    case 'j': settingToChange = slopeLow; break;
-    case 'k': settingToChange = shortGNDdisabled; break;
-    case 'q': settingToChange = shortGNDtimer; break;
-    case 'v': settingToChange = disableSTEPDIR; break;
-    case 'y': settingToChange = lowVoltageRsense; break;
-    case 'z': settingToChange = responseFormat; break;
+    case 'x': for(i = 0; i < numSteppers; i++) {stepper_conf[i].test = v;} break;
+    case 'a': for(i = 0; i < numSteppers; i++) {stepper_conf[i].slopeHigh = v;} break;
+    case 'j': for(i = 0; i < numSteppers; i++) {stepper_conf[i].slopeLow = v;} break;
+    case 'k': for(i = 0; i < numSteppers; i++) {stepper_conf[i].shortGNDdisabled = v;} break;
+    case 'q': for(i = 0; i < numSteppers; i++) {stepper_conf[i].shortGNDtimer = v;} break;
+    case 'v': for(i = 0; i < numSteppers; i++) {stepper_conf[i].disableSTEPDIR = v;} break;
+    case 'y': for(i = 0; i < numSteppers; i++) {stepper_conf[i].lowVoltageRsense = v;} break;
+    case 'z': for(i = 0; i < numSteppers; i++) {stepper_conf[i].responseFormat = v;} break;
     default: return false;
     }
 
-    setInt(atoi((char *)++setting), settingToChange, 1); // stepper 1
-
-    debug_line("configuring %d Steppers !", numSteppers);
     trinamic_configure_steppers(numSteppers);
+    debug_line("configured %d Steppers !", numSteppers);
     return true;
 }
 
@@ -1108,13 +1115,13 @@ static bool printMotorConfiguration(void)
     {
     case 0 : debug_line("Microstep Res.          : 1/256 (=0)"); break;
     case 1 : debug_line("Microstep Res.          : 1/128 (=1)"); break;
-    case 2 : debug_line("Microstep Res.          : 1/64"); break;
-    case 3 : debug_line("Microstep Res.          : 1/32"); break;
-    case 4 : debug_line("Microstep Res.          : 1/16"); break;
-    case 5 : debug_line("Microstep Res.          : 1/8"); break;
-    case 6 : debug_line("Microstep Res.          : 1/4"); break;
-    case 7 : debug_line("Microstep Res.          : 1/2 - half steps"); break;
-    case 8 : debug_line("Microstep Res.          : 1/1 - full steps"); break;
+    case 2 : debug_line("Microstep Res.          : 1/64 (=2)"); break;
+    case 3 : debug_line("Microstep Res.          : 1/32 (=3)"); break;
+    case 4 : debug_line("Microstep Res.          : 1/16 (=4)"); break;
+    case 5 : debug_line("Microstep Res.          : 1/8 (=5)"); break;
+    case 6 : debug_line("Microstep Res.          : 1/4 (=6)"); break;
+    case 7 : debug_line("Microstep Res.          : 1/2 - half steps (=7)"); break;
+    case 8 : debug_line("Microstep Res.          : 1/1 - full steps (=8)"); break;
     default: debug_line("Microstep Res.          : %d <- invalid !", getInt(microstepResolution, stepperNumber));break;
     }
 
@@ -1219,14 +1226,14 @@ static bool printMotorConfiguration(void)
     }
     else
     {
-        timeOff = 12 + (32*timeOff);
+        int timeOff_clk = 12 + (32*timeOff);
         if(0 == getInt(randomToff, stepperNumber))
         {
-            debug_line("Toff                    : %d sys clk", timeOff);
+            debug_line("Toff                    : %d sys clk (=%d)", timeOff_clk, timeOff);
         }
         else
         {
-            debug_line("Toff                    : %d - %d sys clk", timeOff-12, timeOff+3);
+            debug_line("Toff                    : %d - %d sys clk (=%d)", timeOff_clk-12, timeOff_clk+3, timeOff);
         }
     }
     }
@@ -1259,16 +1266,16 @@ static bool printMotorConfiguration(void)
     debug_msg("[0]");
     if(0 == loThr)
     {
-        debug_line("Cool Step               : disabled (lower Thr.)");
+        debug_line("Cool Step               : disabled (lower Thr.) (=0)");
     }
     else
     {
-        debug_line("Cool Step               : enabled (lower Thr.)");
+        debug_line("Cool Step               : enabled (lower Thr.) (=%d)", loThr);
     }
     debug_msg("[u]");
     debug_line("upper threshold         : %d (=%d)", (loThr+upThr+1) * 32, upThr);
     debug_msg("[0]");
-    debug_line("lower threshold         : %d", loThr);
+    debug_line("lower threshold         : %d (=%d)", loThr, loThr);
     }
 
     debug_msg("[1]");
@@ -1348,11 +1355,11 @@ static bool printMotorConfiguration(void)
     debug_msg("[k]");
     if(0 == getInt(shortGNDdisabled, stepperNumber))
     {
-        debug_line("short to GND protection : enabled");
+        debug_line("short to GND protection : enabled (=0)");
     }
     else
     {
-        debug_line("short to GND protection : disabled");
+        debug_line("short to GND protection : disabled (=1)");
     }
 
     debug_msg("[q]");
@@ -1641,9 +1648,7 @@ static int getInt(enum cfgSetting setting, int stepper)
 
 void periodic_status_check(void)
 {
-    // TODO check steppers if enabled, but only then
-    // hal_start_stepper_spi_transaction(&cfg_data[SMARTEN][0], num_bytes_used, &spi_receive_buffer[0]);
-    // TODO check reply
+    hal_start_stepper_spi_transaction(&cfg_data[SMARTEN][0], num_bytes_used, &spi_receive_buffer[0]);
 }
 
 #else
