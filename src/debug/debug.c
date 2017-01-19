@@ -319,6 +319,7 @@ static void order_help(void)
 #endif
     debug_line("pud                        : print Debug UART configuration");
     debug_line("pug                        : print G-Code UART configuration");
+    debug_line("pq                         : print command queue status");
     // q
     debug_line("r                          : reset the processor");
     // s
@@ -740,6 +741,11 @@ static void parse_order(int length)
                 debug_line("Invalid command ! try h for help");
                 break;
             }
+            break;
+
+        case 'Q':
+        case 'q':
+            cmd_queue_show_status(cmd_buf[2]);
             break;
 
         default:

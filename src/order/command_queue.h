@@ -25,5 +25,8 @@ void cmd_queue_clear(void);
 void cmd_queue_tick(void);
 void cmd_queue_reset_executed_commands(void);
 bool cmd_queue_chnage_setting(uint8_t* setting);
+#ifdef DEBUG_ACTIVE
+bool cmd_queue_show_status(uint8_t* setting);
+#endif
 
 #endif /* COMMAND_QUEUE_H_ */

@@ -98,6 +98,19 @@ void cmd_queue_clear(void)
     write_pos = 0;
 }
 
+#ifdef DEBUG_ACTIVE
+
+bool cmd_queue_show_status(uint8_t* setting)
+{
+    debug_line("Command Queue Status:");
+    debug_line("read position : %d", read_pos);
+    debug_line("write position : %d", write_pos);
+    debug_line("finished blocks : %d", finished_blocks);
+    return true;
+}
+
+#endif // debug
+
 // Adding to the Queue:
 // ====================
 
