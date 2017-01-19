@@ -475,13 +475,13 @@ void trinamic_init(void)
         // - 0 = Drive disable, bridges off
         // - 1 = 1 (TBL>= 24 clk)
         // - 2 = 2, .. 15 = 15
-        stepper_conf[i].toff = 15;//0;
+        stepper_conf[i].toff = 0;
 
         // coolStep Control Register SMARTEN
         //Minimum coolStep current(SEIMIN)
         // - false = 1/2 Current Scale (CS)
         // - true  = 1/4 CS
-        stepper_conf[i].seIMin = false;
+        stepper_conf[i].seIMin = true;
         // Current decrement Speed (SEDN) 2bit
         // Number of times that the stallGurad2 value must be sampled equal to
         // or above the upper threshold for each decrement of the coil current.
@@ -492,7 +492,7 @@ void trinamic_init(void)
         stepper_conf[i].decrementSpeed = 0;
         // Upper coolStep Threshold (offset from the lower threshold) 4bit
         // - 0 .. 15
-        stepper_conf[i].seUpper = 0;
+        stepper_conf[i].seUpper = 15;
         // current increment size 2 bit
         // - 0 = 1
         // - 1 = 2
@@ -502,13 +502,13 @@ void trinamic_init(void)
         // Lower coolStep threshold / disable 4bit
         // - 0 = disabled
         // - 1..15
-        stepper_conf[i].seLower = 0;
+        stepper_conf[i].seLower = 1;
 
         // stallGuard2 Control Register SGCSCONF
         // Filter enable
         // - false = standard mode, fastest response time
         // - true  = filtered mode, updated once each 4 full steps, highest accuracy
-        stepper_conf[i].sgFilter = true;
+        stepper_conf[i].sgFilter = false;
         // threshold
         // two's compliment signed int
         // Range +63 .. -64
@@ -751,40 +751,28 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
 
 void trinamic_enable_stepper(uint_fast8_t stepper_num)
 {
-    /*
-    switch(stepper_num)
+    if(MAX_NUM_STEPPERS > stepper_num)
     {
-    case 0: chopconf_data[2]  |= (0x0f & stepper_conf[stepper_num].chop_toff); break;
-    case 1: chopconf_data[4]  |= (0xf0 & stepper_conf[stepper_num].chop_toff); break;
-    case 2: chopconf_data[7]  |= (0x0f & stepper_conf[stepper_num].chop_toff); break;
-    case 3: chopconf_data[9]  |= (0xf0 & stepper_conf[stepper_num].chop_toff); break;
-    case 4: chopconf_data[12] |= (0x0f & stepper_conf[stepper_num].chop_toff); break;
-    case 5: chopconf_data[14] |= (0xf0 & stepper_conf[stepper_num].chop_toff); break;
-    case 6: chopconf_data[17] |= (0x0f & stepper_conf[stepper_num].chop_toff); break;
-    case 7: chopconf_data[19] |= (0xf0 & stepper_conf[stepper_num].chop_toff); break;
-    default: return;
+        stepper_conf[stepper_num].toff = 15;
+        setInt( stepper_conf[stepper_num].toff, toff, stepper_num);
+        if(false == hal_do_stepper_spi_transaction(&cfg_data[CHOPCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+        {
+            hal_cpu_report_issue(20);
+        }
     }
-    hal_spi_do_transaction(STEPPER_SPI, &chopconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
-    */
 }
 
 void trinamic_disable_stepper(uint_fast8_t stepper_num)
 {
-    /*
-    switch(stepper_num)
+    if(MAX_NUM_STEPPERS > stepper_num)
     {
-    case 0: chopconf_data[2]  &= 0x0f; break;
-    case 1: chopconf_data[4]  &= 0xf0; break;
-    case 2: chopconf_data[7]  &= 0x0f; break;
-    case 3: chopconf_data[9]  &= 0xf0; break;
-    case 4: chopconf_data[12] &= 0x0f; break;
-    case 5: chopconf_data[14] &= 0xf0; break;
-    case 6: chopconf_data[17] &= 0x0f; break;
-    case 7: chopconf_data[19] &= 0xf0; break;
-    default: return;
+        stepper_conf[stepper_num].toff = 0;
+        setInt( stepper_conf[stepper_num].toff, toff, stepper_num);
+        if(false == hal_do_stepper_spi_transaction(&cfg_data[CHOPCONF][20 - num_bytes_used], num_bytes_used, &spi_receive_buffer[0]))
+        {
+            hal_cpu_report_issue(21);
+        }
     }
-    hal_spi_do_transaction(STEPPER_SPI, &chopconf_data[0], num_bytes_used, &spi_receive_buffer[0]);
-    */
 }
 
 #ifdef USE_STEP_DIR
@@ -1163,7 +1151,7 @@ static bool printMotorConfiguration(void)
         debug_msg("[s]");
         hstof = getInt(hysteresisStartOffset, stepperNumber);
         debug_line("hysteresis Start Offset : %d (=%d)", hstof + 1, hstof);
-        if(getInt(hysteresisStartOffset, stepperNumber) + 1 + hend > 15)
+        if(hstof + 1 + hend > 15)
         {
             debug_line("ERROR: Hysteresis End + hysteresis Start Offset must be less than 16 !");
         }
