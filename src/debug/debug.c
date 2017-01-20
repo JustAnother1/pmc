@@ -95,16 +95,24 @@ static void count_debug_ticks_per_ms(void)
     {
         if(0 != tick_value)
         {
-            // record the statistics
-            if(tick_cnt > tick_max)
+            if(time == tick_value  + 1)
             {
-                tick_max = tick_cnt;
-                // debug_line("New tick max: %d\n", tick_max);
+                // record the statistics
+                if(tick_cnt > tick_max)
+                {
+                    tick_max = tick_cnt;
+                    // debug_line("New tick max: %d\n", tick_max);
+                }
+                if(tick_cnt < tick_min)
+                {
+                    tick_min = tick_cnt;
+                    // debug_line("New tick min: %d\n", tick_min);
+                }
             }
-            if(tick_cnt < tick_min)
+            else
             {
-                tick_min = tick_cnt;
-                // debug_line("New tick min: %d\n", tick_min);
+                // something blocked for more than one ms !
+                tick_min = 0;
             }
         }
         tick_value = time;
