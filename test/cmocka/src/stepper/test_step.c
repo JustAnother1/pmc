@@ -103,7 +103,7 @@ static void test_get_number_of_free_slots(void **state)
     // wrap around
     write_pos = 3;
     read_pos = 5;
-    assert_int_equal(2, get_number_of_free_slots());
+    assert_int_equal(1, get_number_of_free_slots());
 }
 
 // static void finished_cur_slot(void);
