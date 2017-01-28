@@ -44,3 +44,8 @@ bool cmd_queue_chnage_setting(uint8_t* setting)
 {
     return true;
 }
+
+bool cmd_queue_show_status(uint8_t* setting)
+{
+    return true;
+}
