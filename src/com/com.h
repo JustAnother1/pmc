@@ -34,5 +34,6 @@ uint_fast8_t com_get_parameter_byte(uint_fast8_t index);
 void com_send_generic_application_error_response_with_comment(uint_fast8_t cause, uint_fast8_t message_index, uint_fast8_t value);
 void com_send_order_specific_error_with_prefilled_parameter(uint_fast8_t parameter_length);
 uint_fast8_t com_crc_a_byte(uint_fast8_t new_byte, uint_fast8_t old_crc);
+uint_fast8_t com_get_host_timeout_sec(void);
 
 #endif /* COM_H_ */

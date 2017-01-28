@@ -83,6 +83,8 @@
 #define QUEUE_CAUSE_MALFORMED_BLOCK          3
 #define QUEUE_CAUSE_ERROR_IN_COMMAND_BLOCK   4
 
+#define DEFAULT_ERROR_REPLY_CODE             0xff
+
 #define REPLY_CODE_DEBUG                     0x50
 
 // orders

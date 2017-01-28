@@ -49,6 +49,7 @@ static void finished_current_queued_block(void);
 static void send_queue_ok_response(void);
 static void send_queue_failed_response(uint_fast8_t cause,
                                        uint_fast8_t enqueued_commands,
+                                       uint_fast8_t error_reply_code,
                                        char* error_reason);
 static void handle_wrapped_command(void);
 
@@ -122,13 +123,15 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
     uint_fast8_t cur_type;
     uint_fast8_t next_write_position;
     // Empty Parameter sends an OK reply. This is used by the host to check the Queue status.
-    while(received_bytes > cur_position)
+    while(received_bytes > (cur_position + 1)) // received bytes is the number of bytes (starts at 1)
+                                               // but cur_position is the index in those bytes (starts at 0)
     {
         // check if we have another Block
         if(BLOCK_ENVELOPE_SIZE > received_bytes - cur_position)
         {
             send_queue_failed_response(QUEUE_CAUSE_MALFORMED_BLOCK,
                                        successfull_enqueued_commands,
+                                       DEFAULT_ERROR_REPLY_CODE,
                                        "too few bytes for a block envelope");
             return;
         }
@@ -137,6 +140,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
         {
             send_queue_failed_response(QUEUE_CAUSE_ERROR_IN_COMMAND_BLOCK,
                                        successfull_enqueued_commands,
+                                       received_bytes,
                                        "block has no bytes");
             return;
         }
@@ -144,6 +148,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
         {
             send_queue_failed_response(QUEUE_CAUSE_ERROR_IN_COMMAND_BLOCK,
                                        successfull_enqueued_commands,
+                                       DEFAULT_ERROR_REPLY_CODE,
                                        "inconsistent length");
             return;
         }
@@ -161,6 +166,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             {
                 send_queue_failed_response(QUEUE_CAUSE_MALFORMED_BLOCK,
                                            successfull_enqueued_commands,
+                                           DEFAULT_ERROR_REPLY_CODE,
                                            "wrong number of bytes for Delay");
                 return;
             }
@@ -172,6 +178,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             {
                 send_queue_failed_response(QUEUE_CAUSE_MALFORMED_BLOCK,
                                            successfull_enqueued_commands,
+                                           DEFAULT_ERROR_REPLY_CODE,
                                            "too few bytes for Basic Linear Move");
                 return;
             }
@@ -183,6 +190,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             {
                 send_queue_failed_response(QUEUE_CAUSE_MALFORMED_BLOCK,
                                            successfull_enqueued_commands,
+                                           DEFAULT_ERROR_REPLY_CODE,
                                            "wrong number of bytes for set active tool head");
                 return;
             }
@@ -194,6 +202,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             {
                 send_queue_failed_response(QUEUE_CAUSE_MALFORMED_BLOCK,
                                            successfull_enqueued_commands,
+                                           DEFAULT_ERROR_REPLY_CODE,
                                            "wrong number of bytes for movement checkpoint");
                 return;
             }
@@ -202,6 +211,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
         default: // invalid type
             send_queue_failed_response(QUEUE_CAUSE_UNKNOWN_COMMAND_BLOCK,
                                        successfull_enqueued_commands,
+                                       DEFAULT_ERROR_REPLY_CODE,
                                        "invalid block type");
             return;
         }
@@ -218,6 +228,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             // Queue is full
             send_queue_failed_response(QUEUE_CAUSE_QUEUE_FULL,
                                        successfull_enqueued_commands,
+                                       DEFAULT_ERROR_REPLY_CODE,
                                        "");
             return;
         }
@@ -247,6 +258,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
                         // we have an Active Axis that is higher than 8 !
                         send_queue_failed_response(QUEUE_CAUSE_MALFORMED_BLOCK,
                                                    successfull_enqueued_commands,
+                                                   DEFAULT_ERROR_REPLY_CODE,
                                                    "axis index too high");
                         return;
                     }
@@ -303,6 +315,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
                 {
                     send_queue_failed_response(QUEUE_CAUSE_MALFORMED_BLOCK,
                                                successfull_enqueued_commands,
+                                               DEFAULT_ERROR_REPLY_CODE,
                                                "invalid block length");
                     return;
                 }
@@ -311,13 +324,14 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             write_pos = next_write_position;
             successfull_enqueued_commands++;
         }
-        cur_position = cur_position + block_bytes + 1;
+        cur_position = cur_position + block_bytes;
     }
     send_queue_ok_response();
 }
 
 static void send_queue_failed_response(uint_fast8_t cause,
                                        uint_fast8_t enqueued_commands,
+                                       uint_fast8_t error_reply_code,
                                        char* error_reason)
 {
     uint_fast8_t i;
@@ -345,7 +359,7 @@ static void send_queue_failed_response(uint_fast8_t cause,
 
     para_start[6] = (uint8_t)(finished_blocks >> 8) & 0xff;
     para_start[7] = (uint8_t)finished_blocks & 0xff;
-    para_start[8] = (uint8_t)0xff;
+    para_start[8] = (uint8_t)error_reply_code;
 
     i = 0;
     while((0 != *error_reason) && (i < MAX_SEND_FRAME_SIZE - (9 + MIN_BYTES_CLIENT_FRAME)))

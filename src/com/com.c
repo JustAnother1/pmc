@@ -13,21 +13,23 @@
  *
  */
 
-#include "protocol.h"
-#include "uart.h"
-#include "orderhandler.h"
 #include "com.h"
-#include "usb.h"
+#include "command_queue.h"
 #include "device_heater.h"
 #include "device_stepper.h"
 #include "device_input.h"
-#include "fw_cfg.h"
-#include "events.h"
-#include "command_queue.h"
-#include "hal_cpu.h"
-#include "hal_time.h"
-#include "error.h"
 #include "endStopHandling.h"
+#include "error.h"
+#include "events.h"
+#include "fw_cfg.h"
+#include "hal_cpu.h"
+#include "hal_debug.h"
+#include "hal_time.h"
+#include "protocol.h"
+#include "orderhandler.h"
+#include "uart.h"
+#include "usb.h"
+
 
 #if defined(HAS_USB) && defined(HAS_UART)
 #error "Can only have UART or USB not both !"
@@ -48,6 +50,8 @@ static uint8_t send_buffer[MAX_SEND_FRAME_SIZE];
 #define CS_STOPPED       0
 #define CS_CLEARED       1
 static uint_fast8_t client_state = CS_STOPPED;
+static uint32_t last_host_activity_tick = 0;
+static uint32_t host_timeout_tick = 30000; // 30 seconds
 static uint_fast8_t recovery_options = RECOVERY_CONDITION_CLEARED;
 static uint_fast8_t cause = STOPPED_CAUSE_RESET;
 static uint_fast8_t last_sequence_number = NOT_MATCHING_SEQUENCE_NUMBER; // Invalid Number so that it does not match
@@ -77,6 +81,7 @@ static const uint_fast8_t crc_array[256] =
 /* F*/ 0x90U, 0x36U, 0x7aU, 0xdcU, 0xe2U, 0x44U, 0x08U, 0xaeU, 0x74U, 0xd2U, 0x9eU, 0x38U, 0x06U, 0xa0U, 0xecU, 0x4aU
 };
 
+static void check_host_timeout(void);
 static void handle_resume(uint_fast8_t parameter);
 static void send_firmware_id_frame(void);
 static void send_unknown_order_response(uint_fast8_t request);
@@ -103,6 +108,7 @@ void com_init(void)
     {
         error_signal_error_and_die();
     }
+    hal_cpu_add_ms_tick_function_cycle(check_host_timeout, 1000);
     send_firmware_id_frame();
 }
 
@@ -136,6 +142,46 @@ uint_fast8_t com_get_parameter_byte(uint_fast8_t index)
 #ifdef HAS_UART
         return uart_get_parameter_byte(index);
 #endif
+}
+
+uint_fast8_t com_get_host_timeout_sec(void)
+{
+    return host_timeout_tick/1000;
+}
+
+static void check_host_timeout(void)
+{
+    if(CS_STOPPED == client_state)
+    {
+        // nothing to do
+    }
+    else
+    {
+        uint32_t now = hal_cpu_get_ms_tick();
+        if(last_host_activity_tick + host_timeout_tick < now)
+        {
+            int i;
+            debug_line("Host Timeout !!!");
+            client_state = CS_STOPPED;
+            // power off all heaters
+            for(i = 0; i < hal_pwm_get_amount(); i++)
+            {
+                hal_pwm_set_on_time(i, 0);
+            }
+            // disable all steppers
+            step_disable_all_motors();
+            // disable all buzzers
+            for(i = 0; i < hal_buzzer_get_amount(); i++)
+            {
+                hal_buzzer_set_frequency(i, 0);
+            }
+            // if the board can do it:
+            hal_power_off_12V();
+            hal_power_off_HighVoltage();
+        }
+        // else wait a bit longer
+    }
+
 }
 
 static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint_fast8_t control)
@@ -178,6 +224,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
     }
     else
     {
+        last_host_activity_tick = hal_cpu_get_ms_tick();
         switch(order)
         {
         case ORDER_RESUME:
@@ -638,11 +685,23 @@ static void handle_resume(uint_fast8_t parameter)
     switch(parameter)
     {
     case 0: // Query
-        send_stopped_response();
+        if(CS_CLEARED == client_state)
+        {
+            // not in stopped state -> send OK
+            com_send_ok_response();
+        }
+        else
+        {
+            send_stopped_response();
+        }
         break;
 
     case 1: // clear
+        // if the board can do it:
+        hal_power_on_12V();
+        hal_power_on_HighVoltage();
         client_state = CS_CLEARED;
+        last_host_activity_tick = hal_cpu_get_ms_tick();
         cmd_queue_reset_executed_commands();
         com_send_ok_response();
         break;

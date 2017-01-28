@@ -106,7 +106,7 @@ void oh_handle_request_information(uint_fast8_t parameter)
         break;
 
     case 13: // host timeout
-        com_send_ok_response_with_single_byte_parameter(30); //TODO
+        com_send_ok_response_with_single_byte_parameter(com_get_host_timeout_sec()); //TODO
         break;
 
     default:
