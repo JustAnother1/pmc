@@ -35,5 +35,6 @@ void com_send_generic_application_error_response_with_comment(uint_fast8_t cause
 void com_send_order_specific_error_with_prefilled_parameter(uint_fast8_t parameter_length);
 uint_fast8_t com_crc_a_byte(uint_fast8_t new_byte, uint_fast8_t old_crc);
 uint_fast8_t com_get_host_timeout_sec(void);
+void gotoStoppedMode(uint_fast8_t cause_for_stopped_mode, uint_fast8_t recovery_options_for_stopped_mode);
 
 #endif /* COM_H_ */

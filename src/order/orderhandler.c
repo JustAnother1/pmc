@@ -24,6 +24,7 @@
 #include "device_stepper.h"
 #include "device_temperature_sensor.h"
 #include "fw_cfg.h"
+#include "endStopHandling.h"
 
 static char firmware_name[]= "Pacemaker Client";
 // TODO conditional compile for next Hardware / or Hardware auto detect

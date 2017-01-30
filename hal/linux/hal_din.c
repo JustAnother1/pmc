@@ -40,4 +40,10 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
 
 }
 
+void hal_din_subscribe_to_events(uint_fast8_t switch_number,
+                                 uint_fast8_t stepper_number,
+                                 din_func handle_func)
+{
+
+}
 

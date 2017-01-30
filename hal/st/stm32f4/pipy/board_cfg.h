@@ -767,6 +767,17 @@
 /*                                                                            */
 /******************************************************************************/
 
+#define D_IN_EXTI_SWIER            0xfc00
+#define D_IN_EXTI_FTSR             0xfc00
+#define D_IN_EXTI_RTSR             0xfc00
+#define D_IN_EXTI_EMR              0xfc00
+#define D_IN_EXTI_IMR              0xfc00
+
+#define D_IN_SYSCFG_EXTICR0        0
+#define D_IN_SYSCFG_EXTICR1        0
+#define D_IN_SYSCFG_EXTICR2        SYSCFG_EXTICR3_EXTI10_PC | SYSCFG_EXTICR3_EXTI11_PC
+#define D_IN_SYSCFG_EXTICR3        SYSCFG_EXTICR4_EXTI12_PC | SYSCFG_EXTICR4_EXTI13_PC | SYSCFG_EXTICR4_EXTI14_PC | SYSCFG_EXTICR4_EXTI15_PC
+
 #define D_IN_NUM_PINS              6
 #define D_IN_0_NAME                "In 1"
 #define D_IN_0_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIOCEN

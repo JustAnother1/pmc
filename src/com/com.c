@@ -22,11 +22,15 @@
 #include "error.h"
 #include "events.h"
 #include "fw_cfg.h"
+#include "hal_buzzer.h"
 #include "hal_cpu.h"
 #include "hal_debug.h"
+#include "hal_power.h"
+#include "hal_pwm.h"
 #include "hal_time.h"
 #include "protocol.h"
 #include "orderhandler.h"
+#include "step.h"
 #include "uart.h"
 #include "usb.h"
 
@@ -160,28 +164,36 @@ static void check_host_timeout(void)
         uint32_t now = hal_cpu_get_ms_tick();
         if(last_host_activity_tick + host_timeout_tick < now)
         {
-            int i;
             debug_line("Host Timeout !!!");
-            client_state = CS_STOPPED;
-            // power off all heaters
-            for(i = 0; i < hal_pwm_get_amount(); i++)
-            {
-                hal_pwm_set_on_time(i, 0);
-            }
-            // disable all steppers
-            step_disable_all_motors();
-            // disable all buzzers
-            for(i = 0; i < hal_buzzer_get_amount(); i++)
-            {
-                hal_buzzer_set_frequency(i, 0);
-            }
-            // if the board can do it:
-            hal_power_off_12V();
-            hal_power_off_HighVoltage();
+            gotoStoppedMode(STOPPED_CAUSE_HOST_TIMEOUT, RECOVERY_CONDITION_CLEARED);
         }
         // else wait a bit longer
     }
+}
 
+void gotoStoppedMode(uint_fast8_t cause_for_stopped_mode, uint_fast8_t recovery_options_for_stopped_mode)
+{
+    int i;
+    client_state = CS_STOPPED;
+    cause = cause_for_stopped_mode;
+    recovery_options = recovery_options_for_stopped_mode;
+    // stop executing the queue
+    cmd_queue_clear();
+    // power off all heaters
+    for(i = 0; i < hal_pwm_get_amount(); i++)
+    {
+        hal_pwm_set_on_time(i, 0);
+    }
+    // disable all steppers
+    step_disable_all_motors();
+    // disable all buzzers
+    for(i = 0; i < hal_buzzer_get_amount(); i++)
+    {
+        hal_buzzer_set_frequency(i, 0);
+    }
+    // if the board can do it:
+    hal_power_off_12V();
+    hal_power_off_HighVoltage();
 }
 
 static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint_fast8_t control)

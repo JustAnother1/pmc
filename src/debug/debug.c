@@ -753,7 +753,7 @@ static void parse_order(int length)
 
         case 'Q':
         case 'q':
-            cmd_queue_show_status(cmd_buf[2]);
+            cmd_queue_show_status(&(cmd_buf[2]));
             break;
 
         default:

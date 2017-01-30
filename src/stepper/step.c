@@ -850,6 +850,11 @@ bool step_is_busy(void)
     return busy;
 }
 
+bool step_is_homing(void)
+{
+    return is_a_homing_move;
+}
+
 void step_disable_all_motors(void)
 {
     uint_fast8_t i;
@@ -886,6 +891,11 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
         // else invalid state
     }
     // else invalid stepper
+}
+
+void step_end_stop_hit_on(uint_fast8_t stepper_number)
+{
+    // todo stop this stepper from doing any more steps
 }
 
 #ifdef DEBUG_ACTIVE

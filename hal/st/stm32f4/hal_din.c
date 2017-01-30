@@ -14,23 +14,45 @@
  */
 
 #include <stdbool.h>
-#include <st_gpio.h>
-#include <st_rcc.h>
-#include <st_util.h>
+#include <stdio.h>
+#include "st_gpio.h"
+#include "st_rcc.h"
+#include "st_util.h"
+#include "st_exti.h"
+#include "st_syscfg.h"
 #include "hal_din.h"
 #include "board_cfg.h"
 #include "hal_debug.h"
 
 static bool initialized = false;
 
+void EXTI0_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void EXTI1_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void EXTI2_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void EXTI3_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void EXTI4_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void EXTI9_5_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+void EXTI15_10_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
+static void check_pin(void);
+
+static din_func funcs[D_IN_NUM_PINS];
+static uint_fast8_t steppers[D_IN_NUM_PINS];
+
 void hal_din_init(void)
 {
+    int i;
     if(true == initialized)
     {
         // initialize only once !
         return;
     }
     initialized = true;
+
+    for(i = 0; i < D_IN_NUM_PINS; i++)
+    {
+        funcs[i] = NULL;
+        steppers[i] = 0xff;
+    }
 
 #if D_IN_NUM_PINS > 0
         RCC->AHB1ENR |= D_IN_0_RCC_GPIO_ENABLE;
@@ -103,6 +125,18 @@ void hal_din_init(void)
         D_IN_5_GPIO_PORT->PUPDR   &= ~D_IN_5_PUPD_0;
         D_IN_5_GPIO_PORT->PUPDR   |=  D_IN_5_PUPD_1;
 #endif
+
+        // Enable Interrupts for state change on Input lines
+        EXTI->SWIER = D_IN_EXTI_SWIER;
+        EXTI->FTSR = D_IN_EXTI_FTSR;
+        EXTI->RTSR = D_IN_EXTI_RTSR;
+        EXTI->EMR = D_IN_EXTI_EMR;
+        EXTI->IMR = D_IN_EXTI_IMR;
+        // Map Interrupt Lines to Pins in GPIO Ports
+        SYSCFG->EXTICR[0] = D_IN_SYSCFG_EXTICR0;
+        SYSCFG->EXTICR[1] = D_IN_SYSCFG_EXTICR1;
+        SYSCFG->EXTICR[2] = D_IN_SYSCFG_EXTICR2;
+        SYSCFG->EXTICR[3] = D_IN_SYSCFG_EXTICR3;
 }
 
 uint_fast8_t hal_din_get_amount(void)
@@ -178,6 +212,74 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
         debug_line("dout pin(%d) not available!", device);
     }
     return 0;
+}
+
+void hal_din_subscribe_to_events(uint_fast8_t switch_number, uint_fast8_t stepper_number, din_func handle_func)
+{
+    funcs[switch_number] = handle_func;
+    steppers[switch_number] = stepper_number;
+}
+
+void EXTI0_IRQHandler(void)
+{
+    check_pin();
+    EXTI->PR = 1;
+}
+
+void EXTI1_IRQHandler(void)
+{
+    check_pin();
+    EXTI->PR = 2;
+}
+
+void EXTI2_IRQHandler(void)
+{
+    check_pin();
+    EXTI->PR = 4;
+}
+
+void EXTI3_IRQHandler(void)
+{
+    check_pin();
+    EXTI->PR = 8;
+}
+
+void EXTI4_IRQHandler(void)
+{
+    check_pin();
+    EXTI->PR = 16;
+}
+
+void EXTI9_5_IRQHandler(void)
+{
+    check_pin();
+    EXTI->PR = 0x3e0; // 9-5
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+    check_pin();
+    EXTI->PR = 0xfc00; // 9-5
+}
+
+static void check_pin(void)
+{
+    int i;
+    for(i = 0; i < D_IN_NUM_PINS; i++)
+    {
+        if(NULL != funcs[i])
+        {
+            if (1 == hal_din_get_switch_state(i))
+            {
+                funcs[i](true,steppers[i], i);
+            }
+            else
+            {
+                funcs[i](false,steppers[i], i);
+            }
+        }
+        // else nobody cares about this input
+    }
 }
 
 #ifdef DEBUG_ACTIVE

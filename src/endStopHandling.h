@@ -23,5 +23,6 @@ void endStopHandling_init(void);
 bool dev_input_enable(uint_fast8_t switch_number, uint_fast8_t enable);
 bool dev_input_is_enabled(uint_fast8_t switch_number);
 bool dev_stepper_configure_end_stops(uint_fast8_t StepperNumber, uint_fast8_t switch_number, uint_fast8_t min_Max);
+uint_fast8_t dev_input_get_switch_state(uint_fast8_t number);
 
 #endif /* SRC_ENDSTOPHANDLING_H_ */

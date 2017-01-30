@@ -17,11 +17,16 @@
 #define HAL_INCLUDE_HAL_DIN_H_
 
 #include <inttypes.h>
+#include <stdbool.h>
+
+typedef void (*din_func)(bool high, uint_fast8_t stepper, uint_fast8_t switch_number);
+
 
 void hal_din_init(void);
 uint_fast8_t hal_din_get_amount(void);
 uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position);
 uint_fast8_t hal_din_get_switch_state(uint_fast8_t device);
+void hal_din_subscribe_to_events(uint_fast8_t switch_number, uint_fast8_t stepper_number, din_func handle_func);
 #ifdef DEBUG_ACTIVE
 void hal_din_print_PinConfiguration(uint_fast8_t port, int idx);
 #endif
