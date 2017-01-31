@@ -788,8 +788,8 @@
 #define D_IN_0_OTYPER_1            GPIO_OTYPER_10_OPEN_DRAIN_1
 #define D_IN_0_OSPEEDR_0           GPIO_OSPEEDER_10_LOW_SPEED_0
 #define D_IN_0_OSPEEDR_1           GPIO_OSPEEDER_10_LOW_SPEED_1
-#define D_IN_0_PUPD_0              GPIO_PUPDR_10_NONE_0
-#define D_IN_0_PUPD_1              GPIO_PUPDR_10_NONE_1
+#define D_IN_0_PUPD_0              GPIO_PUPDR_10_PULL_DOWN_0
+#define D_IN_0_PUPD_1              GPIO_PUPDR_10_PULL_DOWN_1
 #define D_IN_0_IDR                 GPIO_IDR_10
 
 #define D_IN_1_NAME                "In 2"
@@ -801,8 +801,8 @@
 #define D_IN_1_OTYPER_1            GPIO_OTYPER_11_OPEN_DRAIN_1
 #define D_IN_1_OSPEEDR_0           GPIO_OSPEEDER_11_LOW_SPEED_0
 #define D_IN_1_OSPEEDR_1           GPIO_OSPEEDER_11_LOW_SPEED_1
-#define D_IN_1_PUPD_0              GPIO_PUPDR_11_NONE_0
-#define D_IN_1_PUPD_1              GPIO_PUPDR_11_NONE_1
+#define D_IN_1_PUPD_0              GPIO_PUPDR_11_PULL_DOWN_0
+#define D_IN_1_PUPD_1              GPIO_PUPDR_11_PULL_DOWN_1
 #define D_IN_1_IDR                 GPIO_IDR_11
 
 #define D_IN_2_NAME                "In 3"
@@ -814,8 +814,8 @@
 #define D_IN_2_OTYPER_1            GPIO_OTYPER_12_OPEN_DRAIN_1
 #define D_IN_2_OSPEEDR_0           GPIO_OSPEEDER_12_LOW_SPEED_0
 #define D_IN_2_OSPEEDR_1           GPIO_OSPEEDER_12_LOW_SPEED_1
-#define D_IN_2_PUPD_0              GPIO_PUPDR_12_NONE_0
-#define D_IN_2_PUPD_1              GPIO_PUPDR_12_NONE_1
+#define D_IN_2_PUPD_0              GPIO_PUPDR_12_PULL_DOWN_0
+#define D_IN_2_PUPD_1              GPIO_PUPDR_12_PULL_DOWN_1
 #define D_IN_2_IDR                 GPIO_IDR_12
 
 #define D_IN_3_NAME                "In 4"
@@ -827,8 +827,8 @@
 #define D_IN_3_OTYPER_1            GPIO_OTYPER_13_OPEN_DRAIN_1
 #define D_IN_3_OSPEEDR_0           GPIO_OSPEEDER_13_LOW_SPEED_0
 #define D_IN_3_OSPEEDR_1           GPIO_OSPEEDER_13_LOW_SPEED_1
-#define D_IN_3_PUPD_0              GPIO_PUPDR_13_NONE_0
-#define D_IN_3_PUPD_1              GPIO_PUPDR_13_NONE_1
+#define D_IN_3_PUPD_0              GPIO_PUPDR_13_PULL_DOWN_0
+#define D_IN_3_PUPD_1              GPIO_PUPDR_13_PULL_DOWN_1
 #define D_IN_3_IDR                 GPIO_IDR_13
 
 #define D_IN_4_NAME                "In 5"
@@ -840,8 +840,8 @@
 #define D_IN_4_OTYPER_1            GPIO_OTYPER_14_OPEN_DRAIN_1
 #define D_IN_4_OSPEEDR_0           GPIO_OSPEEDER_14_LOW_SPEED_0
 #define D_IN_4_OSPEEDR_1           GPIO_OSPEEDER_14_LOW_SPEED_1
-#define D_IN_4_PUPD_0              GPIO_PUPDR_14_NONE_0
-#define D_IN_4_PUPD_1              GPIO_PUPDR_14_NONE_1
+#define D_IN_4_PUPD_0              GPIO_PUPDR_14_PULL_DOWN_0
+#define D_IN_4_PUPD_1              GPIO_PUPDR_14_PULL_DOWN_1
 #define D_IN_4_IDR                 GPIO_IDR_14
 
 #define D_IN_5_NAME                "In 6"
@@ -853,8 +853,8 @@
 #define D_IN_5_OTYPER_1            GPIO_OTYPER_15_OPEN_DRAIN_1
 #define D_IN_5_OSPEEDR_0           GPIO_OSPEEDER_15_LOW_SPEED_0
 #define D_IN_5_OSPEEDR_1           GPIO_OSPEEDER_15_LOW_SPEED_1
-#define D_IN_5_PUPD_0              GPIO_PUPDR_15_NONE_0
-#define D_IN_5_PUPD_1              GPIO_PUPDR_15_NONE_1
+#define D_IN_5_PUPD_0              GPIO_PUPDR_15_PULL_DOWN_0
+#define D_IN_5_PUPD_1              GPIO_PUPDR_15_PULL_DOWN_1
 #define D_IN_5_IDR                 GPIO_IDR_15
 
 /******************************************************************************/
