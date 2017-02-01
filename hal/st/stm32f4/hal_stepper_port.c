@@ -43,3 +43,8 @@ void hal_stepper_set_Output(uint32_t value)
 {
     STEPPER_PORT_GPIO_PORT->ODR = value;
 }
+
+uint32_t hal_stepper_get_Output(void)
+{
+    return STEPPER_PORT_GPIO_PORT->ODR;
+}

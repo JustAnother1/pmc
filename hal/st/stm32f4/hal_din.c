@@ -54,6 +54,8 @@ void hal_din_init(void)
         steppers[i] = 0xff;
     }
 
+    // configure the pins
+
 #if D_IN_NUM_PINS > 0
         RCC->AHB1ENR |= D_IN_0_RCC_GPIO_ENABLE;
         D_IN_0_GPIO_PORT->MODER   &= ~D_IN_0_MODER_0;
@@ -125,6 +127,27 @@ void hal_din_init(void)
         D_IN_5_GPIO_PORT->PUPDR   &= ~D_IN_5_PUPD_0;
         D_IN_5_GPIO_PORT->PUPDR   |=  D_IN_5_PUPD_1;
 #endif
+
+        // enable clock for GPIO Port
+        RCC->AHB1ENR |= EXTI_GPIO_PORT_RCC;
+        // enable clock for SYSCFG
+        RCC->APB2ENR |= EXTI_APB2ENR;
+
+        // Enable Interrupt
+        NVIC_SetPriority(EXTI_0_IRQ_NUMBER, EXTI_0_IRQ_PRIORITY);
+        NVIC_EnableIRQ(EXTI_0_IRQ_NUMBER);
+        NVIC_SetPriority(EXTI_1_IRQ_NUMBER, EXTI_1_IRQ_PRIORITY);
+        NVIC_EnableIRQ(EXTI_1_IRQ_NUMBER);
+        NVIC_SetPriority(EXTI_2_IRQ_NUMBER, EXTI_2_IRQ_PRIORITY);
+        NVIC_EnableIRQ(EXTI_2_IRQ_NUMBER);
+        NVIC_SetPriority(EXTI_3_IRQ_NUMBER, EXTI_3_IRQ_PRIORITY);
+        NVIC_EnableIRQ(EXTI_3_IRQ_NUMBER);
+        NVIC_SetPriority(EXTI_4_IRQ_NUMBER, EXTI_4_IRQ_PRIORITY);
+        NVIC_EnableIRQ(EXTI_4_IRQ_NUMBER);
+        NVIC_SetPriority(EXTI_5_9_IRQ_NUMBER, EXTI_5_9_IRQ_PRIORITY);
+        NVIC_EnableIRQ(EXTI_5_9_IRQ_NUMBER);
+        NVIC_SetPriority(EXTI_10_15_IRQ_NUMBER, EXTI_10_15_IRQ_PRIORITY);
+        NVIC_EnableIRQ(EXTI_10_15_IRQ_NUMBER);
 
         // Enable Interrupts for state change on Input lines
         EXTI->SWIER = D_IN_EXTI_SWIER;
@@ -222,49 +245,64 @@ void hal_din_subscribe_to_events(uint_fast8_t switch_number, uint_fast8_t steppe
 
 void EXTI0_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     check_pin();
     EXTI->PR = 1;
+    hal_set_isr1_led(false);
 }
 
 void EXTI1_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     check_pin();
     EXTI->PR = 2;
+    hal_set_isr1_led(false);
 }
 
 void EXTI2_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     check_pin();
     EXTI->PR = 4;
+    hal_set_isr1_led(false);
 }
 
 void EXTI3_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     check_pin();
     EXTI->PR = 8;
+    hal_set_isr1_led(false);
 }
 
 void EXTI4_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     check_pin();
     EXTI->PR = 16;
+    hal_set_isr1_led(false);
 }
 
 void EXTI9_5_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     check_pin();
     EXTI->PR = 0x3e0; // 9-5
+    hal_set_isr1_led(false);
 }
 
 void EXTI15_10_IRQHandler(void)
 {
+    hal_set_isr1_led(true);
     check_pin();
     EXTI->PR = 0xfc00; // 9-5
+    hal_set_isr1_led(false);
 }
 
 static void check_pin(void)
 {
     int i;
+    debug_line("End stop triggered");
     for(i = 0; i < D_IN_NUM_PINS; i++)
     {
         if(NULL != funcs[i])

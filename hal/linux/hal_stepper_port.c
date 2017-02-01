@@ -15,6 +15,8 @@
 
 #include "hal_stepper_port.h"
 
+static uint32_t stepper_port_output = 0;
+
 void hal_stepper_port_init(void)
 {
 
@@ -22,6 +24,11 @@ void hal_stepper_port_init(void)
 
 void hal_stepper_set_Output(uint32_t value)
 {
+    stepper_port_output = value;
+}
 
+uint32_t hal_stepper_get_Output(void)
+{
+    return stepper_port_output;
 }
 

@@ -25,6 +25,7 @@
 #include "hal_debug.h"
 #include "hal_din.h"
 #include "hal_i2c.h"
+#include "hal_power.h"
 #include "hal_spi.h"
 #include "hal_time.h"
 #include "hal_uart.h"
@@ -311,7 +312,8 @@ static void order_help(void)
     debug_line("l                          : list recorded debug information");
     debug_line("md<addressHex> <lengthHex> : print memory");
     // n
-    // o
+    debug_line("on                         : switch all power on");
+    debug_line("off                        : switch all power off");
     debug_line("pa                         : print ADC configuration");
 #ifdef HAS_USB
     debug_line("pb                         : print USB configuration");
@@ -595,6 +597,49 @@ static void parse_order(int length)
         }
             break;
 
+        default:
+            debug_line("Invalid command ! try h for help");
+            break;
+        }
+        break;
+
+    case 'O':
+    case 'o':
+        if(1 == pos_in_buf)
+        {
+            debug_line("Invalid command ! try h for help");
+            return;
+        }
+        switch (cmd_buf[1])
+        {
+        case 'N':
+        case 'n':
+            hal_power_on_5V();
+            hal_power_on_12V();
+            hal_power_on_HighVoltage();
+            break;
+
+        case 'F':
+        case 'f':
+            if(2 == pos_in_buf)
+            {
+                debug_line("Invalid command ! try h for help");
+                return;
+            }
+            switch(cmd_buf[2])
+            {
+            case 'F':
+            case 'f':
+                hal_power_off_5V();
+                hal_power_off_12V();
+                hal_power_off_HighVoltage();
+                break;
+
+            default:
+                debug_line("Invalid command ! try h for help");
+                break;
+            }
+            break;
         default:
             debug_line("Invalid command ! try h for help");
             break;

@@ -895,7 +895,37 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 
 void step_end_stop_hit_on(uint_fast8_t stepper_number)
 {
-    // todo stop this stepper from doing any more steps
+    int i;
+    uint32_t stepper_Mask = 1<<stepper_number;
+    // plan no more steps on this axis
+    steps_on_axis[stepper_number] = 0;
+    steps_in_this_phase_on_axis[stepper_number] = 0;
+
+    // cancel all planned steps on this axis
+    if(0 == hal_stepper_get_Output() & stepper_Mask)
+    {
+        // step signal is currently 0 and should stay that way
+        for(i = read_pos; i != write_pos; i++)
+        {
+            if(i == STEP_BUFFER_SIZE)
+            {
+                i = 0;
+            }
+            next_step[read_pos] = next_step[read_pos] & ~stepper_Mask;
+        }
+    }
+    else
+    {
+        // step signal is currently 1 and should stay that way
+        for(i = read_pos; i != write_pos; i++)
+        {
+            if(i == STEP_BUFFER_SIZE)
+            {
+                i = 0;
+            }
+            next_step[read_pos] = next_step[read_pos] | stepper_Mask;
+        }
+    }
 }
 
 #ifdef DEBUG_ACTIVE

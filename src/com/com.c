@@ -710,6 +710,7 @@ static void handle_resume(uint_fast8_t parameter)
 
     case 1: // clear
         // if the board can do it:
+        hal_power_on_5V();
         hal_power_on_12V();
         hal_power_on_HighVoltage();
         client_state = CS_CLEARED;
