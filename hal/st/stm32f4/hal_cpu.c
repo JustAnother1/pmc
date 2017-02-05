@@ -391,32 +391,33 @@ void hal_cpu_check_Reset_Reason(void)
     uint32_t resetSource = RCC->CSR;
     if(0 != (resetSource & RCC_CSR_LPWRRSTF))
     {
-        debug_line("Low Power");
+        debug_msg("Low Power");
     }
     if(0 != (resetSource & RCC_CSR_WWDGRSTF))
     {
-        debug_line("Window Watchdog");
+        debug_msg("Window Watchdog");
     }
     if(0 != (resetSource & RCC_CSR_WDGRSTF))
     {
-        debug_line("Independent Watchdog");
+        debug_msg("Independent Watchdog");
     }
     if(0 != (resetSource & RCC_CSR_SFTRSTF))
     {
-        debug_line("Software");
+        debug_msg("Software");
     }
     if(0 != (resetSource & RCC_CSR_PORRSTF))
     {
-        debug_line("POR/PDR");
+        debug_msg("POR/PDR");
     }
     if(0 != (resetSource & RCC_CSR_PADRSTF))
     {
-        debug_line("Reset Pin Signal");
+        debug_msg("Reset Pin Signal");
     }
     if(0 != (resetSource & RCC_CSR_BORRSTF))
     {
-        debug_line("Brown out Reset");
+        debug_msg("Brown out Reset");
     }
+    debug_line(".");
     // reset Flags
     resetSource    |= RCC_CSR_RMVF;
     RCC->CSR = resetSource;

@@ -239,7 +239,7 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
             uint_fast8_t bytes_per_axis;
             uint_fast8_t start_of_axis_steps;
             queue_type[write_pos] = cur_type;
-            queue[write_pos][0] = block_bytes - 1;
+            queue[write_pos][0] = block_bytes - 1;  // -1 removes the length byte
             for(i = 1; i < block_bytes ; i++)
             {
                 queue[write_pos][i] = com_get_parameter_byte(cur_position + i);
@@ -510,6 +510,7 @@ void cmd_queue_tick(void)
 
             case MOVEMENT_BLOCK_TYPE_SET_ACTIVE_TOOLHEAD:
                 // TODO
+                debug_line("ERROR: not implemented Active Toolhead!");
                 // This is an extension point if a Firmware needs to do something
                 // every time the Print head changes. This can then be implemented here.
                 // Right now there is nothing to do here
@@ -518,6 +519,7 @@ void cmd_queue_tick(void)
 
             case MOVEMENT_BLOCK_TYPE_MOVEMENT_CHECKPOINT:
                 // TODO
+                debug_line("ERROR: not implemented movement checkpoint!");
                 // This is an extension point if a Firmware needs to do something
                 // every time the Print head changes. This can then be implemented here.
                 // Right now there is nothing to do here
@@ -526,6 +528,7 @@ void cmd_queue_tick(void)
 
             default: // invalid type
                 // TODO Event
+                debug_line("ERROR: invalid type!");
                 finished_current_queued_block();
                 break;
             }
@@ -637,39 +640,33 @@ static void handle_wrapped_command(void)
         break;
 
     case ORDER_ENABLE__DISABLE_END_STOPS:
-        if(2 == queue[read_pos][POS_OF_LENGTH])
+        if(0 ==  (queue[read_pos][POS_OF_LENGTH]-1)%2) // -1 is to remove the Order Byte
         {
-            // one Switch
-            if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0],
-                                        queue[read_pos][POS_OF_PARAMETER_START + 1]) )
+            int i;
+            for(i = 0; i < (queue[read_pos][POS_OF_LENGTH] -1)/2; i++)
             {
-                com_send_ok_response();
-            }
-            // else - command already send error
-        }
-        else if(4 == queue[read_pos][POS_OF_LENGTH])
-        {
-            // two switches
-            if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0],
-                                        queue[read_pos][POS_OF_PARAMETER_START + 1] ) )
-            {
-                if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 2],
-                                            queue[read_pos][POS_OF_PARAMETER_START + 3]) )
+                if(true == dev_input_enable(queue[read_pos][POS_OF_PARAMETER_START + 0 + i*2],
+                                            queue[read_pos][POS_OF_PARAMETER_START + 1 + i*2]) )
                 {
-                    com_send_ok_response();
+                    // OK
                 }
-                // else - command already send error
+                else
+                {
+                    // TODO event
+                    debug_line("ERROR: failed to execute wrapped switch command!");
+                }
             }
-            // else - command already send error
         }
         else
         {
             // TODO event
+            debug_line("ERROR: invalid length of wrapped switch command(length: %d)!", queue[read_pos][POS_OF_LENGTH]);
         }
         break;
 
     default: // invalid Order
         // TODO event
+        debug_line("ERROR: invalid wrapped command(Order : %d)!", queue[read_pos][POS_OF_ORDER]);
         break;
     }
 }

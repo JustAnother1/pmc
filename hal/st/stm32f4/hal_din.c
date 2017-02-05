@@ -37,6 +37,7 @@ static void check_pin(void);
 
 static din_func funcs[D_IN_NUM_PINS];
 static uint_fast8_t steppers[D_IN_NUM_PINS];
+static uint_fast8_t last_state[D_IN_NUM_PINS];
 
 void hal_din_init(void)
 {
@@ -52,6 +53,7 @@ void hal_din_init(void)
     {
         funcs[i] = NULL;
         steppers[i] = 0xff;
+        last_state[i] = 0;
     }
 
     // configure the pins
@@ -203,7 +205,7 @@ uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position)
 
 uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
 {
-    if(device < D_OUT_NUM_PINS)
+    if(device < D_IN_NUM_PINS)
     {
         switch(device)
         {
@@ -226,13 +228,13 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
         case 5: if(0 !=(D_IN_5_GPIO_PORT->IDR & D_IN_5_IDR)) {return 1;} else {return 0;} break;
 #endif
         default:
-            debug_line("dout pin(%d) not available!", device);
+            debug_line("din pin(%d) not available!", device);
             break;
         }
     }
     else
     {
-        debug_line("dout pin(%d) not available!", device);
+        debug_line("din pin(%d) not available!", device);
     }
     return 0;
 }
@@ -302,21 +304,34 @@ void EXTI15_10_IRQHandler(void)
 static void check_pin(void)
 {
     int i;
+    int cur_state;
     debug_line("End stop triggered");
     for(i = 0; i < D_IN_NUM_PINS; i++)
     {
-        if(NULL != funcs[i])
+        cur_state = hal_din_get_switch_state(i);
+        if(last_state[i] != cur_state)
         {
-            if (1 == hal_din_get_switch_state(i))
+            // this pin had a change
+            last_state[i] = cur_state;
+            if(NULL != funcs[i])
             {
-                funcs[i](true,steppers[i], i);
+                debug_line("Notify step");
+                if(1 == cur_state)
+                {
+                    funcs[i](true,steppers[i], i);
+                }
+                else
+                {
+                    funcs[i](false,steppers[i], i);
+                }
             }
             else
             {
-                funcs[i](false,steppers[i], i);
+                // nobody cares about this input
+                debug_line("Switch %d not registered", i);
             }
         }
-        // else nobody cares about this input
+        // else no change on this pin
     }
 }
 
