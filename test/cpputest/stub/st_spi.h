@@ -14,7 +14,8 @@
  */
 #ifndef TEST_CPPUTEST_STUB_ST_SPI_H_
 #define TEST_CPPUTEST_STUB_ST_SPI_H_
-
+extern "C"
+{
 #include "st_common.h"
 
 /******************************************************************************/
@@ -127,6 +128,6 @@ extern SPI_TypeDef SPI1_BASE;
 #define SPI3                (&SPI3_BASE)
 #define SPI1                (&SPI1_BASE)
 
-
+}
 
 #endif /* TEST_CPPUTEST_STUB_ST_SPI_H_ */

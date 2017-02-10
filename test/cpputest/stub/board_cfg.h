@@ -15,6 +15,8 @@
 
 #ifndef CPU_CFG_H_
 #define CPU_CFG_H_
+extern "C"
+{
 
 /******************************************************************************/
 /*                                                                            */
@@ -962,5 +964,5 @@
 #define POWER_12V_PUPD_1               GPIO_PUPDR_11_PULL_UP_1
 #define POWER_12V_ODR                  GPIO_ODR_11
 #define POWER_12V_BSRR                 GPIO_BSRR_11
-
+}
 #endif /* CPU_CFG_H_ */

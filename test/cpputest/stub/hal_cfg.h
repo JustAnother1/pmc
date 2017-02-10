@@ -15,7 +15,8 @@
 
 #ifndef HAL_INCLUDE_HAL_CFG_H_
 #define HAL_INCLUDE_HAL_CFG_H_
-
+extern "C"
+{
 // SPI
 #define STEPPER_SPI   0
 #define EXPANSION_SPI 1
@@ -78,5 +79,5 @@
 #define PWM_9_Channel              2
 
 #define BUZZER_TIMER               11
-
+}
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */

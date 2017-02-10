@@ -369,6 +369,7 @@ bool hal_do_i2c_transaction(bool read,
     if(endTime == curTime)
     {
         debug_line("I2C Transaction never finished!");
+        cur_state = idle;
         return false;
     }
     return transaction_successfull;
@@ -406,5 +407,11 @@ bool hal_i2c_is_idle(void)
     {
         return false;
     }
+}
+
+void hal_i2c_reset_transaction(void)
+{
+    cur_state = idle;
+
 }
 

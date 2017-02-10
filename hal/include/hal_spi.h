@@ -32,6 +32,7 @@ void hal_start_stepper_spi_transaction(uint8_t*     data_to_send,
                                        uint_fast8_t num_bytes_to_send,
                                        uint8_t*     data_received);
 bool hal_stepper_spi_is_idle(void);
+void hal_reset_stepper_spi_transaction(void);
 
 
 // the "other" SPI
@@ -47,4 +48,5 @@ void hal_start_expansion_spi_transaction(uint8_t*     data_to_send,
                                          uint_fast8_t num_bytes_to_send,
                                          uint8_t*     data_received);
 bool hal_expansion_spi_is_idle(void);
+void hal_reset_expansion_spi_transaction(void);
 #endif /* HAL_SPI_H_ */

@@ -15,5 +15,7 @@
 
 
 #define static
-
+extern "C"
+{
 #include "st/stm32f4/hal_spi.c"
+}

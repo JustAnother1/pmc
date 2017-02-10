@@ -24,6 +24,7 @@ uint_fast8_t copy_string(char * str, uint8_t *position)
     {
         *position = c;
         num++;
+        position++;
         c = str[num];
     }
     return num;

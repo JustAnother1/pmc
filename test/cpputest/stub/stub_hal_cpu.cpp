@@ -12,6 +12,8 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
+extern "C"
+{
 
 #include <inttypes.h>
 
@@ -65,6 +67,8 @@ void hal_cpu_print_Interrupt_information(void)
 
 void hal_cpu_report_issue(uint32_t issue_number)
 {
+
+}
 
 }
 

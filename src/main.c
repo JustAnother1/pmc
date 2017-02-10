@@ -53,7 +53,7 @@ void main (void)
     hal_init_power();
     hal_power_on_5V();
     hal_time_ms_sleep(5);
-    // hal_power_on_12V();
+    hal_power_on_12V(); // Fans are on 12V ! So for safety it is critical to have 12V on all the time !
     hal_time_ms_sleep(5);
     // hal_power_on_HighVoltage();
     hal_time_ms_sleep(5);

@@ -15,7 +15,8 @@
 
 #ifndef TEST_CPPUTEST_STUB_ST_RCC_H_
 #define TEST_CPPUTEST_STUB_ST_RCC_H_
-
+extern "C"
+{
 #include "st_common.h"
 
 /******************************************************************************/
@@ -504,6 +505,6 @@ typedef struct
 extern RCC_TypeDef RCC_BASE;
 #define RCC                 (&RCC_BASE)
 
-
+}
 
 #endif /* TEST_CPPUTEST_STUB_ST_RCC_H_ */

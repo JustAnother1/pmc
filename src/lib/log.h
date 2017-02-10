@@ -13,36 +13,9 @@
  *
  */
 
-extern "C"
-{
+#ifndef SRC_LIB_LOG_H_
+#define SRC_LIB_LOG_H_
 
-#include <inttypes.h>
-#include "st_gpio.h"
+float logf(float x);
 
-uint_fast8_t copy_string(char * str, uint8_t *position)
-{
-    return 0;
-}
-
-void print_gpio_configuration(GPIO_TypeDef * gpio)
-{
-
-}
-
-void print_gpio_pin_configuration(GPIO_TypeDef * PortRegisters, int idx)
-{
-
-}
-
-void uDelay(const uint32_t usec)
-{
-
-}
-
-void mDelay(const uint32_t msec)
-{
-
-}
-
-}
-
+#endif /* SRC_LIB_LOG_H_ */

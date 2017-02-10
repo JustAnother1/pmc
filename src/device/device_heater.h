@@ -17,6 +17,7 @@
 #define DEVICE_HEATER_H_
 
 #include <inttypes.h>
+#include <stdbool.h>
 
 void dev_heater_init(void);
 uint_fast8_t dev_heater_get_count(void);
@@ -24,7 +25,7 @@ uint_fast8_t dev_heater_get_name(uint_fast8_t number, uint8_t *position);
 uint_fast8_t dev_heater_get_status(uint_fast8_t number);
 void dev_heater_get_configuration(uint_fast8_t number);
 void dev_heater_set_temperature_sensor(uint_fast8_t number, uint_fast8_t sensor_number);
-void dev_heater_set_target_temperature(uint_fast8_t number, uint_fast16_t target_temperature);
+bool dev_heater_set_target_temperature(uint_fast8_t number, uint_fast16_t target_temperature);
 uint_fast16_t dev_heater_get_temperature(uint_fast8_t number);
 
 #endif /* DEVICE_HEATER_H_ */

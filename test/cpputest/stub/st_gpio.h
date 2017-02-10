@@ -15,7 +15,8 @@
 
 #ifndef TEST_CPPUTEST_STUB_ST_GPIO_H_
 #define TEST_CPPUTEST_STUB_ST_GPIO_H_
-
+extern "C"
+{
 #include "st_common.h"
 
 /******************************************************************************/
@@ -603,7 +604,7 @@ extern GPIO_TypeDef GPIOI_BASE;
 #define GPIOH               (&GPIOH_BASE)
 #define GPIOI               (&GPIOI_BASE)
 
-
+}
 #endif /* TEST_CPPUTEST_STUB_ST_GPIO_H_ */
 
 

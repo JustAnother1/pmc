@@ -14,6 +14,7 @@
  */
 
 #include <stdbool.h>
+#include <st_gpio.h>
 #include "board_cfg.h"
 #include "hal_cfg.h"
 #include "hal_cpu.h"
@@ -21,7 +22,6 @@
 #include "hal_led.h"
 #include "hal_spi.h"
 #include "hal_time.h"
-#include <st_gpio.h>
 #include <st_rcc.h>
 #include <st_spi.h>
 #include <st_util.h>
@@ -66,6 +66,7 @@ static void hal_spi_start_spi_transaction(uint_fast8_t device,
                                           uint_fast8_t num_bytes_to_send,
                                           uint8_t *data_received);
 static bool waitForEndOfSpiTransaction(uint_fast8_t device);
+static void hal_spi_reset_transaction(uint_fast8_t device);
 
 void SPI_0_IRQ_HANDLER(void) __attribute__ ((interrupt ("IRQ")));
 void SPI_1_IRQ_HANDLER(void) __attribute__ ((interrupt ("IRQ")));
@@ -115,6 +116,10 @@ bool hal_stepper_spi_is_idle(void)
     return hal_spi_is_idle(STEPPER_SPI);
 }
 
+void hal_reset_stepper_spi_transaction(void)
+{
+    hal_spi_reset_transaction(STEPPER_SPI);
+}
 
 // the "other" SPI
 
@@ -155,6 +160,11 @@ bool hal_expansion_spi_is_idle(void)
     return hal_spi_is_idle(EXPANSION_SPI);
 }
 
+void hal_reset_expansion_spi_transaction(void)
+{
+    hal_spi_reset_transaction(EXPANSION_SPI);
+}
+
 // End of Implementation of hal_spi_api
 
 
@@ -180,9 +190,15 @@ static void hal_spi_init(uint_fast8_t device)
             RCC->APB2ENR |= SPI_0_APB2ENR;
 
             // configure SPI parameters
-            // CPOL = 1 CPHA = 1
-            SPI_0->CR1 = 0x0367;
-            SPI_0->CR2 = 0x0040;
+            SPI_0->I2SCFGR = 0; // enable SPI mode
+            SPI_0->CR1 = 0x0367; // Software slave select,
+                                 // MSB transmitted first,
+                                 // SPI enable, cpuClk/32,
+                                 // Master, Cpol=1, CPHA = 1
+            SPI_0->CR2 = 0x0040; // no TX IRQ, RX IRQ,
+                                 // no error irq, motorola SPI,
+                                 // slave select output disabled,
+                                 // no DMA
 
             // Enable Interrupt
             NVIC_SetPriority(SPI_0_IRQ_NUMBER, SPI_0_IRQ_PRIORITY);
@@ -253,9 +269,15 @@ static void hal_spi_init(uint_fast8_t device)
             RCC->APB2ENR |= SPI_1_APB2ENR;
 
             // configure SPI parameters
-            // CPOL = 1 CPHA = 1
-            SPI_1->CR1 = 0x0367;
-            SPI_1->CR2 = 0x0040;
+            SPI_1->I2SCFGR = 0;  // enable SPI mode
+            SPI_1->CR1 = 0x0364; // Software slave select,
+                                 // MSB transmitted first,
+                                 // SPI enable, cpuClk/32,
+                                 // Master, Cpol=0, CPHA = 0
+            SPI_1->CR2 = 0x0040; // no TX IRQ, RX IRQ,
+                                 // no error irq, motorola SPI,
+                                 // slave select output disabled,
+                                 // no DMA
 
             // Enable Interrupt
             NVIC_SetPriority(SPI_1_IRQ_NUMBER, SPI_1_IRQ_PRIORITY);
@@ -350,8 +372,9 @@ static void hal_spi_print_configuration(uint_fast8_t device)
         debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
         debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
         // SPI
-        debug_line("SPI->CR1      = 0x%08x", spi_devices[device].bus->CR1);
-        debug_line("SPI->CR2      = 0x%08x", spi_devices[device].bus->CR2);
+        debug_line("SPI->CR1      = 0x%04x", spi_devices[device].bus->CR1);
+        debug_line("SPI->CR2      = 0x%04x", spi_devices[device].bus->CR2);
+        debug_line("SPI->SR       = 0x%04x", spi_devices[device].bus->SR);
         // GPIO
         switch(device)
         {
@@ -426,8 +449,8 @@ static void spi_device_IRQ_handler(uint_fast8_t device)
         if(spi_devices[device].length == spi_devices[device].rec_pos)
         {
             // we received the last byte
-            slave_select_end(device);
             spi_devices[device].idle = true;
+            slave_select_end(device);
         }
     }
 
@@ -447,7 +470,6 @@ static void spi_device_IRQ_handler(uint_fast8_t device)
             // we send the last byte
             spi_devices[device].bus->CR2 &= ~SPI_CR2_TXEIE;
         }
-        // spi_devices[device].bus->CR2 &= ~SPI_CR2_TXEIE;
     }
 }
 
@@ -463,7 +485,7 @@ static bool waitForEndOfSpiTransaction(uint_fast8_t device)
     {
         debug_line("SPI not Idle !");
         hal_cpu_report_issue(12);
-        spi_devices[device].idle = true;
+        hal_spi_reset_transaction(device);
         return false;
     }
     return true;
@@ -528,7 +550,12 @@ static void hal_spi_start_spi_transaction(uint_fast8_t device,
 {
     if(false == spi_devices[device].idle)
     {
-        hal_cpu_report_issue(11);
+        switch(device)
+        {
+        case 0 : hal_cpu_report_issue(22); break;
+        case 1 : hal_cpu_report_issue(23); break;
+        default: hal_cpu_report_issue(24); break;
+        }
     }
     spi_devices[device].idle = false;
     spi_devices[device].bus->CR2 |= SPI_CR2_TXEIE;
@@ -540,4 +567,14 @@ static void hal_spi_start_spi_transaction(uint_fast8_t device,
     slave_select_start(device);
     spi_devices[device].length = num_bytes_to_send;
     spi_devices[device].bus->DR = spi_devices[device].send_buffer[0];
+}
+
+static void hal_spi_reset_transaction(uint_fast8_t device)
+{
+    spi_devices[device].idle = true;
+    spi_devices[device].bus->CR2 &= ~SPI_CR2_TXEIE;
+    spi_devices[device].send_pos = 0;
+    spi_devices[device].rec_pos = 0;
+    slave_select_end(device);
+    spi_devices[device].length = 0;
 }

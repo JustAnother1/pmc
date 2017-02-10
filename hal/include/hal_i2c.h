@@ -39,5 +39,6 @@ void hal_start_i2c_transaction(bool read,
                                uint_fast8_t num_bytes );
 
 bool hal_i2c_is_idle(void);
+void hal_i2c_reset_transaction(void);
 
 #endif /* HAL_I2C_H_ */

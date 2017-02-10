@@ -135,6 +135,8 @@
 #define ADC_2_NAME                 "Temp_2"
 #define ADC_3_NAME                 "Temp_3"
 #define ADC_4_NAME                 "Temp_CPU"
+#define ADC_EXT_0_NAME             "Temp_Thermocouple"
+#define ADC_EXT_1_NAME             "Temp_PCB"
 
 #define ADC_0_GPIO_PORT_RCC        RCC_AHB1ENR_GPIOAEN
 #define ADC_0_GPIO_PORT            GPIOA
@@ -207,8 +209,8 @@
 /******************************************************************************/
 
 #define PWM_NUM_PINS               10
-#define PWM_0_NAME                 "Room Heater"
 // B14 - AF9
+#define PWM_0_NAME                 "Room Heater"
 #define PWM_0_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOBEN
 #define PWM_0_GPIO_PORT            GPIOB
 #define PWM_0_MODER_0              GPIO_MODER_14_ALTFUNC_0
@@ -227,8 +229,8 @@
 #define PWM_0_AFR_1_0              0x06000000
 #define PWM_0_AFR_1_1              0x09000000
 #define PWM_0_BSRR                 GPIO_BSRR_14
-#define PWM_1_NAME                 "Bed Heater"
 // B11 - AF1
+#define PWM_1_NAME                 "Bed Heater"
 #define PWM_1_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOBEN
 #define PWM_1_GPIO_PORT            GPIOB
 #define PWM_1_MODER_0              GPIO_MODER_11_ALTFUNC_0
@@ -247,8 +249,8 @@
 #define PWM_1_AFR_1_0              0x0000e000
 #define PWM_1_AFR_1_1              0x00001000
 #define PWM_1_BSRR                 GPIO_BSRR_11
-#define PWM_2_NAME                 "Extruder 1"
 // A8 - AF1
+#define PWM_2_NAME                 "Extruder 1"
 #define PWM_2_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOAEN
 #define PWM_2_GPIO_PORT            GPIOA
 #define PWM_2_MODER_0              GPIO_MODER_8_ALTFUNC_0
@@ -267,8 +269,8 @@
 #define PWM_2_AFR_1_0              0x0000000e
 #define PWM_2_AFR_1_1              0x00000001
 #define PWM_2_BSRR                 GPIO_BSRR_8
-#define PWM_3_NAME                 "Extruder 2"
 // B8 - AF2
+#define PWM_3_NAME                 "Extruder 2"
 #define PWM_3_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOBEN
 #define PWM_3_GPIO_PORT            GPIOB
 #define PWM_3_MODER_0              GPIO_MODER_8_ALTFUNC_0
@@ -287,8 +289,8 @@
 #define PWM_3_AFR_1_0              0x0000000d
 #define PWM_3_AFR_1_1              0x00000002
 #define PWM_3_BSRR                 GPIO_BSRR_8
-#define PWM_4_NAME                 "Extruder 3"
 // B10 - AF1
+#define PWM_4_NAME                 "Extruder 3"
 #define PWM_4_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOBEN
 #define PWM_4_GPIO_PORT            GPIOB
 #define PWM_4_MODER_0              GPIO_MODER_10_ALTFUNC_0
@@ -307,8 +309,8 @@
 #define PWM_4_AFR_1_0              0x00000e00
 #define PWM_4_AFR_1_1              0x00000100
 #define PWM_4_BSRR                 GPIO_BSRR_10
-#define PWM_5_NAME                 "Fan 1"
 // E14 - AF1
+#define PWM_5_NAME                 "Fan 1"
 #define PWM_5_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOEEN
 #define PWM_5_GPIO_PORT            GPIOE
 #define PWM_5_MODER_0              GPIO_MODER_14_ALTFUNC_0
@@ -327,8 +329,8 @@
 #define PWM_5_AFR_1_0              0x0e000000
 #define PWM_5_AFR_1_1              0x01000000
 #define PWM_5_BSRR                 GPIO_BSRR_14
-#define PWM_6_NAME                 "Fan 2"
 // C8 - AF2
+#define PWM_6_NAME                 "Fan 2"
 #define PWM_6_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOCEN
 #define PWM_6_GPIO_PORT            GPIOC
 #define PWM_6_MODER_0              GPIO_MODER_8_ALTFUNC_0
@@ -347,8 +349,8 @@
 #define PWM_6_AFR_1_0              0x0000000d
 #define PWM_6_AFR_1_1              0x00000002
 #define PWM_6_BSRR                 GPIO_BSRR_8
-#define PWM_7_NAME                 "Fan 3"
 // C9 - AF2
+#define PWM_7_NAME                 "Fan 3"
 #define PWM_7_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOCEN
 #define PWM_7_GPIO_PORT            GPIOC
 #define PWM_7_MODER_0              GPIO_MODER_9_ALTFUNC_0
@@ -367,8 +369,8 @@
 #define PWM_7_AFR_1_0              0x000000d0
 #define PWM_7_AFR_1_1              0x00000020
 #define PWM_7_BSRR                 GPIO_BSRR_9
-#define PWM_8_NAME                 "Fan 4"
 // E5 - AF3
+#define PWM_8_NAME                 "Fan 4"
 #define PWM_8_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOEEN
 #define PWM_8_GPIO_PORT            GPIOE
 #define PWM_8_MODER_0              GPIO_MODER_5_ALTFUNC_0
@@ -387,8 +389,8 @@
 #define PWM_8_AFR_1_0              0
 #define PWM_8_AFR_1_1              0
 #define PWM_8_BSRR                 GPIO_BSRR_5
-#define PWM_9_NAME                 "Fan 5"
 // E6 - AF3
+#define PWM_9_NAME                 "Fan 5"
 #define PWM_9_RCC_GPIO_ENABLE      RCC_AHB1ENR_GPIOEEN
 #define PWM_9_GPIO_PORT            GPIOE
 #define PWM_9_MODER_0              GPIO_MODER_6_ALTFUNC_0

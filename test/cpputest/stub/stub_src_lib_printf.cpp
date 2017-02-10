@@ -13,6 +13,9 @@
  *
  */
 
+extern "C"
+{
+
 #include <stdarg.h>
 
 void init_printf(void* putp,void (*putf) (void*,char))
@@ -35,5 +38,5 @@ void tfp_format(void* putp,void (*putf) (void*,char),char *fmt, va_list va)
 
 }
 
-
+}
 

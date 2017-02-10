@@ -27,6 +27,7 @@
 #include "debug.h"
 #include "hal_cpu.h"
 #include "hal_i2c.h"
+#include "log.h"
 
 #define ADC_USE_DMA 0
 
@@ -168,7 +169,7 @@ void hal_adc_init(void)
 #else
     ADC1->CR1 = 0;
 #endif
-/*
+
     // I2C
     {
         // 0x80 in Register 3 sets the resolution to 16bit.
@@ -182,7 +183,7 @@ void hal_adc_init(void)
             debug_line("ERROR: I2C write failed!");
         }
     }
-*/
+
     hal_cpu_add_ms_tick_function(aquireValues);
 }
 
@@ -246,6 +247,7 @@ static void aquireValues(void)
 {
     static uint8_t receive_data[4];
     static uint8_t send_data[4];
+    static int missed_counter = 0;
 
     if(curDevice < NUM_TEMPERATURES)
     {
@@ -276,8 +278,26 @@ static void aquireValues(void)
         case 0: // SPI - Thermocouple
             if(true == start)
             {
-                // hal_start_expansion_spi_transaction(&send_data[0], 4, &receive_data[0]);
-                start = false;
+                if(true == hal_expansion_spi_is_idle())
+                {
+                    hal_start_expansion_spi_transaction(&send_data[0], 4, &receive_data[0]);
+                    start = false;
+                    missed_counter = 0;
+                }
+                else
+                {
+                    hal_reset_expansion_spi_transaction();
+                    /* TODO this happens every second time.
+                     * The timing of the second (failing) transfer is different.
+                     *  The last byte is not send.
+                    missed_counter ++;
+                    if(2 < missed_counter)
+                    {
+                        hal_cpu_report_issue(25);
+                        hal_reset_expansion_spi_transaction();
+                    }
+                    */
+                }
             }
             else
             {
@@ -314,7 +334,11 @@ static void aquireValues(void)
                         tempMeasured = 0;
                     }
 
-                    res_buf[curDevice] = tempMeasured;
+                    if(0 != tempMeasured)
+                    {
+                        res_buf[curDevice] = tempMeasured;
+                    }
+                    // TODO else -> if this happens to often then go to 0
                 }
                 else
                 {
@@ -333,7 +357,11 @@ static void aquireValues(void)
                             tempMeasured = 0;
                         }
 
-                        res_buf[curDevice] = tempMeasured;
+                        if(0 != tempMeasured)
+                        {
+                            res_buf[curDevice] = tempMeasured;
+                        }
+                        // TODO else -> if this happens to often then go to 0
                     }
                     // else - SPI still fails
                 }
@@ -342,7 +370,7 @@ static void aquireValues(void)
             break;
 
         case 1: // I2C Temperature Sensor
-            /* Does not work under stress
+            /*
             if(nextMeasurement < hal_cpu_get_ms_tick())
             {
                 uint8_t data[2];
@@ -368,6 +396,7 @@ static void aquireValues(void)
                 else
                 {
                     debug_line("ERROR: I2C Temp failed!");
+                    hal_i2c_reset_transaction();
                 }
                 nextMeasurement = hal_cpu_get_ms_tick() + I2C_TEMP_POLL_MS;
             }
@@ -401,13 +430,13 @@ uint_fast16_t hal_adc_get_value(uint_fast8_t device)
     {
         // invalid device number
         debug_line("Invalid Device %d !", device);
-        return 0;
+        return 0xffff;
     }
 }
 
 uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
 {
-    if(device < NUM_TEMPERATURES)
+    if(device < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES))
     {
         switch(device)
         {
@@ -419,12 +448,20 @@ uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
 #if NUM_TEMPERATURES > 5
         case  5: return copy_string(ADC_5_NAME, position);
 #endif
+#if (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES) > (NUM_TEMPERATURES)
+        case NUM_TEMPERATURES: return copy_string(ADC_EXT_0_NAME, position);
+#endif
+#if (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES) > (NUM_TEMPERATURES + 1)
+        case NUM_TEMPERATURES + 1: return copy_string(ADC_EXT_1_NAME, position);
+#endif
         default:
+            debug_line("requested ADC name of invalid device %d !", device);
             return 0;
         }
     }
     else
     {
+        debug_line("requested ADC name of not existing device %d !", device);
         return 0;
     }
 }
@@ -463,21 +500,18 @@ static uint_fast16_t InternalTempSensorConverter(uint32_t DR)
 
 static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR)
 {
-    /*
     int ires;
     // debug_line("ADC value: %d", DR);
     float res = VCC_OF_ADC/4095 * DR;
     // debug_line("Vadc: %f", res);
     res = SERIES_RESISTOR/((VCC_OF_ADC/res) -1);
     // debug_line("Rthermistor: %f", res);
-    res = log(res/THERMISTOR_R_AT_25);
+    res = logf(res/THERMISTOR_R_AT_25);
     res = res / STEINHART_HART_B + (1.0/(25+273.15));
     res = 1/res - 273.15;
     // debug_line("Temperature: %f", res);
     ires = res * 10;
     return (uint_fast16_t)0xffff & ires;
-    */
-    return 7; //TODO find log implementation
 }
 
 static uint_fast16_t NoConverter(uint32_t DR)

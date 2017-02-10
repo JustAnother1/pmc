@@ -502,12 +502,13 @@ static void parse_order(int length)
     }
     switch(cmd_buf[0])
     {
-
+// order = b
     case 'B':
     case 'b':
         dev_buzzer_set_frequency(0, atoi((char *)&(cmd_buf[1])));
         break;
 
+// order = c
     case 'C':
     case 'c':
         if(1 == pos_in_buf)
@@ -517,7 +518,7 @@ static void parse_order(int length)
         }
         switch (cmd_buf[1])
         {
-
+// order = ct
         case 'T':
         case 't':
             // Trinamic (src/stepper/trinamic.c):
@@ -528,6 +529,7 @@ static void parse_order(int length)
             // else -> OK
             break;
 
+// order = cq
         case 'Q':
         case 'q':
             // Command Queue (src/order/commandqueue.c):
@@ -544,21 +546,25 @@ static void parse_order(int length)
         }
         break;
 
+// order = d
     case 'D':
     case 'd': // die
         hal_cpu_die();
         break;
 
+// order = e
     case 'E':
     case 'e': // report the already occurred problems
         hal_cpu_check_Reset_Reason();
         break;
 
+// order = h
     case 'H':
     case 'h': // help - list available commands
         order_help();
         break;
 
+// order = l
     case 'L':
     case 'l': // list - list the available debug information
         debug_line("current status:");
@@ -567,6 +573,7 @@ static void parse_order(int length)
         dev_temperature_sensor_print_status();
         break;
 
+// order = m
     case 'M':
     case 'm':
         if(1 == pos_in_buf)
@@ -576,6 +583,7 @@ static void parse_order(int length)
         }
         switch (cmd_buf[1])
         {
+// order = md
         case 'D':
         case 'd':
         {
@@ -603,6 +611,7 @@ static void parse_order(int length)
         }
         break;
 
+// order = o
     case 'O':
     case 'o':
         if(1 == pos_in_buf)
@@ -612,6 +621,8 @@ static void parse_order(int length)
         }
         switch (cmd_buf[1])
         {
+
+// order = on
         case 'N':
         case 'n':
             hal_power_on_5V();
@@ -619,6 +630,7 @@ static void parse_order(int length)
             hal_power_on_HighVoltage();
             break;
 
+// order = of
         case 'F':
         case 'f':
             if(2 == pos_in_buf)
@@ -628,6 +640,8 @@ static void parse_order(int length)
             }
             switch(cmd_buf[2])
             {
+
+// order = off
             case 'F':
             case 'f':
                 hal_power_off_5V();
@@ -646,6 +660,7 @@ static void parse_order(int length)
         }
         break;
 
+// order = p
     case 'P':
     case 'p': // print configuration
         if(1 == pos_in_buf)
@@ -655,23 +670,25 @@ static void parse_order(int length)
         }
         switch (cmd_buf[1])
         {
+// order = pa
         case 'A':
         case 'a':
             hal_print_configuration_adc();
 
             break;
 #ifdef HAS_USB
+// order = pb
         case 'B':
         case 'b':
             hal_usb_print_configuration();
             break;
 #endif
-
+// order = pc
         case 'C':
         case 'c':
             hal_cpu_print_Interrupt_information();
             break;
-
+// order = pi
         case 'I':
         case 'i':
             if(2 == pos_in_buf)
@@ -680,6 +697,8 @@ static void parse_order(int length)
             }
             switch(cmd_buf[2])
             {
+
+// order = pin
             case 'N':
             case 'n':
                 hal_din_print_PinConfiguration(cmd_buf[3], atoi((char *)&(cmd_buf[4])));
@@ -691,6 +710,7 @@ static void parse_order(int length)
             }
             break;
 
+// order = ps
         case 'S':
         case 's':
             if(2 == pos_in_buf)
@@ -700,11 +720,14 @@ static void parse_order(int length)
             }
             switch(cmd_buf[2])
             {
+
+// order = pss
             case 'S':
             case 's':
                 hal_print_stepper_spi_configuration();
                 break;
 
+// order = pse
             case 'E':
             case 'e':
                 hal_print_expansion_spi_configuration();
@@ -715,7 +738,8 @@ static void parse_order(int length)
                 break;
             }
             break;
-#ifdef USE_STEP_DIR
+
+// order = pt
         case 'T':
         case 't':
             if(2 == pos_in_buf)
@@ -725,6 +749,8 @@ static void parse_order(int length)
             }
             switch(cmd_buf[2])
             {
+
+// order = pti
             case 'I':
             case 'i':
                 if(3 == pos_in_buf)
@@ -734,6 +760,7 @@ static void parse_order(int length)
                 }
                 switch(cmd_buf[3])
                 {
+// order = ptim
                 case 'M':
                 case 'm':
                     hal_time_print_Configuration(atoi((char *)&(cmd_buf[4])));
@@ -744,7 +771,7 @@ static void parse_order(int length)
                     break;
                 }
                 break;
-
+// order = ptr
             case 'R':
             case 'r':
                 if(3 == pos_in_buf)
@@ -754,6 +781,8 @@ static void parse_order(int length)
                 }
                 switch(cmd_buf[3])
                 {
+
+// order = ptri
                 case 'I':
                 case 'i':
                     trinamic_print_stepper_status();
@@ -770,7 +799,8 @@ static void parse_order(int length)
                 break;
             }
             break;
-#endif
+
+// order = pu
         case 'U':
         case 'u':
             if(2 == pos_in_buf)
@@ -780,11 +810,14 @@ static void parse_order(int length)
             }
             switch(cmd_buf[2])
             {
+
+// order = pud
             case 'D':
             case 'd':
                 hal_print_configuration_debug_uart();
                 break;
 
+// order = pug
             case 'G':
             case 'g':
                 hal_print_configuration_gcode_uart();
@@ -796,6 +829,7 @@ static void parse_order(int length)
             }
             break;
 
+// order = pq
         case 'Q':
         case 'q':
             cmd_queue_show_status(&(cmd_buf[2]));
@@ -807,6 +841,7 @@ static void parse_order(int length)
         }
         break;
 
+// order = w
     case 'W':
     case 'w': // write data
     {
@@ -827,6 +862,8 @@ static void parse_order(int length)
             }
             switch (cmd_buf[1])
             {
+
+// order = ws
             case 'S':
             case 's':
                 for (i = 0; i < (length -2)/2; i++)
@@ -843,6 +880,7 @@ static void parse_order(int length)
                 debug_line("Done.");
                 break;
 
+// order = we
             case 'E':
             case 'e':
                 for (i = 0; i < (length -2)/2; i++)
@@ -867,11 +905,13 @@ static void parse_order(int length)
         }
     }
 
+// order = r
     case 'R':
     case 'r': // reset the CPU
         hal_cpu_do_software_reset(RESET_REASON_DEBUG_USER_REQUEST);
         break;
 
+// order = s
     case 'S':
     case 's': // stepper
         if(1 == pos_in_buf)
@@ -881,6 +921,8 @@ static void parse_order(int length)
         }
         switch (cmd_buf[1])
         {
+
+// order = sc
         case 'C':
         case 'c':
             // scan for number of Steppers
@@ -895,11 +937,13 @@ static void parse_order(int length)
         }
         break;
 
+// order = t
     case 'T':
     case 't': // show current time
         order_curTime();
         break;
 
+// order = x
     case 'X':
     case 'x': // current testing
         curTest(atoi((char *)&(cmd_buf[1])));
@@ -914,6 +958,6 @@ static void parse_order(int length)
 void  __attribute__((weak)) curTest(int value)
 {
     debug_line("Found Value %d !", value);
-    debug_line("Currently no Test is active !!");
+    debug_line("Currently no Test active !!");
 }
 

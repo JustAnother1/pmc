@@ -18,6 +18,8 @@
 #include "CppUTest/TestTestingFixture.h"
 #include "CppUTest/PlatformSpecificFunctions.h"
 
+extern "C"
+{
 #include "hal_uart.h"
 #include "hal_cfg.h"
 #include "st_usart.h"
@@ -39,7 +41,7 @@ typedef struct {
 extern volatile uart_device_typ devices[MAX_UART];
 extern bool gcode_initialized;
 extern bool debug_initialized;
-
+}
 TEST_GROUP(HalStUartTestGroup)
 {
 

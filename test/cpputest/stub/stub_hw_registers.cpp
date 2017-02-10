@@ -13,6 +13,9 @@
  *
  */
 
+extern "C"
+{
+
 #include <inttypes.h>
 
 #include "st_gpio.h"
@@ -64,5 +67,5 @@ SDIO_TypeDef SDIO_BASE;
 RNG_TypeDef RNG_BASE;
 DBGMCU_TypeDef DBGMCU_BASE;
 
-
+}
 

@@ -21,6 +21,7 @@
 #include "st_exti.h"
 #include "st_syscfg.h"
 #include "hal_din.h"
+#include "hal_led.h"
 #include "board_cfg.h"
 #include "hal_debug.h"
 

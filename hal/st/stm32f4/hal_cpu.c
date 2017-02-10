@@ -539,7 +539,14 @@ void hal_cpu_check_Reset_Reason(void)
     }
     if(0 != RTC->BKP10R)
     {
-        debug_line("Reported issue 10: %d", RTC->BKP10R);
+        if(0xffffffff == RTC->BKP10R)
+        {
+            debug_line(". . .");
+        }
+        else
+        {
+            debug_line("Reported issue 10: %d", RTC->BKP10R);
+        }
         RTC->BKP10R = 0;
     }
 }

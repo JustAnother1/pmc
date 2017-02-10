@@ -192,8 +192,9 @@ void gotoStoppedMode(uint_fast8_t cause_for_stopped_mode, uint_fast8_t recovery_
         hal_buzzer_set_frequency(i, 0);
     }
     // if the board can do it:
-    hal_power_off_12V();
     hal_power_off_HighVoltage();
+    // Caution: 12V needs to stay on !
+    // Fans are on 12V and we do want them to continue cooling the hot end !
 }
 
 static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint_fast8_t control)
@@ -320,7 +321,14 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
         case ORDER_SET_HEATER_TARGET_TEMPERATURE:
             if(3 == parameter_length)
             {
-                dev_heater_set_target_temperature(com_get_parameter_byte(0), (com_get_parameter_byte(1) <<8) + com_get_parameter_byte(2));
+                if(true == dev_heater_set_target_temperature(com_get_parameter_byte(0), (com_get_parameter_byte(1) <<8) + com_get_parameter_byte(2)))
+                {
+                    com_send_ok_response();
+                }
+                else
+                {
+                    com_send_generic_application_error_response(GENERIC_ERROR_BAD_PARAMETER_VALUE);
+                }
             }
             else
             {
@@ -442,7 +450,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
                 {
                     com_send_ok_response();
                 }
-                // else - command already send error
+                // TODO check else - command already send error
             }
             else if(5 == parameter_length)
             {
@@ -457,9 +465,9 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
                     {
                         com_send_ok_response();
                     }
-                    // else - command already send error
+                    // TODO check  else - command already send error
                 }
-                // else - command already send error
+                // TODO check  else - command already send error
             }
             else
             {
@@ -478,7 +486,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
                 {
                     com_send_ok_response();
                 }
-                // else - command already send error
+                // TODO check  else - command already send error
             }
             else if(4 == parameter_length)
             {
@@ -491,9 +499,9 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
                     {
                         com_send_ok_response();
                     }
-                    // else - command already send error
+                    // TODO check  else - command already send error
                 }
-                // else - command already send error
+                // TODO check  else - command already send error
             }
             else
             {

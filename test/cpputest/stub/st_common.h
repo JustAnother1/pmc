@@ -15,7 +15,8 @@
 
 #ifndef TEST_CPPUTEST_STUB_ST_COMMON_H_
 #define TEST_CPPUTEST_STUB_ST_COMMON_H_
-
+extern "C"
+{
 #include <inttypes.h>
 #include <stdbool.h>
 
@@ -740,5 +741,5 @@ extern DBGMCU_TypeDef DBGMCU_BASE;
 void NVIC_SetPriorityGrouping(uint_fast32_t PriorityGroup);
 void NVIC_SetPriority(IRQn_Type IRQn, uint_fast32_t priority);
 void NVIC_EnableIRQ(IRQn_Type IRQn);
-
+}
 #endif /* TEST_CPPUTEST_STUB_ST_COMMON_H_ */

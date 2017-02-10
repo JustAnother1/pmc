@@ -395,7 +395,7 @@ void trinamic_init(void)
         // - 6 = 1/4
         // - 7 = half steps
         // - 8 = full Steps
-        stepper_conf[i].microstepResolution = 8;
+        stepper_conf[i].microstepResolution = 4;
 
         // Chopper Control CHOPCONF
         // Blanking Time TBL(2 Bit)

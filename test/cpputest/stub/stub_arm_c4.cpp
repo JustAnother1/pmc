@@ -13,6 +13,8 @@
  *
  */
 
+extern "C"
+{
 #include <inttypes.h>
 #include "st_common.h"
 
@@ -29,4 +31,6 @@ void NVIC_SetPriority(IRQn_Type IRQn, uint_fast32_t priority)
 void NVIC_EnableIRQ(IRQn_Type IRQn)
 {
     // TODO
+}
+
 }

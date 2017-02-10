@@ -17,7 +17,8 @@
 #include "CppUTest/TestOutput.h"
 #include "CppUTest/TestTestingFixture.h"
 #include "CppUTest/PlatformSpecificFunctions.h"
-
+extern "C"
+{
 #include "hal_spi.h"
 #include "hal_cfg.h"
 #include "st_spi.h"
@@ -38,6 +39,7 @@ typedef struct {
 extern spi_device_typ spi_devices[MAX_SPI];
 extern bool stepper_initialized;
 extern bool expansion_initialized;
+}
 
 TEST_GROUP(HalStSpiTestGroup)
 {

@@ -13,36 +13,26 @@
  *
  */
 
+#include "CppUTest/TestHarness.h"
+#include "CppUTest/TestOutput.h"
+#include "CppUTest/TestTestingFixture.h"
+#include "CppUTest/PlatformSpecificFunctions.h"
+
 extern "C"
 {
-
-#include <inttypes.h>
-#include "st_gpio.h"
-
-uint_fast8_t copy_string(char * str, uint8_t *position)
-{
-    return 0;
+#include "log.h"
 }
 
-void print_gpio_configuration(GPIO_TypeDef * gpio)
+TEST_GROUP(SrcLibLogTestGroup)
 {
 
-}
+};
 
-void print_gpio_pin_configuration(GPIO_TypeDef * PortRegisters, int idx)
+TEST(SrcLibLogTestGroup, log)
 {
-
+    DOUBLES_EQUAL(0, logf(1), 0.001)
+    DOUBLES_EQUAL(3, logf(20.0855), 0.001)
+    DOUBLES_EQUAL(10, logf(22026.46579), 0.001)
 }
 
-void uDelay(const uint32_t usec)
-{
-
-}
-
-void mDelay(const uint32_t msec)
-{
-
-}
-
-}
 

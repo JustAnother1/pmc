@@ -15,7 +15,8 @@
 
 #ifndef TEST_CPPUTEST_STUB_ST_USART_H_
 #define TEST_CPPUTEST_STUB_ST_USART_H_
-
+extern "C"
+{
 #include "st_common.h"
 
 /******************************************************************************/
@@ -130,7 +131,7 @@ extern USART_TypeDef USART6_BASE;
 #define UART5               (&UART5_BASE)
 #define USART6              (&USART6_BASE)
 
-
+}
 
 
 #endif /* TEST_CPPUTEST_STUB_ST_USART_H_ */

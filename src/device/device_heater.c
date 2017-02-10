@@ -107,13 +107,18 @@ void dev_heater_set_temperature_sensor(uint_fast8_t number, uint_fast8_t sensor_
     // else Ignore Temperature sensor for not existing heater
 }
 
-void dev_heater_set_target_temperature(uint_fast8_t number, uint_fast16_t target_Temperature)
+bool dev_heater_set_target_temperature(uint_fast8_t number, uint_fast16_t target_Temperature)
 {
     if(number < NUMBER_OF_HEATERS)
     {
         target_temperature[number] = target_Temperature;
+        return true;
     }
-    // else - temperature for a Heater that we do not have
+    else
+    {
+        // - temperature for a Heater that we do not have
+        return false;
+    }
 }
 
 uint_fast16_t dev_heater_get_temperature(uint_fast8_t number)
@@ -140,26 +145,35 @@ void TemperatureControlTick(void)
     int i;
     for(i = 0; i < NUMBER_OF_HEATERS; i++)
     {
-        if(0 != target_temperature[i])
+        if((0 != target_temperature[i]) && (INVALID_SENSOR != temperature_sensors[i]))
         {
             uint_fast16_t newPwmValue;
             // Read Temperature
             uint_fast16_t curTemp = hal_adc_get_value(temperature_sensors[i]);
-            // compute next PWM setting
-            if(NULL != regulators[i])
+            if((0 == curTemp) || (0xffff == curTemp))
             {
-                newPwmValue = regulators[i](target_temperature[i], curTemp, cur_pwm[i]);
-                if(newPwmValue != cur_pwm[i])
-                {
-                     hal_pwm_set_on_time(i, newPwmValue);
-                     cur_pwm[i] = newPwmValue;
-                }
-                // else already correct PWM set.
+                // Temperature Sensor error
+                debug_line("ERROR: Temperature Sensor %d !", temperature_sensors[i]);
+                hal_pwm_set_on_time(i, 0); // OFF
             }
             else
             {
-                hal_pwm_set_on_time(i, 0); // OFF
-                debug_line("ERROR: Regulator %d NULL !", i);
+                // compute next PWM setting
+                if(NULL != regulators[i])
+                {
+                    newPwmValue = regulators[i](target_temperature[i], curTemp, cur_pwm[i]);
+                    if(newPwmValue != cur_pwm[i])
+                    {
+                        hal_pwm_set_on_time(i, newPwmValue);
+                        cur_pwm[i] = newPwmValue;
+                    }
+                    // else already correct PWM set.
+                }
+                else
+                {
+                    hal_pwm_set_on_time(i, 0); // OFF
+                    debug_line("ERROR: Regulator %d NULL !", i);
+                }
             }
         }
     }

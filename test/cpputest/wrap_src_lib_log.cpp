@@ -13,36 +13,11 @@
  *
  */
 
+
+#define static
+
 extern "C"
 {
-
-#include <inttypes.h>
-#include "st_gpio.h"
-
-uint_fast8_t copy_string(char * str, uint8_t *position)
-{
-    return 0;
-}
-
-void print_gpio_configuration(GPIO_TypeDef * gpio)
-{
-
-}
-
-void print_gpio_pin_configuration(GPIO_TypeDef * PortRegisters, int idx)
-{
-
-}
-
-void uDelay(const uint32_t usec)
-{
-
-}
-
-void mDelay(const uint32_t msec)
-{
-
-}
-
+#include "lib/log.c"
 }
 

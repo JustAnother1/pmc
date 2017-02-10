@@ -13,6 +13,9 @@
  *
  */
 
+extern "C"
+{
+
 // Implementation of hal_led_api
 
 
@@ -62,5 +65,5 @@ void hal_set_isr2_led(bool on)
 
 }
 
-
+}
 
