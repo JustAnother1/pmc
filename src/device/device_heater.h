@@ -28,4 +28,8 @@ void dev_heater_set_temperature_sensor(uint_fast8_t number, uint_fast8_t sensor_
 bool dev_heater_set_target_temperature(uint_fast8_t number, uint_fast16_t target_temperature);
 uint_fast16_t dev_heater_get_temperature(uint_fast8_t number);
 
+#ifdef DEBUG_ACTIVE
+void dev_heater_get_debug_information(uint_fast8_t number);
+#endif
+
 #endif /* DEVICE_HEATER_H_ */

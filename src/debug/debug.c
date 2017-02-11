@@ -32,8 +32,10 @@
 #include "hal_usb_device_cdc.h"
 #include "command_queue.h"
 #include "device_buzzer.h"
+#include "device_heater.h"
 #include "device_stepper.h"
 #include "device_temperature_sensor.h"
+#include "protocol.h"
 #include "trinamic.h"
 
 
@@ -306,6 +308,9 @@ static void order_help(void)
     // f
     // g
     debug_line("h                          : print this information");
+    debug_line("ha <heat> <sens>           : associate temp.sensor to heater");
+    debug_line("hs                         : show status of the heaters");
+    debug_line("ht <num> <temp>            : set temperature of the heater");
     // i
     // j
     // k
@@ -561,7 +566,104 @@ static void parse_order(int length)
 // order = h
     case 'H':
     case 'h': // help - list available commands
-        order_help();
+        switch (cmd_buf[1])
+        {
+
+// order = ha
+        // associate Temperature Sensor
+        case 'A':
+        case 'a':
+        {
+            uint_fast8_t heater_number;
+            uint_fast8_t sensor_number;
+            uint32_t numCharsNextParam;
+            uint32_t startIndexOfParam;
+
+            startIndexOfParam = 2 + getStartOffsetOfNextWord(&cmd_buf[2], length -2);
+            numCharsNextParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
+            heater_number = atoi(&cmd_buf[startIndexOfParam]);
+
+            startIndexOfParam = startIndexOfParam + numCharsNextParam;
+            startIndexOfParam = startIndexOfParam + getStartOffsetOfNextWord(&cmd_buf[startIndexOfParam], length -startIndexOfParam);
+            sensor_number = atoi(&cmd_buf[startIndexOfParam]);
+
+            dev_heater_set_temperature_sensor(heater_number, sensor_number);
+            debug_line("heater %d uses temperature sensor %d !", heater_number, sensor_number);
+        }
+            break;
+
+// order == hs
+        // show status of heaters
+        case 'S':
+        case 's':
+        {
+            uint_fast8_t i;
+            uint_fast8_t name_length;
+            uint8_t nameBuf[20];
+            uint_fast16_t temperature;
+            for(i = 0; i < dev_heater_get_count(); i++)
+            {
+                debug_line("heater %d:", i);
+                name_length = dev_heater_get_name(i, &(nameBuf[0]));
+                nameBuf[name_length] = 0;
+                debug_line("name               : %s", &(nameBuf[0]));
+                switch(dev_heater_get_status(i))
+                {
+                case DEVICE_STATUS_ACTIVE:
+                    debug_line("status             : Active");
+                    break;
+
+                case DEVICE_STATUS_FAULT:
+                    debug_line("status             : Fault");
+                    break;
+
+                default:
+                    debug_line("status             : %d", dev_heater_get_status(i));
+
+                    break;
+                }
+                temperature = dev_heater_get_temperature(i);
+                debug_line("cur. Temperature   : %d.%01d°C", temperature/10, temperature%10);
+                dev_heater_get_debug_information(i);
+            }
+        }
+            break;
+
+//order = ht
+        // set target temperature of Heater
+        case 'T':
+        case 't':
+        {
+            uint_fast8_t heater_number;
+            uint_fast16_t target_temperature;
+            uint32_t numCharsNextParam;
+            uint32_t numCharsLengthParam;
+            uint32_t startIndexOfParam;
+
+            startIndexOfParam = 2 + getStartOffsetOfNextWord(&cmd_buf[2], length -2);
+            numCharsNextParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
+            heater_number = atoi(&cmd_buf[startIndexOfParam]);
+
+            startIndexOfParam = startIndexOfParam + numCharsNextParam;
+            startIndexOfParam = startIndexOfParam + getStartOffsetOfNextWord(&cmd_buf[startIndexOfParam], length -startIndexOfParam);
+            target_temperature = atoi(&cmd_buf[startIndexOfParam]);
+
+            if(true == dev_heater_set_target_temperature(heater_number, target_temperature))
+            {
+                debug_line("heater %d is set to temperature  %d.%01d°C !", heater_number, target_temperature/10, target_temperature%10);
+            }
+            else
+            {
+                debug_line("ERROR: could not set heater %d  to temperature  %d.%01d°C !", heater_number, target_temperature/10, target_temperature%10);
+            }
+        }
+            break;
+
+// order = h
+        default:
+            order_help();
+            break;
+        }
         break;
 
 // order = l

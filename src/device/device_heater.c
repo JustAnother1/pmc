@@ -29,18 +29,14 @@
 
 void TemperatureControlTick(void);
 
-#ifdef DEBUG_ACTIVE
-static uint32_t count = 0;
-#endif // debug
-
 static uint32_t max_pwm = 0xffff;
 static uint32_t min_pwm = 0;
 static float last_iTerm = 0;
 static uint_fast16_t last_temperature_is = 0;
 
-static uint_fast8_t temperature_sensors[NUMBER_OF_HEATERS];
-volatile uint_fast16_t target_temperature[NUMBER_OF_HEATERS];
-static uint_fast16_t cur_pwm[NUMBER_OF_HEATERS];
+static volatile uint_fast8_t temperature_sensors[NUMBER_OF_HEATERS];
+static volatile uint_fast16_t target_temperature[NUMBER_OF_HEATERS];
+static volatile uint_fast16_t cur_pwm[NUMBER_OF_HEATERS];
 
 typedef uint_fast16_t (*RegulatorFkt)(uint_fast16_t temperature_should, uint_fast16_t temperature_is, uint_fast16_t curPwm);
 static RegulatorFkt regulators[NUMBER_OF_HEATERS];
@@ -242,30 +238,22 @@ uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t tempe
 
 #ifdef DEBUG_ACTIVE
 
-void reportTemperature(void)
+void dev_heater_get_debug_information(uint_fast8_t number)
 {
-    count++;
-    if(100 == count)
+    debug_line("pwm                : %d", cur_pwm[number]);
+    if(PidRegulator == regulators[number])
     {
-        debug_line("time %d temp %d pwm %d", hal_cpu_get_ms_tick(), hal_adc_get_value(0), cur_pwm[0]);
-        count = 0;
+        debug_line("Regulator          : PID");
     }
+    else if(BangBangRegulator == regulators[number])
+    {
+        debug_line("Regulator          : Bang Bang");
+    }
+    debug_line("Temperature Sensor : %d", temperature_sensors[number]);
+    debug_line("target Temperature : %d.%01d°C", target_temperature[number]/10,  target_temperature[number]%10);
 }
 
 #endif
 
-/*
-void curTest(int value)
-{
-    debug_line("Found Value %d !", value);
-    // nozzle = 1, 5 ; Bed = 0, 0
-    dev_heater_set_temperature_sensor(0, 0);
-    // Nozzle = 1; Bed = 0
-    dev_heater_set_target_temperature(0, value * 10);
-    debug_line("Target Temperature %d !", target_temperature[0]);
-    count = 0;
-    hal_cpu_add_ms_tick_function(reportTemperature);
-}
-*/
 
 // end of File
