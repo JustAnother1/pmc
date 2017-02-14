@@ -21,6 +21,7 @@
 #include "board_cfg.h"
 #include "hal_cfg.h"
 #include "hal_debug.h"
+#include "copy_string.h"
 
 static bool initialized = false;
 
@@ -85,13 +86,13 @@ void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency)
     // else ignore request for not available device
 }
 
-uint_fast8_t hal_buzzer_get_name(uint_fast8_t device, uint8_t *position)
+uint_fast8_t hal_buzzer_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
     if(device < BUZZER_NUM_PINS)
     {
         switch(device)
         {
-        case  0: return copy_string(BUZZER_0_NAME, position);
+        case  0: return copy_string(BUZZER_0_NAME, position, max_length);
         default:
             return 0;
         }

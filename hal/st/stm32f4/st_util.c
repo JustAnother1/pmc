@@ -16,20 +16,6 @@
 #include <st_util.h>
 #include "hal_debug.h"
 
-uint_fast8_t copy_string(char * str, uint8_t *position)
-{
-    uint_fast8_t num = 0;
-    char c = str[num];
-    while(c !=0)
-    {
-        *position = c;
-        num++;
-        position++;
-        c = str[num];
-    }
-    return num;
-}
-
 void print_gpio_configuration(GPIO_TypeDef * gpio)
 {
     if(gpio == GPIOA) { debug_line("Port A:"); }

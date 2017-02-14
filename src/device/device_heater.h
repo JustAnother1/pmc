@@ -21,7 +21,7 @@
 
 void dev_heater_init(void);
 uint_fast8_t dev_heater_get_count(void);
-uint_fast8_t dev_heater_get_name(uint_fast8_t number, uint8_t *position);
+uint_fast8_t dev_heater_get_name(uint_fast8_t number, uint8_t *position, uint_fast8_t max_length);
 uint_fast8_t dev_heater_get_status(uint_fast8_t number);
 void dev_heater_get_configuration(uint_fast8_t number);
 void dev_heater_set_temperature_sensor(uint_fast8_t number, uint_fast8_t sensor_number);

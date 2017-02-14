@@ -28,6 +28,7 @@
 #include "hal_cpu.h"
 #include "hal_i2c.h"
 #include "log.h"
+#include "copy_string.h"
 
 #define ADC_USE_DMA 0
 
@@ -247,7 +248,7 @@ static void aquireValues(void)
 {
     static uint8_t receive_data[4];
     static uint8_t send_data[4];
-    static int missed_counter = 0;
+    // static int missed_counter = 0;
 
     if(curDevice < NUM_TEMPERATURES)
     {
@@ -282,7 +283,7 @@ static void aquireValues(void)
                 {
                     hal_start_expansion_spi_transaction(&send_data[0], 4, &receive_data[0]);
                     start = false;
-                    missed_counter = 0;
+                    // missed_counter = 0;
                 }
                 else
                 {
@@ -434,25 +435,25 @@ uint_fast16_t hal_adc_get_value(uint_fast8_t device)
     }
 }
 
-uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
+uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
     if(device < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES))
     {
         switch(device)
         {
-        case  0: return copy_string(ADC_0_NAME, position);
-        case  1: return copy_string(ADC_1_NAME, position);
-        case  2: return copy_string(ADC_2_NAME, position);
-        case  3: return copy_string(ADC_3_NAME, position);
-        case  4: return copy_string(ADC_4_NAME, position);
+        case  0: return copy_string(ADC_0_NAME, position, max_length);
+        case  1: return copy_string(ADC_1_NAME, position, max_length);
+        case  2: return copy_string(ADC_2_NAME, position, max_length);
+        case  3: return copy_string(ADC_3_NAME, position, max_length);
+        case  4: return copy_string(ADC_4_NAME, position, max_length);
 #if NUM_TEMPERATURES > 5
         case  5: return copy_string(ADC_5_NAME, position);
 #endif
 #if (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES) > (NUM_TEMPERATURES)
-        case NUM_TEMPERATURES: return copy_string(ADC_EXT_0_NAME, position);
+        case NUM_TEMPERATURES: return copy_string(ADC_EXT_0_NAME, position, max_length);
 #endif
 #if (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES) > (NUM_TEMPERATURES + 1)
-        case NUM_TEMPERATURES + 1: return copy_string(ADC_EXT_1_NAME, position);
+        case NUM_TEMPERATURES + 1: return copy_string(ADC_EXT_1_NAME, position, max_length);
 #endif
         default:
             debug_line("requested ADC name of invalid device %d !", device);

@@ -28,9 +28,9 @@ uint_fast8_t dev_temperature_sensor_get_count(void)
     return hal_adc_get_amount();
 }
 
-uint_fast8_t dev_temperature_sensor_get_name(uint_fast8_t number, uint8_t *position)
+uint_fast8_t dev_temperature_sensor_get_name(uint_fast8_t number, uint8_t *position, uint_fast8_t max_length)
 {
-    return hal_adc_get_name(number, position);
+    return hal_adc_get_name(number, position, max_length);
 }
 
 uint_fast8_t dev_temperature_sensor_get_status(uint_fast8_t number)
@@ -60,7 +60,7 @@ void dev_temperature_sensor_print_status(void)
     int i;
     for(i = 0; i < hal_adc_get_amount(); i++)
     {
-        name_length = hal_adc_get_name(i, &(nameBuf[0]));
+        name_length = hal_adc_get_name(i, &(nameBuf[0]), 20);
         nameBuf[name_length] = 0;
         temperature = hal_adc_get_value(i);
         debug_line("%d: %s = %d.%01d°C", i, &(nameBuf[0]), temperature/10, temperature%10);

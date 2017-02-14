@@ -39,7 +39,7 @@ void hal_dout_set_pin_HighZ(uint_fast8_t device)
 
 }
 
-uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position)
+uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
     return 0;
 }

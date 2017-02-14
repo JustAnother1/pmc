@@ -29,6 +29,7 @@ SRC += $(SRC_FOLDER)lib/printf.c
 SRC += $(SRC_FOLDER)lib/atoi.c
 SRC += $(SRC_FOLDER)lib/isalpha.c
 SRC += $(SRC_FOLDER)lib/log.c
+SRC += $(SRC_FOLDER)lib/copy_string.c
 SRC += $(SRC_FOLDER)stepper/device_stepper.c
 SRC += $(SRC_FOLDER)stepper/step.c
 SRC += $(SRC_FOLDER)stepper/trinamic.c

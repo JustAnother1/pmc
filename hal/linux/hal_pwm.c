@@ -30,7 +30,7 @@ void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)
 
 }
 
-uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position)
+uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
     return 0;
 }

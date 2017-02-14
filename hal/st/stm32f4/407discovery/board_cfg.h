@@ -71,7 +71,20 @@
 #define I2C_0_EVENT_IRQ_PRIORITY   15
 #define I2C_0_ERROR_IRQ_NUMBER     I2C1_ER_IRQn
 #define I2C_0_ERROR_IRQ_PRIORITY   15
-
+#define EXTI_0_IRQ_NUMBER          EXTI0_IRQn
+#define EXTI_0_IRQ_PRIORITY        4
+#define EXTI_1_IRQ_NUMBER          EXTI1_IRQn
+#define EXTI_1_IRQ_PRIORITY        4
+#define EXTI_2_IRQ_NUMBER          EXTI2_IRQn
+#define EXTI_2_IRQ_PRIORITY        4
+#define EXTI_3_IRQ_NUMBER          EXTI3_IRQn
+#define EXTI_3_IRQ_PRIORITY        4
+#define EXTI_4_IRQ_NUMBER          EXTI4_IRQn
+#define EXTI_4_IRQ_PRIORITY        4
+#define EXTI_5_9_IRQ_NUMBER        EXTI9_5_IRQn
+#define EXTI_5_9_IRQ_PRIORITY      4
+#define EXTI_10_15_IRQ_NUMBER      EXTI15_10_IRQn
+#define EXTI_10_15_IRQ_PRIORITY    4
 
 
 /******************************************************************************/
@@ -122,6 +135,8 @@
 #define ADC_3_NAME                 "Temp_3"
 #define ADC_4_NAME                 "Temp_4"
 #define ADC_5_NAME                 "Temp_5"
+#define ADC_EXT_0_NAME             "Temp_Thermocouple"
+#define ADC_EXT_1_NAME             "Temp_PCB"
 
 #define ADC_0_GPIO_PORT_RCC        RCC_AHB1ENR_GPIOAEN
 #define ADC_0_GPIO_PORT            GPIOA
@@ -765,6 +780,9 @@
 /*         Digital Input Pin                                                  */
 /*                                                                            */
 /******************************************************************************/
+
+#define EXTI_GPIO_PORT_RCC         0x00000004
+#define EXTI_APB2ENR               0x00004000
 
 #define D_IN_EXTI_SWIER            0x1c00
 #define D_IN_EXTI_FTSR             0x1c00

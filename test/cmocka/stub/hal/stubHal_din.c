@@ -25,7 +25,7 @@ uint_fast8_t hal_din_get_amount(void)
     return 0;
 }
 
-uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position)
+uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
     return 0;
 }

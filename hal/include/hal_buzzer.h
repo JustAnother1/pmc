@@ -21,7 +21,7 @@
 void hal_buzzer_init(void);
 uint_fast8_t hal_buzzer_get_amount(void);
 void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency);
-uint_fast8_t hal_buzzer_get_name(uint_fast8_t device, uint8_t *position);
+uint_fast8_t hal_buzzer_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length);
 
 
 #endif /* HAL_INCLUDE_HAL_BUZZER_H_ */

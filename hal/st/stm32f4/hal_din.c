@@ -24,6 +24,7 @@
 #include "hal_led.h"
 #include "board_cfg.h"
 #include "hal_debug.h"
+#include "copy_string.h"
 
 static bool initialized = false;
 
@@ -170,29 +171,29 @@ uint_fast8_t hal_din_get_amount(void)
     return D_IN_NUM_PINS;
 }
 
-uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position)
+uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
     if(device < D_OUT_NUM_PINS)
     {
         switch(device)
         {
 #if D_IN_NUM_PINS > 0
-        case 0: return copy_string(D_IN_0_NAME, position);
+        case 0: return copy_string(D_IN_0_NAME, position, max_length);
 #endif
 #if D_IN_NUM_PINS > 1
-        case 1: return copy_string(D_IN_1_NAME, position);
+        case 1: return copy_string(D_IN_1_NAME, position, max_length);
 #endif
 #if D_IN_NUM_PINS > 2
-        case 2: return copy_string(D_IN_2_NAME, position);
+        case 2: return copy_string(D_IN_2_NAME, position, max_length);
 #endif
 #if D_IN_NUM_PINS > 3
-        case 3: return copy_string(D_IN_3_NAME, position);
+        case 3: return copy_string(D_IN_3_NAME, position, max_length);
 #endif
 #if D_IN_NUM_PINS > 4
-        case 4: return copy_string(D_IN_4_NAME, position);
+        case 4: return copy_string(D_IN_4_NAME, position, max_length);
 #endif
 #if D_IN_NUM_PINS > 5
-        case 5: return copy_string(D_IN_5_NAME, position);
+        case 5: return copy_string(D_IN_5_NAME, position, max_length);
 #endif
         default:
             return 0;

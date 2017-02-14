@@ -30,7 +30,7 @@ uint_fast16_t hal_adc_get_value(uint_fast8_t device)
     return 0;
 }
 
-uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position)
+uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
     return 0;
 }

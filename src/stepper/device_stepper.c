@@ -22,6 +22,7 @@
 #include "hal_cfg.h"
 #include "hal_spi.h"
 #include "device_stepper.h"
+#include "copy_string.h"
 
 static char Stepper_name[]= "Stepper 0";
 
@@ -59,7 +60,7 @@ uint_fast8_t dev_stepper_get_count(void)
     }
 }
 
-uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint8_t *position)
+uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint8_t *position, uint_fast8_t max_length)
 {
     if((true == weControllTheSteppers) && (0 == available_steppers))
     {
@@ -72,7 +73,7 @@ uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint8_t *position)
     }
     else
     {
-        uint_fast8_t length = com_copy_string_to_parameter((char*)&Stepper_name, position);
+        uint_fast8_t length = copy_string((char*)&Stepper_name, position, max_length);
         position = position + length -1;
         // increment the number at the end of the String
         *position = *position + number;

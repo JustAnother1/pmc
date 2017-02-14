@@ -21,6 +21,7 @@
 #include "board_cfg.h"
 #include "hal_debug.h"
 #include "protocol.h"
+#include "copy_string.h"
 
 static uint_fast8_t curState[D_OUT_NUM_PINS];
 static bool initialized = false;
@@ -134,20 +135,20 @@ void hal_dout_set_pin_HighZ(uint_fast8_t device)
     debug_line("high-Z:not implemented");
 }
 
-uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position)
+uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
     if(device < D_OUT_NUM_PINS)
     {
         switch(device)
         {
 #if(D_OUT_NUM_PINS > 0)
-        case 0: return copy_string(D_OUT_0_NAME, position);
+        case 0: return copy_string(D_OUT_0_NAME, position, max_length);
 #endif
 #if(D_OUT_NUM_PINS > 1)
-        case 1: return copy_string(D_OUT_1_NAME, position);
+        case 1: return copy_string(D_OUT_1_NAME, position, max_length);
 #endif
 #if(D_OUT_NUM_PINS > 2)
-        case 2: return copy_string(D_OUT_2_NAME, position);
+        case 2: return copy_string(D_OUT_2_NAME, position, max_length);
 #endif
         default:
             return 0;

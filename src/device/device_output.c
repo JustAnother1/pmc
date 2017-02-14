@@ -28,9 +28,9 @@ uint_fast8_t dev_output_get_count(void)
     return hal_dout_get_amount();
 }
 
-uint_fast8_t dev_output_get_name(uint_fast8_t number, uint8_t *position)
+uint_fast8_t dev_output_get_name(uint_fast8_t number, uint8_t *position, uint_fast8_t max_length)
 {
-    return hal_dout_get_name(number, position);
+    return hal_dout_get_name(number, position, max_length);
 }
 
 uint_fast8_t dev_output_get_status(uint_fast8_t number)

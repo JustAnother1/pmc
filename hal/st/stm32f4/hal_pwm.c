@@ -20,6 +20,7 @@
 #include "hal_pwm.h"
 #include "hal_time.h"
 #include "board_cfg.h"
+#include "copy_string.h"
 
 static bool initialized = false;
 
@@ -756,53 +757,53 @@ void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)
     // else invalid Device
 }
 
-uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position)
+uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
     if(device < PWM_NUM_PINS)
     {
         switch(device)
         {
 #if PWM_NUM_PINS > 0
-        case  0: return copy_string(PWM_0_NAME, position);
+        case  0: return copy_string(PWM_0_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 1
-        case  1: return copy_string(PWM_1_NAME, position);
+        case  1: return copy_string(PWM_1_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 2
-        case  2: return copy_string(PWM_2_NAME, position);
+        case  2: return copy_string(PWM_2_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 3
-        case  3: return copy_string(PWM_3_NAME, position);
+        case  3: return copy_string(PWM_3_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 4
-        case  4: return copy_string(PWM_4_NAME, position);
+        case  4: return copy_string(PWM_4_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 5
-        case  5: return copy_string(PWM_5_NAME, position);
+        case  5: return copy_string(PWM_5_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 6
-        case  6: return copy_string(PWM_6_NAME, position);
+        case  6: return copy_string(PWM_6_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 7
-        case  7: return copy_string(PWM_7_NAME, position);
+        case  7: return copy_string(PWM_7_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 8
-        case  8: return copy_string(PWM_8_NAME, position);
+        case  8: return copy_string(PWM_8_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 9
-        case  9: return copy_string(PWM_9_NAME, position);
+        case  9: return copy_string(PWM_9_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 10
-        case 10: return copy_string(PWM_10_NAME, position);
+        case 10: return copy_string(PWM_10_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 11
-        case 11: return copy_string(PWM_11_NAME, position);
+        case 11: return copy_string(PWM_11_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 12
-        case 12: return copy_string(PWM_12_NAME, position);
+        case 12: return copy_string(PWM_12_NAME, position, max_length);
 #endif
 #if PWM_NUM_PINS > 13
-        case 13: return copy_string(PWM_13_NAME, position);
+        case 13: return copy_string(PWM_13_NAME, position, max_length);
 #endif
         default:
             return 0;

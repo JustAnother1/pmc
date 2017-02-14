@@ -25,6 +25,7 @@
 #include "device_temperature_sensor.h"
 #include "fw_cfg.h"
 #include "endStopHandling.h"
+#include "copy_string.h"
 
 static char firmware_name[]= "Pacemaker Client";
 // TODO conditional compile for next Hardware / or Hardware auto detect
@@ -36,7 +37,7 @@ void oh_handle_request_information(uint_fast8_t parameter)
     switch(parameter)
     {
     case 0: // firmware name string
-        i = com_copy_string_to_parameter((char*)&firmware_name, com_get_start_parameter());
+        i = copy_string((char*)&firmware_name, com_get_start_parameter(), com_get_max_parameter_length());
         com_send_ok_with_prefilled_parameter(i);
         break;
 
@@ -46,7 +47,7 @@ void oh_handle_request_information(uint_fast8_t parameter)
         break;
 
     case 2: // hardware name string
-        i = com_copy_string_to_parameter((char*)&hardware_name, com_get_start_parameter());
+        i = copy_string((char*)&hardware_name, com_get_start_parameter(), com_get_max_parameter_length());
         com_send_ok_with_prefilled_parameter(i);
         break;
 
@@ -121,31 +122,31 @@ void oh_handle_request_device_name(uint_fast8_t device_type, uint_fast8_t device
     switch(device_type)
     {
     case DEVICE_TYPE_SWITCH_INPUT:
-        com_send_ok_with_prefilled_parameter(dev_input_get_name(device_number, com_get_start_parameter()));
+        com_send_ok_with_prefilled_parameter(dev_input_get_name(device_number, com_get_start_parameter(), com_get_max_parameter_length()));
         break;
 
     case DEVICE_TYPE_SWITCH_OUTPUT:
-        com_send_ok_with_prefilled_parameter(dev_output_get_name(device_number, com_get_start_parameter()));
+        com_send_ok_with_prefilled_parameter(dev_output_get_name(device_number, com_get_start_parameter(), com_get_max_parameter_length()));
         break;
 
     case DEVICE_TYPE_PWM_OUTPUT:
-        com_send_ok_with_prefilled_parameter(dev_pwm_get_name(device_number, com_get_start_parameter()));
+        com_send_ok_with_prefilled_parameter(dev_pwm_get_name(device_number, com_get_start_parameter(), com_get_max_parameter_length()));
         break;
 
     case DEVICE_TYPE_STEPPER:
-        com_send_ok_with_prefilled_parameter(dev_stepper_get_name(device_number, com_get_start_parameter()));
+        com_send_ok_with_prefilled_parameter(dev_stepper_get_name(device_number, com_get_start_parameter(), com_get_max_parameter_length()));
         break;
 
     case DEVICE_TYPE_HEATER:
-        com_send_ok_with_prefilled_parameter(dev_heater_get_name(device_number, com_get_start_parameter()));
+        com_send_ok_with_prefilled_parameter(dev_heater_get_name(device_number, com_get_start_parameter(), com_get_max_parameter_length()));
         break;
 
     case DEVICE_TYPE_TEMPERATURE_SENSOR:
-        com_send_ok_with_prefilled_parameter(dev_temperature_sensor_get_name(device_number, com_get_start_parameter()));
+        com_send_ok_with_prefilled_parameter(dev_temperature_sensor_get_name(device_number, com_get_start_parameter(), com_get_max_parameter_length()));
         break;
 
     case DEVICE_TYPE_BUZZER:
-        com_send_ok_with_prefilled_parameter(dev_buzzer_get_name(device_number, com_get_start_parameter()));
+        com_send_ok_with_prefilled_parameter(dev_buzzer_get_name(device_number, com_get_start_parameter(), com_get_max_parameter_length()));
         break;
 
     case DEVICE_TYPE_INVALID:

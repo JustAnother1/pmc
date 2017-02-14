@@ -604,7 +604,7 @@ static void parse_order(int length)
             for(i = 0; i < dev_heater_get_count(); i++)
             {
                 debug_line("heater %d:", i);
-                name_length = dev_heater_get_name(i, &(nameBuf[0]));
+                name_length = dev_heater_get_name(i, &(nameBuf[0]), 20);
                 nameBuf[name_length] = 0;
                 debug_line("name               : %s", &(nameBuf[0]));
                 switch(dev_heater_get_status(i))
@@ -637,7 +637,6 @@ static void parse_order(int length)
             uint_fast8_t heater_number;
             uint_fast16_t target_temperature;
             uint32_t numCharsNextParam;
-            uint32_t numCharsLengthParam;
             uint32_t startIndexOfParam;
 
             startIndexOfParam = 2 + getStartOffsetOfNextWord(&cmd_buf[2], length -2);

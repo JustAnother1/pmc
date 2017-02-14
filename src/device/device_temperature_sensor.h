@@ -20,7 +20,7 @@
 
 void dev_temperature_sensor_init(void);
 uint_fast8_t dev_temperature_sensor_get_count(void);
-uint_fast8_t dev_temperature_sensor_get_name(uint_fast8_t number, uint8_t *position);
+uint_fast8_t dev_temperature_sensor_get_name(uint_fast8_t number, uint8_t *position, uint_fast8_t max_length);
 uint_fast8_t dev_temperature_sensor_get_status(uint_fast8_t number);
 uint_fast16_t dev_temperature_sensor_get_temperature(uint_fast8_t number);
 void dev_temperature_sensor_print_status(void);

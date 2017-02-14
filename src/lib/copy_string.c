@@ -13,35 +13,20 @@
  *
  */
 
-#include <inttypes.h>
+#include "copy_string.h"
 
-void dev_temperature_sensor_init(void)
+uint_fast8_t copy_string(char * str, uint8_t *position, uint_fast8_t max_length)
 {
-
+    uint_fast8_t num = 0;
+    char c = str[num];
+    while((c !=0) && (num < max_length))
+    {
+        *position = c;
+        num++;
+        position++;
+        c = str[num];
+    }
+    return num;
 }
 
-uint_fast8_t dev_temperature_sensor_get_count(void)
-{
-    return 0;
-}
-
-uint_fast8_t dev_temperature_sensor_get_name(uint_fast8_t number, uint8_t *position, , uint_fast8_t max_length)
-{
-    return 0;
-}
-
-uint_fast8_t dev_temperature_sensor_get_status(uint_fast8_t number)
-{
-    return 0;
-}
-
-uint_fast16_t dev_temperature_sensor_get_temperature(uint_fast8_t number)
-{
-    return 0;
-}
-
-void dev_temperature_sensor_print_status(void)
-{
-
-}
 

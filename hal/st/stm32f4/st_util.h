@@ -20,7 +20,6 @@
 
 #include "st_gpio.h"
 
-uint_fast8_t copy_string(char * str, uint8_t *position);
 void print_gpio_configuration(GPIO_TypeDef * gpio);
 void print_gpio_pin_configuration(GPIO_TypeDef * PortRegisters, int idx);
 void uDelay(const uint32_t usec);

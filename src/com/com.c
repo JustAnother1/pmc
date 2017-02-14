@@ -755,17 +755,9 @@ uint8_t *com_get_start_parameter(void)
     return &send_buffer[REPLY_FRAME_START_OF_PARAMETER];
 }
 
-uint_fast8_t com_copy_string_to_parameter(char* str, uint8_t* parameter)
+uint_fast8_t com_get_max_parameter_length(void)
 {
-    uint_fast8_t length = 0;
-    while(0 != *str)
-    {
-        *parameter = (uint8_t)*str;
-        str ++;
-        parameter ++;
-        length ++;
-    }
-    return length;
+    return MAX_SEND_FRAME_SIZE - 5; // Sync + Length + Control + ReplyCode + CRC
 }
 
 static void send_frame(uint_fast16_t length)
