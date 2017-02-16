@@ -25,3 +25,8 @@ void hal_stepper_set_Output(uint32_t value)
 
 }
 
+uint32_t hal_stepper_get_Output(void)
+{
+    return 0;
+}
+

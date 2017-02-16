@@ -14,33 +14,49 @@
  */
 
 #include <inttypes.h>
+#include <stdbool.h>
 
-void dev_temperature_sensor_init(void)
+void dev_heater_init(void)
 {
 
 }
 
-uint_fast8_t dev_temperature_sensor_get_count(void)
-{
-    return 0;
-}
-
-uint_fast8_t dev_temperature_sensor_get_name(uint_fast8_t number, uint8_t *position, uint_fast8_t max_length)
+uint_fast8_t dev_heater_get_count(void)
 {
     return 0;
 }
 
-uint_fast8_t dev_temperature_sensor_get_status(uint_fast8_t number)
+uint_fast8_t dev_heater_get_name(uint_fast8_t number, uint8_t *position, uint_fast8_t max_length)
 {
     return 0;
 }
 
-uint_fast16_t dev_temperature_sensor_get_temperature(uint_fast8_t number)
+uint_fast8_t dev_heater_get_status(uint_fast8_t number)
 {
     return 0;
 }
 
-void dev_temperature_sensor_print_status(void)
+void dev_heater_get_configuration(uint_fast8_t number)
+{
+
+}
+
+void dev_heater_set_temperature_sensor(uint_fast8_t number, uint_fast8_t sensor_number)
+{
+
+}
+
+bool dev_heater_set_target_temperature(uint_fast8_t number, uint_fast16_t target_temperature)
+{
+    return false;
+}
+
+uint_fast16_t dev_heater_get_temperature(uint_fast8_t number)
+{
+    return 0;
+}
+
+void dev_heater_get_debug_information(uint_fast8_t number)
 {
 
 }
