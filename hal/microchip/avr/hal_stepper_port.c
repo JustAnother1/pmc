@@ -13,22 +13,22 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+#include "hal_stepper_port.h"
 
-#include <inttypes.h>
+static uint32_t stepper_port_output = 0;
 
-#ifdef DEBUG_ACTIVE
+void hal_stepper_port_init(void)
+{
 
-#include "lib/printf.h"
+}
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+void hal_stepper_set_Output(uint32_t value)
+{
+    stepper_port_output = value;
+}
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
+uint32_t hal_stepper_get_Output(void)
+{
+    return stepper_port_output;
+}
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */

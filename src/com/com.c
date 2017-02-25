@@ -150,7 +150,7 @@ uint_fast8_t com_get_parameter_byte(uint_fast8_t index)
 
 uint_fast8_t com_get_host_timeout_sec(void)
 {
-    return host_timeout_tick/1000;
+    return (uint_fast8_t)host_timeout_tick/1000;
 }
 
 static void check_host_timeout(void)
@@ -173,7 +173,7 @@ static void check_host_timeout(void)
 
 void gotoStoppedMode(uint_fast8_t cause_for_stopped_mode, uint_fast8_t recovery_options_for_stopped_mode)
 {
-    int i;
+    uint_fast8_t i;
     client_state = CS_STOPPED;
     cause = cause_for_stopped_mode;
     recovery_options = recovery_options_for_stopped_mode;

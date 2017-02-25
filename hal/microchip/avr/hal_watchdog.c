@@ -13,22 +13,16 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+#include "hal_watchdog.h"
 
-#include <inttypes.h>
+void watchdog_init(void)
+{
 
-#ifdef DEBUG_ACTIVE
+}
 
-#include "lib/printf.h"
+void watchdog_tick(void)
+{
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+}
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */

@@ -13,22 +13,36 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+#ifndef HAL_INCLUDE_HAL_CFG_H_
+#define HAL_INCLUDE_HAL_CFG_H_
 
-#include <inttypes.h>
+// handling of constant Strings
+#include <avr/pgmspace.h>
+#define STR(x) PSTR(x)
 
-#ifdef DEBUG_ACTIVE
+// SPI
+#define EXPANSION_SPI 0
+#define MAX_SPI       1
 
-#include "lib/printf.h"
+// UART
+#define GCODE_UART  0
+#define DEBUG_UART  1
+#define MAX_UART    2
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+#define UART_RECEIVE_BUFFER_SIZE  150
+#define UART_SEND_BUFFER_SIZE     100
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
+// Heaters
+#define NUMBER_OF_HEATERS 6
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
+// LEDs
+#define DEBUG_LED  0
+#define MAX_LED    1
+
+#define BOARD_HAS_DEBUG_LED
+
+
+#define STEP_TIMER                 6
+#define STEP_BUFFER_TIMER          7
+
+#endif /* HAL_INCLUDE_HAL_CFG_H_ */

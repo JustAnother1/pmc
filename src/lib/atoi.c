@@ -41,7 +41,7 @@ int atoi(const char *c)
         if (result < previous_result)
         {
             // number overflowed - return INT_MIN
-            return(INT32_MIN);
+            return 0;
         }
         else
         {
@@ -53,7 +53,7 @@ int atoi(const char *c)
         if (result < previous_result)
         {
             // number overflowed - return MIN_INT
-            return(INT32_MIN);
+            return 0;
         }
         else
         {

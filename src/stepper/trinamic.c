@@ -706,7 +706,7 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
         //                    1/256 microstepping
         detect_data[i] = 0x00;
     }
-    debug_line("detecting Steppers with  %d bytes !", SPI_BUFFER_LENGTH);
+    debug_line(STR("detecting Steppers with  %d bytes !"), SPI_BUFFER_LENGTH);
 
     if(false == hal_do_stepper_spi_transaction(&detect_data[0],          // data to send
                                    SPI_BUFFER_LENGTH,        // number of bytes to send
@@ -715,7 +715,7 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
         hal_cpu_report_issue(19);
         return 0;
     }
-    debug_msg("received : ");
+    debug_msg(STR("received : "));
     for(i = 0; i < SPI_BUFFER_LENGTH; i++)
     {
         debug_msg("%02x ", spi_receive_buffer[i]);
@@ -791,12 +791,12 @@ void trinamic_print_stepper_status(void)
     step_print_state();
 
     // raw data
-    debug_line("Number of detected Steppers: %d", num);
+    debug_line(STR("Number of detected Steppers: %d"), num);
     if(0 == num)
     {
         return;
     }
-    debug_msg("hex: ");
+    debug_msg(STR("hex: "));
     for(int i = 0; i < num_bytes_used; i++)
     {
         debug_msg("%02X ", spi_receive_buffer[i]);
@@ -843,96 +843,96 @@ void trinamic_print_stepper_status(void)
         {
             return;
         }
-        debug_line("Stepper %d:", step);
+        debug_line(STR("Stepper %d:"), step);
         step ++;
 
         sg = (spi_receive_buffer[i] & 0xf8) * 4;
         se = (spi_receive_buffer[i] & 0x07) * 4 + ((spi_receive_buffer[i +1] & 0xc0)>>6);
-        debug_line("SG: %4d", sg);
-        debug_line("SE: %4d", se);
+        debug_line(STR("SG: %4d"), sg);
+        debug_line(STR("SE: %4d"), se);
         if(0 != (spi_receive_buffer[i + 1] & 0x08))
         {
-            debug_line("standing still");
+            debug_line(STR("standing still"));
         }
         else
         {
-            debug_line("moving");
+            debug_line(STR("moving"));
         }
         if(0 != (spi_receive_buffer[i + 1] & 0x04))
         {
-            debug_line("open Load coil B");
+            debug_line(STR("open Load coil B"));
         }
         if(0 != (spi_receive_buffer[i + 1] & 0x02))
         {
-            debug_line("open Load coil A");
+            debug_line(STR("open Load coil A"));
         }
         if(0 != (spi_receive_buffer[i + 1] & 0x01))
         {
-            debug_line("short to GND coil B");
+            debug_line(STR("short to GND coil B"));
         }
         if(0 != (spi_receive_buffer[i + 2] & 0x80))
         {
-            debug_line("short to GND coil A");
+            debug_line(STR("short to GND coil A"));
         }
         if(0 != (spi_receive_buffer[i + 2] & 0x40))
         {
-            debug_line("Warning: over Temperature !");
+            debug_line(STR("Warning: over Temperature !"));
         }
         if(0 != (spi_receive_buffer[i + 2] & 0x20))
         {
-            debug_line("Shutdown due to over Temperature !");
+            debug_line(STR("Shutdown due to over Temperature !"));
         }
         if(0 != (spi_receive_buffer[i + 2] & 0x10))
         {
-            debug_line("Stall detected !");
+            debug_line(STR("Stall detected !"));
         }
         // second stepper in this 5 byte packet
         if(step > num)
         {
             return;
         }
-        debug_line("Stepper %d:", step);
+        debug_line(STR("Stepper %d:"), step);
         step++;
 
         sg = ((spi_receive_buffer[i +2] & 0x0f)<<6) + ((spi_receive_buffer[i + 3] & 0x80)>>2);
         se = ((spi_receive_buffer[i +3] & 0x7c)>>2);
-        debug_line("SG: %4d", sg);
-        debug_line("SE: %4d", se);
+        debug_line(STR("SG: %4d"), sg);
+        debug_line(STR("SE: %4d"), se);
         if(0 != (spi_receive_buffer[i + 4] & 0x80))
         {
-            debug_line("standing still");
+            debug_line(STR("standing still"));
         }
         else
         {
-            debug_line("moving");
+            debug_line(STR("moving"));
         }
         if(0 != (spi_receive_buffer[i + 4] & 0x40))
         {
-            debug_line("open Load coil B");
+            debug_line(STR("open Load coil B"));
         }
         if(0 != (spi_receive_buffer[i + 4] & 0x20))
         {
-            debug_line("open Load coil A");
+            debug_line(STR("open Load coil A"));
         }
         if(0 != (spi_receive_buffer[i + 4] & 0x10))
         {
-            debug_line("short to GND coil B");
+            debug_line(STR("short to GND coil B"));
         }
         if(0 != (spi_receive_buffer[i + 4] & 0x08))
         {
-            debug_line("short to GND coil A");
+            debug_line(STR("short to GND coil A"));
         }
         if(0 != (spi_receive_buffer[i + 4] & 0x04))
         {
-            debug_line("Warning: over Temperature !");
+            debug_line(STR("Warning: over Temperature !"));
         }
         if(0 != (spi_receive_buffer[i + 4] & 0x02))
         {
-            debug_line("Shutdown due to over Temperature !");
+            debug_line(STR("Shutdown due to over Temperature !"));
         }
         if(0 != (spi_receive_buffer[i + 4] & 0x01))
         {
-            debug_line("Stall detected !");
+            debug_line(STR("Stall detected !"));
         }
 
         // done with these two steppers
@@ -1005,7 +1005,7 @@ static bool changeMotorSetting(uint8_t* setting)
 
     numSteppers = trinamic_detect_number_of_steppers();
 
-    debug_line("changing %c to %d", setting_to_change, v);
+    debug_line(STR("changing %c to %d"), setting_to_change, v);
 
     switch(setting_to_change)
     {
@@ -1072,9 +1072,9 @@ static bool printMotorConfiguration(void)
 {
     int stepperNumber = 0;
     // TODO stepper number
-    debug_line("detected %d Steppers !", steppers_detected_on_last_detection);
+    debug_line(STR("detected %d Steppers !"), steppers_detected_on_last_detection);
 
-    debug_msg("DRVCTRL  hex: ");
+    debug_msg(STR("DRVCTRL  hex: "));
     printRegisterHex(DRVCTRL);
     debug_line(" ");
 
@@ -1082,118 +1082,118 @@ static bool printMotorConfiguration(void)
     debug_msg("[i]");
     if(0 == getInt(stepInterpolation, stepperNumber))
     {
-        debug_line("Step Interpolation      : disabled  (=0)");
+        debug_line(STR("Step Interpolation      : disabled  (=0)"));
     }
     else
     {
-        debug_line("Step Interpolation      : enabled (=1)");
+        debug_line(STR("Step Interpolation      : enabled (=1)"));
     }
 
     debug_msg("[e]");
     if(0 == getInt(doubleEdge, stepperNumber))
     {
-        debug_line("Double Edge             : rising only (=0)");
+        debug_line(STR("Double Edge             : rising only (=0)"));
     }
     else
     {
-        debug_line("Double Edge             : rising and falling (=1)");
+        debug_line(STR("Double Edge             : rising and falling (=1)"));
     }
     debug_msg("[m]");
     switch(getInt(microstepResolution, stepperNumber))
     {
-    case 0 : debug_line("Microstep Res.          : 1/256 (=0)"); break;
-    case 1 : debug_line("Microstep Res.          : 1/128 (=1)"); break;
-    case 2 : debug_line("Microstep Res.          : 1/64 (=2)"); break;
-    case 3 : debug_line("Microstep Res.          : 1/32 (=3)"); break;
-    case 4 : debug_line("Microstep Res.          : 1/16 (=4)"); break;
-    case 5 : debug_line("Microstep Res.          : 1/8 (=5)"); break;
-    case 6 : debug_line("Microstep Res.          : 1/4 (=6)"); break;
-    case 7 : debug_line("Microstep Res.          : 1/2 - half steps (=7)"); break;
-    case 8 : debug_line("Microstep Res.          : 1/1 - full steps (=8)"); break;
-    default: debug_line("Microstep Res.          : %d <- invalid !", getInt(microstepResolution, stepperNumber));break;
+    case 0 : debug_line(STR("Microstep Res.          : 1/256 (=0)")); break;
+    case 1 : debug_line(STR("Microstep Res.          : 1/128 (=1)")); break;
+    case 2 : debug_line(STR("Microstep Res.          : 1/64 (=2)")); break;
+    case 3 : debug_line(STR("Microstep Res.          : 1/32 (=3)")); break;
+    case 4 : debug_line(STR("Microstep Res.          : 1/16 (=4)")); break;
+    case 5 : debug_line(STR("Microstep Res.          : 1/8 (=5)")); break;
+    case 6 : debug_line(STR("Microstep Res.          : 1/4 (=6)")); break;
+    case 7 : debug_line(STR("Microstep Res.          : 1/2 - half steps (=7)")); break;
+    case 8 : debug_line(STR("Microstep Res.          : 1/1 - full steps (=8)")); break;
+    default: debug_line(STR("Microstep Res.          : %d <- invalid !"), getInt(microstepResolution, stepperNumber));break;
     }
 
 #else
     // TODO
 #endif
 
-    debug_msg("CHOPCONF hex: ");
+    debug_msg(STR("CHOPCONF hex: "));
     printRegisterHex(CHOPCONF);
     debug_line(" ");
     debug_msg("[b]");
     switch(getInt(blankingTime, stepperNumber))
     {
-    case 0: debug_line("blanking Time           : 16 * sys clk (=0)"); break;
-    case 1: debug_line("blanking Time           : 24 * sys clk (=1)"); break;
-    case 2: debug_line("blanking Time           : 36 * sys clk"); break;
-    case 3: debug_line("blanking Time           : 54 * sys clk"); break;
+    case 0: debug_line(STR("blanking Time           : 16 * sys clk (=0))")); break;
+    case 1: debug_line(STR("blanking Time           : 24 * sys clk (=1)")); break;
+    case 2: debug_line(STR("blanking Time           : 36 * sys clk")); break;
+    case 3: debug_line(STR("blanking Time           : 54 * sys clk")); break;
     }
     debug_msg("[c]");
     if(0 == getInt(chopperMode, stepperNumber))
     {
         int hend = 0;
         int hstof = 0;
-        debug_line("chopper Mode            : spread cycle (=0)");
+        debug_line(STR("chopper Mode            : spread cycle (=0)"));
 
         debug_msg("[d]");
         switch(getInt(hysteresisDecrementTime, stepperNumber))
         {
-        case 0 : debug_line("hysteresis Decr.Time    : 16 (=0)"); break;
-        case 1 : debug_line("hysteresis Decr.Time    : 32 (=1)"); break;
-        case 2 : debug_line("hysteresis Decr.Time    : 48"); break;
-        case 3 : debug_line("hysteresis Decr.Time    : 64"); break;
+        case 0 : debug_line(STR("hysteresis Decr.Time    : 16 (=0)")); break;
+        case 1 : debug_line(STR("hysteresis Decr.Time    : 32 (=1)")); break;
+        case 2 : debug_line(STR("hysteresis Decr.Time    : 48")); break;
+        case 3 : debug_line(STR("hysteresis Decr.Time    : 64")); break;
         }
 
         debug_msg("[h]");
         hend = getInt(hysteresisEnd, stepperNumber) -3;
-        debug_line("hysteresis End          : %d (=%d)", hend, hend+3);
+        debug_line(STR("hysteresis End          : %d (=%d)"), hend, hend+3);
 
         debug_msg("[s]");
         hstof = getInt(hysteresisStartOffset, stepperNumber);
-        debug_line("hysteresis Start Offset : %d (=%d)", hstof + 1, hstof);
+        debug_line(STR("hysteresis Start Offset : %d (=%d)"), hstof + 1, hstof);
         if(hstof + 1 + hend > 15)
         {
-            debug_line("ERROR: Hysteresis End + hysteresis Start Offset must be less than 16 !");
+            debug_line(STR("ERROR: Hysteresis End + hysteresis Start Offset must be less than 16 !"));
         }
         //else OK
     }
     else
     {
         int fastDecay = getInt(fastDecayTime, stepperNumber);
-        debug_line("chopper Mode            : constant toff (=1)");
+        debug_line(STR("chopper Mode            : constant toff (=1)"));
         debug_msg("[f]");
         if(0 == getInt(fastDecayMode, stepperNumber))
         {
-         debug_line("fast Decay Mode         : cur. comp. can terminate fast decay (=0)");
+         debug_line(STR("fast Decay Mode         : cur. comp. can terminate fast decay (=0)"));
         }
         else
         {
-         debug_line("fast Decay Mode         : only timer can terminate fast decay (=1)");
+         debug_line(STR("fast Decay Mode         : only timer can terminate fast decay (=1)"));
         }
 
         debug_msg("[w]");
         switch(getInt(sineWaveOffset, stepperNumber))
         {
-        case  0: debug_line("sine Wave Offset        : -3 (=0)");break;
-        case  1: debug_line("sine Wave Offset        : -2 (=1)");break;
-        case  2: debug_line("sine Wave Offset        : -1");break;
-        case  3: debug_line("sine Wave Offset        : 0");break;
-        case  4: debug_line("sine Wave Offset        : 1");break;
-        case  5: debug_line("sine Wave Offset        : 2");break;
-        case  6: debug_line("sine Wave Offset        : 3");break;
-        case  7: debug_line("sine Wave Offset        : 4");break;
-        case  8: debug_line("sine Wave Offset        : 5");break;
-        case  9: debug_line("sine Wave Offset        : 6");break;
-        case 10: debug_line("sine Wave Offset        : 7");break;
-        case 11: debug_line("sine Wave Offset        : 8");break;
-        case 12: debug_line("sine Wave Offset        : 9");break;
-        case 13: debug_line("sine Wave Offset        : 10");break;
-        case 14: debug_line("sine Wave Offset        : 11");break;
-        case 15: debug_line("sine Wave Offset        : 12");break;
+        case  0: debug_line(STR("sine Wave Offset        : -3 (=0)"));break;
+        case  1: debug_line(STR("sine Wave Offset        : -2 (=1)"));break;
+        case  2: debug_line(STR("sine Wave Offset        : -1"));break;
+        case  3: debug_line(STR("sine Wave Offset        : 0"));break;
+        case  4: debug_line(STR("sine Wave Offset        : 1"));break;
+        case  5: debug_line(STR("sine Wave Offset        : 2"));break;
+        case  6: debug_line(STR("sine Wave Offset        : 3"));break;
+        case  7: debug_line(STR("sine Wave Offset        : 4"));break;
+        case  8: debug_line(STR("sine Wave Offset        : 5"));break;
+        case  9: debug_line(STR("sine Wave Offset        : 6"));break;
+        case 10: debug_line(STR("sine Wave Offset        : 7"));break;
+        case 11: debug_line(STR("sine Wave Offset        : 8"));break;
+        case 12: debug_line(STR("sine Wave Offset        : 9"));break;
+        case 13: debug_line(STR("sine Wave Offset        : 10"));break;
+        case 14: debug_line(STR("sine Wave Offset        : 11"));break;
+        case 15: debug_line(STR("sine Wave Offset        : 12"));break;
         }
 
         debug_msg("[t]");
-        debug_line("fast Decay Time         : %d sys clk (=%d)", 32 * fastDecay, fastDecay);
+        debug_line(STR("fast Decay Time         : %d sys clk (=%d)"), 32 * fastDecay, fastDecay);
     }
 
     debug_msg("[r]");
@@ -1201,51 +1201,51 @@ static bool printMotorConfiguration(void)
     int timeOff = getInt(toff, stepperNumber);
     if(0 == getInt(randomToff, stepperNumber))
     {
-        debug_line("Toff is                 : constant (=0)");
+        debug_line(STR("Toff is                 : constant (=0)"));
     }
     else
     {
-        debug_line("Toff is                 : random (=1)");
+        debug_line(STR("Toff is                 : random (=1)"));
     }
     debug_msg("[o]");
     if(0 == timeOff)
     {
-        debug_line("Toff                    : MOSFETS are OFF (=0)");
+        debug_line(STR("Toff                    : MOSFETS are OFF (=0)"));
     }
     else
     {
         int timeOff_clk = 12 + (32*timeOff);
         if(0 == getInt(randomToff, stepperNumber))
         {
-            debug_line("Toff                    : %d sys clk (=%d)", timeOff_clk, timeOff);
+            debug_line(STR("Toff                    : %d sys clk (=%d)"), timeOff_clk, timeOff);
         }
         else
         {
-            debug_line("Toff                    : %d - %d sys clk (=%d)", timeOff_clk-12, timeOff_clk+3, timeOff);
+            debug_line(STR("Toff                    : %d - %d sys clk (=%d)"), timeOff_clk-12, timeOff_clk+3, timeOff);
         }
     }
     }
 
-    debug_msg("SMARTEN  hex: ");
+    debug_msg(STR("SMARTEN  hex: "));
     printRegisterHex(SMARTEN);
     debug_line(" ");
 
     debug_msg("[n]");
     if(0 == getInt(seIMin, stepperNumber))
     {
-        debug_line("I min                   : 1/2 CS (=0)");
+        debug_line(STR("I min                   : 1/2 CS (=0)"));
     }
     else
     {
-        debug_line("I min                   : 1/4 CS (=1)");
+        debug_line(STR("I min                   : 1/4 CS (=1)"));
     }
     debug_msg("[p]");
     switch(getInt(decrementSpeed, stepperNumber))
     {
-    case 0: debug_line("decrement Speed         : 32 samples needed per decrement (=0)"); break;
-    case 1: debug_line("decrement Speed         : 8 samples needed per decrement (=1)"); break;
-    case 2: debug_line("decrement Speed         : 2 samples needed per decrement (=2)"); break;
-    case 3: debug_line("decrement Speed         : 1 samples needed per decrement (=3)"); break;
+    case 0: debug_line(STR("decrement Speed         : 32 samples needed per decrement (=0)")); break;
+    case 1: debug_line(STR("decrement Speed         : 8 samples needed per decrement (=1)")); break;
+    case 2: debug_line(STR("decrement Speed         : 2 samples needed per decrement (=2)")); break;
+    case 3: debug_line(STR("decrement Speed         : 1 samples needed per decrement (=3)")); break;
     }
 
     {
@@ -1254,39 +1254,39 @@ static bool printMotorConfiguration(void)
     debug_msg("[0]");
     if(0 == loThr)
     {
-        debug_line("Cool Step               : disabled (lower Thr.) (=0)");
+        debug_line(STR("Cool Step               : disabled (lower Thr.) (=0)"));
     }
     else
     {
-        debug_line("Cool Step               : enabled (lower Thr.) (=%d)", loThr);
+        debug_line(STR("Cool Step               : enabled (lower Thr.) (=%d)"), loThr);
     }
     debug_msg("[u]");
-    debug_line("upper threshold         : %d (=%d)", (loThr+upThr+1) * 32, upThr);
+    debug_line(STR("upper threshold         : %d (=%d)"), (loThr+upThr+1) * 32, upThr);
     debug_msg("[0]");
-    debug_line("lower threshold         : %d (=%d)", loThr, loThr);
+    debug_line(STR("lower threshold         : %d (=%d)"), loThr, loThr);
     }
 
     debug_msg("[1]");
     switch(getInt(seUpStep, stepperNumber))
     {
-    case 0: debug_line("I up-step size          : 1 (=0)");break;
-    case 1: debug_line("I up-step size          : 2 (=1)");break;
-    case 2: debug_line("I up-step size          : 4 (=2)");break;
-    case 3: debug_line("I up-step size          : 8 (=3)");break;
+    case 0: debug_line(STR("I up-step size          : 1 (=0)"));break;
+    case 1: debug_line(STR("I up-step size          : 2 (=1)"));break;
+    case 2: debug_line(STR("I up-step size          : 4 (=2)"));break;
+    case 3: debug_line(STR("I up-step size          : 8 (=3)"));break;
     }
 
-    debug_msg("SGCSCONF hex: ");
+    debug_msg(STR("SGCSCONF hex: "));
     printRegisterHex(SGCSCONF);
     debug_line(" ");
 
     debug_msg("[g]");
     if(0 ==  getInt(sgFilter, stepperNumber))
     {
-        debug_line("Filter                  : standard Mode (=0)");
+        debug_line(STR("Filter                  : standard Mode (=0)"));
     }
     else
     {
-        debug_line("Filter                  : Filtered Mode (=1)");
+        debug_line(STR("Filter                  : Filtered Mode (=1)"));
     }
 
     debug_msg("[l]");
@@ -1294,98 +1294,98 @@ static bool printMotorConfiguration(void)
     int thr = getInt(sgThreshold, stepperNumber);
     if(64 > thr)
     {
-        debug_line("threshold               : %d (=%d)", thr, thr);
+        debug_line(STR("threshold               : %d (=%d)"), thr, thr);
     }
     else
     {
-        debug_line("threshold               : %d (=%d)", thr -128, thr);
+        debug_line(STR("threshold               : %d (=%d)"), thr -128, thr);
     }
     }
 
     debug_msg("[2]");
     {
     int cs = getInt(sgCS, stepperNumber);
-    debug_line("current scale           : %d/32 (=%d)", cs+1, cs);
+    debug_line(STR("current scale           : %d/32 (=%d)"), cs+1, cs);
     }
 
-    debug_msg("DRVCONF  hex: ");
+    debug_msg(STR("DRVCONF  hex: "));
     printRegisterHex(DRVCONF);
     debug_line(" ");
 
     debug_msg("[x]");
     if(0 == getInt(test, stepperNumber))
     {
-        debug_line("test mode               : normal mode (=0)");
+        debug_line(STR("test mode               : normal mode (=0)"));
     }
     else
     {
-        debug_line("test mode               : test mode (=1)");
+        debug_line(STR("test mode               : test mode (=1)"));
     }
 
     debug_msg("[a]");
     switch(getInt(slopeHigh, stepperNumber))
     {
-    case 0: debug_line("slope High              : Minimum (=0)"); break;
-    case 1: debug_line("slope High              : Minimum temperature compensation mode (=1)"); break;
-    case 2: debug_line("slope High              : Medium temperature compensation mode (=2)"); break;
-    case 3: debug_line("slope High              : Maximum (=3)"); break;
+    case 0: debug_line(STR("slope High              : Minimum (=0)")); break;
+    case 1: debug_line(STR("slope High              : Minimum temperature compensation mode (=1)")); break;
+    case 2: debug_line(STR("slope High              : Medium temperature compensation mode (=2)")); break;
+    case 3: debug_line(STR("slope High              : Maximum (=3)")); break;
     }
 
     debug_msg("[j]");
     switch(getInt(slopeLow, stepperNumber))
     {
-    case 0: debug_line("slope Low               : Minimum (=0)"); break;
-    case 1: debug_line("slope Low               : Minimum (=1)"); break;
-    case 2: debug_line("slope Low               : Medium  (=2)"); break;
-    case 3: debug_line("slope Low               : Maximum (=3)"); break;
+    case 0: debug_line(STR("slope Low               : Minimum (=0)")); break;
+    case 1: debug_line(STR("slope Low               : Minimum (=1)")); break;
+    case 2: debug_line(STR("slope Low               : Medium  (=2)")); break;
+    case 3: debug_line(STR("slope Low               : Maximum (=3)")); break;
     }
 
     debug_msg("[k]");
     if(0 == getInt(shortGNDdisabled, stepperNumber))
     {
-        debug_line("short to GND protection : enabled (=0)");
+        debug_line(STR("short to GND protection : enabled (=0)"));
     }
     else
     {
-        debug_line("short to GND protection : disabled (=1)");
+        debug_line(STR("short to GND protection : disabled (=1)"));
     }
 
     debug_msg("[q]");
     switch(getInt(shortGNDtimer, stepperNumber))
     {
-    case 0: debug_line("short to GND timer      : 3.2 µs (=0)");break;
-    case 1: debug_line("short to GND timer      : 1.6 µs (=1)");break;
-    case 2: debug_line("short to GND timer      : 1.2 µs (=2)");break;
-    case 3: debug_line("short to GND timer      : 0.8 µs (=3)");break;
+    case 0: debug_line(STR("short to GND timer      : 3.2 µs (=0)"));break;
+    case 1: debug_line(STR("short to GND timer      : 1.6 µs (=1)"));break;
+    case 2: debug_line(STR("short to GND timer      : 1.2 µs (=2)"));break;
+    case 3: debug_line(STR("short to GND timer      : 0.8 µs (=3)"));break;
     }
 
     debug_msg("[v]");
     if(0 == getInt(disableSTEPDIR, stepperNumber))
     {
-        debug_line("STEP/DIR Interface      : enabled (=0)");
+        debug_line(STR("STEP/DIR Interface      : enabled (=0)"));
     }
     else
     {
-        debug_line("STEP/DIR Interface      : disabled (=1)");
+        debug_line(STR("STEP/DIR Interface      : disabled (=1)"));
     }
 
     debug_msg("[y]");
     if(0 == getInt(lowVoltageRsense, stepperNumber))
     {
-        debug_line("Voltage Rsense          : 0 - 305 mV (=0)");
+        debug_line(STR("Voltage Rsense          : 0 - 305 mV (=0)"));
     }
     else
     {
-        debug_line("Voltage Rsense          : 0 - 165 mV (=1)");
+        debug_line(STR("Voltage Rsense          : 0 - 165 mV (=1)"));
     }
 
     debug_msg("[z]");
     switch(getInt(responseFormat, stepperNumber))
     {
-    case 0: debug_line("response Format         : micro step position (=0)");break;
-    case 1: debug_line("response Format         : stall Guard level (=1)");break;
-    case 2: debug_line("response Format         : stall guard and cool step (=3)");break;
-    case 3: debug_line("response Format         : ERROR ! (=3)");break;
+    case 0: debug_line(STR("response Format         : micro step position (=0)"));break;
+    case 1: debug_line(STR("response Format         : stall Guard level (=1)"));break;
+    case 2: debug_line(STR("response Format         : stall guard and cool step (=3)"));break;
+    case 3: debug_line(STR("response Format         : ERROR ! (=3)"));break;
     }
 
     return true;

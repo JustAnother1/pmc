@@ -36,7 +36,7 @@
 #include "endStopHandling.h"
 
 
-void main (void)
+int main (void)
 {
     bool on = false;
 #ifdef WATCHDOG_ACTIVE
@@ -86,6 +86,7 @@ void main (void)
         watchdog_tick();
 #endif
     }
+    return 0;
 }
 
 // end of File

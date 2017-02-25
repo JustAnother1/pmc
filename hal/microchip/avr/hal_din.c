@@ -12,23 +12,38 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
+#include "hal_din.h"
+#include "hal_debug.h"
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+void hal_din_init(void)
+{
 
-#include <inttypes.h>
+}
 
-#ifdef DEBUG_ACTIVE
+uint_fast8_t hal_din_get_amount(void)
+{
+    return 0;
+}
 
-#include "lib/printf.h"
+uint_fast8_t hal_din_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
+{
+    return 0;
+}
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
+{
+    return 0;
+}
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
+void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
+{
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
+}
+
+void hal_din_subscribe_to_events(uint_fast8_t switch_number,
+                                 uint_fast8_t stepper_number,
+                                 din_func handle_func)
+{
+
+}
+

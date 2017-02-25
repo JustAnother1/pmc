@@ -13,22 +13,38 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+#include <stdio.h>
+#include <stdlib.h>
+#include "hal_time.h"
 
-#include <inttypes.h>
 
-#ifdef DEBUG_ACTIVE
+void hal_time_init(void)
+{
 
-#include "lib/printf.h"
+}
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+void hal_time_ms_sleep(uint_fast32_t ms)
+{
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
+}
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
+bool hal_time_start_timer(uint_fast8_t device, uint32_t clock, uint_fast16_t reload_value, TimerFkt function)
+{
+    // TODO
+    return false;
+}
+void hal_time_stop_timer(uint_fast8_t device)
+{
+
+}
+
+bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
+{
+    return false;
+}
+
+void hal_time_print_Configuration(int timerNumber)
+{
+
+}
+

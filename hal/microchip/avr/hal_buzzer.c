@@ -13,22 +13,25 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+#include "hal_buzzer.h"
 
-#include <inttypes.h>
+void hal_buzzer_init(void)
+{
 
-#ifdef DEBUG_ACTIVE
+}
 
-#include "lib/printf.h"
+uint_fast8_t hal_buzzer_get_amount(void)
+{
+    return 0;
+}
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency)
+{
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
+}
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
+uint_fast8_t hal_buzzer_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
+{
+    return 0;
+}
+

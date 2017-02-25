@@ -1,7 +1,9 @@
 # system configuration
 ifeq ($(ARCHITECTURE), arm)
 	CCPREFIX = arm-none-eabi-
-else
+else ifeq ($(ARCHITECTURE), avr)
+	CCPREFIX = avr-
+else 
 	CCPREFIX = 
 endif 
 

@@ -33,7 +33,7 @@
 #define MOVE_PHASE_CONSTANT_SPEED   1
 #define MOVE_PHASE_DECELERATE       2
 // Timer runs on 12 MHz clock.
-#define TICKS_PER_SECOND            (12*1000*1000)
+#define TICKS_PER_SECOND            (12L*1000L*1000L)
 #define STEP_TIME_ONE_MS            (TICKS_PER_SECOND/1000)
 #define REFILL_BUFFER_RELOAD        3000
 

@@ -74,8 +74,8 @@ void debug_init(void)
     tick_min = 42424242;
     hal_debug_init();
     hal_cpu_check_Reset_Reason();
-    debug_line("Debug Console PMC");
-    debug_msg("(db)");
+    debug_line(STR("Debug Console PMC"));
+    debug_msg(STR("(db)"));
 }
 
 void debug_tick(void)
@@ -149,7 +149,7 @@ static void search_for_orders(void)
                     // empty command
                     hal_forget_bytes_debug_uart(i+1);
                     checked_bytes = 0;
-                    debug_msg("(db)");
+                    debug_msg(STR("(db)"));
                     return;
                 }
                 else
@@ -166,7 +166,7 @@ static void search_for_orders(void)
             parse_order(i);
             hal_forget_bytes_debug_uart(i+1);
             checked_bytes = 0;
-            debug_msg("(db)");
+            debug_msg(STR("(db)"));
             return;
         }
     }
@@ -299,51 +299,51 @@ static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low)
 
 static void order_help(void)
 {
-    debug_line("available commands:");
+    debug_line(STR("available commands:"));
     // a
-    debug_line("b<frequency>               : activate buzzer (freq=0 -> off)");
-    debug_line("c<setting>                 : change special setting");
-    debug_line("d                          : die - stops the processor");
-    debug_line("e                          : show errors that have been reported.");
+    debug_line(STR("b<frequency>               : activate buzzer (freq=0 -> off)"));
+    debug_line(STR("c<setting>                 : change special setting"));
+    debug_line(STR("d                          : die - stops the processor"));
+    debug_line(STR("e                          : show errors that have been reported."));
     // f
     // g
-    debug_line("h                          : print this information");
-    debug_line("ha <heat> <sens>           : associate temp.sensor to heater");
-    debug_line("hs                         : show status of the heaters");
-    debug_line("ht <num> <temp>            : set temperature of the heater");
+    debug_line(STR("h                          : print this information"));
+    debug_line(STR("ha <heat> <sens>           : associate temp.sensor to heater"));
+    debug_line(STR("hs                         : show status of the heaters"));
+    debug_line(STR("ht <num> <temp>            : set temperature of the heater"));
     // i
     // j
     // k
-    debug_line("l                          : list recorded debug information");
-    debug_line("md<addressHex> <lengthHex> : print memory");
+    debug_line(STR("l                          : list recorded debug information"));
+    debug_line(STR("md<addressHex> <lengthHex> : print memory"));
     // n
-    debug_line("on                         : switch all power on");
-    debug_line("off                        : switch all power off");
-    debug_line("pa                         : print ADC configuration");
+    debug_line(STR("on                         : switch all power on"));
+    debug_line(STR("off                        : switch all power off"));
+    debug_line(STR("pa                         : print ADC configuration"));
 #ifdef HAS_USB
-    debug_line("pb                         : print USB configuration");
+    debug_line(STR("pb                         : print USB configuration"));
 #endif
-    debug_line("pc                         : print CPU configuration");
-    debug_line("pi                         : print I2C configuration");
-    debug_line("pin<Port,idx>              : print state of the pin");
-    debug_line("pse                        : print expansion SPI configuration");
-    debug_line("pss                        : print stepper SPI configuration");
-    debug_line("ptim<num>                  : print Timer Registers");
+    debug_line(STR("pc                         : print CPU configuration"));
+    debug_line(STR("pi                         : print I2C configuration"));
+    debug_line(STR("pin<Port,idx>              : print state of the pin"));
+    debug_line(STR("pse                        : print expansion SPI configuration"));
+    debug_line(STR("pss                        : print stepper SPI configuration"));
+    debug_line(STR("ptim<num>                  : print Timer Registers"));
 #ifdef USE_STEP_DIR
-    debug_line("ptri                       : print Trinamic status");
+    debug_line(STR("ptri                       : print Trinamic status"));
 #endif
-    debug_line("pud                        : print Debug UART configuration");
-    debug_line("pug                        : print G-Code UART configuration");
-    debug_line("pq                         : print command queue status");
+    debug_line(STR("pud                        : print Debug UART configuration"));
+    debug_line(STR("pug                        : print G-Code UART configuration"));
+    debug_line(STR("pq                         : print command queue status"));
     // q
-    debug_line("r                          : reset the processor");
+    debug_line(STR("r                          : reset the processor"));
     // s
-    debug_line("sc                         : scan number of steppers");
-    debug_line("t                          : show current time");
+    debug_line(STR("sc                         : scan number of steppers"));
+    debug_line(STR("t                          : show current time"));
     // u
     // v
-    debug_line("we<hex chars>              : write data to expansion SPI");
-    debug_line("ws<hex chars>              : write data to stepper SPI");
+    debug_line(STR("we<hex chars>              : write data to expansion SPI"));
+    debug_line(STR("ws<hex chars>              : write data to stepper SPI"));
     // x
     // y
     // z
@@ -357,10 +357,10 @@ static void order_curTime(void)
     uint32_t minutes = 0;
     uint32_t hours = 0;
     uint32_t now =  hal_cpu_get_ms_tick();
-    debug_line("now : %d", now);
+    debug_line(STR("now : %d"), now);
     if(now < 1000)
     {
-        debug_line("%d ms", now);
+        debug_line(STR("%d ms"), now);
     }
     else
     {
@@ -368,7 +368,7 @@ static void order_curTime(void)
         seconds = now / 1000;
         if(seconds < 60)
         {
-            debug_line("%d,%03d s", seconds, millis);
+            debug_line(STR("%d,%03d s"), seconds, millis);
         }
         else
         {
@@ -377,14 +377,14 @@ static void order_curTime(void)
             minutes = now / 60;
             if(minutes < 60)
             {
-                debug_line("%d:%02d,%03d mm:ss",minutes, seconds, millis);
+                debug_line(STR("%d:%02d,%03d mm:ss"),minutes, seconds, millis);
             }
             else
             {
                 now = minutes;
                 minutes = minutes % 60;
                 hours = now / 60;
-                debug_line("%d:%02d:%02d,%03d hh:mm:ss", hours, minutes, seconds, millis);
+                debug_line(STR("%d:%02d:%02d,%03d hh:mm:ss"), hours, minutes, seconds, millis);
             }
         }
     }
@@ -396,7 +396,7 @@ static void printMemory(uint8_t* buf, uint32_t length)
     {
         // Adress(hex) : Data in Hex                                     : Data in ASCII
         //    00000000 : 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 : ....affe....beef
-        debug_line("Address(hex) : Data in Hex                                     : Data in ASCII");
+        debug_line(STR("Address(hex) : Data in Hex                                     : Data in ASCII"));
     }
     while(0 < length)
     {
@@ -414,7 +414,7 @@ static void printMemory(uint8_t* buf, uint32_t length)
         }
 
         // 00 00 00 00 :
-        debug_msg("    %02x%02x%02x%02x : ", (addr>>24) & 0xff, (addr>>16) & 0xff, (addr>>8) & 0xff, addr & 0xff);
+        debug_msg(STR("    %02x%02x%02x%02x : "), (addr>>24) & 0xff, (addr>>16) & 0xff, (addr>>8) & 0xff, addr & 0xff);
 
         //  00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00  :
         for(i = 0; i < bytesInRow; i++)
@@ -502,7 +502,7 @@ static void parse_order(int length)
     pos_in_buf = get_next_word(pos_in_buf, length, &cmd_buf[0]);
     if(0 == pos_in_buf)
     {
-        debug_line("Invalid command ! try h for help");
+        debug_line(STR("Invalid command ! try h for help"));
         return;
     }
     switch(cmd_buf[0])
@@ -518,7 +518,7 @@ static void parse_order(int length)
     case 'c':
         if(1 == pos_in_buf)
         {
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             return;
         }
         switch (cmd_buf[1])
@@ -529,7 +529,7 @@ static void parse_order(int length)
             // Trinamic (src/stepper/trinamic.c):
             if(false == trinamic_change_setting(&cmd_buf[2]))
             {
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
             }
             // else -> OK
             break;
@@ -540,13 +540,13 @@ static void parse_order(int length)
             // Command Queue (src/order/commandqueue.c):
             if(false == cmd_queue_chnage_setting(&cmd_buf[2]))
             {
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
             }
             // else -> OK
             break;
 
         default:
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             break;
         }
         break;
@@ -581,14 +581,14 @@ static void parse_order(int length)
 
             startIndexOfParam = 2 + getStartOffsetOfNextWord(&cmd_buf[2], length -2);
             numCharsNextParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
-            heater_number = atoi(&cmd_buf[startIndexOfParam]);
+            heater_number = atoi((const char *)(&cmd_buf[startIndexOfParam]));
 
             startIndexOfParam = startIndexOfParam + numCharsNextParam;
             startIndexOfParam = startIndexOfParam + getStartOffsetOfNextWord(&cmd_buf[startIndexOfParam], length -startIndexOfParam);
-            sensor_number = atoi(&cmd_buf[startIndexOfParam]);
+            sensor_number = atoi((const char *)(&cmd_buf[startIndexOfParam]));
 
             dev_heater_set_temperature_sensor(heater_number, sensor_number);
-            debug_line("heater %d uses temperature sensor %d !", heater_number, sensor_number);
+            debug_line(STR("heater %d uses temperature sensor %d !"), heater_number, sensor_number);
         }
             break;
 
@@ -603,27 +603,27 @@ static void parse_order(int length)
             uint_fast16_t temperature;
             for(i = 0; i < dev_heater_get_count(); i++)
             {
-                debug_line("heater %d:", i);
+                debug_line(STR("heater %d:"), i);
                 name_length = dev_heater_get_name(i, &(nameBuf[0]), 20);
                 nameBuf[name_length] = 0;
-                debug_line("name               : %s", &(nameBuf[0]));
+                debug_line(STR("name               : %s"), &(nameBuf[0]));
                 switch(dev_heater_get_status(i))
                 {
                 case DEVICE_STATUS_ACTIVE:
-                    debug_line("status             : Active");
+                    debug_line(STR("status             : Active"));
                     break;
 
                 case DEVICE_STATUS_FAULT:
-                    debug_line("status             : Fault");
+                    debug_line(STR("status             : Fault"));
                     break;
 
                 default:
-                    debug_line("status             : %d", dev_heater_get_status(i));
+                    debug_line(STR("status             : %d"), dev_heater_get_status(i));
 
                     break;
                 }
                 temperature = dev_heater_get_temperature(i);
-                debug_line("cur. Temperature   : %d.%01d°C", temperature/10, temperature%10);
+                debug_line(STR("cur. Temperature   : %d.%01d°C"), temperature/10, temperature%10);
                 dev_heater_get_debug_information(i);
             }
         }
@@ -641,19 +641,19 @@ static void parse_order(int length)
 
             startIndexOfParam = 2 + getStartOffsetOfNextWord(&cmd_buf[2], length -2);
             numCharsNextParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
-            heater_number = atoi(&cmd_buf[startIndexOfParam]);
+            heater_number = atoi((const char *)(&cmd_buf[startIndexOfParam]));
 
             startIndexOfParam = startIndexOfParam + numCharsNextParam;
             startIndexOfParam = startIndexOfParam + getStartOffsetOfNextWord(&cmd_buf[startIndexOfParam], length -startIndexOfParam);
-            target_temperature = atoi(&cmd_buf[startIndexOfParam]);
+            target_temperature = atoi((const char *)(&cmd_buf[startIndexOfParam]));
 
             if(true == dev_heater_set_target_temperature(heater_number, target_temperature))
             {
-                debug_line("heater %d is set to temperature  %d.%01d°C !", heater_number, target_temperature/10, target_temperature%10);
+                debug_line(STR("heater %d is set to temperature  %d.%01d°C !"), heater_number, target_temperature/10, target_temperature%10);
             }
             else
             {
-                debug_line("ERROR: could not set heater %d  to temperature  %d.%01d°C !", heater_number, target_temperature/10, target_temperature%10);
+                debug_line(STR("ERROR: could not set heater %d  to temperature  %d.%01d°C !"), heater_number, target_temperature/10, target_temperature%10);
             }
         }
             break;
@@ -668,9 +668,9 @@ static void parse_order(int length)
 // order = l
     case 'L':
     case 'l': // list - list the available debug information
-        debug_line("current status:");
-        debug_line("ticks per ms: max=%d, min=%d", tick_max, tick_min);
-        debug_line("number of detected steppers: %d", dev_stepper_get_count());
+        debug_line(STR("current status:"));
+        debug_line(STR("ticks per ms: max=%d, min=%d"), tick_max, tick_min);
+        debug_line(STR("number of detected steppers: %d"), dev_stepper_get_count());
         dev_temperature_sensor_print_status();
         break;
 
@@ -679,7 +679,7 @@ static void parse_order(int length)
     case 'm':
         if(1 == pos_in_buf)
         {
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             return;
         }
         switch (cmd_buf[1])
@@ -700,14 +700,14 @@ static void parse_order(int length)
             startIndexOfParam = startIndexOfParam + getStartOffsetOfNextWord(&cmd_buf[startIndexOfParam], length -startIndexOfParam);
             numCharsLengthParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
             memoryLength = getHexNumber(&cmd_buf[startIndexOfParam], numCharsLengthParam);
-            debug_line("memoryLength: 0x%x address: 0x%x", memoryLength, address);
+            debug_line(STR("memoryLength: 0x%x address: 0x%x"), memoryLength, address);
             printMemory((uint8_t*)address, memoryLength);
             debug_line("");
         }
             break;
 
         default:
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             break;
         }
         break;
@@ -717,7 +717,7 @@ static void parse_order(int length)
     case 'o':
         if(1 == pos_in_buf)
         {
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             return;
         }
         switch (cmd_buf[1])
@@ -736,7 +736,7 @@ static void parse_order(int length)
         case 'f':
             if(2 == pos_in_buf)
             {
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 return;
             }
             switch(cmd_buf[2])
@@ -751,12 +751,12 @@ static void parse_order(int length)
                 break;
 
             default:
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 break;
             }
             break;
         default:
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             break;
         }
         break;
@@ -766,7 +766,7 @@ static void parse_order(int length)
     case 'p': // print configuration
         if(1 == pos_in_buf)
         {
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             return;
         }
         switch (cmd_buf[1])
@@ -806,7 +806,7 @@ static void parse_order(int length)
                 break;
 
             default:
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 break;
             }
             break;
@@ -816,7 +816,7 @@ static void parse_order(int length)
         case 's':
             if(2 == pos_in_buf)
             {
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 return;
             }
             switch(cmd_buf[2])
@@ -835,7 +835,7 @@ static void parse_order(int length)
                 break;
 
             default:
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 break;
             }
             break;
@@ -845,7 +845,7 @@ static void parse_order(int length)
         case 't':
             if(2 == pos_in_buf)
             {
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 return;
             }
             switch(cmd_buf[2])
@@ -856,7 +856,7 @@ static void parse_order(int length)
             case 'i':
                 if(3 == pos_in_buf)
                 {
-                    debug_line("Invalid command ! try h for help");
+                    debug_line(STR("Invalid command ! try h for help"));
                     return;
                 }
                 switch(cmd_buf[3])
@@ -868,7 +868,7 @@ static void parse_order(int length)
                     break;
 
                 default:
-                    debug_line("Invalid command ! try h for help");
+                    debug_line(STR("Invalid command ! try h for help"));
                     break;
                 }
                 break;
@@ -877,7 +877,7 @@ static void parse_order(int length)
             case 'r':
                 if(3 == pos_in_buf)
                 {
-                    debug_line("Invalid command ! try h for help");
+                    debug_line(STR("Invalid command ! try h for help"));
                     return;
                 }
                 switch(cmd_buf[3])
@@ -890,13 +890,13 @@ static void parse_order(int length)
                     break;
 
                 default:
-                    debug_line("Invalid command ! try h for help");
+                    debug_line(STR("Invalid command ! try h for help"));
                     break;
                 }
                 break;
 
             default:
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 break;
             }
             break;
@@ -906,7 +906,7 @@ static void parse_order(int length)
         case 'u':
             if(2 == pos_in_buf)
             {
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 return;
             }
             switch(cmd_buf[2])
@@ -937,7 +937,7 @@ static void parse_order(int length)
             break;
 
         default:
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             break;
         }
         break;
@@ -948,7 +948,7 @@ static void parse_order(int length)
     {
         if(2 > (length - 2))
         {
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             break;
         }
         else
@@ -958,7 +958,7 @@ static void parse_order(int length)
             int i;
             if(1 == pos_in_buf)
             {
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 return;
             }
             switch (cmd_buf[1])
@@ -973,12 +973,12 @@ static void parse_order(int length)
                 }
                 if(false == hal_do_stepper_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
                 {
-                    debug_line("ERROR: Did not receive all bytes !");
+                    debug_line(STR("ERROR: Did not receive all bytes !"));
                 }
                 // else OK
-                debug_msg("Received: 0x");
+                debug_msg(STR("Received: 0x"));
                 debug_hex_buffer(&receive_data[0], (length -2)/2);
-                debug_line("Done.");
+                debug_line(STR("Done."));
                 break;
 
 // order = we
@@ -990,16 +990,16 @@ static void parse_order(int length)
                 }
                 if(false == hal_do_expansion_spi_transaction(&send_data[0], (length - 2)/2, &receive_data[0]))
                 {
-                    debug_line("ERROR: Did not receive all bytes !");
+                    debug_line(STR("ERROR: Did not receive all bytes !"));
                 }
                 // else OK
-                debug_msg("Received: 0x");
+                debug_msg(STR("Received: 0x"));
                 debug_hex_buffer(&receive_data[0], (length -2)/2);
-                debug_line("Done.");
+                debug_line(STR("Done."));
                 break;
 
             default:
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 break;
             }
             break;
@@ -1017,7 +1017,7 @@ static void parse_order(int length)
     case 's': // stepper
         if(1 == pos_in_buf)
         {
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             return;
         }
         switch (cmd_buf[1])
@@ -1029,11 +1029,11 @@ static void parse_order(int length)
             // scan for number of Steppers
             trinamic_init(); // make sure that the SPI Interface to the Trinamic chips is initialized.
             dev_stepper_detectSteppers();  // re scan steppers
-            debug_line("Detected %d Steppers !", dev_stepper_get_count());
+            debug_line(STR("Detected %d Steppers !"), dev_stepper_get_count());
             break;
 
         default:
-            debug_line("Invalid command ! try h for help");
+            debug_line(STR("Invalid command ! try h for help"));
             break;
         }
         break;
@@ -1051,14 +1051,14 @@ static void parse_order(int length)
         break;
 
     default: // invalid command
-        debug_line("Invalid command ! try h for help");
+        debug_line(STR("Invalid command ! try h for help"));
         break;
     }
 }
 
 void  __attribute__((weak)) curTest(int value)
 {
-    debug_line("Found Value %d !", value);
-    debug_line("Currently no Test active !!");
+    debug_line(STR("Found Value %d !"), value);
+    debug_line(STR("Currently no Test active !!"));
 }
 

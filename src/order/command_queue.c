@@ -103,6 +103,7 @@ void cmd_queue_clear(void)
 
 bool cmd_queue_show_status(uint8_t* setting)
 {
+	(void) setting;
     debug_line("Command Queue Status:");
     debug_line("read position : %d", read_pos);
     debug_line("write position : %d", write_pos);

@@ -13,22 +13,38 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+#include "hal_dout.h"
 
-#include <inttypes.h>
+void hal_dout_init(void)
+{
+}
 
-#ifdef DEBUG_ACTIVE
+uint_fast8_t hal_dout_get_amount(void)
+{
+    return 0;
+}
 
-#include "lib/printf.h"
+void hal_dout_set_pin_high(uint_fast8_t device)
+{
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+}
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
+void hal_dout_set_pin_low(uint_fast8_t device)
+{
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
+}
+
+void hal_dout_set_pin_HighZ(uint_fast8_t device)
+{
+
+}
+
+uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
+{
+    return 0;
+}
+
+uint_fast8_t hal_dout_get_current_state_of(uint_fast8_t number)
+{
+    return 0;
+}

@@ -13,22 +13,29 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
-
-#include <inttypes.h>
-
-#ifdef DEBUG_ACTIVE
-
+#include "hal_debug.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdarg.h>
+#include "hal_cfg.h"
+#include "hal_uart.h"
+#include "hal_cpu.h"
+#include "hal_led.h"
 #include "lib/printf.h"
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+static void debug_putc( void* p, char c);
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
+void hal_debug_init(void)
+{
+    init_printf(NULL, debug_putc);
+}
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
+static void debug_putc(void* p, char c)
+{
+    if(false == hal_send_frame_non_blocking_debug_uart((uint8_t *)&c, 1))
+    {
+        hal_set_error_led(true);
+        hal_cpu_report_issue(5);
+    }
+}
+

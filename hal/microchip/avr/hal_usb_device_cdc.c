@@ -13,22 +13,25 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+#include "hal_usb_device_cdc.h"
 
-#include <inttypes.h>
+void hal_usb_device_cdc_disconnect(void)
+{
 
-#ifdef DEBUG_ACTIVE
+}
 
-#include "lib/printf.h"
+bool hal_usb_device_cdc_init(cdc_call_back_api_typ* client)
+{
+    return false;
+}
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+void hal_usb_device_cdc_send_data(uint8_t * data, uint_fast16_t length)
+{
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
+}
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
+void hal_usb_print_configuration(void)
+{
+
+}
+

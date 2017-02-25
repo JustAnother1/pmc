@@ -13,22 +13,57 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+#include "hal_led.h"
 
-#include <inttypes.h>
+void hal_init_leds(void)
+{
 
-#ifdef DEBUG_ACTIVE
+}
 
-#include "lib/printf.h"
+#ifdef BOARD_HAS_DEBUG_LED
+void hal_toggle_debug_led(void)
+{
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+}
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
+void hal_set_debug_led(bool on)
+{
+
+}
 #endif
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
+#ifdef BOARD_HAS_ERROR_LED
+void hal_toggle_error_led(void)
+{
+
+}
+
+void hal_set_error_led(bool on)
+{
+
+}
+#endif
+
+#ifdef BOARD_HAS_ISR_1_LED
+void hal_toggle_isr1_led(void)
+{
+
+}
+
+void hal_set_isr1_led(bool on)
+{
+
+}
+#endif
+
+#ifdef BOARD_HAS_ISR_2_LED
+void hal_toggle_isr2_led(void)
+{
+
+}
+
+void hal_set_isr2_led(bool on)
+{
+
+}
+#endif

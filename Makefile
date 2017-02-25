@@ -79,8 +79,10 @@ help:
 	@echo "make all BOARD=linux        - build project to run on Linux"
 	@echo "make all BOARD=stm407disco  - build project to run on STM32F4 discovery board"
 	@echo "make all BOARD=pipy         - build project to run on pipy board"
+	@echo "make all BOARD=rumba        - build project to run on rumba board"
 	@echo "make burn BOARD=stm407disco - programm the created file to STM32F4 discovery board"
 	@echo "make burn BOARD=pipy        - programm the created file to pipy board"
+	@echo "make burn BOARD=rumba       - programm the created file to rumba board"
 	@echo "  "
 
 all: directories $(OBJS) $(BIN_FOLDER)$(PROJECT).elf $(OBJS) $(BIN_FOLDER)$(PROJECT).bin
@@ -142,6 +144,11 @@ debug:
 # needs https://github.com/texane/stlink
 	$(STLINK_FOLDER)/st-util&
 	$(DB) $(BIN_FOLDER)$(PROJECT).elf
+	
+else ifeq ($(BOARD),$(filter $(BOARD),rumba))
+burn: 
+# needs avrdude
+	avrdude -p$(MCU) -c$(PROGRAMMER) -P/dev/ttyACM0 -D -U flash:w:$(BIN_FOLDER)$(PROJECT).elf -v -v
 endif
 
 .PHONY: all clean directories list

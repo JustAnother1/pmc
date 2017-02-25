@@ -13,22 +13,40 @@
  *
  */
 
-#ifndef HAL_INCLUDE_HAL_DEBUG_H_
-#define HAL_INCLUDE_HAL_DEBUG_H_
+#include "hal_power.h"
 
-#include <inttypes.h>
+void hal_init_power(void)
+{
 
-#ifdef DEBUG_ACTIVE
+}
 
-#include "lib/printf.h"
+void hal_power_on_5V(void)
+{
 
-#define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+}
 
-void hal_debug_init(void);
-#else
-#define debug_msg(...)
-#define debug_line(...)
-#endif
+void hal_power_off_5V(void)
+{
 
-#endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
+}
+
+void hal_power_on_12V(void)
+{
+
+}
+
+void hal_power_off_12V(void)
+{
+
+}
+
+void hal_power_on_HighVoltage(void)
+{
+
+}
+
+void hal_power_off_HighVoltage(void)
+{
+
+}
+

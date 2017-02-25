@@ -16,6 +16,9 @@
 #ifndef HAL_INCLUDE_HAL_CFG_H_
 #define HAL_INCLUDE_HAL_CFG_H_
 
+// handling of constant Strings
+#define STR(x) (x)
+
 // SPI
 #define STEPPER_SPI   0
 #define EXPANSION_SPI 1
