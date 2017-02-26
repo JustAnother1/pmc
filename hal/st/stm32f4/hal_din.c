@@ -230,13 +230,13 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
         case 5: if(0 !=(D_IN_5_GPIO_PORT->IDR & D_IN_5_IDR)) {return 1;} else {return 0;} break;
 #endif
         default:
-            debug_line("din pin(%d) not available!", device);
+            debug_line(STR("din pin(%d) not available!"), device);
             break;
         }
     }
     else
     {
-        debug_line("din pin(%d) not available!", device);
+        debug_line(STR("din pin(%d) not available!"), device);
     }
     return 0;
 }
@@ -307,7 +307,7 @@ static void check_pin(void)
 {
     int i;
     int cur_state;
-    debug_line("End stop triggered");
+    debug_line(STR("End stop triggered"));
     for(i = 0; i < D_IN_NUM_PINS; i++)
     {
         cur_state = hal_din_get_switch_state(i);
@@ -317,7 +317,7 @@ static void check_pin(void)
             last_state[i] = cur_state;
             if(NULL != funcs[i])
             {
-                debug_line("Notify step");
+                debug_line(STR("Notify step"));
                 if(1 == cur_state)
                 {
                     funcs[i](true,steppers[i], i);
@@ -330,7 +330,7 @@ static void check_pin(void)
             else
             {
                 // nobody cares about this input
-                debug_line("Switch %d not registered", i);
+                debug_line(STR("Switch %d not registered"), i);
             }
         }
         // else no change on this pin
@@ -341,7 +341,7 @@ static void check_pin(void)
 void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
 {
     GPIO_TypeDef * PortRegisters;
-    debug_line("Configuration of pin %c %d :", port, idx);
+    debug_line(STR("Configuration of pin %c %d :"), port, idx);
     switch(port)
     {
     case 'A':
@@ -390,7 +390,7 @@ void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
         break;
 
     default:
-        debug_line("Invalid PortRegisters !");
+        debug_line(STR("Invalid PortRegisters !"));
         return;
     }
     print_gpio_pin_configuration(PortRegisters, idx);

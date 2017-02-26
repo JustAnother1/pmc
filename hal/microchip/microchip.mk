@@ -2,6 +2,7 @@
 ifeq ($(BOARD), rumba)
 	ARCHITECTURE = avr
 	BOARD_FOLDER = microchip/avr
+	DDEFS += -DARCHITECTURE_AVR
 	INCDIRS += $(HAL_FOLDER)$(BOARD_FOLDER)/rumba/
 	INCDIRS += /usr/lib/avr/include/
 	INCDIRS += /usr/lib/gcc/avr/4.9.2/include/

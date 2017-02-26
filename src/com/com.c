@@ -23,6 +23,7 @@
 #include "events.h"
 #include "fw_cfg.h"
 #include "hal_buzzer.h"
+#include "hal_cfg.h"
 #include "hal_cpu.h"
 #include "hal_debug.h"
 #include "hal_power.h"
@@ -164,7 +165,7 @@ static void check_host_timeout(void)
         uint32_t now = hal_cpu_get_ms_tick();
         if(last_host_activity_tick + host_timeout_tick < now)
         {
-            debug_line("Host Timeout !!!");
+            debug_line(STR("Host Timeout !!!"));
             gotoStoppedMode(STOPPED_CAUSE_HOST_TIMEOUT, RECOVERY_CONDITION_CLEARED);
         }
         // else wait a bit longer

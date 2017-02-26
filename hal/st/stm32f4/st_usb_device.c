@@ -253,73 +253,73 @@ uint8_t get_device_status(void)
 void usb_device_print_configuration(void)
 {
     // Clock
-    debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
-    debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
+    debug_line(STR("RCC->AHB1ENR  = 0x%08x"), RCC->AHB1ENR);
+    debug_line(STR("RCC->APB2ENR  = 0x%08x"), RCC->APB2ENR);
     // pins
-    debug_line("D- Pin:");
+    debug_line(STR("D- Pin:"));
     print_gpio_configuration(USB_FS_DM_GPIO_PORT);
-    debug_line("D+ Pin:");
+    debug_line(STR("D+ Pin:"));
     print_gpio_configuration(USB_FS_DP_GPIO_PORT);
     // Registers
-    debug_line("Global Registers:");
-    debug_line("USB_FS->GREGS->GOTGCTL             = 0x%08x", USB_FS->GREGS->GOTGCTL);
-    debug_line("USB_FS->GREGS->GOTGINT             = 0x%08x", USB_FS->GREGS->GOTGINT);
-    debug_line("USB_FS->GREGS->GAHBCFG             = 0x%08x", USB_FS->GREGS->GAHBCFG);
-    debug_line("USB_FS->GREGS->GUSBCFG             = 0x%08x", USB_FS->GREGS->GUSBCFG);
-    debug_line("USB_FS->GREGS->GRSTCTL             = 0x%08x", USB_FS->GREGS->GRSTCTL);
-    debug_line("USB_FS->GREGS->GINTSTS             = 0x%08x", USB_FS->GREGS->GINTSTS);
-    debug_line("USB_FS->GREGS->GINTMSK             = 0x%08x", USB_FS->GREGS->GINTMSK);
-    debug_line("USB_FS->GREGS->GRXSTSR             = 0x%08x", USB_FS->GREGS->GRXSTSR);
-    debug_line("USB_FS->GREGS->GRXSTSP             = 0x%08x", USB_FS->GREGS->GRXSTSP);
-    debug_line("USB_FS->GREGS->GRXFSIZ             = 0x%08x", USB_FS->GREGS->GRXFSIZ);
-    debug_line("USB_FS->GREGS->DIEPTXF0_HNPTXFSIZ  = 0x%08x", USB_FS->GREGS->DIEPTXF0_HNPTXFSIZ);
-    debug_line("USB_FS->GREGS->HNPTXSTS            = 0x%08x", USB_FS->GREGS->HNPTXSTS);
-    debug_line("USB_FS->GREGS->GCCFG               = 0x%08x", USB_FS->GREGS->GCCFG);
-    debug_line("USB_FS->GREGS->CID                 = 0x%08x", USB_FS->GREGS->CID);
-    debug_line("USB_FS->GREGS->HPTXFSIZ            = 0x%08x", USB_FS->GREGS->HPTXFSIZ);
-    debug_line("USB_FS->GREGS->DIEPTXF[0]          = 0x%08x", USB_FS->GREGS->DIEPTXF[0]);
-    debug_line("USB_FS->GREGS->DIEPTXF[1]          = 0x%08x", USB_FS->GREGS->DIEPTXF[1]);
-    debug_line("USB_FS->GREGS->DIEPTXF[2]          = 0x%08x", USB_FS->GREGS->DIEPTXF[2]);
+    debug_line(STR("Global Registers:"));
+    debug_line(STR("USB_FS->GREGS->GOTGCTL             = 0x%08x"), USB_FS->GREGS->GOTGCTL);
+    debug_line(STR("USB_FS->GREGS->GOTGINT             = 0x%08x"), USB_FS->GREGS->GOTGINT);
+    debug_line(STR("USB_FS->GREGS->GAHBCFG             = 0x%08x"), USB_FS->GREGS->GAHBCFG);
+    debug_line(STR("USB_FS->GREGS->GUSBCFG             = 0x%08x"), USB_FS->GREGS->GUSBCFG);
+    debug_line(STR("USB_FS->GREGS->GRSTCTL             = 0x%08x"), USB_FS->GREGS->GRSTCTL);
+    debug_line(STR("USB_FS->GREGS->GINTSTS             = 0x%08x"), USB_FS->GREGS->GINTSTS);
+    debug_line(STR("USB_FS->GREGS->GINTMSK             = 0x%08x"), USB_FS->GREGS->GINTMSK);
+    debug_line(STR("USB_FS->GREGS->GRXSTSR             = 0x%08x"), USB_FS->GREGS->GRXSTSR);
+    debug_line(STR("USB_FS->GREGS->GRXSTSP             = 0x%08x"), USB_FS->GREGS->GRXSTSP);
+    debug_line(STR("USB_FS->GREGS->GRXFSIZ             = 0x%08x"), USB_FS->GREGS->GRXFSIZ);
+    debug_line(STR("USB_FS->GREGS->DIEPTXF0_HNPTXFSIZ  = 0x%08x"), USB_FS->GREGS->DIEPTXF0_HNPTXFSIZ);
+    debug_line(STR("USB_FS->GREGS->HNPTXSTS            = 0x%08x"), USB_FS->GREGS->HNPTXSTS);
+    debug_line(STR("USB_FS->GREGS->GCCFG               = 0x%08x"), USB_FS->GREGS->GCCFG);
+    debug_line(STR("USB_FS->GREGS->CID                 = 0x%08x"), USB_FS->GREGS->CID);
+    debug_line(STR("USB_FS->GREGS->HPTXFSIZ            = 0x%08x"), USB_FS->GREGS->HPTXFSIZ);
+    debug_line(STR("USB_FS->GREGS->DIEPTXF[0]          = 0x%08x"), USB_FS->GREGS->DIEPTXF[0]);
+    debug_line(STR("USB_FS->GREGS->DIEPTXF[1]          = 0x%08x"), USB_FS->GREGS->DIEPTXF[1]);
+    debug_line(STR("USB_FS->GREGS->DIEPTXF[2]          = 0x%08x"), USB_FS->GREGS->DIEPTXF[2]);
     // TODO rest of DIEPTXF[]
-    debug_line("Device Mode Registers:");
-    debug_line("USB_FS->DREGS->DCFG                = 0x%08x", USB_FS->DREGS->DCFG);
-    debug_line("USB_FS->DREGS->DCTL                = 0x%08x", USB_FS->DREGS->DCTL);
-    debug_line("USB_FS->DREGS->DSTS                = 0x%08x", USB_FS->DREGS->DSTS);
-    debug_line("USB_FS->DREGS->DIEPMSK             = 0x%08x", USB_FS->DREGS->DIEPMSK);
-    debug_line("USB_FS->DREGS->DOEPMSK             = 0x%08x", USB_FS->DREGS->DOEPMSK);
-    debug_line("USB_FS->DREGS->DAINT               = 0x%08x", USB_FS->DREGS->DAINT);
-    debug_line("USB_FS->DREGS->DAINTMSK            = 0x%08x", USB_FS->DREGS->DAINTMSK);
-    debug_line("USB_FS->DREGS->DVBUSDIS            = 0x%08x", USB_FS->DREGS->DVBUSDIS);
-    debug_line("USB_FS->DREGS->DVBUSPULSE          = 0x%08x", USB_FS->DREGS->DVBUSPULSE);
-    debug_line("USB_FS->DREGS->DTHRCTL             = 0x%08x", USB_FS->DREGS->DTHRCTL);
-    debug_line("USB_FS->DREGS->DIEPEMPMSK          = 0x%08x", USB_FS->DREGS->DIEPEMPMSK);
+    debug_line(STR("Device Mode Registers:"));
+    debug_line(STR("USB_FS->DREGS->DCFG                = 0x%08x"), USB_FS->DREGS->DCFG);
+    debug_line(STR("USB_FS->DREGS->DCTL                = 0x%08x"), USB_FS->DREGS->DCTL);
+    debug_line(STR("USB_FS->DREGS->DSTS                = 0x%08x"), USB_FS->DREGS->DSTS);
+    debug_line(STR("USB_FS->DREGS->DIEPMSK             = 0x%08x"), USB_FS->DREGS->DIEPMSK);
+    debug_line(STR("USB_FS->DREGS->DOEPMSK             = 0x%08x"), USB_FS->DREGS->DOEPMSK);
+    debug_line(STR("USB_FS->DREGS->DAINT               = 0x%08x"), USB_FS->DREGS->DAINT);
+    debug_line(STR("USB_FS->DREGS->DAINTMSK            = 0x%08x"), USB_FS->DREGS->DAINTMSK);
+    debug_line(STR("USB_FS->DREGS->DVBUSDIS            = 0x%08x"), USB_FS->DREGS->DVBUSDIS);
+    debug_line(STR("USB_FS->DREGS->DVBUSPULSE          = 0x%08x"), USB_FS->DREGS->DVBUSPULSE);
+    debug_line(STR("USB_FS->DREGS->DTHRCTL             = 0x%08x"), USB_FS->DREGS->DTHRCTL);
+    debug_line(STR("USB_FS->DREGS->DIEPEMPMSK          = 0x%08x"), USB_FS->DREGS->DIEPEMPMSK);
     // TODO
-    debug_line("USB_FS->INEP_REGS[0]               = 0x%08x", USB_FS->INEP_REGS[0]);
-    debug_line("USB_FS->INEP_REGS[1]               = 0x%08x", USB_FS->INEP_REGS[1]);
-    debug_line("USB_FS->INEP_REGS[2]               = 0x%08x", USB_FS->INEP_REGS[2]);
-    debug_line("USB_FS->INEP_REGS[3]               = 0x%08x", USB_FS->INEP_REGS[3]);
-    debug_line("USB_FS->OUTEP_REGS[0]              = 0x%08x", USB_FS->OUTEP_REGS[0]);
-    debug_line("USB_FS->OUTEP_REGS[1]              = 0x%08x", USB_FS->OUTEP_REGS[1]);
-    debug_line("USB_FS->OUTEP_REGS[2]              = 0x%08x", USB_FS->OUTEP_REGS[2]);
-    debug_line("USB_FS->OUTEP_REGS[3]              = 0x%08x", USB_FS->OUTEP_REGS[3]);
-    debug_line("USB_FS->HPRT0                      = 0x%08x", USB_FS->HPRT0);
-    debug_line("USB_FS->HC_REGS[0]                 = 0x%08x", USB_FS->HC_REGS[0]);
-    debug_line("USB_FS->HC_REGS[1]                 = 0x%08x", USB_FS->HC_REGS[1]);
-    debug_line("USB_FS->HC_REGS[2]                 = 0x%08x", USB_FS->HC_REGS[2]);
-    debug_line("USB_FS->HC_REGS[3]                 = 0x%08x", USB_FS->HC_REGS[3]);
-    debug_line("USB_FS->HC_REGS[4]                 = 0x%08x", USB_FS->HC_REGS[4]);
-    debug_line("USB_FS->HC_REGS[5]                 = 0x%08x", USB_FS->HC_REGS[5]);
-    debug_line("USB_FS->HC_REGS[6]                 = 0x%08x", USB_FS->HC_REGS[6]);
-    debug_line("USB_FS->HC_REGS[7]                 = 0x%08x", USB_FS->HC_REGS[7]);
-    debug_line("USB_FS->DFIFO[0]                   = 0x%08x", USB_FS->DFIFO[0]);
-    debug_line("USB_FS->DFIFO[1]                   = 0x%08x", USB_FS->DFIFO[1]);
-    debug_line("USB_FS->DFIFO[2]                   = 0x%08x", USB_FS->DFIFO[2]);
-    debug_line("USB_FS->DFIFO[3]                   = 0x%08x", USB_FS->DFIFO[3]);
-    debug_line("USB_FS->DFIFO[4]                   = 0x%08x", USB_FS->DFIFO[4]);
-    debug_line("USB_FS->DFIFO[5]                   = 0x%08x", USB_FS->DFIFO[5]);
-    debug_line("USB_FS->DFIFO[6]                   = 0x%08x", USB_FS->DFIFO[6]);
-    debug_line("USB_FS->DFIFO[7]                   = 0x%08x", USB_FS->DFIFO[7]);
-    debug_line("USB_FS->PCGCCTL                    = 0x%08x", USB_FS->PCGCCTL);
+    debug_line(STR("USB_FS->INEP_REGS[0]               = 0x%08x"), USB_FS->INEP_REGS[0]);
+    debug_line(STR("USB_FS->INEP_REGS[1]               = 0x%08x"), USB_FS->INEP_REGS[1]);
+    debug_line(STR("USB_FS->INEP_REGS[2]               = 0x%08x"), USB_FS->INEP_REGS[2]);
+    debug_line(STR("USB_FS->INEP_REGS[3]               = 0x%08x"), USB_FS->INEP_REGS[3]);
+    debug_line(STR("USB_FS->OUTEP_REGS[0]              = 0x%08x"), USB_FS->OUTEP_REGS[0]);
+    debug_line(STR("USB_FS->OUTEP_REGS[1]              = 0x%08x"), USB_FS->OUTEP_REGS[1]);
+    debug_line(STR("USB_FS->OUTEP_REGS[2]              = 0x%08x"), USB_FS->OUTEP_REGS[2]);
+    debug_line(STR("USB_FS->OUTEP_REGS[3]              = 0x%08x"), USB_FS->OUTEP_REGS[3]);
+    debug_line(STR("USB_FS->HPRT0                      = 0x%08x"), USB_FS->HPRT0);
+    debug_line(STR("USB_FS->HC_REGS[0]                 = 0x%08x"), USB_FS->HC_REGS[0]);
+    debug_line(STR("USB_FS->HC_REGS[1]                 = 0x%08x"), USB_FS->HC_REGS[1]);
+    debug_line(STR("USB_FS->HC_REGS[2]                 = 0x%08x"), USB_FS->HC_REGS[2]);
+    debug_line(STR("USB_FS->HC_REGS[3]                 = 0x%08x"), USB_FS->HC_REGS[3]);
+    debug_line(STR("USB_FS->HC_REGS[4]                 = 0x%08x"), USB_FS->HC_REGS[4]);
+    debug_line(STR("USB_FS->HC_REGS[5]                 = 0x%08x"), USB_FS->HC_REGS[5]);
+    debug_line(STR("USB_FS->HC_REGS[6]                 = 0x%08x"), USB_FS->HC_REGS[6]);
+    debug_line(STR("USB_FS->HC_REGS[7]                 = 0x%08x"), USB_FS->HC_REGS[7]);
+    debug_line(STR("USB_FS->DFIFO[0]                   = 0x%08x"), USB_FS->DFIFO[0]);
+    debug_line(STR("USB_FS->DFIFO[1]                   = 0x%08x"), USB_FS->DFIFO[1]);
+    debug_line(STR("USB_FS->DFIFO[2]                   = 0x%08x"), USB_FS->DFIFO[2]);
+    debug_line(STR("USB_FS->DFIFO[3]                   = 0x%08x"), USB_FS->DFIFO[3]);
+    debug_line(STR("USB_FS->DFIFO[4]                   = 0x%08x"), USB_FS->DFIFO[4]);
+    debug_line(STR("USB_FS->DFIFO[5]                   = 0x%08x"), USB_FS->DFIFO[5]);
+    debug_line(STR("USB_FS->DFIFO[6]                   = 0x%08x"), USB_FS->DFIFO[6]);
+    debug_line(STR("USB_FS->DFIFO[7]                   = 0x%08x"), USB_FS->DFIFO[7]);
+    debug_line(STR("USB_FS->PCGCCTL                    = 0x%08x"), USB_FS->PCGCCTL);
 }
 
 bool usb_device_init(USBD_Class_cb_TypeDef* usb_class_cb)
@@ -460,7 +460,7 @@ void USB_FS_IRQ_HANDLER(void)
         num_same++;
         if(10 < num_same)
         {
-            debug_msg("%08x", irqs);
+            debug_msg(STR("%08x"), irqs);
             num_same = 0;
         }
     }
@@ -1610,7 +1610,7 @@ static void SetupStage(void)
 {
     USB_SETUP_REQ req;
     usb_ParseSetupRequest(&req);
-    debug_line("Received: bmRequest=0x%02x,bRequest=0x%02x,wValue=0x%04x,wIndex=0x%04x,wLength=0x%04x",
+    debug_line(STR("Received: bmRequest=0x%02x,bRequest=0x%02x,wValue=0x%04x,wIndex=0x%04x,wLength=0x%04x"),
             req.bmRequest, req.bRequest, req.wValue, req.wIndex, req.wLength);
     switch(req.bmRequest & 0x1F)
     {

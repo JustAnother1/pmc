@@ -257,7 +257,7 @@ void hal_cpu_add_ms_tick_function_cycle(msTickFkt additional_function, int every
             if(additional_function == tick_list[i].tick)
             {
                 // Function already in list
-                 debug_line("INFO: Tried to double add a Tick Function !");
+                 debug_line(STR("INFO: Tried to double add a Tick Function !"));
                 return;
             }
             // else check next slot
@@ -276,7 +276,7 @@ void hal_cpu_add_ms_tick_function_cycle(msTickFkt additional_function, int every
             // else check next slot
         }
         // no more free slots
-        debug_line("ERROR: Could not add ms Tick Function!");
+        debug_line(STR("ERROR: Could not add ms Tick Function!"));
         hal_cpu_report_issue(7);
     }
 }
@@ -387,37 +387,37 @@ void hal_cpu_check_Reset_Reason(void)
 {
     // Reset Reason in RCC:
     // ====================
-    debug_msg("Reset Reason: ");
+    debug_msg(STR("Reset Reason: "));
     uint32_t resetSource = RCC->CSR;
     if(0 != (resetSource & RCC_CSR_LPWRRSTF))
     {
-        debug_msg("Low Power");
+        debug_msg(STR("Low Power"));
     }
     if(0 != (resetSource & RCC_CSR_WWDGRSTF))
     {
-        debug_msg("Window Watchdog");
+        debug_msg(STR("Window Watchdog"));
     }
     if(0 != (resetSource & RCC_CSR_WDGRSTF))
     {
-        debug_msg("Independent Watchdog");
+        debug_msg(STR("Independent Watchdog"));
     }
     if(0 != (resetSource & RCC_CSR_SFTRSTF))
     {
-        debug_msg("Software");
+        debug_msg(STR("Software"));
     }
     if(0 != (resetSource & RCC_CSR_PORRSTF))
     {
-        debug_msg("POR/PDR");
+        debug_msg(STR("POR/PDR"));
     }
     if(0 != (resetSource & RCC_CSR_PADRSTF))
     {
-        debug_msg("Reset Pin Signal");
+        debug_msg(STR("Reset Pin Signal"));
     }
     if(0 != (resetSource & RCC_CSR_BORRSTF))
     {
-        debug_msg("Brown out Reset");
+        debug_msg(STR("Brown out Reset"));
     }
-    debug_line(".");
+    debug_line(STR("."));
     // reset Flags
     resetSource    |= RCC_CSR_RMVF;
     RCC->CSR = resetSource;
@@ -432,59 +432,59 @@ void hal_cpu_check_Reset_Reason(void)
     {
 
     case RESET_REASON_NO_REASON:
-        debug_line("Reason Detail: No Reason reported");
+        debug_line(STR("Reason Detail: No Reason reported"));
         break;
 
     case RESET_REASON_HOST_ORDER:
-        debug_line("Reason Detail: Reset ordered by Host");
+        debug_line(STR("Reason Detail: Reset ordered by Host"));
         break;
 
     case RESET_REASON_DEBUG_USER_REQUEST:
-        debug_line("Reason Detail: Reset ordered by Debug User");
+        debug_line(STR("Reason Detail: Reset ordered by Debug User"));
         break;
 
     case RESET_REASON_HAL:
-        debug_line("Reason Detail: HAL with no Reason reported");
+        debug_line(STR("Reason Detail: HAL with no Reason reported"));
         break;
 
     case RESET_REASON_HAL | 1:
-        debug_line("Reason Detail: Non Maskable Interrupt");
+        debug_line(STR("Reason Detail: Non Maskable Interrupt"));
         break;
 
     case RESET_REASON_HAL | 2:
-        debug_line("Reason Detail: Hard Fault");
+        debug_line(STR("Reason Detail: Hard Fault"));
         break;
 
     case RESET_REASON_HAL | 3:
-        debug_line("Reason Detail: Memory Management");
+        debug_line(STR("Reason Detail: Memory Management"));
         break;
 
     case RESET_REASON_HAL | 4:
-        debug_line("Reason Detail: Bus Fault");
+        debug_line(STR("Reason Detail: Bus Fault"));
         break;
 
     case RESET_REASON_HAL | 5:
-        debug_line("Reason Detail: Usage Fault");
+        debug_line(STR("Reason Detail: Usage Fault"));
         break;
 
     case RESET_REASON_HAL | 6:
-        debug_line("Reason Detail: System Service call via SWI instruction (SVC)");
+        debug_line(STR("Reason Detail: System Service call via SWI instruction (SVC)"));
         break;
 
     case RESET_REASON_HAL | 7:
-        debug_line("Reason Detail: Debug Monitor");
+        debug_line(STR("Reason Detail: Debug Monitor"));
         break;
 
     case RESET_REASON_HAL | 8:
-        debug_line("Reason Detail: Pendable request for system service (Pend SV)");
+        debug_line(STR("Reason Detail: Pendable request for system service (Pend SV)"));
         break;
 
     case RESET_REASON_HAL | 9:
-        debug_line("Reason Detail: Floating Point Unit Interrupt");
+        debug_line(STR("Reason Detail: Floating Point Unit Interrupt"));
         break;
 
     default:
-        debug_line("Reason Detail: 0x%08X", RTC->BKP0R);
+        debug_line(STR("Reason Detail: 0x%08X"), RTC->BKP0R);
         break;
     }
     RTC->BKP0R = RESET_REASON_NO_REASON;
@@ -494,58 +494,58 @@ void hal_cpu_check_Reset_Reason(void)
     // Issue numbers 1-10 !
     if(0 != RTC->BKP1R)
     {
-        debug_line("Reported issue 1: %d", RTC->BKP1R);
+        debug_line(STR("Reported issue 1: %d"), RTC->BKP1R);
         RTC->BKP1R = 0;
     }
     if(0 != RTC->BKP2R)
     {
-        debug_line("Reported issue 2: %d", RTC->BKP2R);
+        debug_line(STR("Reported issue 2: %d"), RTC->BKP2R);
         RTC->BKP2R = 0;
     }
     if(0 != RTC->BKP3R)
     {
-        debug_line("Reported issue 3: %d", RTC->BKP3R);
+        debug_line(STR("Reported issue 3: %d"), RTC->BKP3R);
         RTC->BKP3R = 0;
     }
     if(0 != RTC->BKP4R)
     {
-        debug_line("Reported issue 4: %d", RTC->BKP4R);
+        debug_line(STR("Reported issue 4: %d"), RTC->BKP4R);
         RTC->BKP4R = 0;
     }
     if(0 != RTC->BKP5R)
     {
-        debug_line("Reported issue 5: %d", RTC->BKP5R);
+        debug_line(STR("Reported issue 5: %d"), RTC->BKP5R);
         RTC->BKP5R = 0;
     }
     if(0 != RTC->BKP6R)
     {
-        debug_line("Reported issue 6: %d", RTC->BKP6R);
+        debug_line(STR("Reported issue 6: %d"), RTC->BKP6R);
         RTC->BKP6R = 0;
     }
     if(0 != RTC->BKP7R)
     {
-        debug_line("Reported issue 7: %d", RTC->BKP7R);
+        debug_line(STR("Reported issue 7: %d"), RTC->BKP7R);
         RTC->BKP7R = 0;
     }
     if(0 != RTC->BKP8R)
     {
-        debug_line("Reported issue 8: %d", RTC->BKP8R);
+        debug_line(STR("Reported issue 8: %d"), RTC->BKP8R);
         RTC->BKP8R = 0;
     }
     if(0 != RTC->BKP9R)
     {
-        debug_line("Reported issue 9: %d", RTC->BKP9R);
+        debug_line(STR("Reported issue 9: %d"), RTC->BKP9R);
         RTC->BKP9R = 0;
     }
     if(0 != RTC->BKP10R)
     {
         if(0xffffffff == RTC->BKP10R)
         {
-            debug_line(". . .");
+            debug_line(STR(". . ."));
         }
         else
         {
-            debug_line("Reported issue 10: %d", RTC->BKP10R);
+            debug_line(STR("Reported issue 10: %d"), RTC->BKP10R);
         }
         RTC->BKP10R = 0;
     }
@@ -614,7 +614,7 @@ static void checkBitsOne(uint32_t data, int offset, char* descriptionP1, char**n
             debug_line(descriptionP1, i + offset);
             if(NULL != nameLookUp[i])
             {
-                debug_line("%d = %s", i + offset, nameLookUp[i + offset]);
+                debug_line(STR("%d = %s"), i + offset, nameLookUp[i + offset]);
             }
         }
         // else no printout
@@ -627,71 +627,71 @@ void hal_cpu_print_Interrupt_information(void)
     int numTasks = 0;
     // NVIC
 
-    debug_line("NVIC :");
-    debug_line("NVIC->ISER[0] :%08X", NVIC->ISER[0]);
-    debug_line("NVIC->ISER[1] :%08X", NVIC->ISER[1]);
-    debug_line("NVIC->ISER[2] :%08X", NVIC->ISER[2]);
+    debug_line(STR("NVIC :"));
+    debug_line(STR("NVIC->ISER[0] :%08X"), NVIC->ISER[0]);
+    debug_line(STR("NVIC->ISER[1] :%08X"), NVIC->ISER[1]);
+    debug_line(STR("NVIC->ISER[2] :%08X"), NVIC->ISER[2]);
 
-    checkBitsOne( NVIC->ISER[0], 0, "The Interrupt Number %d is enabled", &InterruptNames[0]);
-    checkBitsOne( NVIC->ISER[1], 32, "The Interrupt Number %d is enabled", &InterruptNames[0]);
-    checkBitsOne( NVIC->ISER[2], 64, "The Interrupt Number %d is enabled", &InterruptNames[0]);
+    checkBitsOne( NVIC->ISER[0], 0,  STR("The Interrupt Number %d is enabled"), &InterruptNames[0]);
+    checkBitsOne( NVIC->ISER[1], 32, STR("The Interrupt Number %d is enabled"), &InterruptNames[0]);
+    checkBitsOne( NVIC->ISER[2], 64, STR("The Interrupt Number %d is enabled"), &InterruptNames[0]);
 
-    debug_line("NVIC->ICER[0] :%08X", NVIC->ICER[0]);
-    debug_line("NVIC->ICER[1] :%08X", NVIC->ICER[1]);
-    debug_line("NVIC->ICER[2] :%08X", NVIC->ICER[2]);
+    debug_line(STR("NVIC->ICER[0] :%08X"), NVIC->ICER[0]);
+    debug_line(STR("NVIC->ICER[1] :%08X"), NVIC->ICER[1]);
+    debug_line(STR("NVIC->ICER[2] :%08X"), NVIC->ICER[2]);
 
-    checkBitsOne( NVIC->ICER[0], 0, "The Interrupt Number %d is enabled", &InterruptNames[0]);
-    checkBitsOne( NVIC->ICER[1], 32, "The Interrupt Number %d is enabled", &InterruptNames[0]);
-    checkBitsOne( NVIC->ICER[2], 64, "The Interrupt Number %d is enabled", &InterruptNames[0]);
+    checkBitsOne( NVIC->ICER[0], 0,  STR("The Interrupt Number %d is enabled"), &InterruptNames[0]);
+    checkBitsOne( NVIC->ICER[1], 32, STR("The Interrupt Number %d is enabled"), &InterruptNames[0]);
+    checkBitsOne( NVIC->ICER[2], 64, STR("The Interrupt Number %d is enabled"), &InterruptNames[0]);
 
-    debug_line("NVIC->ISPR[0] :%08X", NVIC->ISPR[0]);
-    debug_line("NVIC->ISPR[1] :%08X", NVIC->ISPR[1]);
-    debug_line("NVIC->ISPR[2] :%08X", NVIC->ISPR[2]);
+    debug_line(STR("NVIC->ISPR[0] :%08X"), NVIC->ISPR[0]);
+    debug_line(STR("NVIC->ISPR[1] :%08X"), NVIC->ISPR[1]);
+    debug_line(STR("NVIC->ISPR[2] :%08X"), NVIC->ISPR[2]);
 
-    checkBitsOne( NVIC->ISPR[0], 0, "The Interrupt Number %d is pending", &InterruptNames[0]);
-    checkBitsOne( NVIC->ISPR[1], 32, "The Interrupt Number %d is pending", &InterruptNames[0]);
-    checkBitsOne( NVIC->ISPR[2], 64, "The Interrupt Number %d is pending", &InterruptNames[0]);
+    checkBitsOne( NVIC->ISPR[0], 0,  STR("The Interrupt Number %d is pending"), &InterruptNames[0]);
+    checkBitsOne( NVIC->ISPR[1], 32, STR("The Interrupt Number %d is pending"), &InterruptNames[0]);
+    checkBitsOne( NVIC->ISPR[2], 64, STR("The Interrupt Number %d is pending"), &InterruptNames[0]);
 
-    debug_line("NVIC->ICPR[0] :%08X", NVIC->ICPR[0]);
-    debug_line("NVIC->ICPR[1] :%08X", NVIC->ICPR[1]);
-    debug_line("NVIC->ICPR[2] :%08X", NVIC->ICPR[2]);
+    debug_line(STR("NVIC->ICPR[0] :%08X"), NVIC->ICPR[0]);
+    debug_line(STR("NVIC->ICPR[1] :%08X"), NVIC->ICPR[1]);
+    debug_line(STR("NVIC->ICPR[2] :%08X"), NVIC->ICPR[2]);
 
-    checkBitsOne( NVIC->ICPR[0], 0, "The Interrupt Number %d is pending", &InterruptNames[0]);
-    checkBitsOne( NVIC->ICPR[1], 32, "The Interrupt Number %d is pending", &InterruptNames[0]);
-    checkBitsOne( NVIC->ICPR[2], 64, "The Interrupt Number %d is pending", &InterruptNames[0]);
+    checkBitsOne( NVIC->ICPR[0], 0,  STR("The Interrupt Number %d is pending"), &InterruptNames[0]);
+    checkBitsOne( NVIC->ICPR[1], 32, STR("The Interrupt Number %d is pending"), &InterruptNames[0]);
+    checkBitsOne( NVIC->ICPR[2], 64, STR("The Interrupt Number %d is pending"), &InterruptNames[0]);
 
-    debug_line("NVIC->IABR[0] :%08X", NVIC->IABR[0]);
-    debug_line("NVIC->IABR[1] :%08X", NVIC->IABR[1]);
-    debug_line("NVIC->IABR[2] :%08X", NVIC->IABR[2]);
+    debug_line(STR("NVIC->IABR[0] :%08X"), NVIC->IABR[0]);
+    debug_line(STR("NVIC->IABR[1] :%08X"), NVIC->IABR[1]);
+    debug_line(STR("NVIC->IABR[2] :%08X"), NVIC->IABR[2]);
 
-    checkBitsOne( NVIC->IABR[0], 0, "The Interrupt Number %d is active", &InterruptNames[0]);
-    checkBitsOne( NVIC->IABR[1], 32, "The Interrupt Number %d is active", &InterruptNames[0]);
-    checkBitsOne( NVIC->IABR[2], 64, "The Interrupt Number %d is active", &InterruptNames[0]);
+    checkBitsOne( NVIC->IABR[0], 0,  STR("The Interrupt Number %d is active"), &InterruptNames[0]);
+    checkBitsOne( NVIC->IABR[1], 32, STR("The Interrupt Number %d is active"), &InterruptNames[0]);
+    checkBitsOne( NVIC->IABR[2], 64, STR("The Interrupt Number %d is active"), &InterruptNames[0]);
 
-    debug_line("Interrupt priorities (lower number = more important)");
+    debug_line(STR("Interrupt priorities (lower number = more important)"));
     for(i = 0; i < 240; i++)
     {
         if(0 != NVIC->IP[i])
         {
-            debug_line("NVIC->IP[%2d]  :%02X", i, NVIC->IP[i]);
+            debug_line(STR("NVIC->IP[%2d]  :%02X"), i, NVIC->IP[i]);
             // lower 4 bits not used and always zero.
-            debug_line("Interrupt %d has Priority: %d", i, (NVIC->IP[i] >> 4));
+            debug_line(STR("Interrupt %d has Priority: %d"), i, (NVIC->IP[i] >> 4));
         }
     }
 
     // My "Tasks"
     i = 0;
-    debug_line("Tasks :");
+    debug_line(STR("Tasks :"));
     for(i = 0; i < MAX_TICK_FUNC; i++)
     {
         if(NULL != tick_list[i].tick)
         {
-            debug_line("Task with Cycle Time %3d and function at 0x%X", tick_list[i].cycle, &(tick_list[i].tick));
+            debug_line(STR("Task with Cycle Time %3d and function at 0x%X"), tick_list[i].cycle, &(tick_list[i].tick));
             numTasks++;
         }
         // else empty slot
     }
-    debug_line("%d tasks.", numTasks);
+    debug_line(STR("%d tasks."), numTasks);
 }
 #endif
 

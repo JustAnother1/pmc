@@ -23,6 +23,7 @@
 #include "orderhandler.h"
 #include "device_stepper.h"
 #include "device_input.h"
+#include "hal_cfg.h"
 #include "hal_debug.h"
 #include "endStopHandling.h"
 
@@ -103,11 +104,11 @@ void cmd_queue_clear(void)
 
 bool cmd_queue_show_status(uint8_t* setting)
 {
-	(void) setting;
-    debug_line("Command Queue Status:");
-    debug_line("read position : %d", read_pos);
-    debug_line("write position : %d", write_pos);
-    debug_line("finished blocks : %d", finished_blocks);
+    (void) setting;
+    debug_line(STR("Command Queue Status:"));
+    debug_line(STR("read position : %d"), read_pos);
+    debug_line(STR("write position : %d"), write_pos);
+    debug_line(STR("finished blocks : %d"), finished_blocks);
     return true;
 }
 
@@ -420,20 +421,20 @@ bool cmd_queue_chnage_setting(uint8_t* setting)
     case 'S':
     case 's': // set speed
         max_speed = atoi((char *)++setting);
-        debug_line("changing max speed to %d !", max_speed);
+        debug_line(STR("changing max speed to %d !"), max_speed);
         return true;
 
     case 'I':
     case 'i':
         if(true == enabled)
         {
-            debug_line("enabled !");
+            debug_line(STR("enabled !"));
         }
         else
         {
-            debug_line("disabled !");
+            debug_line(STR("disabled !"));
         }
-        debug_line("max speed is %d !", max_speed);
+        debug_line(STR("max speed is %d !"), max_speed);
         return true;
 
 #else
@@ -511,7 +512,7 @@ void cmd_queue_tick(void)
 
             case MOVEMENT_BLOCK_TYPE_SET_ACTIVE_TOOLHEAD:
                 // TODO
-                debug_line("ERROR: not implemented Active Toolhead!");
+                debug_line(STR("ERROR: not implemented Active Toolhead!"));
                 // This is an extension point if a Firmware needs to do something
                 // every time the Print head changes. This can then be implemented here.
                 // Right now there is nothing to do here
@@ -520,7 +521,7 @@ void cmd_queue_tick(void)
 
             case MOVEMENT_BLOCK_TYPE_MOVEMENT_CHECKPOINT:
                 // TODO
-                debug_line("ERROR: not implemented movement checkpoint!");
+                debug_line(STR("ERROR: not implemented movement checkpoint!"));
                 // This is an extension point if a Firmware needs to do something
                 // every time the Print head changes. This can then be implemented here.
                 // Right now there is nothing to do here
@@ -529,7 +530,7 @@ void cmd_queue_tick(void)
 
             default: // invalid type
                 // TODO Event
-                debug_line("ERROR: invalid type!");
+                debug_line(STR("ERROR: invalid type!"));
                 finished_current_queued_block();
                 break;
             }
@@ -654,20 +655,20 @@ static void handle_wrapped_command(void)
                 else
                 {
                     // TODO event
-                    debug_line("ERROR: failed to execute wrapped switch command!");
+                    debug_line(STR("ERROR: failed to execute wrapped switch command!"));
                 }
             }
         }
         else
         {
             // TODO event
-            debug_line("ERROR: invalid length of wrapped switch command(length: %d)!", queue[read_pos][POS_OF_LENGTH]);
+            debug_line(STR("ERROR: invalid length of wrapped switch command(length: %d)!"), queue[read_pos][POS_OF_LENGTH]);
         }
         break;
 
     default: // invalid Order
         // TODO event
-        debug_line("ERROR: invalid wrapped command(Order : %d)!", queue[read_pos][POS_OF_ORDER]);
+        debug_line(STR("ERROR: invalid wrapped command(Order : %d)!"), queue[read_pos][POS_OF_ORDER]);
         break;
     }
 }

@@ -15,6 +15,7 @@
 
 #include "device_buzzer.h"
 #include "protocol.h"
+#include "hal_cfg.h"
 #include "hal_dout.h"
 #include "hal_debug.h"
 
@@ -69,13 +70,13 @@ void dev_output_set_switch_state(uint_fast8_t number, uint_fast8_t state)
             break;
 
         default:
-            debug_line("invalid output state (%d)!", state);
+            debug_line(STR("invalid output state (%d)!"), state);
             break;
         }
     }
     else
     {
-        debug_line("requested switching of invalid output(%d)!", number);
+        debug_line(STR("requested switching of invalid output(%d)!"), number);
     }
 }
 

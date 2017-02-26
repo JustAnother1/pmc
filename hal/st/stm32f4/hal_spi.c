@@ -346,57 +346,57 @@ static void hal_spi_print_configuration(uint_fast8_t device)
 {
     if(device < MAX_SPI)
     {
-        debug_line("Configuration of SPI_%d :", device);
+        debug_line(STR("Configuration of SPI_%d :"), device);
         // State
-        debug_line("send_pos = %d", spi_devices[device].send_pos);
-        debug_line("rec_pos = %d", spi_devices[device].rec_pos);
-        debug_line("length = %d", spi_devices[device].length);
+        debug_line(STR("send_pos = %d"), spi_devices[device].send_pos);
+        debug_line(STR("rec_pos = %d"), spi_devices[device].rec_pos);
+        debug_line(STR("length = %d"), spi_devices[device].length);
         if(true == spi_devices[device].idle)
         {
-            debug_line("SPI is idle");
+            debug_line(STR("SPI is idle"));
         }
         else
         {
-            debug_line("SPI is busy");
+            debug_line(STR("SPI is busy"));
         }
         if(true == spi_devices[device].successfully_received)
         {
-            debug_line("No SPI error detected");
+            debug_line(STR("No SPI error detected"));
         }
         else
         {
-            debug_line("SPI error detected !");
+            debug_line(STR("SPI error detected !"));
         }
         // Clock
-        debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
-        debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
-        debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
+        debug_line(STR("RCC->AHB1ENR  = 0x%08x"), RCC->AHB1ENR);
+        debug_line(STR("RCC->APB1ENR  = 0x%08x"), RCC->APB1ENR);
+        debug_line(STR("RCC->APB2ENR  = 0x%08x"), RCC->APB2ENR);
         // SPI
-        debug_line("SPI->CR1      = 0x%04x", spi_devices[device].bus->CR1);
-        debug_line("SPI->CR2      = 0x%04x", spi_devices[device].bus->CR2);
-        debug_line("SPI->SR       = 0x%04x", spi_devices[device].bus->SR);
+        debug_line(STR("SPI->CR1      = 0x%04x"), spi_devices[device].bus->CR1);
+        debug_line(STR("SPI->CR2      = 0x%04x"), spi_devices[device].bus->CR2);
+        debug_line(STR("SPI->SR       = 0x%04x"), spi_devices[device].bus->SR);
         // GPIO
         switch(device)
         {
         case 0 :
-            debug_line("MISO Pin:");
+            debug_line(STR("MISO Pin:"));
             print_gpio_configuration(SPI_0_MISO_GPIO_PORT);
-            debug_line("MOSI Pin:");
+            debug_line(STR("MOSI Pin:"));
             print_gpio_configuration(SPI_0_MOSI_GPIO_PORT);
-            debug_line("SCK Pin:");
+            debug_line(STR("SCK Pin:"));
             print_gpio_configuration(SPI_0_NSS_GPIO_PORT);
-            debug_line("NSS Pin:");
+            debug_line(STR("NSS Pin:"));
             print_gpio_configuration(SPI_0_SCK_GPIO_PORT);
             break;
 
         case 1 :
-            debug_line("MISO Pin:");
+            debug_line(STR("MISO Pin:"));
             print_gpio_configuration(SPI_1_MISO_GPIO_PORT);
-            debug_line("MOSI Pin:");
+            debug_line(STR("MOSI Pin:"));
             print_gpio_configuration(SPI_1_MOSI_GPIO_PORT);
-            debug_line("SCK Pin:");
+            debug_line(STR("SCK Pin:"));
             print_gpio_configuration(SPI_1_NSS_GPIO_PORT);
-            debug_line("NSS Pin:");
+            debug_line(STR("NSS Pin:"));
             print_gpio_configuration(SPI_1_SCK_GPIO_PORT);
             break;
 
@@ -483,7 +483,7 @@ static bool waitForEndOfSpiTransaction(uint_fast8_t device)
     }
     if(endTime == curTime)
     {
-        debug_line("SPI not Idle !");
+        debug_line(STR("SPI not Idle !"));
         hal_cpu_report_issue(12);
         hal_spi_reset_transaction(device);
         return false;

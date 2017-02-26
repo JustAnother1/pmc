@@ -177,11 +177,11 @@ void hal_adc_init(void)
         uint8_t data[2] = {0x80, 0};
         if(true == hal_do_i2c_transaction(false, 0x90, 3, &data[0], 1))
         {
-                // debug_line("success!");
+                // debug_line(STR("success!"));
         }
         else
         {
-            debug_line("ERROR: I2C write failed!");
+            debug_line(STR("ERROR: I2C write failed!"));
         }
     }
 
@@ -191,47 +191,47 @@ void hal_adc_init(void)
 #ifdef DEBUG_ACTIVE
 void hal_print_configuration_adc(void)
 {
-    debug_line("Configuration of ADC :");
+    debug_line(STR("Configuration of ADC :"));
     // Clock
-    debug_line("RCC->AHB1ENR       = 0x%08x", RCC->AHB1ENR);
-    debug_line("RCC->APB2ENR       = 0x%08x", RCC->APB2ENR);
+    debug_line(STR("RCC->AHB1ENR       = 0x%08x"), RCC->AHB1ENR);
+    debug_line(STR("RCC->APB2ENR       = 0x%08x"), RCC->APB2ENR);
 #if 1 == ADC_USE_DMA
     // DMA
-    debug_line("DMA 2 :");
-    debug_line("DMA2->LISR         = 0x%08x", DMA2->LISR);
-    debug_line("DMA2->HISR         = 0x%08x", DMA2->HISR);
-    debug_line("DMA2->LIFCR        = 0x%08x", DMA2->LIFCR);
-    debug_line("DMA2->HIFCR        = 0x%08x", DMA2->HIFCR);
+    debug_line(STR("DMA 2 :"));
+    debug_line(STR("DMA2->LISR         = 0x%08x"), DMA2->LISR);
+    debug_line(STR("DMA2->HISR         = 0x%08x"), DMA2->HISR);
+    debug_line(STR("DMA2->LIFCR        = 0x%08x"), DMA2->LIFCR);
+    debug_line(STR("DMA2->HIFCR        = 0x%08x"), DMA2->HIFCR);
     // DMA Stream
-    debug_line("DMA 2 Stream 0 :");
-    debug_line("DMA2_Stream0->CR   = 0x%08x", DMA2_Stream0->CR);
-    debug_line("DMA2_Stream0->FCR  = 0x%08x", DMA2_Stream0->FCR);
-    debug_line("DMA2_Stream0->M0AR = 0x%08x", DMA2_Stream0->M0AR);
-    debug_line("DMA2_Stream0->M1AR = 0x%08x", DMA2_Stream0->M1AR);
-    debug_line("DMA2_Stream0->NDTR = 0x%08x", DMA2_Stream0->NDTR);
-    debug_line("DMA2_Stream0->PAR  = 0x%08x", DMA2_Stream0->PAR);
+    debug_line(STR("DMA 2 Stream 0 :"));
+    debug_line(STR("DMA2_Stream0->CR   = 0x%08x"), DMA2_Stream0->CR);
+    debug_line(STR("DMA2_Stream0->FCR  = 0x%08x"), DMA2_Stream0->FCR);
+    debug_line(STR("DMA2_Stream0->M0AR = 0x%08x"), DMA2_Stream0->M0AR);
+    debug_line(STR("DMA2_Stream0->M1AR = 0x%08x"), DMA2_Stream0->M1AR);
+    debug_line(STR("DMA2_Stream0->NDTR = 0x%08x"), DMA2_Stream0->NDTR);
+    debug_line(STR("DMA2_Stream0->PAR  = 0x%08x"), DMA2_Stream0->PAR);
 #endif
     // ADC
-    debug_line("ADC1->SR           = 0x%08x", ADC1->SR);
-    debug_line("ADC1->DR           = 0x%08x", ADC1->DR);
-    debug_line("ADC1->CR1          = 0x%08x", ADC1->CR1);
-    debug_line("ADC1->CR2          = 0x%08x", ADC1->CR2);
-    debug_line("ADC1->SMPR1        = 0x%08x", ADC1->SMPR1);
-    debug_line("ADC1->SMPR2        = 0x%08x", ADC1->SMPR2);
-    debug_line("ADC1->JOFR1        = 0x%08x", ADC1->JOFR1);
-    debug_line("ADC1->JOFR2        = 0x%08x", ADC1->JOFR2);
-    debug_line("ADC1->JOFR3        = 0x%08x", ADC1->JOFR3);
-    debug_line("ADC1->JOFR4        = 0x%08x", ADC1->JOFR4);
-    debug_line("ADC1->HTR          = 0x%08x", ADC1->HTR);
-    debug_line("ADC1->LTR          = 0x%08x", ADC1->LTR);
-    debug_line("ADC1->SQR1         = 0x%08x", ADC1->SQR1);
-    debug_line("ADC1->SQR2         = 0x%08x", ADC1->SQR2);
-    debug_line("ADC1->SQR3         = 0x%08x", ADC1->SQR3);
-    debug_line("ADC1->JSQR         = 0x%08x", ADC1->JSQR);
-    debug_line("ADC1->JDR1         = 0x%08x", ADC1->JDR1);
-    debug_line("ADC1->JDR2         = 0x%08x", ADC1->JDR2);
-    debug_line("ADC1->JDR3         = 0x%08x", ADC1->JDR3);
-    debug_line("ADC1->JDR4         = 0x%08x", ADC1->JDR4);
+    debug_line(STR("ADC1->SR           = 0x%08x"), ADC1->SR);
+    debug_line(STR("ADC1->DR           = 0x%08x"), ADC1->DR);
+    debug_line(STR("ADC1->CR1          = 0x%08x"), ADC1->CR1);
+    debug_line(STR("ADC1->CR2          = 0x%08x"), ADC1->CR2);
+    debug_line(STR("ADC1->SMPR1        = 0x%08x"), ADC1->SMPR1);
+    debug_line(STR("ADC1->SMPR2        = 0x%08x"), ADC1->SMPR2);
+    debug_line(STR("ADC1->JOFR1        = 0x%08x"), ADC1->JOFR1);
+    debug_line(STR("ADC1->JOFR2        = 0x%08x"), ADC1->JOFR2);
+    debug_line(STR("ADC1->JOFR3        = 0x%08x"), ADC1->JOFR3);
+    debug_line(STR("ADC1->JOFR4        = 0x%08x"), ADC1->JOFR4);
+    debug_line(STR("ADC1->HTR          = 0x%08x"), ADC1->HTR);
+    debug_line(STR("ADC1->LTR          = 0x%08x"), ADC1->LTR);
+    debug_line(STR("ADC1->SQR1         = 0x%08x"), ADC1->SQR1);
+    debug_line(STR("ADC1->SQR2         = 0x%08x"), ADC1->SQR2);
+    debug_line(STR("ADC1->SQR3         = 0x%08x"), ADC1->SQR3);
+    debug_line(STR("ADC1->JSQR         = 0x%08x"), ADC1->JSQR);
+    debug_line(STR("ADC1->JDR1         = 0x%08x"), ADC1->JDR1);
+    debug_line(STR("ADC1->JDR2         = 0x%08x"), ADC1->JDR2);
+    debug_line(STR("ADC1->JDR3         = 0x%08x"), ADC1->JDR3);
+    debug_line(STR("ADC1->JDR4         = 0x%08x"), ADC1->JDR4);
 
     // Pins
     print_gpio_configuration(GPIOA);
@@ -307,22 +307,22 @@ static void aquireValues(void)
                 {
                     if(1 == (receive_data[3] & 0x01))
                     {
-                        debug_line("ERROR SPI Thermo: Open Circuit.");
+                        debug_line(STR("ERROR SPI Thermo: Open Circuit."));
                         spi_ok = false;
                     }
                     if(2 == (receive_data[3] & 0x02))
                     {
-                        debug_line("ERROR SPI Thermo: Short to GND.");
+                        debug_line(STR("ERROR SPI Thermo: Short to GND."));
                         spi_ok = false;
                     }
                     if(4 == (receive_data[3] & 0x04))
                     {
-                        debug_line("ERROR SPI Thermo: Short to Vcc.");
+                        debug_line(STR("ERROR SPI Thermo: Short to Vcc."));
                         spi_ok = false;
                     }
                     if(1 == (receive_data[1] & 0x01))
                     {
-                        debug_line("ERROR SPI Thermo: Fault Bit.");
+                        debug_line(STR("ERROR SPI Thermo: Fault Bit."));
                         spi_ok = false;
                     }
 
@@ -396,7 +396,7 @@ static void aquireValues(void)
                 }
                 else
                 {
-                    debug_line("ERROR: I2C Temp failed!");
+                    debug_line(STR("ERROR: I2C Temp failed!"));
                     hal_i2c_reset_transaction();
                 }
                 nextMeasurement = hal_cpu_get_ms_tick() + I2C_TEMP_POLL_MS;
@@ -406,7 +406,7 @@ static void aquireValues(void)
 
         default:
             // invalid device number
-            debug_line("Invalid External Device %d (%d) !", curDevice, curDevice - NUM_TEMPERATURES);
+            debug_line(STR("Invalid External Device %d (%d) !"), curDevice, curDevice - NUM_TEMPERATURES);
             res_buf[curDevice] = 3;
             break;
         }
@@ -430,7 +430,7 @@ uint_fast16_t hal_adc_get_value(uint_fast8_t device)
     else
     {
         // invalid device number
-        debug_line("Invalid Device %d !", device);
+        debug_line(STR("Invalid Device %d !"), device);
         return 0xffff;
     }
 }
@@ -456,20 +456,20 @@ uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position, uint_fast8
         case NUM_TEMPERATURES + 1: return copy_string(ADC_EXT_1_NAME, position, max_length);
 #endif
         default:
-            debug_line("requested ADC name of invalid device %d !", device);
+            debug_line(STR("requested ADC name of invalid device %d !"), device);
             return 0;
         }
     }
     else
     {
-        debug_line("requested ADC name of not existing device %d !", device);
+        debug_line(STR("requested ADC name of not existing device %d !"), device);
         return 0;
     }
 }
 
 void DMA2_Stream0_IRQHandler(void)
 {
-    debug_line("ERROR: Unexpected DMA2:Stream0 Interrupt (Low: 0x%08x, High: 0x%08x) !",
+    debug_line(STR("ERROR: Unexpected DMA2:Stream0 Interrupt (Low: 0x%08x, High: 0x%08x) !"),
                 DMA2->LISR, DMA2->HISR);
 }
 
@@ -477,12 +477,12 @@ void ADC_IRQHandler(void)
 {
     if(ADC_SR_OVR == (ADC1->SR & ADC_SR_OVR))
     {
-         debug_line("ERROR: ADC Overflow !");
+         debug_line(STR("ERROR: ADC Overflow !"));
          ADC1->SR = ADC1->SR &~ADC_SR_OVR;
     }
     else
     {
-        debug_line("ERROR: Unexpected ADC Interrupt (0x%08x) !", ADC1->SR);
+        debug_line(STR("ERROR: Unexpected ADC Interrupt (0x%08x) !"), ADC1->SR);
     }
 }
 
@@ -502,15 +502,15 @@ static uint_fast16_t InternalTempSensorConverter(uint32_t DR)
 static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR)
 {
     int ires;
-    // debug_line("ADC value: %d", DR);
+    // debug_line(STR("ADC value: %d"), DR);
     float res = VCC_OF_ADC/4095 * DR;
-    // debug_line("Vadc: %f", res);
+    // debug_line(STR("Vadc: %f"), res);
     res = SERIES_RESISTOR/((VCC_OF_ADC/res) -1);
-    // debug_line("Rthermistor: %f", res);
+    // debug_line(STR("Rthermistor: %f"), res);
     res = logf(res/THERMISTOR_R_AT_25);
     res = res / STEINHART_HART_B + (1.0/(25+273.15));
     res = 1/res - 273.15;
-    // debug_line("Temperature: %f", res);
+    // debug_line(STR("Temperature: %f"), res);
     ires = res * 10;
     return (uint_fast16_t)0xffff & ires;
 }

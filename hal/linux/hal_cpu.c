@@ -43,7 +43,7 @@ void hal_cpu_die(void)
 
 void hal_cpu_do_software_reset(uint32_t reason)
 {
-    debug_line("not implemented!");
+    debug_line(STR("not implemented!"));
 }
 
 void hal_cpu_remove_ms_tick_function(msTickFkt function_to_remove)

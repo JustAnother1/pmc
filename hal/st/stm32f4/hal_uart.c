@@ -468,33 +468,33 @@ static void hal_uart_print_configuration(uint_fast8_t device)
 {
     if(device < MAX_UART)
     {
-        debug_line("Configuration of UART_%d :", device);
+        debug_line(STR("Configuration of UART_%d :"), device);
         // Clock
-        debug_line("RCC->AHB1ENR  = 0x%08x", RCC->AHB1ENR);
-        debug_line("RCC->APB1ENR  = 0x%08x", RCC->APB1ENR);
-        debug_line("RCC->APB2ENR  = 0x%08x", RCC->APB2ENR);
+        debug_line(STR("RCC->AHB1ENR  = 0x%08x"), RCC->AHB1ENR);
+        debug_line(STR("RCC->APB1ENR  = 0x%08x"), RCC->APB1ENR);
+        debug_line(STR("RCC->APB2ENR  = 0x%08x"), RCC->APB2ENR);
         // Uart
-        debug_line("UART->BRR     = 0x%08x", devices[device].port->BRR);
-        debug_line("UART->CR1     = 0x%08x", devices[device].port->CR1);
-        debug_line("UART->CR2     = 0x%08x", devices[device].port->CR2);
-        debug_line("UART->CR3     = 0x%08x", devices[device].port->CR3);
-        debug_line("UART->DR      = 0x%08x", devices[device].port->DR);
-        debug_line("UART->GTPR    = 0x%08x", devices[device].port->GTPR);
-        debug_line("UART->SR      = 0x%08x", devices[device].port->SR);
+        debug_line(STR("UART->BRR     = 0x%08x"), devices[device].port->BRR);
+        debug_line(STR("UART->CR1     = 0x%08x"), devices[device].port->CR1);
+        debug_line(STR("UART->CR2     = 0x%08x"), devices[device].port->CR2);
+        debug_line(STR("UART->CR3     = 0x%08x"), devices[device].port->CR3);
+        debug_line(STR("UART->DR      = 0x%08x"), devices[device].port->DR);
+        debug_line(STR("UART->GTPR    = 0x%08x"), devices[device].port->GTPR);
+        debug_line(STR("UART->SR      = 0x%08x"), devices[device].port->SR);
         // GPIO
         switch(device)
         {
         case 0 :
-            debug_line("RX Pin:");
+            debug_line(STR("RX Pin:"));
             print_gpio_configuration(UART_0_RX_GPIO_PORT);
-            debug_line("TX Pin:");
+            debug_line(STR("TX Pin:"));
             print_gpio_configuration(UART_0_TX_GPIO_PORT);
             break;
 
         case 1 :
-            debug_line("RX Pin:");
+            debug_line(STR("RX Pin:"));
             print_gpio_configuration(UART_1_RX_GPIO_PORT);
-            debug_line("TX Pin:");
+            debug_line(STR("TX Pin:"));
             print_gpio_configuration(UART_1_TX_GPIO_PORT);
             break;
 

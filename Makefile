@@ -63,7 +63,6 @@ LDFLAGS += -Wall
 INCDIR = $(patsubst %,-I%, $(INCDIRS))
 OBJS = $(addprefix $(BIN_FOLDER),$(STARTUP:.s=.o) $(SRC:.c=.o))
 
-
 #targets:
 #========
 

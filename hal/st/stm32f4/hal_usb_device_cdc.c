@@ -188,7 +188,7 @@ static uint8_t* pConfig_descriptor;
 
 void hal_usb_print_configuration(void)
 {
-    debug_line("Configuration of USB :");
+    debug_line(STR("Configuration of USB :"));
     usb_device_print_configuration();
 }
 

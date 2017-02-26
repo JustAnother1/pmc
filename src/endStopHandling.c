@@ -16,6 +16,7 @@
 #include "step.h"
 #include "protocol.h"
 #include "endStopHandling.h"
+#include "hal_cfg.h"
 #include "hal_din.h"
 #include "hal_debug.h"
 #include "com.h"
@@ -86,27 +87,27 @@ static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast
             if(true == step_is_homing())
             {
                 // stop movement on this stepper
-                debug_line("End Stop %d hit -> stop movement", switch_number);
+                debug_line(STR("End Stop %d hit -> stop movement"), switch_number);
                 step_end_stop_hit_on(stepper);
             }
             else
             {
                 // end stop was hit unexpectedly and was enabled ! -> we have a problem !
-                debug_line("End Stop %d hit -> go to stopped mode!", switch_number);
+                debug_line(STR("End Stop %d hit -> go to stopped mode!"), switch_number);
                 gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
             }
         }
         else
         {
             // else end stop is not triggered any more
-            debug_line("End Stop %d not triggered(inverted : %d, high: %d))",
+            debug_line(STR("End Stop %d not triggered(inverted : %d, high: %d))"),
                        switch_number, inverted[switch_number], high);
         }
     }
     else
     {
         // else the end stop is not enabled -> we ignore this event
-        debug_line("End Stop %d not enabled!", switch_number);
+        debug_line(STR("End Stop %d not enabled!"), switch_number);
     }
 }
 
@@ -116,13 +117,13 @@ bool dev_input_enable(uint_fast8_t switch_number, uint_fast8_t enable)
     {
         if(END_STOP_ENABLED == enable)
         {
-            debug_line("enabling end stop %d", switch_number);
+            debug_line(STR("enabling end stop %d"), switch_number);
             enabled[switch_number] = true;
             return true;
         }
         else if(END_STOP_DISABLED == enable)
         {
-            debug_line("disabling end stop %d", switch_number);
+            debug_line(STR("disabling end stop %d"), switch_number);
             enabled[switch_number] = false;
             return true;
         }

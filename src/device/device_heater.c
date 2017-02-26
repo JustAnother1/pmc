@@ -149,7 +149,7 @@ void TemperatureControlTick(void)
             if((0 == curTemp) || (0xffff == curTemp))
             {
                 // Temperature Sensor error
-                debug_line("ERROR: Temperature Sensor %d !", temperature_sensors[i]);
+                debug_line(STR("ERROR: Temperature Sensor %d !"), temperature_sensors[i]);
                 hal_pwm_set_on_time(i, 0); // OFF
             }
             else
@@ -168,7 +168,7 @@ void TemperatureControlTick(void)
                 else
                 {
                     hal_pwm_set_on_time(i, 0); // OFF
-                    debug_line("ERROR: Regulator %d NULL !", i);
+                    debug_line(STR("ERROR: Regulator %d NULL !"), i);
                 }
             }
         }
@@ -240,17 +240,17 @@ uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t tempe
 
 void dev_heater_get_debug_information(uint_fast8_t number)
 {
-    debug_line("pwm                : %d", cur_pwm[number]);
+    debug_line(STR("pwm                : %d"), cur_pwm[number]);
     if(PidRegulator == regulators[number])
     {
-        debug_line("Regulator          : PID");
+        debug_line(STR("Regulator          : PID"));
     }
     else if(BangBangRegulator == regulators[number])
     {
-        debug_line("Regulator          : Bang Bang");
+        debug_line(STR("Regulator          : Bang Bang"));
     }
-    debug_line("Temperature Sensor : %d", temperature_sensors[number]);
-    debug_line("target Temperature : %d.%01d°C", target_temperature[number]/10,  target_temperature[number]%10);
+    debug_line(STR("Temperature Sensor : %d"), temperature_sensors[number]);
+    debug_line(STR("target Temperature : %d.%01d°C"), target_temperature[number]/10,  target_temperature[number]%10);
 }
 
 #endif

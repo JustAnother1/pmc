@@ -27,6 +27,7 @@ static void debug_putc( void* p, char c);
 
 void hal_debug_init(void)
 {
+    hal_init_debug_uart();
     init_printf(NULL, debug_putc);
 }
 

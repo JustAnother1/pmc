@@ -30,15 +30,18 @@
  */
 
 #include <printf.h>
+#ifdef ARCHITECTURE_AVR
+#include <avr/pgmspace.h>
+#endif
 
-typedef void (*putcf) (void*,char);
+typedef void (*putcf) (void*, char);
 static putcf stdout_putf;
 static void* stdout_putp;
 
 
 #ifdef PRINTF_LONG_SUPPORT
 
-static void uli2a(unsigned long int num, unsigned int base, int uc,char * bf)
+static void uli2a(unsigned long int num, unsigned int base, int uc, char * bf)
 {
     int n=0;
     unsigned int d=1;
@@ -67,7 +70,7 @@ static void li2a (long num, char * bf)
 
 #endif
 
-static void ui2a(unsigned int num, unsigned int base, int uc,char * bf)
+static void ui2a(unsigned int num, unsigned int base, int uc, char * bf)
 {
     int n=0;
     unsigned int d=1;
@@ -105,7 +108,7 @@ static int a2d(char ch)
     else return -1;
 }
 
-static char a2i(char ch,const char** src,int base,int* nump)
+static char a2i(char ch, char** src, int base, int* nump)
 {
     char* p= *src;
     int num=0;
@@ -120,7 +123,7 @@ static char a2i(char ch,const char** src,int base,int* nump)
     return ch;
 }
 
-static void putchw(void* putp,putcf putf,int n, char z, char* bf)
+static void putchw(void* putp, putcf putf, int n, char z, char* bf)
 {
     char fc=z? '0' : ' ';
     char ch;
@@ -133,12 +136,19 @@ static void putchw(void* putp,putcf putf,int n, char z, char* bf)
         putf(putp,ch);
 }
 
-void tfp_format(void* putp,putcf putf,const char *fmt, va_list va)
+void tfp_format(void* putp, putcf putf, const char* cfmt, va_list va)
 {
     char bf[12];
-
     char ch;
+    char* fmt;
+#ifdef ARCHITECTURE_AVR
+    char buf[200];
 
+    strlcpy_P(&buf[0], cfmt, 200);
+    fmt = &buf[0];
+#else
+    fmt = (char *)cfmt;
+#endif
 
     while ((ch=*(fmt++))) {
         if (ch!='%')
@@ -212,7 +222,7 @@ void tfp_format(void* putp,putcf putf,const char *fmt, va_list va)
 }
 
 
-void init_printf(void* putp,void (*putf) (void*,char))
+void init_printf(void* putp, void (*putf) (void*, char))
 {
     stdout_putf=putf;
     stdout_putp=putp;
@@ -226,14 +236,14 @@ void tfp_printf(const char *fmt, ...)
     va_end(va);
 }
 
-static void putcp(void* p,char c)
+static void putcp(void* p, char c)
 {
     *(*((char**)p))++ = c;
 }
 
 
 
-void tfp_sprintf(char* s,char *fmt, ...)
+void tfp_sprintf(char* s, char *fmt, ...)
 {
     va_list va;
     va_start(va,fmt);

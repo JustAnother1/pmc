@@ -27,7 +27,7 @@ void error_fatal_error(char* msg)
 {
     uint_fast8_t i = copy_string(msg, com_get_start_parameter(), com_get_max_parameter_length());
     com_send_debug_frame_with_filled_parameter(i);
-    debug_line("Fatal ERROR: %s", msg);
+    debug_line(STR("Fatal ERROR: %s"), msg);
     error_signal_error_and_die();
 }
 

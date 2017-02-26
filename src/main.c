@@ -70,7 +70,7 @@ int main (void)
     dev_stepper_init();
     endStopHandling_init();
 #ifdef DEBUG_ACTIVE
-    debug_line("Reached end of initialization!");
+    debug_line(STR("Reached end of initialization!"));
 #endif
     for(;;)
     {

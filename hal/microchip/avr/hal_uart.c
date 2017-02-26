@@ -76,7 +76,7 @@ bool hal_init_gcode_uart(void)
     GCODE_USART_UBRRH = GCODE_USART_BAUD_RATE_HIGH;
     GCODE_USART_UBRRL = GCODE_USART_BAUD_RATE_LOW;
     GCODE_USART_UCSRB = 0x98; // Enable Receive Interrupt, Enable Receiver, Enable Sender, 8bit
-    GCODE_USART_UCSRC =0x06; // Async, Parity none, 1 Stop Bit, 8 data bits
+    GCODE_USART_UCSRC = 0x06; // Async, Parity none, 1 Stop Bit, 8 data bits
     sei();
     return true;
 }
@@ -108,7 +108,7 @@ bool hal_init_debug_uart(void)
     DEBUG_USART_UBRRH = DEBUG_USART_BAUD_RATE_HIGH;
     DEBUG_USART_UBRRL = DEBUG_USART_BAUD_RATE_LOW;
     DEBUG_USART_UCSRB = 0x98; // Enable Receive Interrupt, Enable Receiver, Enable Sender, 8bit
-    DEBUG_USART_UCSRC =0x06; // Async, Parity none, 1 Stop Bit, 8 data bits
+    DEBUG_USART_UCSRC = 0x06; // Async, Parity none, 1 Stop Bit, 8 data bits
     sei();
     return true;
 }
@@ -116,22 +116,22 @@ bool hal_init_debug_uart(void)
 #ifdef DEBUG_ACTIVE
 void hal_print_configuration_gcode_uart(void)
 {
-    debug_line("Configuration of USART_%d :", GCODE_USART_NUMBER);
-    debug_line("USART%d->UCSRA  = 0x%02x", GCODE_USART_UCSRA);
-    debug_line("USART%d->UCSRB  = 0x%02x", GCODE_USART_UCSRB);
-    debug_line("USART%d->UCSRC  = 0x%02x", GCODE_USART_UCSRC);
-    debug_line("USART%d->UBRRH  = 0x%02x", GCODE_USART_UBRRH);
-    debug_line("USART%d->UBRRL  = 0x%02x", GCODE_USART_UBRRL);
+    debug_line(STR("Configuration of USART_%d :"), GCODE_USART_NUMBER);
+    debug_line(STR("USART%d->UCSRA  = 0x%02x"), GCODE_USART_UCSRA);
+    debug_line(STR("USART%d->UCSRB  = 0x%02x"), GCODE_USART_UCSRB);
+    debug_line(STR("USART%d->UCSRC  = 0x%02x"), GCODE_USART_UCSRC);
+    debug_line(STR("USART%d->UBRRH  = 0x%02x"), GCODE_USART_UBRRH);
+    debug_line(STR("USART%d->UBRRL  = 0x%02x"), GCODE_USART_UBRRL);
 }
 
 void hal_print_configuration_debug_uart(void)
 {
-    debug_line("Configuration of USART_%d :", DEBUG_USART_NUMBER);
-    debug_line("USART%d->UCSRA  = 0x%02x", DEBUG_USART_UCSRA);
-    debug_line("USART%d->UCSRB  = 0x%02x", DEBUG_USART_UCSRB);
-    debug_line("USART%d->UCSRC  = 0x%02x", DEBUG_USART_UCSRC);
-    debug_line("USART%d->UBRRH  = 0x%02x", DEBUG_USART_UBRRH);
-    debug_line("USART%d->UBRRL  = 0x%02x", DEBUG_USART_UBRRL);
+    debug_line(STR("Configuration of USART_%d :"), DEBUG_USART_NUMBER);
+    debug_line(STR("USART%d->UCSRA  = 0x%02x"), DEBUG_USART_UCSRA);
+    debug_line(STR("USART%d->UCSRB  = 0x%02x"), DEBUG_USART_UCSRB);
+    debug_line(STR("USART%d->UCSRC  = 0x%02x"), DEBUG_USART_UCSRC);
+    debug_line(STR("USART%d->UBRRH  = 0x%02x"), DEBUG_USART_UBRRH);
+    debug_line(STR("USART%d->UBRRL  = 0x%02x"), DEBUG_USART_UBRRL);
 }
 
 #endif

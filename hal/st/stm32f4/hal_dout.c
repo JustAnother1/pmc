@@ -93,13 +93,13 @@ void hal_dout_set_pin_high(uint_fast8_t device)
         case 2: D_OUT_2_GPIO_PORT->ODR |= D_OUT_2_ODR; curState[device] = OUTPUT_STATE_HIGH; break;
 #endif
         default:
-            debug_line("dout pin(%d) not available!", device);
+            debug_line(STR("dout pin(%d) not available!"), device);
             break;
         }
     }
     else
     {
-        debug_line("dout pin(%d) not available!", device);
+        debug_line(STR("dout pin(%d) not available!"), device);
     }
 }
 
@@ -119,20 +119,20 @@ void hal_dout_set_pin_low(uint_fast8_t device)
         case 2: D_OUT_2_GPIO_PORT->ODR &= ~D_OUT_2_ODR; curState[device] = OUTPUT_STATE_LOW; break;
 #endif
         default:
-            debug_line("dout pin(%d) not available!", device);
+            debug_line(STR("dout pin(%d) not available!"), device);
             break;
         }
     }
     else
     {
-        debug_line("dout pin(%d) not available!", device);
+        debug_line(STR("dout pin(%d) not available!"), device);
     }
 }
 
 void hal_dout_set_pin_HighZ(uint_fast8_t device)
 {
     // OUTPUT_STATE_HIGH_Z not meaningful on pipy
-    debug_line("high-Z:not implemented");
+    debug_line(STR("high-Z:not implemented"));
 }
 
 uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)

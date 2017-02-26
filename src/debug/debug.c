@@ -104,12 +104,12 @@ static void count_debug_ticks_per_ms(void)
                 if(tick_cnt > tick_max)
                 {
                     tick_max = tick_cnt;
-                    // debug_line("New tick max: %d\n", tick_max);
+                    // debug_line(STR("New tick max: %d\n"), tick_max);
                 }
                 if(tick_cnt < tick_min)
                 {
                     tick_min = tick_cnt;
-                    // debug_line("New tick min: %d\n", tick_min);
+                    // debug_line("STR(New tick min: %d\n"), tick_min);
                 }
             }
             else
@@ -132,7 +132,7 @@ static void search_for_orders(void)
         // we did a check on this number of Bytes and had no order
         return;
     }
-    // debug_line("Received %d bytes\n", num_bytes_received);
+    // debug_line(STR("Received %d bytes\n"), num_bytes_received);
     //checked_bytes = num_bytes_received;
     for(i = checked_bytes -1; i < num_bytes_received; i++)
     {
@@ -161,8 +161,8 @@ static void search_for_orders(void)
             {
                 last_line_end = c;
             }
-            // debug_line("found line feed !");
-            debug_line("\r\n");
+            // debug_line(STR("found line feed !"));
+            debug_line(STR("\r\n"));
             parse_order(i);
             hal_forget_bytes_debug_uart(i+1);
             checked_bytes = 0;
@@ -205,7 +205,7 @@ void debug_hex_buffer(uint8_t* buf, int length)
     int i;
     for(i = 0; i < length; i++)
     {
-        debug_msg("%02x ", buf[i]);
+        debug_msg(STR("%02x "), buf[i]);
     }
 }
 
@@ -419,30 +419,30 @@ static void printMemory(uint8_t* buf, uint32_t length)
         //  00 00 00 00  00 00 00 00  00 00 00 00  00 00 00 00  :
         for(i = 0; i < bytesInRow; i++)
         {
-            debug_msg("%02x ", *(buf + i));
+            debug_msg(STR("%02x "), *(buf + i));
         }
         for( ; i < 16; i++)
         {
-            debug_msg("   ");
+            debug_msg(STR("   "));
         }
         //  ....affe....beef
-        debug_msg(": ");
+        debug_msg(STR(": "));
         for(i = 0; i < bytesInRow; i++)
         {
             if(isalpha(*(buf + i)))
             {
-                debug_msg("%s", *(buf + i));
+                debug_msg(STR("%s"), *(buf + i));
             }
             else
             {
-                debug_msg(".");
+                debug_msg(STR("."));
             }
         }
         for( ; i < 16; i++)
         {
-            debug_msg(" ");
+            debug_msg(STR(" "));
         }
-        debug_msg("\r\n");
+        debug_msg(STR("\r\n"));
         buf = buf + 16;
         length = length - bytesInRow;
     }
@@ -702,7 +702,7 @@ static void parse_order(int length)
             memoryLength = getHexNumber(&cmd_buf[startIndexOfParam], numCharsLengthParam);
             debug_line(STR("memoryLength: 0x%x address: 0x%x"), memoryLength, address);
             printMemory((uint8_t*)address, memoryLength);
-            debug_line("");
+            debug_line(STR(""));
         }
             break;
 
@@ -925,7 +925,7 @@ static void parse_order(int length)
                 break;
 
             default:
-                debug_line("Invalid command ! try h for help");
+                debug_line(STR("Invalid command ! try h for help"));
                 break;
             }
             break;

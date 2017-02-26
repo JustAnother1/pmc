@@ -40,7 +40,7 @@ bool hal_nvram_getString(uint32_t addr, char* buf, int maxLength)
     }
     else
     {
-        debug_line("ERROR: I2C read failed !");
+        debug_line(STR("ERROR: I2C read failed !"));
         return false;
     }
 }
@@ -59,7 +59,7 @@ void hal_nvram_setString(uint32_t addr, char* buf, int length)
     }
     else
     {
-        debug_line("ERROR: I2C write failed !");
+        debug_line(STR("ERROR: I2C write failed !"));
     }
 }
 
@@ -77,7 +77,7 @@ bool hal_nvram_getUInt32Value(uint32_t addr, uint32_t* value)
     }
     else
     {
-        debug_line("ERROR: I2C read failed !");
+        debug_line(STR("ERROR: I2C read failed !"));
         return false;
     }
 }
@@ -96,7 +96,7 @@ void hal_nvram_setUInt32Value(uint32_t addr, uint32_t value)
     }
     else
     {
-        debug_line("ERROR: I2C write failed !");
+        debug_line(STR("ERROR: I2C write failed !"));
     }
 }
 
@@ -114,7 +114,7 @@ bool hal_nvram_getUInt16Value(uint32_t addr, uint16_t* value)
     }
     else
     {
-        debug_line("ERROR: I2C read failed !");
+        debug_line(STR("ERROR: I2C read failed !"));
         return false;
     }
 }
@@ -133,7 +133,7 @@ void hal_nvram_setUInt16Value(uint32_t addr, uint16_t value)
     }
     else
     {
-        debug_line("ERROR: I2C write failed !");
+        debug_line(STR("ERROR: I2C write failed !"));
     }
 }
 
@@ -151,7 +151,7 @@ bool hal_nvram_getUInt8Value(uint32_t addr, uint8_t* value)
     }
     else
     {
-        debug_line("ERROR: I2C read failed !");
+        debug_line(STR("ERROR: I2C read failed !"));
         return false;
     }
 }
@@ -169,7 +169,7 @@ void hal_nvram_setUInt8Value(uint32_t addr, uint8_t value)
     }
     else
     {
-        debug_line("ERROR: I2C write failed !");
+        debug_line(STR("ERROR: I2C write failed !"));
     }
 }
 
@@ -187,7 +187,7 @@ bool hal_nvram_getfloat(uint32_t addr, float* value)
     }
     else
     {
-        debug_line("ERROR: I2C read failed !");
+        debug_line(STR("ERROR: I2C read failed !"));
         return false;
     }
 }
@@ -206,7 +206,7 @@ void hal_nvram_setfloat(uint32_t addr, float value)
     }
     else
     {
-        debug_line("ERROR: I2C write failed !");
+        debug_line(STR("ERROR: I2C write failed !"));
     }
 }
 

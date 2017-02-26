@@ -21,9 +21,10 @@
 #ifdef DEBUG_ACTIVE
 
 #include "lib/printf.h"
+#include "hal_cfg.h"
 
 #define debug_msg(...)  tfp_printf(__VA_ARGS__)
-#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf("\r\n")
+#define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf(STR("\r\n"))
 
 void hal_debug_init(void);
 #else

@@ -148,14 +148,14 @@ static void hal_uart_print_configuration(uint_fast8_t device)
 {
     if(device < MAX_UART)
     {
-        debug_line("Configuration of UART_%d :", device);
+        debug_line(STR("Configuration of UART_%d :"), device);
         if(true == devices[device].is_std_io)
         {
-            debug_line(" is a standard io interface");
+            debug_line(STR(" is a standard io interface"));
         }
         else
         {
-            debug_line(" is a telnet interface");
+            debug_line(STR(" is a telnet interface"));
         }
     }
     // else invalid Interface Specified

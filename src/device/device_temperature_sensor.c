@@ -15,6 +15,7 @@
 
 #include "device_buzzer.h"
 #include "protocol.h"
+#include "hal_cfg.h"
 #include "hal_adc.h"
 #include "hal_debug.h"
 
@@ -63,7 +64,7 @@ void dev_temperature_sensor_print_status(void)
         name_length = hal_adc_get_name(i, &(nameBuf[0]), 20);
         nameBuf[name_length] = 0;
         temperature = hal_adc_get_value(i);
-        debug_line("%d: %s = %d.%01d°C", i, &(nameBuf[0]), temperature/10, temperature%10);
+        debug_line(STR("%d: %s = %d.%01d°C"), i, &(nameBuf[0]), temperature/10, temperature%10);
     }
 }
 

@@ -718,9 +718,9 @@ uint_fast8_t trinamic_detect_number_of_steppers(void)
     debug_msg(STR("received : "));
     for(i = 0; i < SPI_BUFFER_LENGTH; i++)
     {
-        debug_msg("%02x ", spi_receive_buffer[i]);
+        debug_msg(STR("%02x "), spi_receive_buffer[i]);
     }
-    debug_msg("\r\n");
+    debug_msg(STR("\r\n"));
     for(i = 0; i < ((SPI_BUFFER_LENGTH/5)* 2); i++)
     {
         // 20 bits = 2.5 byte per stepper,..
@@ -785,7 +785,7 @@ void trinamic_print_stepper_status(void)
     int num = steppers_detected_on_last_detection;
 
 /*
-    debug_line("Pin:");
+    debug_line(STR("Pin:"));
     print_gpio_pin_configuration(STEPPER_PORT_GPIO_PORT, 0);
 */
     step_print_state();
@@ -799,9 +799,9 @@ void trinamic_print_stepper_status(void)
     debug_msg(STR("hex: "));
     for(int i = 0; i < num_bytes_used; i++)
     {
-        debug_msg("%02X ", spi_receive_buffer[i]);
+        debug_msg(STR("%02X "), spi_receive_buffer[i]);
     }
-    debug_line(" ");
+    debug_line(STR(" "));
     i = 0;
 
     /*
@@ -1047,7 +1047,7 @@ static bool changeMotorSetting(uint8_t* setting)
     }
 
     trinamic_configure_steppers(numSteppers);
-    debug_line("configured %d Steppers !", numSteppers);
+    debug_line(STR("configured %d Steppers !"), numSteppers);
     return true;
 }
 
@@ -1055,15 +1055,15 @@ static void printRegisterHex(enum cfgRegisters reg)
 {
     for(int i = 0; i < /*num_bytes_used*/ SPI_BUFFER_LENGTH; )
     {
-        debug_msg("%02X", cfg_data[reg][i]);
+        debug_msg(STR("%02X"), cfg_data[reg][i]);
         i++;
-        debug_msg("%02X", cfg_data[reg][i]);
+        debug_msg(STR("%02X"), cfg_data[reg][i]);
         i++;
-        debug_msg("%01X %01X", (cfg_data[reg][i]>>4), cfg_data[reg][i]);
+        debug_msg(STR("%01X %01X"), (cfg_data[reg][i]>>4), cfg_data[reg][i]);
         i++;
-        debug_msg("%02X", cfg_data[reg][i]);
+        debug_msg(STR("%02X"), cfg_data[reg][i]);
         i++;
-        debug_msg("%02X ", cfg_data[reg][i]);
+        debug_msg(STR("%02X "), cfg_data[reg][i]);
         i++;
     }
 }
@@ -1076,10 +1076,10 @@ static bool printMotorConfiguration(void)
 
     debug_msg(STR("DRVCTRL  hex: "));
     printRegisterHex(DRVCTRL);
-    debug_line(" ");
+    debug_line(STR(" "));
 
 #ifdef USE_STEP_DIR
-    debug_msg("[i]");
+    debug_msg(STR("[i]"));
     if(0 == getInt(stepInterpolation, stepperNumber))
     {
         debug_line(STR("Step Interpolation      : disabled  (=0)"));
@@ -1089,7 +1089,7 @@ static bool printMotorConfiguration(void)
         debug_line(STR("Step Interpolation      : enabled (=1)"));
     }
 
-    debug_msg("[e]");
+    debug_msg(STR("[e]"));
     if(0 == getInt(doubleEdge, stepperNumber))
     {
         debug_line(STR("Double Edge             : rising only (=0)"));
@@ -1098,7 +1098,7 @@ static bool printMotorConfiguration(void)
     {
         debug_line(STR("Double Edge             : rising and falling (=1)"));
     }
-    debug_msg("[m]");
+    debug_msg(STR("[m]"));
     switch(getInt(microstepResolution, stepperNumber))
     {
     case 0 : debug_line(STR("Microstep Res.          : 1/256 (=0)")); break;
@@ -1119,8 +1119,8 @@ static bool printMotorConfiguration(void)
 
     debug_msg(STR("CHOPCONF hex: "));
     printRegisterHex(CHOPCONF);
-    debug_line(" ");
-    debug_msg("[b]");
+    debug_line(STR(" "));
+    debug_msg(STR("[b]"));
     switch(getInt(blankingTime, stepperNumber))
     {
     case 0: debug_line(STR("blanking Time           : 16 * sys clk (=0))")); break;
@@ -1128,14 +1128,14 @@ static bool printMotorConfiguration(void)
     case 2: debug_line(STR("blanking Time           : 36 * sys clk")); break;
     case 3: debug_line(STR("blanking Time           : 54 * sys clk")); break;
     }
-    debug_msg("[c]");
+    debug_msg(STR("[c]"));
     if(0 == getInt(chopperMode, stepperNumber))
     {
         int hend = 0;
         int hstof = 0;
         debug_line(STR("chopper Mode            : spread cycle (=0)"));
 
-        debug_msg("[d]");
+        debug_msg(STR("[d]"));
         switch(getInt(hysteresisDecrementTime, stepperNumber))
         {
         case 0 : debug_line(STR("hysteresis Decr.Time    : 16 (=0)")); break;
@@ -1144,11 +1144,11 @@ static bool printMotorConfiguration(void)
         case 3 : debug_line(STR("hysteresis Decr.Time    : 64")); break;
         }
 
-        debug_msg("[h]");
+        debug_msg(STR("[h]"));
         hend = getInt(hysteresisEnd, stepperNumber) -3;
         debug_line(STR("hysteresis End          : %d (=%d)"), hend, hend+3);
 
-        debug_msg("[s]");
+        debug_msg(STR("[s]"));
         hstof = getInt(hysteresisStartOffset, stepperNumber);
         debug_line(STR("hysteresis Start Offset : %d (=%d)"), hstof + 1, hstof);
         if(hstof + 1 + hend > 15)
@@ -1161,7 +1161,7 @@ static bool printMotorConfiguration(void)
     {
         int fastDecay = getInt(fastDecayTime, stepperNumber);
         debug_line(STR("chopper Mode            : constant toff (=1)"));
-        debug_msg("[f]");
+        debug_msg(STR("[f]"));
         if(0 == getInt(fastDecayMode, stepperNumber))
         {
          debug_line(STR("fast Decay Mode         : cur. comp. can terminate fast decay (=0)"));
@@ -1171,7 +1171,7 @@ static bool printMotorConfiguration(void)
          debug_line(STR("fast Decay Mode         : only timer can terminate fast decay (=1)"));
         }
 
-        debug_msg("[w]");
+        debug_msg(STR("[w]"));
         switch(getInt(sineWaveOffset, stepperNumber))
         {
         case  0: debug_line(STR("sine Wave Offset        : -3 (=0)"));break;
@@ -1192,11 +1192,11 @@ static bool printMotorConfiguration(void)
         case 15: debug_line(STR("sine Wave Offset        : 12"));break;
         }
 
-        debug_msg("[t]");
+        debug_msg(STR("[t]"));
         debug_line(STR("fast Decay Time         : %d sys clk (=%d)"), 32 * fastDecay, fastDecay);
     }
 
-    debug_msg("[r]");
+    debug_msg(STR("[r]"));
     {
     int timeOff = getInt(toff, stepperNumber);
     if(0 == getInt(randomToff, stepperNumber))
@@ -1207,7 +1207,7 @@ static bool printMotorConfiguration(void)
     {
         debug_line(STR("Toff is                 : random (=1)"));
     }
-    debug_msg("[o]");
+    debug_msg(STR("[o]"));
     if(0 == timeOff)
     {
         debug_line(STR("Toff                    : MOSFETS are OFF (=0)"));
@@ -1228,9 +1228,9 @@ static bool printMotorConfiguration(void)
 
     debug_msg(STR("SMARTEN  hex: "));
     printRegisterHex(SMARTEN);
-    debug_line(" ");
+    debug_line(STR(" "));
 
-    debug_msg("[n]");
+    debug_msg(STR("[n]"));
     if(0 == getInt(seIMin, stepperNumber))
     {
         debug_line(STR("I min                   : 1/2 CS (=0)"));
@@ -1239,7 +1239,7 @@ static bool printMotorConfiguration(void)
     {
         debug_line(STR("I min                   : 1/4 CS (=1)"));
     }
-    debug_msg("[p]");
+    debug_msg(STR("[p]"));
     switch(getInt(decrementSpeed, stepperNumber))
     {
     case 0: debug_line(STR("decrement Speed         : 32 samples needed per decrement (=0)")); break;
@@ -1251,7 +1251,7 @@ static bool printMotorConfiguration(void)
     {
     int upThr = getInt(seUpper, stepperNumber);
     int loThr = getInt(seLower, stepperNumber);
-    debug_msg("[0]");
+    debug_msg(STR("[0]"));
     if(0 == loThr)
     {
         debug_line(STR("Cool Step               : disabled (lower Thr.) (=0)"));
@@ -1260,13 +1260,13 @@ static bool printMotorConfiguration(void)
     {
         debug_line(STR("Cool Step               : enabled (lower Thr.) (=%d)"), loThr);
     }
-    debug_msg("[u]");
+    debug_msg(STR("[u]"));
     debug_line(STR("upper threshold         : %d (=%d)"), (loThr+upThr+1) * 32, upThr);
-    debug_msg("[0]");
+    debug_msg(STR("[0]"));
     debug_line(STR("lower threshold         : %d (=%d)"), loThr, loThr);
     }
 
-    debug_msg("[1]");
+    debug_msg(STR("[1]"));
     switch(getInt(seUpStep, stepperNumber))
     {
     case 0: debug_line(STR("I up-step size          : 1 (=0)"));break;
@@ -1277,9 +1277,9 @@ static bool printMotorConfiguration(void)
 
     debug_msg(STR("SGCSCONF hex: "));
     printRegisterHex(SGCSCONF);
-    debug_line(" ");
+    debug_line(STR(" "));
 
-    debug_msg("[g]");
+    debug_msg(STR("[g]"));
     if(0 ==  getInt(sgFilter, stepperNumber))
     {
         debug_line(STR("Filter                  : standard Mode (=0)"));
@@ -1289,7 +1289,7 @@ static bool printMotorConfiguration(void)
         debug_line(STR("Filter                  : Filtered Mode (=1)"));
     }
 
-    debug_msg("[l]");
+    debug_msg(STR("[l]"));
     {
     int thr = getInt(sgThreshold, stepperNumber);
     if(64 > thr)
@@ -1302,7 +1302,7 @@ static bool printMotorConfiguration(void)
     }
     }
 
-    debug_msg("[2]");
+    debug_msg(STR("[2]"));
     {
     int cs = getInt(sgCS, stepperNumber);
     debug_line(STR("current scale           : %d/32 (=%d)"), cs+1, cs);
@@ -1310,9 +1310,9 @@ static bool printMotorConfiguration(void)
 
     debug_msg(STR("DRVCONF  hex: "));
     printRegisterHex(DRVCONF);
-    debug_line(" ");
+    debug_line(STR(" "));
 
-    debug_msg("[x]");
+    debug_msg(STR("[x]"));
     if(0 == getInt(test, stepperNumber))
     {
         debug_line(STR("test mode               : normal mode (=0)"));
@@ -1322,7 +1322,7 @@ static bool printMotorConfiguration(void)
         debug_line(STR("test mode               : test mode (=1)"));
     }
 
-    debug_msg("[a]");
+    debug_msg(STR("[a]"));
     switch(getInt(slopeHigh, stepperNumber))
     {
     case 0: debug_line(STR("slope High              : Minimum (=0)")); break;
@@ -1331,7 +1331,7 @@ static bool printMotorConfiguration(void)
     case 3: debug_line(STR("slope High              : Maximum (=3)")); break;
     }
 
-    debug_msg("[j]");
+    debug_msg(STR("[j]"));
     switch(getInt(slopeLow, stepperNumber))
     {
     case 0: debug_line(STR("slope Low               : Minimum (=0)")); break;
@@ -1340,7 +1340,7 @@ static bool printMotorConfiguration(void)
     case 3: debug_line(STR("slope Low               : Maximum (=3)")); break;
     }
 
-    debug_msg("[k]");
+    debug_msg(STR("[k]"));
     if(0 == getInt(shortGNDdisabled, stepperNumber))
     {
         debug_line(STR("short to GND protection : enabled (=0)"));
@@ -1350,7 +1350,7 @@ static bool printMotorConfiguration(void)
         debug_line(STR("short to GND protection : disabled (=1)"));
     }
 
-    debug_msg("[q]");
+    debug_msg(STR("[q]"));
     switch(getInt(shortGNDtimer, stepperNumber))
     {
     case 0: debug_line(STR("short to GND timer      : 3.2 µs (=0)"));break;
@@ -1359,7 +1359,7 @@ static bool printMotorConfiguration(void)
     case 3: debug_line(STR("short to GND timer      : 0.8 µs (=3)"));break;
     }
 
-    debug_msg("[v]");
+    debug_msg(STR("[v]"));
     if(0 == getInt(disableSTEPDIR, stepperNumber))
     {
         debug_line(STR("STEP/DIR Interface      : enabled (=0)"));
@@ -1369,7 +1369,7 @@ static bool printMotorConfiguration(void)
         debug_line(STR("STEP/DIR Interface      : disabled (=1)"));
     }
 
-    debug_msg("[y]");
+    debug_msg(STR("[y]"));
     if(0 == getInt(lowVoltageRsense, stepperNumber))
     {
         debug_line(STR("Voltage Rsense          : 0 - 305 mV (=0)"));
@@ -1379,7 +1379,7 @@ static bool printMotorConfiguration(void)
         debug_line(STR("Voltage Rsense          : 0 - 165 mV (=1)"));
     }
 
-    debug_msg("[z]");
+    debug_msg(STR("[z]"));
     switch(getInt(responseFormat, stepperNumber))
     {
     case 0: debug_line(STR("response Format         : micro step position (=0)"));break;
