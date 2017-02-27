@@ -20,7 +20,6 @@
 
 void dev_stepper_init(void);
 uint_fast8_t dev_stepper_get_count(void);
-void dev_stepper_detectSteppers(void);
 uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint8_t *position, uint_fast8_t max_length);
 uint_fast8_t dev_stepper_get_status(uint_fast8_t number);
 void dev_stepper_activate(uint_fast8_t on_off);

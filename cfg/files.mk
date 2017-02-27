@@ -32,7 +32,6 @@ SRC += $(SRC_FOLDER)lib/log.c
 SRC += $(SRC_FOLDER)lib/copy_string.c
 SRC += $(SRC_FOLDER)stepper/device_stepper.c
 SRC += $(SRC_FOLDER)stepper/step.c
-SRC += $(SRC_FOLDER)stepper/trinamic.c
 SRC += $(SRC_FOLDER)order/command_queue.c
 SRC += $(SRC_FOLDER)order/orderhandler.c
 SRC += $(SRC_FOLDER)endStopHandling.c
@@ -82,3 +81,7 @@ ifeq ($(ACTIVATE_DEBUG), yes)
 	DDEFS += -DDEBUG_ACTIVE
 endif
 
+ifeq ($(USE_TRINAMIC), yes)
+	SRC += $(SRC_FOLDER)stepper/trinamic.c
+	DDEFS += -DHAS_TRINAMIC
+endif

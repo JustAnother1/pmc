@@ -197,6 +197,7 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
             if(0 != (move_on_axis[read_pos] & mask))
             {
                 // step on this axis
+#ifdef HAS_TRINAMIC
                 if(0 != (next_direction[read_pos] & mask))
                 {
                     trinamic_make_step_using_SPI(i, true);
@@ -205,6 +206,7 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
                 {
                     trinamic_make_step_using_SPI(i, false);
                 }
+#endif
             }
             // else no step on this axis
             // A delay is just a move that has no steps on all axis.
@@ -860,7 +862,11 @@ void step_disable_all_motors(void)
     {
         if(true == enabled[i])
         {
+#ifdef HAS_TRINAMIC
             trinamic_disable_stepper(i);
+#else
+            // TODO
+#endif
         }
         // else already disabled
     }
@@ -874,7 +880,11 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
         {
             if(false == enabled[stepper_number])
             {
+#ifdef HAS_TRINAMIC
                 trinamic_enable_stepper(stepper_number);
+#else
+                // TODO
+#endif
             }
             // else already enabled
         }
@@ -882,7 +892,11 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
         {
             if(true == enabled[stepper_number])
             {
+#ifdef HAS_TRINAMIC
                 trinamic_disable_stepper(stepper_number);
+#else
+                // TODO
+#endif
             }
             // else  already disabled
         }

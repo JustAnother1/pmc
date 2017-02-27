@@ -33,6 +33,10 @@ static uint_fast32_t underrun_max_steps_per_second[MAX_NUMBER];
 static uint_fast32_t underrun_max_decelleration[MAX_NUMBER];
 static bool weControllTheSteppers = true;
 
+#ifdef HAS_TRINAMIC
+static void dev_stepper_detectSteppers(void);
+#endif
+
 void dev_stepper_init(void)
 {
     int i = 0;
@@ -50,8 +54,10 @@ uint_fast8_t dev_stepper_get_count(void)
 {
     if((true == weControllTheSteppers) && (0 == available_steppers))
     {
+#ifdef HAS_TRINAMIC
         trinamic_init();
         dev_stepper_detectSteppers();
+#endif
         return available_steppers;
     }
     else
@@ -62,11 +68,13 @@ uint_fast8_t dev_stepper_get_count(void)
 
 uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint8_t *position, uint_fast8_t max_length)
 {
+#ifdef HAS_TRINAMIC
     if((true == weControllTheSteppers) && (0 == available_steppers))
     {
         trinamic_init();
         dev_stepper_detectSteppers();
     }
+#endif
     if(number -1 > available_steppers)
     {
         return 0;
@@ -83,11 +91,13 @@ uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint8_t *position, uint_f
 
 uint_fast8_t dev_stepper_get_status(uint_fast8_t number)
 {
+#ifdef HAS_TRINAMIC
     if((true == weControllTheSteppers) && (0 == available_steppers))
     {
         trinamic_init();
         dev_stepper_detectSteppers();
     }
+#endif
     if(number -1 > available_steppers)
     {
         return DEVICE_STATUS_FAULT;
@@ -104,16 +114,20 @@ void dev_stepper_activate(uint_fast8_t on_off)
     {
         // Stepper controlled by someone else
         weControllTheSteppers = false;
+#ifdef HAS_TRINAMIC
         available_steppers = 0;
+#endif
         com_send_ok_response();
     }
     else if (1 == on_off)
     {
         // stepper controlled by this firmware
         weControllTheSteppers = true;
+#ifdef HAS_TRINAMIC
         trinamic_init();
         available_steppers = 0;
         dev_stepper_detectSteppers();
+#endif
         com_send_ok_response();
     }
     else
@@ -125,11 +139,13 @@ void dev_stepper_activate(uint_fast8_t on_off)
 
 void dev_stepper_disable_all_motors(void)
 {
+#ifdef HAS_TRINAMIC
     if((true == weControllTheSteppers) && (0 == available_steppers))
     {
         trinamic_init();
         dev_stepper_detectSteppers();
     }
+#endif
     if(true == weControllTheSteppers)
     {
         step_disable_all_motors();
@@ -139,11 +155,13 @@ void dev_stepper_disable_all_motors(void)
 
 void dev_stepper_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 {
+#ifdef HAS_TRINAMIC
     if((true == weControllTheSteppers) && (0 == available_steppers))
     {
         trinamic_init();
         dev_stepper_detectSteppers();
     }
+#endif
     if(true == weControllTheSteppers)
     {
         step_enable_motor(stepper_number, on_off);
@@ -153,11 +171,13 @@ void dev_stepper_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 
 void dev_stepper_configure_axis_movement_rate(uint_fast8_t stepper_number, uint_fast32_t max_steps)
 {
+#ifdef HAS_TRINAMIC
     if((true == weControllTheSteppers) && (0 == available_steppers))
     {
         trinamic_init();
         dev_stepper_detectSteppers();
     }
+#endif
     if(stepper_number -1 > available_steppers)
     {
         com_send_generic_application_error_response(GENERIC_ERROR_INVALID_DEVICE_NUMBER);
@@ -180,11 +200,13 @@ void dev_stepper_configure_mvmnt_unrun_avoid_para(uint_fast8_t stepper_number,
                                                   uint_fast32_t max_steps,
                                                   uint_fast32_t max_decelleration)
 {
+#ifdef HAS_TRINAMIC
     if((true == weControllTheSteppers) && (0 == available_steppers))
     {
         trinamic_init();
         dev_stepper_detectSteppers();
     }
+#endif
     if(stepper_number -1 > available_steppers)
     {
         com_send_generic_application_error_response(GENERIC_ERROR_INVALID_DEVICE_NUMBER);
@@ -211,7 +233,8 @@ void dev_stepper_configure_mvmnt_unrun_avoid_para(uint_fast8_t stepper_number,
     }
 }
 
-void dev_stepper_detectSteppers(void)
+#ifdef HAS_TRINAMIC
+static void dev_stepper_detectSteppers(void)
 {
     unsigned int i;
     available_steppers = trinamic_detect_number_of_steppers();
@@ -225,5 +248,6 @@ void dev_stepper_detectSteppers(void)
         state[i] = DEVICE_STATUS_ACTIVE;
     }
 }
+#endif
 
 // end of File

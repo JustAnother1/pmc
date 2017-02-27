@@ -330,7 +330,9 @@ static void order_help(void)
     debug_line(STR("pss                        : print stepper SPI configuration"));
     debug_line(STR("ptim<num>                  : print Timer Registers"));
 #ifdef USE_STEP_DIR
+#ifdef HAS_TRINAMIC
     debug_line(STR("ptri                       : print Trinamic status"));
+#endif
 #endif
     debug_line(STR("pud                        : print Debug UART configuration"));
     debug_line(STR("pug                        : print G-Code UART configuration"));
@@ -338,7 +340,9 @@ static void order_help(void)
     // q
     debug_line(STR("r                          : reset the processor"));
     // s
+#ifdef HAS_TRINAMIC
     debug_line(STR("sc                         : scan number of steppers"));
+#endif
     debug_line(STR("t                          : show current time"));
     // u
     // v
@@ -523,6 +527,7 @@ static void parse_order(int length)
         }
         switch (cmd_buf[1])
         {
+#ifdef HAS_TRINAMIC
 // order = ct
         case 'T':
         case 't':
@@ -533,6 +538,7 @@ static void parse_order(int length)
             }
             // else -> OK
             break;
+#endif
 
 // order = cq
         case 'Q':
@@ -882,13 +888,13 @@ static void parse_order(int length)
                 }
                 switch(cmd_buf[3])
                 {
-
+#ifdef HAS_TRINAMIC
 // order = ptri
                 case 'I':
                 case 'i':
                     trinamic_print_stepper_status();
                     break;
-
+#endif
                 default:
                     debug_line(STR("Invalid command ! try h for help"));
                     break;
@@ -1022,7 +1028,7 @@ static void parse_order(int length)
         }
         switch (cmd_buf[1])
         {
-
+#ifdef HAS_TRINAMIC
 // order = sc
         case 'C':
         case 'c':
@@ -1031,6 +1037,7 @@ static void parse_order(int length)
             dev_stepper_detectSteppers();  // re scan steppers
             debug_line(STR("Detected %d Steppers !"), dev_stepper_get_count());
             break;
+#endif
 
         default:
             debug_line(STR("Invalid command ! try h for help"));

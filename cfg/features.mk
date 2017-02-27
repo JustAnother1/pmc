@@ -4,6 +4,7 @@
 USE_UART = yes
 USE_USB = no
 USE_STEP_DIR = yes
+USE_TRINAMIC = no
 # ACTIVATE_DEBUG enables / disables the debug console and debug_msg()
 # if it is not defined then debug is active!
 ifndef ACTIVATE_DEBUG
