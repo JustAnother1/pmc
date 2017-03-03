@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include "stddef.h"
 #include "stdbool.h"
 #include "hal_cfg.h"
@@ -122,12 +123,16 @@ void hal_cpu_tick(void)
 
 void hal_cpu_die(void)
 {
-
+    debug_line(STR("not implemented!"));
 }
 
 void hal_cpu_do_software_reset(uint32_t reason)
 {
-    debug_line(STR("not implemented!"));
+    wdt_enable(WDTO_15MS);
+    for(;;)
+    {
+        // wait for watchdog to expire
+    }
 }
 
 void hal_cpu_remove_ms_tick_function(msTickFkt function_to_remove)
