@@ -29,18 +29,18 @@
 
 typedef struct {
     // receive
-    uint8_t         receive_buffer[UART_RECEIVE_BUFFER_SIZE];
-    uint_fast16_t   receive_read_pos;
-    uint_fast16_t   receive_write_pos;
+    uint8_t   receive_buffer[UART_RECEIVE_BUFFER_SIZE];
+    uint8_t   receive_read_pos;
+    uint8_t   receive_write_pos;
     // send
-    uint8_t         send_buffer[UART_SEND_BUFFER_SIZE];
-    bool            is_sending;
-    uint_fast16_t   send_read_pos; // the byte that will be send next
-    uint_fast16_t   send_write_pos; // free slot after data to send
+    uint8_t   send_buffer[UART_SEND_BUFFER_SIZE];
+    bool      is_sending;
+    uint8_t   send_read_pos; // the byte that will be send next
+    uint8_t   send_write_pos; // free slot after data to send
 }uart_device_typ;
 
 static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
-static uint_fast16_t get_available_bytes_in_send_Buffer(uint_fast8_t device);
+static uint8_t get_available_bytes_in_send_Buffer(uint_fast8_t device);
 
 static volatile uart_device_typ devices[MAX_UART];
 static bool gcode_initialized = false;
@@ -139,7 +139,7 @@ void hal_print_configuration_debug_uart(void)
 uint_fast8_t hal_get_gcode_uart_byte_at_offset(uint_fast16_t offset)
 {
     uint_fast8_t res;
-    uint_fast16_t target_pos = devices[GCODE_UART].receive_read_pos + offset;
+    uint_fast8_t target_pos = devices[GCODE_UART].receive_read_pos + offset;
     if((UART_RECEIVE_BUFFER_SIZE -1) < target_pos)
     {
         target_pos = target_pos - UART_RECEIVE_BUFFER_SIZE;
@@ -151,7 +151,7 @@ uint_fast8_t hal_get_gcode_uart_byte_at_offset(uint_fast16_t offset)
 uint_fast8_t hal_get_debug_uart_byte_at_offset(uint_fast16_t offset)
 {
     uint_fast8_t res;
-    uint_fast16_t target_pos = devices[DEBUG_UART].receive_read_pos + offset;
+    uint_fast8_t target_pos = devices[DEBUG_UART].receive_read_pos + offset;
     if((UART_RECEIVE_BUFFER_SIZE -1) < target_pos)
     {
         target_pos = target_pos - UART_RECEIVE_BUFFER_SIZE;
@@ -281,7 +281,7 @@ bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t lengt
     {
         // start sending now
         devices[GCODE_UART].is_sending = true;
-        GCODE_USART_UDR = (uint16_t)devices[GCODE_UART].send_buffer[devices[GCODE_UART].send_read_pos];
+        GCODE_USART_UDR = devices[GCODE_UART].send_buffer[devices[GCODE_UART].send_read_pos];
         devices[GCODE_UART].send_read_pos++;
         if(devices[GCODE_UART].send_read_pos < UART_SEND_BUFFER_SIZE)
         {
@@ -325,7 +325,7 @@ bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t lengt
     {
         // start sending now
         devices[DEBUG_UART].is_sending = true;
-        DEBUG_USART_UDR = (uint16_t)devices[DEBUG_UART].send_buffer[devices[DEBUG_UART].send_read_pos];
+        DEBUG_USART_UDR = devices[DEBUG_UART].send_buffer[devices[DEBUG_UART].send_read_pos];
         devices[DEBUG_UART].send_read_pos++;
         if(devices[DEBUG_UART].send_read_pos < UART_SEND_BUFFER_SIZE)
         {
@@ -346,11 +346,11 @@ bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t lengt
 
 // end of hal_uart_api
 
-static uint_fast16_t get_available_bytes_in_send_Buffer(uint_fast8_t device)
+static uint8_t get_available_bytes_in_send_Buffer(uint_fast8_t device)
 {
     if(device < MAX_UART)
     {
-        uint_fast16_t res;
+        uint8_t res;
         if(devices[device].send_read_pos != devices[device].send_write_pos)
         {
             if(devices[device].send_write_pos > devices[device].send_read_pos)
@@ -379,7 +379,7 @@ static uint_fast16_t get_available_bytes_in_send_Buffer(uint_fast8_t device)
 
 static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length)
 {
-    uint_fast16_t i;
+    uint8_t i;
     if(NULL == frame)
     {
         return false;
@@ -451,7 +451,7 @@ ISR(GCODE_DATA_REGISTER_EMPTY_ISR,ISR_BLOCK)
     // we can send a byte
     if(true == devices[GCODE_UART].is_sending)
     {
-        GCODE_USART_UDR = (uint16_t)devices[GCODE_UART].send_buffer[devices[GCODE_UART].send_read_pos];
+        GCODE_USART_UDR = devices[GCODE_UART].send_buffer[devices[GCODE_UART].send_read_pos];
         devices[GCODE_UART].send_read_pos++;
         if(devices[GCODE_UART].send_read_pos < UART_SEND_BUFFER_SIZE)
         {
@@ -513,7 +513,7 @@ ISR(DEBUG_DATA_REGISTER_EMPTY_ISR,ISR_BLOCK)
     // we can send a byte
     if(true == devices[DEBUG_UART].is_sending)
     {
-        DEBUG_USART_UDR = (uint16_t)devices[DEBUG_UART].send_buffer[devices[DEBUG_UART].send_read_pos];
+        DEBUG_USART_UDR = devices[DEBUG_UART].send_buffer[devices[DEBUG_UART].send_read_pos];
         devices[DEBUG_UART].send_read_pos++;
         if(devices[DEBUG_UART].send_read_pos < UART_SEND_BUFFER_SIZE)
         {

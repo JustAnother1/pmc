@@ -14,21 +14,33 @@
  */
 
 #include "hal_led.h"
+#include "hal_cfg.h"
+#include "board_cfg.h"
+#include <avr/io.h>
 
 void hal_init_leds(void)
 {
-
+#ifdef BOARD_HAS_DEBUG_LED
+    DEBUG_LED_DDR |= DEBUG_LED_MASK;
+#endif
 }
 
 #ifdef BOARD_HAS_DEBUG_LED
 void hal_toggle_debug_led(void)
 {
-
+    DEBUG_LED_PIN |= DEBUG_LED_MASK;
 }
 
 void hal_set_debug_led(bool on)
 {
-
+    if(true == on)
+    {
+        DEBUG_LED_PORT |= DEBUG_LED_MASK;
+    }
+    else
+    {
+        DEBUG_LED_PORT &= ~DEBUG_LED_MASK;
+    }
 }
 #endif
 

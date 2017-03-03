@@ -16,6 +16,12 @@
 #ifndef HAL_MICROCHIP_AVR_RUMBA_BOARD_CFG_H_
 #define HAL_MICROCHIP_AVR_RUMBA_BOARD_CFG_H_
 
+// LED
+#define DEBUG_LED_MASK                0x80
+#define DEBUG_LED_DDR                 DDRB
+#define DEBUG_LED_PIN                 PINB
+#define DEBUG_LED_PORT                PORTB
+
 // UART
 #define GCODE_USART_NUMBER            0
 #define GCODE_USART_UCSRA             UCSR0A
@@ -46,5 +52,19 @@
 #define DEBUG_RECEIVE_ISR             USART3_RX_vect
 #define DEBUG_TRANSMITT_COMPLETE_ISR  USART3_TX_vect
 #define DEBUG_DATA_REGISTER_EMPTY_ISR USART3_UDRE_vect
+
+// Timer
+
+// Time Base (millisecond timer) -> Timer 1
+#define CPU_MS_TIMER_TCCRA            TCCR1A
+#define CPU_MS_TIMER_TCCRB            TCCR1B
+#define CPU_MS_TIMER_TCCRC            TCCR1C
+#define CPU_MS_TIMER_TCNT             TCNT1
+#define CPU_MS_TIMER_OCRA             OCR1A
+#define CPU_MS_TIMER_TIMSK            TIMSK1
+#define CPU_MS_TIMER_RELOAD_VALUE     16000
+#define CPU_MS_TIMER_COMPARE_A_ISR    TIMER1_COMPA_vect
+#define CPU_MS_TIMER_OVERFLOW_ISR     TIMER1_OVF_vect
+
 
 #endif /* HAL_MICROCHIP_AVR_RUMBA_BOARD_CFG_H_ */

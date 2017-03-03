@@ -108,6 +108,8 @@ regs Kusti, 23.10.2004
 
 #include <stdarg.h>
 
+#define MAX_STRING_LENGTH     50
+
 void init_printf(void* putp, void (*putf) (void*, char));
 
 void tfp_printf(const char *fmt, ...);

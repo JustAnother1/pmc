@@ -36,11 +36,14 @@
 #define NUMBER_OF_HEATERS 6
 
 // LEDs
+#define BOARD_HAS_DEBUG_LED
 #define DEBUG_LED  0
 #define MAX_LED    1
 
 #define BOARD_HAS_DEBUG_LED
 
+// Steppers
+#define NUMBER_OF_STEPPERS   6
 
 #define STEP_TIMER                 6
 #define STEP_BUFFER_TIMER          7

@@ -26,7 +26,6 @@
 
 static char Stepper_name[]= "Stepper 0";
 
-static uint_fast8_t available_steppers;
 static uint_fast8_t state[MAX_NUMBER];
 static uint_fast32_t max_steps_per_second[MAX_NUMBER];
 static uint_fast32_t underrun_max_steps_per_second[MAX_NUMBER];
@@ -34,7 +33,10 @@ static uint_fast32_t underrun_max_decelleration[MAX_NUMBER];
 static bool weControllTheSteppers = true;
 
 #ifdef HAS_TRINAMIC
+static uint_fast8_t available_steppers;
 static void dev_stepper_detectSteppers(void);
+#else
+#define available_steppers NUMBER_OF_STEPPERS
 #endif
 
 void dev_stepper_init(void)
@@ -47,7 +49,9 @@ void dev_stepper_init(void)
         underrun_max_steps_per_second[i] = 0;
         underrun_max_decelleration[i] = 0;
     }
+#ifdef HAS_TRINAMIC
     available_steppers = 0;
+#endif
 }
 
 uint_fast8_t dev_stepper_get_count(void)
@@ -57,8 +61,10 @@ uint_fast8_t dev_stepper_get_count(void)
 #ifdef HAS_TRINAMIC
         trinamic_init();
         dev_stepper_detectSteppers();
-#endif
         return available_steppers;
+#else
+        return 0;
+#endif
     }
     else
     {

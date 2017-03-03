@@ -41,6 +41,8 @@
 
 #define BOARD_HAS_DEBUG_LED
 
+// Steppers
+#define NUMBER_OF_STEPPERS   5
 
 #define STEP_TIMER                 6
 #define STEP_BUFFER_TIMER          7
