@@ -33,7 +33,7 @@
 #define UART_SEND_BUFFER_SIZE     100
 
 // Heaters
-#define NUMBER_OF_HEATERS 6
+#define NUMBER_OF_HEATERS 4
 
 // LEDs
 #define BOARD_HAS_DEBUG_LED

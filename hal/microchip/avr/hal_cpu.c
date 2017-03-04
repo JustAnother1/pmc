@@ -43,25 +43,25 @@ static uint32_t lastTickAt = 0;
 void hal_cpu_init_hal(void)
 {
     int i;
+    // Initialize the variables
     for(i=0; i < MAX_TICK_FUNC; i++)
     {
         tick_list[i].tick = NULL;
     }
-    // start time
-    now = 0;
+
     // power on everything
     PRR0 = 0;
     PRR1 = 0;
 
+    // start time
+    now = 0;
     // Start time base timer
-    CPU_MS_TIMER_TCNT  = 0;
-    // CPU_MS_TIMER_OCRA  = CPU_MS_TIMER_RELOAD_VALUE;
-    OCR1AH = 0xEE; // 3e
-    OCR1AL = 0x80; // 80
+    CPU_MS_TIMER_OCRA  = CPU_MS_TIMER_RELOAD_VALUE;
     CPU_MS_TIMER_TIMSK = 0x02;
     CPU_MS_TIMER_TCCRA = 0;
-    CPU_MS_TIMER_TCCRB = 0x01; //0x09; // No prescaler
     CPU_MS_TIMER_TCCRC = 0;
+    CPU_MS_TIMER_TCNT  = 0;
+    CPU_MS_TIMER_TCCRB = 0x09; // No prescaler - CTC
 }
 
 ISR(TIMER1_COMPA_vect,ISR_BLOCK)
@@ -93,7 +93,6 @@ uint32_t hal_cpu_get_ms_tick(void)
 
 void hal_cpu_tick(void)
 {
-    /*
     // this gets called from the main loop.
     // the main loop should spin multiple times each millisecond.
     uint32_t curTick = hal_cpu_get_ms_tick();
@@ -118,7 +117,6 @@ void hal_cpu_tick(void)
         // to never stop ticking anymore.
         lastTickAt = curTick;
     }
-    */
 }
 
 void hal_cpu_die(void)

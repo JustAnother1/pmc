@@ -16,6 +16,9 @@
 #ifndef HAL_MICROCHIP_AVR_RUMBA_BOARD_CFG_H_
 #define HAL_MICROCHIP_AVR_RUMBA_BOARD_CFG_H_
 
+#include <avr/io.h>
+#include <avr/pgmspace.h>
+
 // LED
 #define DEBUG_LED_MASK                0x80
 #define DEBUG_LED_DDR                 DDRB
@@ -66,5 +69,73 @@
 #define CPU_MS_TIMER_COMPARE_A_ISR    TIMER1_COMPA_vect
 #define CPU_MS_TIMER_OVERFLOW_ISR     TIMER1_OVF_vect
 
+// PWM
+#define PWM_NUM_PINS                  8
+#define PWM_NUM_PORTS                 3
+#define PWM_PORT_1                    PORTE
+#define PWM_DD_1                      DDRE
+#define PWM_PORT_1_MASK               0x38; // E3, E4; E5
+#define PWM_PORT_2                    PORTG
+#define PWM_DD_2                      DDRG
+#define PWM_PORT_2_MASK               0x20; // G5
+#define PWM_PORT_3                    PORTH
+#define PWM_DD_3                      DDRH
+#define PWM_PORT_3_MASK               0x78; // H3, H4; H5, H6
+
+#define PWM_0_NAME                    PSTR("Heated Bed")
+#define PWM_0_OCR                     OCR2B
+#define PWM_0_TCNT                    TCNT2
+#define PWM_0_TIMSK                   TIMSK2
+#define PWM_0_TCCRA                   TCCR2A
+#define PWM_0_TCCRB                   TCCR2B
+
+#define PWM_1_NAME                    PSTR("Heater 0")
+#define PWM_1_OCR                     OCR3B
+#define PWM_1_TCNT                    TCNT3
+#define PWM_1_TIMSK                   TIMSK3
+#define PWM_1_TCCRA                   TCCR3A
+#define PWM_1_TCCRB                   TCCR3B
+
+#define PWM_2_NAME                    PSTR("Heater 1")
+#define PWM_2_OCR                     OCR3C
+#define PWM_2_TCNT                    TCNT3
+#define PWM_2_TIMSK                   TIMSK3
+#define PWM_2_TCCRA                   TCCR3A
+#define PWM_2_TCCRB                   TCCR3B
+
+#define PWM_3_NAME                    PSTR("Heater 2")
+#define PWM_3_OCR                     OCR4A
+#define PWM_3_TCNT                    TCNT4
+#define PWM_3_TIMSK                   TIMSK4
+#define PWM_3_TCCRA                   TCCR4A
+#define PWM_3_TCCRB                   TCCR4B
+
+#define PWM_4_NAME                    PSTR("Fan 0")
+#define PWM_4_OCR                     OCR4C
+#define PWM_4_TCNT                    TCNT4
+#define PWM_4_TIMSK                   TIMSK4
+#define PWM_4_TCCRA                   TCCR4A
+#define PWM_4_TCCRB                   TCCR4B
+
+#define PWM_5_NAME                    PSTR("Fan 1")
+#define PWM_5_OCR                     OCR4B
+#define PWM_5_TCNT                    TCNT4
+#define PWM_5_TIMSK                   TIMSK4
+#define PWM_5_TCCRA                   TCCR4A
+#define PWM_5_TCCRB                   TCCR4B
+
+#define PWM_6_NAME                    PSTR("Expansion 1")
+#define PWM_6_OCR                     OCR0B
+#define PWM_6_TCNT                    TCNT0
+#define PWM_6_TIMSK                   TIMSK0
+#define PWM_6_TCCRA                   TCCR0A
+#define PWM_6_TCCRB                   TCCR0B
+
+#define PWM_7_NAME                    PSTR("Expansion 2")
+#define PWM_7_OCR                     OCR3A
+#define PWM_7_TCNT                    TCNT3
+#define PWM_7_TIMSK                   TIMSK3
+#define PWM_7_TCCRA                   TCCR3A
+#define PWM_7_TCCRB                   TCCR3B
 
 #endif /* HAL_MICROCHIP_AVR_RUMBA_BOARD_CFG_H_ */

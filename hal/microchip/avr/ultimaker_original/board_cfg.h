@@ -47,4 +47,50 @@
 #define DEBUG_TRANSMITT_COMPLETE_ISR  USART3_TX_vect
 #define DEBUG_DATA_REGISTER_EMPTY_ISR USART3_UDRE_vect
 
+
+// Timer
+
+// Time Base (millisecond timer) -> Timer 1
+#define CPU_MS_TIMER_TCCRA            TCCR1A
+#define CPU_MS_TIMER_TCCRB            TCCR1B
+#define CPU_MS_TIMER_TCCRC            TCCR1C
+#define CPU_MS_TIMER_TCNT             TCNT1
+#define CPU_MS_TIMER_OCRA             OCR1A
+#define CPU_MS_TIMER_TIMSK            TIMSK1
+#define CPU_MS_TIMER_RELOAD_VALUE     16000
+#define CPU_MS_TIMER_COMPARE_A_ISR    TIMER1_COMPA_vect
+#define CPU_MS_TIMER_OVERFLOW_ISR     TIMER1_OVF_vect
+
+// PWM
+#define PWM_NUM_PINS                  3
+#define PWM_NUM_PORTS                 2
+#define PWM_PORT_1                    PORTE
+#define PWM_DD_1                      DDRE
+#define PWM_PORT_1_MASK               0x30; // E4; E5
+#define PWM_PORT_2                    PORTG
+#define PWM_DD_2                      DDRG
+#define PWM_PORT_2_MASK               0x20; // G5
+
+#define PWM_0_NAME                    PSTR("Heated Bed")
+#define PWM_0_OCR                     OCR0B
+#define PWM_0_TCNT                    TCNT0
+#define PWM_0_TIMSK                   TIMSK0
+#define PWM_0_TCCRA                   TCCR0A
+#define PWM_0_TCCRB                   TCCR0B
+
+#define PWM_1_NAME                    PSTR("Heater 1")
+#define PWM_1_OCR                     OCR3C
+#define PWM_1_TCNT                    TCNT3
+#define PWM_1_TIMSK                   TIMSK3
+#define PWM_1_TCCRA                   TCCR3A
+#define PWM_1_TCCRB                   TCCR3B
+
+#define PWM_2_NAME                    PSTR("Heater 2")
+#define PWM_2_OCR                     OCR3B
+#define PWM_2_TCNT                    TCNT3
+#define PWM_2_TIMSK                   TIMSK3
+#define PWM_2_TCCRA                   TCCR3A
+#define PWM_2_TCCRB                   TCCR3B
+
+
 #endif /* HAL_MICROCHIP_AVR_ULTIMAKER_ORIGINAL_BOARD_CFG_H_ */
