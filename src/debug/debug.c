@@ -368,7 +368,7 @@ static void order_curTime(void)
     }
     else
     {
-        millis = now %1000;
+        millis = now % 1000;
         seconds = now / 1000;
         if(seconds < 60)
         {

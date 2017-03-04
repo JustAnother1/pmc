@@ -15,6 +15,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#define __DELAY_BACKWARD_COMPATIBLE__
+#include <util/delay.h>
 #include "hal_time.h"
 
 
@@ -25,7 +27,7 @@ void hal_time_init(void)
 
 void hal_time_ms_sleep(uint_fast32_t ms)
 {
-
+     _delay_ms(ms);
 }
 
 bool hal_time_start_timer(uint_fast8_t device, uint32_t clock, uint_fast16_t reload_value, TimerFkt function)

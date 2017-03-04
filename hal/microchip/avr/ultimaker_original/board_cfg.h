@@ -57,7 +57,7 @@
 #define CPU_MS_TIMER_TCNT             TCNT1
 #define CPU_MS_TIMER_OCRA             OCR1A
 #define CPU_MS_TIMER_TIMSK            TIMSK1
-#define CPU_MS_TIMER_RELOAD_VALUE     16000
+#define CPU_MS_TIMER_RELOAD_VALUE     (F_CPU/1000)
 #define CPU_MS_TIMER_COMPARE_A_ISR    TIMER1_COMPA_vect
 #define CPU_MS_TIMER_OVERFLOW_ISR     TIMER1_OVF_vect
 
@@ -92,5 +92,22 @@
 #define PWM_2_TCCRA                   TCCR3A
 #define PWM_2_TCCRB                   TCCR3B
 
+// ADC
+#define ADC_NUM_PINS                  3
+#define ADC_ADCSRA                    0x87 // Enable ADC, prescaler /128
+#define ADC_DIDR0                     0x00
+#define ADC_DIDR1                     0x07
+#define ADC_0_NAME                    PSTR("Temp Sens 1")
+#define ADC_0_CONVERTER               SteinhartHartBOnlyConverter
+#define ADC_ADMUX_0                   0x40
+#define ADC_ADCSRB_0                  0x08
+#define ADC_1_NAME                    PSTR("Temp Sens 2")
+#define ADC_1_CONVERTER               SteinhartHartBOnlyConverter
+#define ADC_ADMUX_1                   0x41
+#define ADC_ADCSRB_1                  0x08
+#define ADC_2_NAME                    PSTR("Temp Sens 3")
+#define ADC_2_CONVERTER               SteinhartHartBOnlyConverter
+#define ADC_ADMUX_2                   0x42
+#define ADC_ADCSRB_2                  0x08
 
 #endif /* HAL_MICROCHIP_AVR_ULTIMAKER_ORIGINAL_BOARD_CFG_H_ */

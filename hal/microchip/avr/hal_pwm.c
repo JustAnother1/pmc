@@ -22,7 +22,7 @@ uint8_t cur_pwm[PWM_NUM_PINS];
 void hal_pwm_init(void)
 {
     int i;
-    // Output a 0 for a start
+    // Output a Low(0) for a start
     PWM_PORT_1 &= ~PWM_PORT_1_MASK;
 #if PWM_NUM_PORTS > 1
     PWM_PORT_2 &= ~PWM_PORT_2_MASK;
@@ -155,40 +155,33 @@ void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)
 
 uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
-    if(device < PWM_NUM_PINS)
+    switch(device)
     {
-        switch(device)
-        {
 #if PWM_NUM_PINS > 0
-        case  0: return strlcpy_P(position, PWM_0_NAME, max_length);
+    case  0: return strlcpy_P((char *)position, PWM_0_NAME, max_length);
 #endif
 #if PWM_NUM_PINS > 1
-        case  1: return strlcpy_P(position, PWM_1_NAME, max_length);
+    case  1: return strlcpy_P((char *)position, PWM_1_NAME, max_length);
 #endif
 #if PWM_NUM_PINS > 2
-        case  2: return strlcpy_P(position, PWM_2_NAME, max_length);
+    case  2: return strlcpy_P((char *)position, PWM_2_NAME, max_length);
 #endif
 #if PWM_NUM_PINS > 3
-        case  3: return strlcpy_P(position, PWM_3_NAME, max_length);
+    case  3: return strlcpy_P((char *)position, PWM_3_NAME, max_length);
 #endif
 #if PWM_NUM_PINS > 4
-        case  4: return strlcpy_P(position, PWM_4_NAME, max_length);
+    case  4: return strlcpy_P((char *)position, PWM_4_NAME, max_length);
 #endif
 #if PWM_NUM_PINS > 5
-        case  5: return strlcpy_P(position, PWM_5_NAME, max_length);
+    case  5: return strlcpy_P((char *)position, PWM_5_NAME, max_length);
 #endif
 #if PWM_NUM_PINS > 6
-        case  6: return strlcpy_P(position, PWM_6_NAME, max_length);
+    case  6: return strlcpy_P((char *)position, PWM_6_NAME, max_length);
 #endif
 #if PWM_NUM_PINS > 7
-        case  7: return strlcpy_P(position, PWM_7_NAME, max_length);
+    case  7: return strlcpy_P((char *)position, PWM_7_NAME, max_length);
 #endif
-        default:
-            return 0;
-        }
-    }
-    else
-    {
+    default:
         return 0;
     }
 }

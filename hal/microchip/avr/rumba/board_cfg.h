@@ -65,7 +65,7 @@
 #define CPU_MS_TIMER_TCNT             TCNT1
 #define CPU_MS_TIMER_OCRA             OCR1A
 #define CPU_MS_TIMER_TIMSK            TIMSK1
-#define CPU_MS_TIMER_RELOAD_VALUE     16000
+#define CPU_MS_TIMER_RELOAD_VALUE     (F_CPU/1000)
 #define CPU_MS_TIMER_COMPARE_A_ISR    TIMER1_COMPA_vect
 #define CPU_MS_TIMER_OVERFLOW_ISR     TIMER1_OVF_vect
 
@@ -137,5 +137,43 @@
 #define PWM_7_TIMSK                   TIMSK3
 #define PWM_7_TCCRA                   TCCR3A
 #define PWM_7_TCCRB                   TCCR3B
+
+// Buzzer
+#define BUZZER_0_NAME                 PSTR("Buzzer")
+#define BUZZER_PORT_1                 PORTL
+#define BUZZER_DD_1                   DDRL
+#define BUZZER_PORT_1_MASK            0x20; // L5
+#define BUZZER_0_OCRA                 OCR5A
+#define BUZZER_0_TCCRA                TCCR5A
+#define BUZZER_0_TCCRB                TCCR5B
+#define BUZZER_0_TIMSK                TIMSK5
+#define BUZZER_0_TCNT                 TCNT5
+
+// ADC
+#define ADC_NUM_PINS                  5
+#define ADC_ADCSRA                    0x87 // Enable ADC, prescaler /128
+#define ADC_DIDR0                     0x00
+#define ADC_DIDR1                     0xf8
+#define ADC_0_NAME                    PSTR("Temp Sens 1")
+#define ADC_0_CONVERTER               SteinhartHartBOnlyConverter
+#define ADC_ADMUX_0                   0x47
+#define ADC_ADCSRB_0                  0x08
+#define ADC_1_NAME                    PSTR("Temp Sens 2")
+#define ADC_1_CONVERTER               SteinhartHartBOnlyConverter
+#define ADC_ADMUX_1                   0x46
+#define ADC_ADCSRB_1                  0x08
+#define ADC_2_NAME                    PSTR("Temp Sens 3")
+#define ADC_2_CONVERTER               SteinhartHartBOnlyConverter
+#define ADC_ADMUX_2                   0x45
+#define ADC_ADCSRB_2                  0x08
+#define ADC_3_NAME                    PSTR("Temp Sens 4")
+#define ADC_3_CONVERTER               SteinhartHartBOnlyConverter
+#define ADC_ADMUX_3                   0x44
+#define ADC_ADCSRB_3                  0x08
+#define ADC_4_NAME                    PSTR("Temp Sens 5")
+#define ADC_4_CONVERTER               NoConverter
+#define ADC_ADMUX_4                   0x43
+#define ADC_ADCSRB_4                  0x08
+
 
 #endif /* HAL_MICROCHIP_AVR_RUMBA_BOARD_CFG_H_ */

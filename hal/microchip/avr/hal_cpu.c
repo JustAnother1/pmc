@@ -64,24 +64,24 @@ void hal_cpu_init_hal(void)
     CPU_MS_TIMER_TCCRB = 0x09; // No prescaler - CTC
 }
 
-ISR(TIMER1_COMPA_vect,ISR_BLOCK)
+ISR(TIMER1_COMPA_vect, ISR_BLOCK)
 {
     hal_set_isr1_led(true);
     now++;
     hal_set_isr1_led(false);
 }
 
-ISR(TIMER1_OVF_vect,ISR_BLOCK)
+ISR(TIMER1_OVF_vect, ISR_BLOCK)
 {
     // Should not happen, right?
 }
 
-ISR(TIMER1_CAPT_vect ,ISR_BLOCK)
+ISR(TIMER1_CAPT_vect, ISR_BLOCK)
 {
     // Should not happen, right?
 }
 
-ISR(BADISR_vect)
+ISR(BADISR_vect, ISR_BLOCK)
 {
     debug_line(STR("Interrupt occurred with no ISR !"));
 }
