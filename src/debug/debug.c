@@ -38,16 +38,22 @@
 #include "protocol.h"
 #include "trinamic.h"
 
-#define SLOW_ORDER_HELP  1
+#define SLOW_ORDER_HELP              1
+#define SLOW_ORDER_DEBUG_INFORMATION 2
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
 static uint_fast32_t tick_value;
 static uint_fast32_t tick_max;
 static uint_fast32_t tick_min;
+
+// slow orders:
 static bool order_ongoing;
 static int slow_order;
 static int slow_order_state;
+static uint8_t num_temps;
+static uint8_t cur_temp;
+
 
 // order parsing
 static uint_fast16_t checked_bytes = 0;
@@ -60,6 +66,8 @@ void debug_hex_buffer(uint8_t* buf, int length);
 static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low);
 static void start_order_help(void);
 static bool continue_order_help(void);
+static void start_order_debug_information(void);
+static bool continue_order_debug_information(void);
 static void order_curTime(void);
 static uint32_t getStartOffsetOfNextWord(uint8_t* buf, uint32_t length);
 static uint32_t getNumBytesNextWord(uint8_t* buf, uint32_t length);
@@ -109,15 +117,28 @@ static void handle_ongoing_commands(void)
         if(true == continue_order_help())
         {
             // finished
-            debug_msg(STR("(db)"));
+            order_ongoing = false;
+        }
+        // else try again next tick.
+        break;
+
+    case SLOW_ORDER_DEBUG_INFORMATION:
+        if(true == continue_order_debug_information())
+        {
+            // finished
             order_ongoing = false;
         }
         // else try again next tick.
         break;
 
     default:
-        debug_msg(STR("(db)"));
         order_ongoing = false;
+        break;
+    }
+    if(false == order_ongoing)
+    {
+        debug_msg(STR("(db)"));
+        return;
     }
 }
 
@@ -335,6 +356,48 @@ static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low)
     return res;
 }
 
+static void start_order_debug_information(void)
+{
+    debug_line(STR("current status:"));
+    order_ongoing = true;
+    slow_order = SLOW_ORDER_DEBUG_INFORMATION;
+    slow_order_state = 1;
+}
+
+static bool continue_order_debug_information(void)
+{
+    if(false == hal_debug_is_send_buffer_empty())
+    {
+        // we send the next line only if the buffer is empty again.
+        return false;
+    }
+    switch(slow_order_state)
+    {
+    case 1: debug_line(STR("ticks per ms: max=%d, min=%d"), tick_max, tick_min); slow_order_state++; break;
+    case 2: debug_line(STR("number of detected steppers: %d"), dev_stepper_get_count()); slow_order_state++; break;
+    case 3: num_temps = hal_adc_get_amount();
+            cur_temp = 0;
+            slow_order_state++;
+            break;
+
+    case 4: if(cur_temp < num_temps)
+        {
+            dev_temperature_sensor_print_status(cur_temp);
+            cur_temp++;
+        }
+        else
+        {
+            // printed all sensors -> done with this
+            slow_order_state++;
+        }
+        break;
+
+    // if we reach the default case then we are done.
+    default: return true;
+    }
+    return false;
+}
+
 static void start_order_help(void)
 {
     debug_line(STR("available commands:"));
@@ -420,7 +483,7 @@ static bool continue_order_help(void)
 
 static void order_curTime(void)
 {
-    uint32_t millis = 0;
+    uint16_t millis = 0;
     uint32_t seconds = 0;
     uint32_t minutes = 0;
     uint32_t hours = 0;
@@ -743,10 +806,11 @@ static bool parse_order(int length)
 // order = l
     case 'L':
     case 'l': // list - list the available debug information
-        debug_line(STR("current status:"));
-        debug_line(STR("ticks per ms: max=%d, min=%d"), tick_max, tick_min);
-        debug_line(STR("number of detected steppers: %d"), dev_stepper_get_count());
-        dev_temperature_sensor_print_status();
+        start_order_debug_information();
+        // debug_line(STR("current status:"));
+        // debug_line(STR("ticks per ms: max=%d, min=%d"), tick_max, tick_min);
+        // debug_line(STR("number of detected steppers: %d"), dev_stepper_get_count());
+        // dev_temperature_sensor_print_status();
         break;
 
 // order = m

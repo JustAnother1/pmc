@@ -53,19 +53,15 @@ uint_fast16_t dev_temperature_sensor_get_temperature(uint_fast8_t number)
 
 #ifdef DEBUG_ACTIVE
 
-void dev_temperature_sensor_print_status(void)
+void dev_temperature_sensor_print_status(uint_fast8_t number)
 {
     uint_fast8_t name_length;
     uint_fast16_t temperature;
     uint8_t nameBuf[20];
-    int i;
-    for(i = 0; i < hal_adc_get_amount(); i++)
-    {
-        name_length = hal_adc_get_name(i, &(nameBuf[0]), 20);
-        nameBuf[name_length] = 0;
-        temperature = hal_adc_get_value(i);
-        debug_line(STR("%d: %s = %d.%01d°C"), i, &(nameBuf[0]), temperature/10, temperature%10);
-    }
+    name_length = hal_adc_get_name(number, &(nameBuf[0]), 20);
+    nameBuf[name_length] = 0;
+    temperature = hal_adc_get_value(number);
+    debug_line(STR("%d: %s = %d.%01d°C"), number, &(nameBuf[0]), temperature/10, temperature%10);
 }
 
 #endif // debug
