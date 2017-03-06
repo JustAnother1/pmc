@@ -24,19 +24,16 @@
 #include "hal_time.h"
 #include "hal_uart.h"
 
-// Baudrate is 115200 so a byte should transfer in less than one ms
-#define UART_BYTE_TIMEOUT_MS      5
-
 typedef struct {
     // receive
-    uint8_t   receive_buffer[UART_RECEIVE_BUFFER_SIZE];
-    uint8_t   receive_read_pos;
-    uint8_t   receive_write_pos;
+    volatile uint8_t   receive_buffer[UART_RECEIVE_BUFFER_SIZE];
+    volatile uint8_t   receive_read_pos;
+    volatile uint8_t   receive_write_pos;
     // send
-    uint8_t   send_buffer[UART_SEND_BUFFER_SIZE];
-    bool      is_sending;
-    uint8_t   send_read_pos; // the byte that will be send next
-    uint8_t   send_write_pos; // free slot after data to send
+    volatile uint8_t   send_buffer[UART_SEND_BUFFER_SIZE];
+    volatile bool      is_sending;
+    volatile uint8_t   send_read_pos; // the byte that will be send next
+    volatile uint8_t   send_write_pos; // free slot after data to send
 }uart_device_typ;
 
 static bool copy_data_to_send(uint_fast8_t device, uint8_t * frame, uint_fast16_t length);
@@ -117,21 +114,21 @@ bool hal_init_debug_uart(void)
 void hal_print_configuration_gcode_uart(void)
 {
     debug_line(STR("Configuration of USART_%d :"), GCODE_USART_NUMBER);
-    debug_line(STR("USART%d->UCSRA  = 0x%02x"), GCODE_USART_UCSRA);
-    debug_line(STR("USART%d->UCSRB  = 0x%02x"), GCODE_USART_UCSRB);
-    debug_line(STR("USART%d->UCSRC  = 0x%02x"), GCODE_USART_UCSRC);
-    debug_line(STR("USART%d->UBRRH  = 0x%02x"), GCODE_USART_UBRRH);
-    debug_line(STR("USART%d->UBRRL  = 0x%02x"), GCODE_USART_UBRRL);
+    debug_line(STR("USART%d->UCSRA  = 0x%02x"), GCODE_USART_NUMBER, GCODE_USART_UCSRA);
+    debug_line(STR("USART%d->UCSRB  = 0x%02x"), GCODE_USART_NUMBER, GCODE_USART_UCSRB);
+    debug_line(STR("USART%d->UCSRC  = 0x%02x"), GCODE_USART_NUMBER, GCODE_USART_UCSRC);
+    debug_line(STR("USART%d->UBRRH  = 0x%02x"), GCODE_USART_NUMBER, GCODE_USART_UBRRH);
+    debug_line(STR("USART%d->UBRRL  = 0x%02x"), GCODE_USART_NUMBER, GCODE_USART_UBRRL);
 }
 
 void hal_print_configuration_debug_uart(void)
 {
     debug_line(STR("Configuration of USART_%d :"), DEBUG_USART_NUMBER);
-    debug_line(STR("USART%d->UCSRA  = 0x%02x"), DEBUG_USART_UCSRA);
-    debug_line(STR("USART%d->UCSRB  = 0x%02x"), DEBUG_USART_UCSRB);
-    debug_line(STR("USART%d->UCSRC  = 0x%02x"), DEBUG_USART_UCSRC);
-    debug_line(STR("USART%d->UBRRH  = 0x%02x"), DEBUG_USART_UBRRH);
-    debug_line(STR("USART%d->UBRRL  = 0x%02x"), DEBUG_USART_UBRRL);
+    debug_line(STR("USART%d->UCSRA  = 0x%02x"), DEBUG_USART_NUMBER, DEBUG_USART_UCSRA);
+    debug_line(STR("USART%d->UCSRB  = 0x%02x"), DEBUG_USART_NUMBER, DEBUG_USART_UCSRB);
+    debug_line(STR("USART%d->UCSRC  = 0x%02x"), DEBUG_USART_NUMBER, DEBUG_USART_UCSRC);
+    debug_line(STR("USART%d->UBRRH  = 0x%02x"), DEBUG_USART_NUMBER, DEBUG_USART_UBRRH);
+    debug_line(STR("USART%d->UBRRL  = 0x%02x"), DEBUG_USART_NUMBER, DEBUG_USART_UBRRL);
 }
 
 #endif
@@ -175,7 +172,7 @@ uint_fast16_t hal_get_available_bytes_gcode_uart(void)
             res = UART_RECEIVE_BUFFER_SIZE - devices[GCODE_UART].receive_read_pos + devices[GCODE_UART].receive_write_pos;
         }
     }
-    // else res = 0;
+    // else buffer empty -> res = 0;
     return res;
 }
 
@@ -193,7 +190,7 @@ uint_fast16_t hal_get_available_bytes_debug_uart(void)
             res = UART_RECEIVE_BUFFER_SIZE - devices[DEBUG_UART].receive_read_pos + devices[DEBUG_UART].receive_write_pos;
         }
     }
-    // else res = 0;
+    // else buffer empty ->res = 0;
     return res;
 }
 
@@ -249,10 +246,12 @@ void hal_send_frame_debug_uart(uint8_t * frame, uint_fast16_t length)
         return;
     }
 
-    while(false == copy_data_to_send(DEBUG_UART, frame, length))
+    while(length > get_available_bytes_in_send_Buffer(DEBUG_UART))
     {
         ; // wait
     }
+    // This cannot fail as all parameters have been checked
+    copy_data_to_send(DEBUG_UART, frame, length);
 }
 
 bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t length)
@@ -281,6 +280,7 @@ bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t lengt
     {
         // start sending now
         devices[GCODE_UART].is_sending = true;
+        /*
         GCODE_USART_UDR = devices[GCODE_UART].send_buffer[devices[GCODE_UART].send_read_pos];
         devices[GCODE_UART].send_read_pos++;
         if(devices[GCODE_UART].send_read_pos < UART_SEND_BUFFER_SIZE)
@@ -292,6 +292,7 @@ bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t lengt
             // wrap around
             devices[GCODE_UART].send_read_pos = 0;
         }
+        */
         // The next line activates the Interrupt. The Interrupt may become
         // active immediately. It therefore must be the last line !
         GCODE_USART_UCSRB = GCODE_USART_UCSRB | 0x60; // enable TC Complete and Data Register Empty Interrupt
@@ -325,6 +326,7 @@ bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t lengt
     {
         // start sending now
         devices[DEBUG_UART].is_sending = true;
+        /*
         DEBUG_USART_UDR = devices[DEBUG_UART].send_buffer[devices[DEBUG_UART].send_read_pos];
         devices[DEBUG_UART].send_read_pos++;
         if(devices[DEBUG_UART].send_read_pos < UART_SEND_BUFFER_SIZE)
@@ -336,6 +338,7 @@ bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t lengt
             // wrap around
             devices[DEBUG_UART].send_read_pos = 0;
         }
+        */
         // The next line activates the Interrupt. The Interrupt may become
         // active immediately. It therefore must be the last line !
         DEBUG_USART_UCSRB = DEBUG_USART_UCSRB | 0x60; // enable TC Complete and Data Register Empty Interrupt
@@ -343,6 +346,29 @@ bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t lengt
     return true;
 }
 
+bool hal_is_gcode_uart_send_buffer_empty(void)
+{
+    if(devices[GCODE_UART].send_read_pos != devices[GCODE_UART].send_write_pos)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+bool hal_is_debug_uart_send_buffer_empty(void)
+{
+    if(devices[DEBUG_UART].send_read_pos != devices[DEBUG_UART].send_write_pos)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
 
 // end of hal_uart_api
 

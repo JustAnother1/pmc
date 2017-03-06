@@ -61,3 +61,8 @@ static void debug_putc(void* p, char c)
     }
 }
 
+bool hal_debug_is_send_buffer_empty(void)
+{
+    return hal_is_debug_uart_send_buffer_empty();
+}
+

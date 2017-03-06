@@ -139,6 +139,16 @@ bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t lengt
     return hal_uart_send_frame_non_blocking(DEBUG_UART, frame, length);
 }
 
+bool hal_is_gcode_uart_send_buffer_empty(void)
+{
+    return true;
+}
+
+bool hal_is_debug_uart_send_buffer_empty(void)
+{
+    return true;
+}
+
 
 // end of hal_uart_api
 

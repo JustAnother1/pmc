@@ -32,3 +32,7 @@ static void debug_putc(void* p, char c)
     putc(c, stdout);
 }
 
+bool hal_debug_is_send_buffer_empty(void)
+{
+    return true;
+}

@@ -17,6 +17,7 @@
 #define HAL_INCLUDE_HAL_DEBUG_H_
 
 #include <inttypes.h>
+#include <stdbool.h>
 
 #ifdef DEBUG_ACTIVE
 
@@ -27,9 +28,11 @@
 #define debug_line(...) tfp_printf(__VA_ARGS__); tfp_printf(STR("\r\n"))
 
 void hal_debug_init(void);
+bool hal_debug_is_send_buffer_empty(void);
 #else
 #define debug_msg(...)
 #define debug_line(...)
+#define hal_debug_is_send_buffer_empty()  (true)
 #endif
 
 #endif /* HAL_INCLUDE_HAL_DEBUG_H_ */

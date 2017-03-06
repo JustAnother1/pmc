@@ -29,6 +29,7 @@ uint_fast16_t hal_get_available_bytes_gcode_uart(void);
 void hal_forget_bytes_gcode_uart(uint_fast16_t how_many);
 void hal_send_frame_gcode_uart(uint8_t * frame, uint_fast16_t length);
 bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t length);
+bool hal_is_gcode_uart_send_buffer_empty(void);
 
 bool hal_init_debug_uart(void);
 #ifdef DEBUG_ACTIVE
@@ -39,5 +40,6 @@ uint_fast16_t hal_get_available_bytes_debug_uart(void);
 void hal_forget_bytes_debug_uart(uint_fast16_t how_many);
 void hal_send_frame_debug_uart(uint8_t * frame, uint_fast16_t length);
 bool hal_send_frame_non_blocking_debug_uart(uint8_t * frame, uint_fast16_t length);
+bool hal_is_debug_uart_send_buffer_empty(void);
 
 #endif /* HAL_UART_H_ */

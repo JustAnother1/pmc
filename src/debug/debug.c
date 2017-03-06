@@ -38,13 +38,16 @@
 #include "protocol.h"
 #include "trinamic.h"
 
-
+#define SLOW_ORDER_HELP  1
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
 static uint_fast32_t tick_value;
 static uint_fast32_t tick_max;
 static uint_fast32_t tick_min;
+static bool order_ongoing;
+static int slow_order;
+static int slow_order_state;
 
 // order parsing
 static uint_fast16_t checked_bytes = 0;
@@ -52,16 +55,18 @@ static uint_fast8_t last_line_end = 'l'; // invalid value
 
 static void count_debug_ticks_per_ms(void);
 static void search_for_orders(void);
-static void parse_order(int length);
+static bool parse_order(int length);
 void debug_hex_buffer(uint8_t* buf, int length);
 static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low);
-static void order_help(void);
+static void start_order_help(void);
+static bool continue_order_help(void);
 static void order_curTime(void);
 static uint32_t getStartOffsetOfNextWord(uint8_t* buf, uint32_t length);
 static uint32_t getNumBytesNextWord(uint8_t* buf, uint32_t length);
 static uint32_t getHexNumber(uint8_t* buf, uint32_t length);
 static void printMemory(uint8_t* buf, uint32_t length);
 static uint_fast8_t hexChar2int(uint8_t c);
+static void handle_ongoing_commands(void);
 
 void curTest(int value);
 
@@ -72,6 +77,9 @@ void debug_init(void)
     tick_value = 0;
     tick_max = 0;
     tick_min = 42424242;
+    order_ongoing = false;
+    slow_order = 0;
+    slow_order_state = 0;
     hal_debug_init();
     hal_cpu_check_Reset_Reason();
     debug_line(STR("Debug Console PMC"));
@@ -84,6 +92,33 @@ void debug_tick(void)
     count_debug_ticks_per_ms();
     // check if we received an order
     search_for_orders();
+    // handle long running orders
+    handle_ongoing_commands();
+}
+
+static void handle_ongoing_commands(void)
+{
+    if(false == order_ongoing)
+    {
+        return;
+    }
+    // else:
+    switch(slow_order)
+    {
+    case SLOW_ORDER_HELP:
+        if(true == continue_order_help())
+        {
+            // finished
+            debug_msg(STR("(db)"));
+            order_ongoing = false;
+        }
+        // else try again next tick.
+        break;
+
+    default:
+        debug_msg(STR("(db)"));
+        order_ongoing = false;
+    }
 }
 
 static void count_debug_ticks_per_ms(void)
@@ -163,10 +198,13 @@ static void search_for_orders(void)
             }
             // debug_line(STR("found line feed !"));
             debug_line(STR("\r\n"));
-            parse_order(i);
+            if(true == parse_order(i))
+            {
+                debug_msg(STR("(db)"));
+            }
+            // else command is still ongoing
             hal_forget_bytes_debug_uart(i+1);
             checked_bytes = 0;
-            debug_msg(STR("(db)"));
             return;
         }
     }
@@ -297,61 +335,87 @@ static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low)
     return res;
 }
 
-static void order_help(void)
+static void start_order_help(void)
 {
     debug_line(STR("available commands:"));
+    order_ongoing = true;
+    slow_order = SLOW_ORDER_HELP;
+    slow_order_state = 1;
+}
+
+static bool continue_order_help(void)
+{
+    if(false == hal_debug_is_send_buffer_empty())
+    {
+        // we send the next line only if the buffer is empty again.
+        return false;
+    }
+    switch(slow_order_state)
+    {
     // a
-    debug_line(STR("b<frequency>               : activate buzzer (freq=0 -> off)"));
-    debug_line(STR("c<setting>                 : change special setting"));
-    debug_line(STR("d                          : die - stops the processor"));
-    debug_line(STR("e                          : show errors that have been reported."));
+    case 1: debug_line(STR("b<frequency>               : activate buzzer (freq=0 -> off)")); slow_order_state++; break;
+    case 2: debug_line(STR("c<setting>                 : change special setting")); slow_order_state++; break;
+    case 3: debug_line(STR("d                          : die - stops the processor")); slow_order_state++; break;
+    case 4: debug_line(STR("e                          : show errors that have been reported.")); slow_order_state++; break;
     // f
     // g
-    debug_line(STR("h                          : print this information"));
-    debug_line(STR("ha <heat> <sens>           : associate temp.sensor to heater"));
-    debug_line(STR("hs                         : show status of the heaters"));
-    debug_line(STR("ht <num> <temp>            : set temperature of the heater"));
+    case 5: debug_line(STR("h                          : print this information")); slow_order_state++; break;
+    case 6: debug_line(STR("ha <heat> <sens>           : associate temp.sensor to heater")); slow_order_state++; break;
+    case 7: debug_line(STR("hs                         : show status of the heaters")); slow_order_state++; break;
+    case 8: debug_line(STR("ht <num> <temp>            : set temperature of the heater")); slow_order_state++; break;
     // i
     // j
     // k
-    debug_line(STR("l                          : list recorded debug information"));
-    debug_line(STR("md<addressHex> <lengthHex> : print memory"));
+    case 9: debug_line(STR("l                          : list recorded debug information")); slow_order_state++; break;
+    case 10: debug_line(STR("md<addressHex> <lengthHex> : print memory")); slow_order_state++; break;
     // n
-    debug_line(STR("on                         : switch all power on"));
-    debug_line(STR("off                        : switch all power off"));
-    debug_line(STR("pa                         : print ADC configuration"));
+    case 11: debug_line(STR("on                         : switch all power on")); slow_order_state++; break;
+    case 12: debug_line(STR("off                        : switch all power off")); slow_order_state++; break;
+    case 13: debug_line(STR("pa                         : print ADC configuration")); slow_order_state++; break;
 #ifdef HAS_USB
-    debug_line(STR("pb                         : print USB configuration"));
+    case 14: debug_line(STR("pb                         : print USB configuration")); slow_order_state++; break;
+#else
+    case 14: slow_order_state++; break;
 #endif
-    debug_line(STR("pc                         : print CPU configuration"));
-    debug_line(STR("pi                         : print I2C configuration"));
-    debug_line(STR("pin<Port,idx>              : print state of the pin"));
-    debug_line(STR("pse                        : print expansion SPI configuration"));
-    debug_line(STR("pss                        : print stepper SPI configuration"));
-    debug_line(STR("ptim<num>                  : print Timer Registers"));
+    case 15: debug_line(STR("pc                         : print CPU configuration")); slow_order_state++; break;
+    case 16: debug_line(STR("pi                         : print I2C configuration")); slow_order_state++; break;
+    case 17: debug_line(STR("pin<Port,idx>              : print state of the pin")); slow_order_state++; break;
+    case 18: debug_line(STR("pse                        : print expansion SPI configuration")); slow_order_state++; break;
+    case 19: debug_line(STR("pss                        : print stepper SPI configuration")); slow_order_state++; break;
+    case 20: debug_line(STR("ptim<num>                  : print Timer Registers")); slow_order_state++; break;
 #ifdef USE_STEP_DIR
 #ifdef HAS_TRINAMIC
-    debug_line(STR("ptri                       : print Trinamic status"));
+    case 21: debug_line(STR("ptri                       : print Trinamic status")); slow_order_state++; break;
+#else
+    case 21: slow_order_state++; break;
 #endif
+#else
+    case 21: slow_order_state++; break;
 #endif
-    debug_line(STR("pud                        : print Debug UART configuration"));
-    debug_line(STR("pug                        : print G-Code UART configuration"));
-    debug_line(STR("pq                         : print command queue status"));
+    case 22: debug_line(STR("pud                        : print Debug UART configuration")); slow_order_state++; break;
+    case 23: debug_line(STR("pug                        : print G-Code UART configuration")); slow_order_state++; break;
+    case 24: debug_line(STR("pq                         : print command queue status")); slow_order_state++; break;
     // q
-    debug_line(STR("r                          : reset the processor"));
+    case 25: debug_line(STR("r                          : reset the processor")); slow_order_state++; break;
     // s
 #ifdef HAS_TRINAMIC
-    debug_line(STR("sc                         : scan number of steppers"));
+    case 26: debug_line(STR("sc                         : scan number of steppers")); slow_order_state++; break;
+#else
+    case 26: slow_order_state++; break;
 #endif
-    debug_line(STR("t                          : show current time"));
+    case 27: debug_line(STR("t                          : show current time")); slow_order_state++; break;
     // u
     // v
-    debug_line(STR("we<hex chars>              : write data to expansion SPI"));
-    debug_line(STR("ws<hex chars>              : write data to stepper SPI"));
+    case 28: debug_line(STR("we<hex chars>              : write data to expansion SPI")); slow_order_state++; break;
+    case 29: debug_line(STR("ws<hex chars>              : write data to stepper SPI")); slow_order_state++; break;
     // x
     // y
     // z
     // 0..9, !, ?, ...
+    // if we reach the default case then we are done.
+    default: return true;
+    }
+    return false;
 }
 
 static void order_curTime(void)
@@ -499,7 +563,7 @@ static uint32_t getHexNumber(uint8_t* buf, uint32_t length)
     return res;
 }
 
-static void parse_order(int length)
+static bool parse_order(int length)
 {
     uint8_t cmd_buf[10] = {0};
     int pos_in_buf = 0;
@@ -507,14 +571,18 @@ static void parse_order(int length)
     if(0 == pos_in_buf)
     {
         debug_line(STR("Invalid command ! try h for help"));
-        return;
+        return true;
     }
     switch(cmd_buf[0])
     {
 // order = b
     case 'B':
     case 'b':
-        dev_buzzer_set_frequency(0, atoi((char *)&(cmd_buf[1])));
+    {
+        uint_fast16_t frequency = atoi((char *)&(cmd_buf[1]));
+        debug_line(STR("setting frequency on buzzer to %d Hz"), frequency);
+        dev_buzzer_set_frequency(0, frequency);
+    }
         break;
 
 // order = c
@@ -523,7 +591,7 @@ static void parse_order(int length)
         if(1 == pos_in_buf)
         {
             debug_line(STR("Invalid command ! try h for help"));
-            return;
+            return true;
         }
         switch (cmd_buf[1])
         {
@@ -666,7 +734,8 @@ static void parse_order(int length)
 
 // order = h
         default:
-            order_help();
+            start_order_help();
+            return false;
             break;
         }
         break;
@@ -686,7 +755,7 @@ static void parse_order(int length)
         if(1 == pos_in_buf)
         {
             debug_line(STR("Invalid command ! try h for help"));
-            return;
+            return true;
         }
         switch (cmd_buf[1])
         {
@@ -724,7 +793,7 @@ static void parse_order(int length)
         if(1 == pos_in_buf)
         {
             debug_line(STR("Invalid command ! try h for help"));
-            return;
+            return true;
         }
         switch (cmd_buf[1])
         {
@@ -743,7 +812,7 @@ static void parse_order(int length)
             if(2 == pos_in_buf)
             {
                 debug_line(STR("Invalid command ! try h for help"));
-                return;
+                return true;
             }
             switch(cmd_buf[2])
             {
@@ -773,7 +842,7 @@ static void parse_order(int length)
         if(1 == pos_in_buf)
         {
             debug_line(STR("Invalid command ! try h for help"));
-            return;
+            return true;
         }
         switch (cmd_buf[1])
         {
@@ -823,7 +892,7 @@ static void parse_order(int length)
             if(2 == pos_in_buf)
             {
                 debug_line(STR("Invalid command ! try h for help"));
-                return;
+                return true;
             }
             switch(cmd_buf[2])
             {
@@ -852,7 +921,7 @@ static void parse_order(int length)
             if(2 == pos_in_buf)
             {
                 debug_line(STR("Invalid command ! try h for help"));
-                return;
+                return true;
             }
             switch(cmd_buf[2])
             {
@@ -863,7 +932,7 @@ static void parse_order(int length)
                 if(3 == pos_in_buf)
                 {
                     debug_line(STR("Invalid command ! try h for help"));
-                    return;
+                    return true;
                 }
                 switch(cmd_buf[3])
                 {
@@ -884,7 +953,7 @@ static void parse_order(int length)
                 if(3 == pos_in_buf)
                 {
                     debug_line(STR("Invalid command ! try h for help"));
-                    return;
+                    return true;
                 }
                 switch(cmd_buf[3])
                 {
@@ -913,7 +982,7 @@ static void parse_order(int length)
             if(2 == pos_in_buf)
             {
                 debug_line(STR("Invalid command ! try h for help"));
-                return;
+                return true;
             }
             switch(cmd_buf[2])
             {
@@ -965,7 +1034,7 @@ static void parse_order(int length)
             if(1 == pos_in_buf)
             {
                 debug_line(STR("Invalid command ! try h for help"));
-                return;
+                return true;
             }
             switch (cmd_buf[1])
             {
@@ -1024,7 +1093,7 @@ static void parse_order(int length)
         if(1 == pos_in_buf)
         {
             debug_line(STR("Invalid command ! try h for help"));
-            return;
+            return true;
         }
         switch (cmd_buf[1])
         {
@@ -1061,6 +1130,7 @@ static void parse_order(int length)
         debug_line(STR("Invalid command ! try h for help"));
         break;
     }
+    return true;
 }
 
 void  __attribute__((weak)) curTest(int value)

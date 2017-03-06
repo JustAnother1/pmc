@@ -59,7 +59,6 @@ uint_fast8_t hal_buzzer_get_amount(void)
 
 void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency)
 {
-    debug_line(STR("hal_buzzer_set_frequency %d Hz"), frequency);
     if(device < BUZZER_NUM_PINS)
     {
         if(0 == frequency)
