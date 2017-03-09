@@ -16,33 +16,50 @@
 #include "hal_adc.h"
 #include "board_cfg.h"
 #include "log.h"
+#include "hal_debug.h"
 
-typedef uint_fast16_t (*ADCTicksToDegCFkt)(uint16_t DR);
+#define VCC_OF_ADC            5.0
+#define SERIES_RESISTOR      4700
+#define THERMISTOR_R_AT_25 106300
+#define HIGHES_ADC_VALUE     1023
 
-static uint_fast16_t NoConverter(uint16_t DR);
-static uint_fast16_t SteinhartHartBOnlyConverter(uint16_t DR);
+typedef uint_fast16_t (*ADCTicksToDegCFkt)(uint16_t DR, uint_fast8_t number);
+
+static uint_fast16_t NoConverter(uint16_t DR, uint_fast8_t number);
+static uint_fast16_t SteinhartHartBOnlyConverter(uint16_t DR, uint_fast8_t number);
 
 
 static ADCTicksToDegCFkt converters[ADC_NUM_PINS];
-
+static float converter_parameter[ADC_NUM_PINS]; // Steinhard Hart B
+static uint_fast32_t converter_reference[ADC_NUM_PINS]; // Thermistor Resistance at 25°C
 
 
 void hal_adc_init(void)
 {
 #if ADC_NUM_PINS > 0
     converters[0] = SteinhartHartBOnlyConverter;
+    converter_parameter[0] = 3800.5; // TODO: Configuration
+    converter_reference[0] = 106300; // TODO: Configuration
 #endif
 #if ADC_NUM_PINS > 1
-    converters[1] = SteinhartHartBOnlyConverter;
+    converters[1] = NoConverter;
+    converter_parameter[1] = 0.0;
+    converter_reference[1] = 0;
 #endif
 #if ADC_NUM_PINS > 2
-    converters[2] = SteinhartHartBOnlyConverter;
+    converters[2] = NoConverter;
+    converter_parameter[2] = 0.0;
+    converter_reference[2] = 0;
 #endif
 #if ADC_NUM_PINS > 3
-    converters[3] = SteinhartHartBOnlyConverter;
+    converters[3] = NoConverter;
+    converter_parameter[3] = 0.0;
+    converter_reference[3] = 0;
 #endif
 #if ADC_NUM_PINS > 4
     converters[4] = SteinhartHartBOnlyConverter;
+    converter_parameter[4] = 4203.1;
+    converter_reference[4] = 110700;
 #endif
 
     ADCSRA = ADC_ADCSRA;
@@ -56,6 +73,17 @@ uint_fast8_t hal_adc_get_amount(void)
 }
 
 uint_fast16_t hal_adc_get_value(uint_fast8_t device)
+{
+    if(device < ADC_NUM_PINS)
+    {
+        return converters[device](hal_adc_get_raw_value(device), device);
+    }
+    else
+    {
+        return 0;
+    }
+}
+uint_fast16_t hal_adc_get_raw_value(uint_fast8_t device)
 {
     if(device < ADC_NUM_PINS)
     {
@@ -138,28 +166,24 @@ void hal_print_configuration_adc(void)
 
 }
 
-#define VCC_OF_ADC            5.0
-#define SERIES_RESISTOR      4700
-#define THERMISTOR_R_AT_25 100000
-#define STEINHART_HART_B     3974
-
-static uint_fast16_t SteinhartHartBOnlyConverter(uint16_t DR)
+static uint_fast16_t SteinhartHartBOnlyConverter(uint16_t DR, uint_fast8_t number)
 {
     uint_fast16_t ires;
-    // debug_line(STR("ADC value: %d"), DR);
-    float res = VCC_OF_ADC/4095 * DR;
-    // debug_line(STR("Vadc: %f"), res);
+    debug_line(STR("ADC value: %d"), DR);
+    float res = VCC_OF_ADC/HIGHES_ADC_VALUE * DR;
+    debug_line(STR("Vadc: %f"), res);
     res = SERIES_RESISTOR/((VCC_OF_ADC/res) -1);
-    // debug_line(STR("Rthermistor: %f"), res);
+    debug_line(STR("Rthermistor: %f"), res);
     res = logf(res/THERMISTOR_R_AT_25);
-    res = res / STEINHART_HART_B + (1.0/(25+273.15));
+    // STEINHART_HART_B is the parameter
+    res = res / converter_parameter[number] + (1.0/(25+273.15));
     res = 1/res - 273.15;
-    // debug_line(STR("Temperature: %f"), res);
+    debug_line(STR("Temperature: %f"), res);
     ires = res * 10;
     return (uint_fast16_t)0xffff & ires;
 }
 
-static uint_fast16_t NoConverter(uint16_t DR)
+static uint_fast16_t NoConverter(uint16_t DR, uint_fast8_t number)
 {
     return (uint_fast16_t)0xffff & DR;
 }

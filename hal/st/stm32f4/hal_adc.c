@@ -498,12 +498,13 @@ static uint_fast16_t InternalTempSensorConverter(uint32_t DR)
 #define SERIES_RESISTOR      4700
 #define THERMISTOR_R_AT_25 100000
 #define STEINHART_HART_B     3974
+#define HIGHES_ADC_VALUE     4095
 
 static uint_fast16_t SteinhartHartBOnlyConverter(uint32_t DR)
 {
     int ires;
     // debug_line(STR("ADC value: %d"), DR);
-    float res = VCC_OF_ADC/4095 * DR;
+    float res = VCC_OF_ADC/HIGHES_ADC_VALUE * DR;
     // debug_line(STR("Vadc: %f"), res);
     res = SERIES_RESISTOR/((VCC_OF_ADC/res) -1);
     // debug_line(STR("Rthermistor: %f"), res);

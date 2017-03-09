@@ -57,11 +57,13 @@ void dev_temperature_sensor_print_status(uint_fast8_t number)
 {
     uint_fast8_t name_length;
     uint_fast16_t temperature;
+    uint_fast16_t adc_raw;
     uint8_t nameBuf[20];
     name_length = hal_adc_get_name(number, &(nameBuf[0]), 20);
     nameBuf[name_length] = 0;
+    adc_raw = hal_adc_get_raw_value(number);
     temperature = hal_adc_get_value(number);
-    debug_line(STR("%d: %s = %d.%01d°C"), number, &(nameBuf[0]), temperature/10, temperature%10);
+    debug_line(STR("%d: %s = %4d.%01d°C (raw =0x%04x)"), number, &(nameBuf[0]), temperature/10, temperature%10, adc_raw);
 }
 
 #endif // debug

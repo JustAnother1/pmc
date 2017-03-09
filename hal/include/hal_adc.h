@@ -25,6 +25,7 @@ uint_fast8_t hal_adc_get_amount(void);
  * @return temperature in 0.1° steps (250 = 25°; 123 = 12.3°)
  */
 uint_fast16_t hal_adc_get_value(uint_fast8_t device);
+uint_fast16_t hal_adc_get_raw_value(uint_fast8_t device);
 uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length);
 #ifdef DEBUG_ACTIVE
 void hal_print_configuration_adc(void);
