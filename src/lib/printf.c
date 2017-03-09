@@ -219,21 +219,9 @@ void tfp_format(void* putp, putcf putf, const char* cfmt, va_list va)
             case 0:
                 return;
 
-            case 'u' :
-            {
-#ifdef PRINTF_LONG_SUPPORT
-                if(lng)
-                {
-                    uli2a(va_arg(va, unsigned long int),10,0,bf);
-                }
-                else
-#endif
-                {
-                    ui2a(va_arg(va, unsigned int),10,0,bf);
-                }
-                putchw(putp, putf, w, lz, bf);
+            case 'c' :
+                putf(putp, (char)(va_arg(va, int)));
                 break;
-            }
 
             case 'd' :
             {
@@ -246,6 +234,26 @@ void tfp_format(void* putp, putcf putf, const char* cfmt, va_list va)
 #endif
                 {
                     i2a(va_arg(va, int),bf);
+                }
+                putchw(putp, putf, w, lz, bf);
+                break;
+            }
+
+            case 's' :
+                putchw(putp, putf, w, 0, va_arg(va, char*));
+                break;
+
+            case 'u' :
+            {
+#ifdef PRINTF_LONG_SUPPORT
+                if(lng)
+                {
+                    uli2a(va_arg(va, unsigned long int),10,0,bf);
+                }
+                else
+#endif
+                {
+                    ui2a(va_arg(va, unsigned int),10,0,bf);
                 }
                 putchw(putp, putf, w, lz, bf);
                 break;
@@ -264,14 +272,6 @@ void tfp_format(void* putp, putcf putf, const char* cfmt, va_list va)
                     ui2a(va_arg(va, unsigned int), 16, (ch == 'X'), bf);
                 }
                 putchw(putp, putf, w, lz, bf);
-                break;
-
-            case 'c' :
-                putf(putp, (char)(va_arg(va, int)));
-                break;
-
-            case 's' :
-                putchw(putp, putf, w, 0, va_arg(va, char*));
                 break;
 
             case '%' :
