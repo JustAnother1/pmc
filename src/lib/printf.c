@@ -46,6 +46,67 @@ static char buf[MAX_STRING_LENGTH];
 
 #endif
 
+#ifdef PRINTF_FLOAT_SUPPORT
+#define NUM_FAC_POST_DECIMAL_POSITIONS 10000
+static void f2a(double num, char * bf)
+{
+    if(num < 0)
+    {
+        num = -num;
+        *bf++ = '-';
+    }
+    if(num > 4294967295)
+    {
+        // to big for Uint32 -> TODO 1,234*10^56
+        // for now: Overflow -> OVF
+        *bf++ = 'O';
+        *bf++ = 'V';
+        *bf++ = 'F';
+    }
+    else
+    {
+        uint32_t value = (uint32_t)num;
+        uint_fast16_t fraction = (uint_fast16_t)((num - (double)value) * NUM_FAC_POST_DECIMAL_POSITIONS);
+        uint32_t d = 1;
+        int n = 0;
+
+        // find amount of characters needed to present the number
+        while (value/d >= 10)
+        {
+            d *= 10;
+        }
+        // add digits before decimal point
+        while (d!=0)
+        {
+            // dgt = digit ( 0..9)
+            int dgt = value / d;
+            value %= d;
+            d /= 10;
+            // N is zero in first iteration to avoid accidental leading 0
+            if(n || (dgt > 0) || (d == 0))
+            {
+                *bf++ = dgt + '0';
+                ++n;
+            }
+        }
+        // decimal point and fraction
+        if(0 < fraction)
+        {
+            *bf++ = '.';
+            d = NUM_FAC_POST_DECIMAL_POSITIONS;
+            while(fraction > 0)
+            {
+                int dgt = value / d;
+                fraction %= d;
+                d /= 10;
+                *bf++ = dgt + '0';
+            }
+        }
+        // end of string marking
+        *bf = 0;
+    }
+}
+#endif
 
 #ifdef PRINTF_LONG_SUPPORT
 
@@ -83,10 +144,14 @@ static void li2a(long num, char * bf)
 
 #endif
 
-static void ui2a(unsigned int num, unsigned int base, int uc, char * bf)
+static void ui2a(unsigned int num, // number to convert
+                 unsigned int base,  // base of number (decimal=10; hexadecimal=16,..)
+                 int uc, // upper case -> true(1) -> A..F in hex; false(0) -> a..f in hex
+                 char * bf)  // output for string
 {
     int n = 0;
     unsigned int d = 1;
+    // find number of characters needed to present the number
     while (num/d >= base)
     {
         d *= base;
@@ -102,6 +167,7 @@ static void ui2a(unsigned int num, unsigned int base, int uc, char * bf)
             ++n;
         }
     }
+    // end of string marking
     *bf = 0;
 }
 
@@ -151,19 +217,26 @@ static char a2i(char ch, char** src, int base, int* nump)
     return ch;
 }
 
-static void putchw(void* putp, putcf putf, int n, char z, char* bf)
+static void putchw(void* putp,
+                   putcf putf,
+                   int n,  // number of characters to expand string to
+                   char z, // leading zero 1-> leading Zeros, 0 -> no leading zeros
+                   char* bf) // buffer containing the number as string
 {
     char fc = z ? '0' : ' ';
     char ch;
     char* p = bf;
+    // move to end of number
     while((*p++) && (n > 0))
     {
         n--;
     }
+    // expand string to requested length
     while(n-- > 0)
     {
         putf(putp, fc);
     }
+    // print everything in the buffer
     while((ch = *bf++))  // :-(
     {
         putf(putp, ch);
@@ -192,10 +265,18 @@ void tfp_format(void* putp, putcf putf, const char* cfmt, va_list va)
         }
         else
         {
+            // lz = leading Zeros -> 0 = no leading zeros; 1= leading Zeros
             char lz = 0;
 #ifdef PRINTF_LONG_SUPPORT
             char lng = 0;
 #endif
+            // w = width -> number of characters used to print the number
+            /*
+             * %03d with number 23 -> lz=1, w=3 ->   "023"
+             * %3d  with number 23 -> lz=0, w=3 ->   " 23"
+             * %5d  with number 23 -> lz=0, w=5 -> "   23"
+             * %05d with number 23 -> lz=1, w=5 -> "00023"
+             */
             int w = 0;
             ch = *(fmt++);
             if(ch == '0')
@@ -238,6 +319,13 @@ void tfp_format(void* putp, putcf putf, const char* cfmt, va_list va)
                 putchw(putp, putf, w, lz, bf);
                 break;
             }
+
+#ifdef PRINTF_FLOAT_SUPPORT
+            case 'f':
+                f2a(va_arg(va, double),bf);
+                putchw(putp, putf, w, lz, bf);
+                break;
+#endif
 
             case 's' :
                 putchw(putp, putf, w, 0, va_arg(va, char*));

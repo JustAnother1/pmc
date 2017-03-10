@@ -11,6 +11,11 @@ ifndef ACTIVATE_DEBUG
 	ACTIVATE_DEBUG = yes
 endif
 
+# printf
+# DDEFS += -DPRINTF_LONG_SUPPORT
+DDEFS += -DPRINTF_FLOAT_SUPPORT
+
+
 
 # List all C defines here
 DDEFS += -DPROTOCOL_VERSION_MAJOR=0
