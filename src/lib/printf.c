@@ -37,6 +37,22 @@
 #endif
 
 typedef void (*putcf) (void*, char);
+
+#ifdef PRINTF_FLOAT_SUPPORT
+static void f2a(double num, char * bf);
+#endif
+#ifdef PRINTF_LONG_SUPPORT
+static void uli2a(unsigned long int num, unsigned int base, int uc, char * bf);
+static void li2a(long num, char * bf);
+#endif
+static void ui2a(unsigned int num, unsigned int base, int uc, char * bf);
+static void i2a(int num, char * bf);
+static int a2d(char ch);
+static char a2i(char ch, char** src, int base, int* nump);
+static void putchw(void* putp, putcf putf, int n, char z, char* bf);
+static void putcp(void* p, char c);
+
+
 static putcf stdout_putf;
 static void* stdout_putp;
 
