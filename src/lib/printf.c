@@ -109,10 +109,10 @@ static void f2a(double num, char * bf)
         if(0 < fraction)
         {
             *bf++ = '.';
-            d = NUM_FAC_POST_DECIMAL_POSITIONS;
+            d = NUM_FAC_POST_DECIMAL_POSITIONS/10;
             while(fraction > 0)
             {
-                int dgt = value / d;
+                int dgt = fraction / d;
                 fraction %= d;
                 d /= 10;
                 *bf++ = dgt + '0';
