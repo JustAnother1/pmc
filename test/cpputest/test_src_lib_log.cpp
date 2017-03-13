@@ -30,9 +30,11 @@ TEST_GROUP(SrcLibLogTestGroup)
 
 TEST(SrcLibLogTestGroup, log)
 {
+    // (Expected, actual, tollerance)
     DOUBLES_EQUAL(0, logf(1), 0.001)
     DOUBLES_EQUAL(3, logf(20.0855), 0.001)
     DOUBLES_EQUAL(10, logf(22026.46579), 0.001)
+    DOUBLES_EQUAL(-3.2995437279, logf(0.0369), 0.001)
 }
 
 

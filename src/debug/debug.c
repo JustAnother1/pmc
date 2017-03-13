@@ -38,8 +38,10 @@
 #include "protocol.h"
 #include "trinamic.h"
 
-#define SLOW_ORDER_HELP              1
-#define SLOW_ORDER_DEBUG_INFORMATION 2
+#define SLOW_ORDER_HELP                1
+#define SLOW_ORDER_DEBUG_INFORMATION   2
+#define SLOW_ORDER_HEATER_STATUS       3
+#define SLOW_ORDER_TIMER_CONFIGURATION 4
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
@@ -51,8 +53,9 @@ static uint_fast32_t tick_min;
 static bool order_ongoing;
 static int slow_order;
 static int slow_order_state;
-static uint8_t num_temps;
-static uint8_t cur_temp;
+static uint8_t slow_order_num_values;
+static uint8_t slow_order_cur_value;
+static uint8_t slow_order_cur_cnt;
 
 
 // order parsing
@@ -68,6 +71,10 @@ static void start_order_help(void);
 static bool continue_order_help(void);
 static void start_order_debug_information(void);
 static bool continue_order_debug_information(void);
+static void start_order_heater_status(void);
+static bool continue_order_heater_status(void);
+static void start_order_timer_config(int timer);
+static bool continue_order_timer_config(void);
 static void order_curTime(void);
 static uint32_t getStartOffsetOfNextWord(uint8_t* buf, uint32_t length);
 static uint32_t getNumBytesNextWord(uint8_t* buf, uint32_t length);
@@ -110,6 +117,11 @@ static void handle_ongoing_commands(void)
     {
         return;
     }
+    if(false == hal_debug_is_send_buffer_empty())
+    {
+        // we send the next line only if the buffer is empty again.
+        return;
+    }
     // else:
     switch(slow_order)
     {
@@ -124,6 +136,24 @@ static void handle_ongoing_commands(void)
 
     case SLOW_ORDER_DEBUG_INFORMATION:
         if(true == continue_order_debug_information())
+        {
+            // finished
+            order_ongoing = false;
+        }
+        // else try again next tick.
+        break;
+
+    case SLOW_ORDER_HEATER_STATUS:
+        if(true == continue_order_heater_status())
+        {
+            // finished
+            order_ongoing = false;
+        }
+        // else try again next tick.
+        break;
+
+    case SLOW_ORDER_TIMER_CONFIGURATION:
+        if(true == continue_order_timer_config())
         {
             // finished
             order_ongoing = false;
@@ -356,6 +386,108 @@ static uint_fast8_t hexstr2byte(uint8_t high, uint8_t low)
     return res;
 }
 
+static void start_order_timer_config(int timer)
+{
+    debug_line(STR("timer configuration:"));
+    slow_order_cur_value = timer;
+    slow_order_cur_cnt = 0;
+    order_ongoing = true;
+    slow_order = SLOW_ORDER_TIMER_CONFIGURATION;
+    slow_order_state = 1;
+}
+static bool continue_order_timer_config(void)
+{
+    if(false == hal_time_print_Configuration(slow_order_cur_value, slow_order_cur_cnt))
+    {
+        return true;
+    }
+    else
+    {
+        slow_order_cur_cnt++;
+        return false;
+    }
+}
+
+static void start_order_heater_status(void)
+{
+    debug_line(STR("heater status:"));
+    slow_order_num_values = dev_heater_get_count();
+    slow_order_cur_value = 0;
+    order_ongoing = true;
+    slow_order = SLOW_ORDER_HEATER_STATUS;
+    slow_order_state = 1;
+}
+
+static bool continue_order_heater_status(void)
+{
+    switch(slow_order_state)
+    {
+    case 1:
+        debug_line(STR("heater %d:"), slow_order_cur_value);
+        slow_order_state++;
+        break;
+
+    case 2:
+    {
+        uint8_t nameBuf[20];
+        uint_fast8_t name_length;
+        name_length = dev_heater_get_name(slow_order_cur_value, &(nameBuf[0]), 20);
+        nameBuf[name_length] = 0;
+        debug_line(STR("name               : %s"), &(nameBuf[0]));
+        slow_order_state++;
+    }
+        break;
+
+    case 3:
+        switch(dev_heater_get_status(slow_order_cur_value))
+        {
+        case DEVICE_STATUS_ACTIVE:
+            debug_line(STR("status             : Active"));
+            break;
+
+        case DEVICE_STATUS_FAULT:
+            debug_line(STR("status             : Fault"));
+            break;
+
+        default:
+            debug_line(STR("status             : %d"), dev_heater_get_status(slow_order_cur_value));
+            break;
+        }
+        slow_order_state++;
+        break;
+
+    case 4:
+    {
+        uint_fast16_t temperature;
+        temperature = dev_heater_get_temperature(slow_order_cur_value);
+        debug_line(STR("cur. Temperature   : %d.%01d°C"), temperature/10, temperature%10);
+        slow_order_state++;
+    }
+        break;
+
+    case 5:
+        dev_heater_get_debug_information(slow_order_cur_value);
+        slow_order_state++;
+        break;
+
+    case 6:
+        slow_order_cur_value++;
+        if(slow_order_cur_value == slow_order_num_values)
+        {
+            slow_order_state++;
+        }
+        else
+        {
+            slow_order_state = 1;
+        }
+        break;
+
+    // if we reach the default case then we are done.
+    default: return true;
+    }
+    return false;
+}
+
 static void start_order_debug_information(void)
 {
     debug_line(STR("current status:"));
@@ -366,24 +498,19 @@ static void start_order_debug_information(void)
 
 static bool continue_order_debug_information(void)
 {
-    if(false == hal_debug_is_send_buffer_empty())
-    {
-        // we send the next line only if the buffer is empty again.
-        return false;
-    }
     switch(slow_order_state)
     {
     case 1: debug_line(STR("ticks per ms: max=%d, min=%d"), tick_max, tick_min); slow_order_state++; break;
     case 2: debug_line(STR("number of detected steppers: %d"), dev_stepper_get_count()); slow_order_state++; break;
-    case 3: num_temps = hal_adc_get_amount();
-            cur_temp = 0;
+    case 3: slow_order_num_values = hal_adc_get_amount();
+            slow_order_cur_value = 0;
             slow_order_state++;
             break;
 
-    case 4: if(cur_temp < num_temps)
+    case 4: if(slow_order_cur_value < slow_order_num_values)
         {
-            dev_temperature_sensor_print_status(cur_temp);
-            cur_temp++;
+            dev_temperature_sensor_print_status(slow_order_cur_value);
+            slow_order_cur_value++;
         }
         else
         {
@@ -408,11 +535,6 @@ static void start_order_help(void)
 
 static bool continue_order_help(void)
 {
-    if(false == hal_debug_is_send_buffer_empty())
-    {
-        // we send the next line only if the buffer is empty again.
-        return false;
-    }
     switch(slow_order_state)
     {
     // a
@@ -733,37 +855,7 @@ static bool parse_order(int length)
         // show status of heaters
         case 'S':
         case 's':
-        {
-            uint_fast8_t i;
-            uint_fast8_t name_length;
-            uint8_t nameBuf[20];
-            uint_fast16_t temperature;
-            for(i = 0; i < dev_heater_get_count(); i++)
-            {
-                debug_line(STR("heater %d:"), i);
-                name_length = dev_heater_get_name(i, &(nameBuf[0]), 20);
-                nameBuf[name_length] = 0;
-                debug_line(STR("name               : %s"), &(nameBuf[0]));
-                switch(dev_heater_get_status(i))
-                {
-                case DEVICE_STATUS_ACTIVE:
-                    debug_line(STR("status             : Active"));
-                    break;
-
-                case DEVICE_STATUS_FAULT:
-                    debug_line(STR("status             : Fault"));
-                    break;
-
-                default:
-                    debug_line(STR("status             : %d"), dev_heater_get_status(i));
-
-                    break;
-                }
-                temperature = dev_heater_get_temperature(i);
-                debug_line(STR("cur. Temperature   : %d.%01d°C"), temperature/10, temperature%10);
-                dev_heater_get_debug_information(i);
-            }
-        }
+            start_order_heater_status();
             break;
 
 //order = ht
@@ -1003,7 +1095,8 @@ static bool parse_order(int length)
 // order = ptim
                 case 'M':
                 case 'm':
-                    hal_time_print_Configuration(atoi((char *)&(cmd_buf[4])));
+                    start_order_timer_config(atoi((char *)&(cmd_buf[4])));
+                    return false;
                     break;
 
                 default:

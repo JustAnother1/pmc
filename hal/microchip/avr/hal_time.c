@@ -18,6 +18,7 @@
 #define __DELAY_BACKWARD_COMPATIBLE__
 #include <util/delay.h>
 #include "hal_time.h"
+#include "hal_pwm.h"
 
 
 void hal_time_init(void)
@@ -45,8 +46,10 @@ bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
     return false;
 }
 
-void hal_time_print_Configuration(int timerNumber)
+#ifdef DEBUG_ACTIVE
+bool hal_time_print_Configuration(int timerNumber, int lineNumber)
 {
-
+    return hal_pwm_print_configuration(timerNumber, lineNumber);
 }
+#endif
 

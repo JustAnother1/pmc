@@ -240,7 +240,7 @@ uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t tempe
 
 void dev_heater_get_debug_information(uint_fast8_t number)
 {
-    debug_line(STR("pwm                : %d"), cur_pwm[number]);
+    debug_line(STR("pwm                : %u"), cur_pwm[number]);
     if(PidRegulator == regulators[number])
     {
         debug_line(STR("Regulator          : PID"));
@@ -249,8 +249,7 @@ void dev_heater_get_debug_information(uint_fast8_t number)
     {
         debug_line(STR("Regulator          : Bang Bang"));
     }
-    debug_line(STR("Temperature Sensor : %d"), temperature_sensors[number]);
-    debug_line(STR("target Temperature : %d.%01d°C"), target_temperature[number]/10,  target_temperature[number]%10);
+    debug_line(STR("Temperature Sensor : %u"), temperature_sensors[number]);
 }
 
 #endif

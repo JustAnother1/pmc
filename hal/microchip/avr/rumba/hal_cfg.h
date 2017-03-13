@@ -30,7 +30,7 @@
 #define MAX_UART    2
 
 #define UART_RECEIVE_BUFFER_SIZE  150
-#define UART_SEND_BUFFER_SIZE     100
+#define UART_SEND_BUFFER_SIZE     150
 
 // Heaters
 #define NUMBER_OF_HEATERS 4

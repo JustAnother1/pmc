@@ -17,6 +17,7 @@
 #include "board_cfg.h"
 #include "log.h"
 #include "hal_debug.h"
+#include <math.h>
 
 #define VCC_OF_ADC            5.0
 #define SERIES_RESISTOR      4700
@@ -169,16 +170,21 @@ void hal_print_configuration_adc(void)
 static uint_fast16_t SteinhartHartBOnlyConverter(uint16_t DR, uint_fast8_t number)
 {
     uint_fast16_t ires;
-    debug_line(STR("ADC value: %d"), DR);
+    // debug_line(STR("ADC value: %d"), DR);
     float res = VCC_OF_ADC/HIGHES_ADC_VALUE * DR;
-    debug_line(STR("Vadc: %f"), res);
+    // debug_line(STR("Vadc: %f"), res);
     res = SERIES_RESISTOR/((VCC_OF_ADC/res) -1);
-    debug_line(STR("Rthermistor: %f"), res);
-    res = logf(res/THERMISTOR_R_AT_25);
+    //debug_line(STR("Rthermistor: %f"), res);
+    res = res/THERMISTOR_R_AT_25;
+    // debug_line(STR("before Log: %f"), res);
+    // The logf() doesn't work. But the avrlib's log works,..
+    res = log(res);
+    // debug_line(STR("after Log: %f"), res);
     // STEINHART_HART_B is the parameter
     res = res / converter_parameter[number] + (1.0/(25+273.15));
+    // debug_line(STR("after B: %f"), res);
     res = 1/res - 273.15;
-    debug_line(STR("Temperature: %f"), res);
+    // debug_line(STR("Temperature: %f"), res);
     ires = res * 10;
     return (uint_fast16_t)0xffff & ires;
 }

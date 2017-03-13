@@ -87,14 +87,22 @@
 #define PWM_0_TCNT                    TCNT2
 #define PWM_0_TIMSK                   TIMSK2
 #define PWM_0_TCCRA                   TCCR2A
+#define PWM_0_TCCRA_1                 0x23
+#define PWM_0_TCCRA_0                 0x10
 #define PWM_0_TCCRB                   TCCR2B
+#define PWM_0_TCCRB_1                 0x01
+#define PWM_0_TCCRB_0                 0xce
 
 #define PWM_1_NAME                    PSTR("Heater 0")
 #define PWM_1_OCR                     OCR3B
 #define PWM_1_TCNT                    TCNT3
 #define PWM_1_TIMSK                   TIMSK3
 #define PWM_1_TCCRA                   TCCR3A
+#define PWM_1_TCCRA_1                 0x21
+#define PWM_1_TCCRA_0                 0x12
 #define PWM_1_TCCRB                   TCCR3B
+#define PWM_1_TCCRB_1                 0x09
+#define PWM_1_TCCRB_0                 0x16
 
 #define PWM_2_NAME                    PSTR("Heater 1")
 #define PWM_2_OCR                     OCR3C

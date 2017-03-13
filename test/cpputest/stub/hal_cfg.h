@@ -17,6 +17,9 @@
 #define HAL_INCLUDE_HAL_CFG_H_
 extern "C"
 {
+
+#define STR(x) (x)
+
 // SPI
 #define STEPPER_SPI   0
 #define EXPANSION_SPI 1
