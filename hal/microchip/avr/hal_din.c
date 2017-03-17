@@ -12,12 +12,36 @@
  * with this program; if not, see <http://www.gnu.org/licenses/>
  *
  */
+
+#include <stdbool.h>
+#include <stdio.h>
 #include "hal_din.h"
 #include "hal_debug.h"
 #include "board_cfg.h"
 
+static bool initialized = false;
+static din_func funcs[D_IN_NUM_PINS];
+static uint_fast8_t steppers[D_IN_NUM_PINS];
+static uint_fast8_t last_state[D_IN_NUM_PINS];
+
+
 void hal_din_init(void)
 {
+    int i;
+    if(true == initialized)
+    {
+        // initialize only once !
+        return;
+    }
+    initialized = true;
+
+    for(i = 0; i < D_IN_NUM_PINS; i++)
+    {
+        funcs[i] = NULL;
+        steppers[i] = 0xff;
+        last_state[i] = 0;
+    }
+
     // Enable Pull Up functionality
     MCUCR &= ~0x10; // PUD = 0
     // configure pins as Digital Input - pull up enabled
@@ -130,6 +154,38 @@ void hal_din_subscribe_to_events(uint_fast8_t switch_number,
                                  uint_fast8_t stepper_number,
                                  din_func handle_func)
 {
-    // TODO
+    funcs[switch_number] = handle_func;
+    steppers[switch_number] = stepper_number;
 }
+
+#ifdef POLL_END_STOPS
+void hal_din_poll(void)
+{
+    int i;
+    int cur_state;
+    for(i = 0; i < D_IN_NUM_PINS; i++)
+    {
+        if(NULL != funcs[i])
+        {
+            cur_state = hal_din_get_switch_state(i);
+            if(last_state[i] != cur_state)
+            {
+                // this pin had a change
+                last_state[i] = cur_state;
+                debug_line(STR("Notify step"));
+                if(1 == cur_state)
+                {
+                    funcs[i](true,steppers[i], i);
+                }
+                else
+                {
+                    funcs[i](false,steppers[i], i);
+                }
+            }
+            // else no change on this pin
+        }
+        // else this pin is not subscribed
+    }
+}
+#endif
 

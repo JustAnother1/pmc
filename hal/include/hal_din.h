@@ -31,4 +31,8 @@ void hal_din_subscribe_to_events(uint_fast8_t switch_number, uint_fast8_t steppe
 void hal_din_print_PinConfiguration(uint_fast8_t port, int idx);
 #endif
 
+#ifdef POLL_END_STOPS
+void hal_din_poll(void);
+#endif
+
 #endif /* HAL_INCLUDE_HAL_DIN_H_ */

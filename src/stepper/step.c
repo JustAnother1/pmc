@@ -16,6 +16,7 @@
 #include "error.h"
 #include "hal_cfg.h"
 #include "hal_debug.h"
+#include "hal_din.h"
 #include "hal_led.h"
 #include "hal_spi.h"
 #include "hal_stepper_port.h"
@@ -178,6 +179,9 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
     }
     else
     {
+#ifdef POLL_END_STOPS
+        hal_din_poll();
+#endif
 #ifdef USE_STEP_DIR
         hal_stepper_set_Output(next_step[read_pos]);
 #else
