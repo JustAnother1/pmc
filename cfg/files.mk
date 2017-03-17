@@ -84,4 +84,6 @@ endif
 ifeq ($(USE_TRINAMIC), yes)
 	SRC += $(SRC_FOLDER)stepper/trinamic.c
 	DDEFS += -DHAS_TRINAMIC
+else
+	SRC += $(SRC_FOLDER)stepper/pololu.c
 endif

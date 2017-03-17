@@ -71,21 +71,21 @@
 #define PWM_DD_2                      DDRG
 #define PWM_PORT_2_MASK               0x20; // G5
 
-#define PWM_0_NAME                    PSTR("Heated Bed")
+#define PWM_0_NAME                    "Heated Bed"
 #define PWM_0_OCR                     OCR0B
 #define PWM_0_TCNT                    TCNT0
 #define PWM_0_TIMSK                   TIMSK0
 #define PWM_0_TCCRA                   TCCR0A
 #define PWM_0_TCCRB                   TCCR0B
 
-#define PWM_1_NAME                    PSTR("Heater 1")
+#define PWM_1_NAME                    "Heater 1"
 #define PWM_1_OCR                     OCR3C
 #define PWM_1_TCNT                    TCNT3
 #define PWM_1_TIMSK                   TIMSK3
 #define PWM_1_TCCRA                   TCCR3A
 #define PWM_1_TCCRB                   TCCR3B
 
-#define PWM_2_NAME                    PSTR("Heater 2")
+#define PWM_2_NAME                    "Heater 2"
 #define PWM_2_OCR                     OCR3B
 #define PWM_2_TCNT                    TCNT3
 #define PWM_2_TIMSK                   TIMSK3
@@ -97,15 +97,15 @@
 #define ADC_ADCSRA                    0x87 // Enable ADC, prescaler /128
 #define ADC_DIDR0                     0x00
 #define ADC_DIDR1                     0x07
-#define ADC_0_NAME                    PSTR("Temp Sens 1")
+#define ADC_0_NAME                    "Temp Sens 1"
 #define ADC_0_CONVERTER               SteinhartHartBOnlyConverter
 #define ADC_ADMUX_0                   0x40
 #define ADC_ADCSRB_0                  0x08
-#define ADC_1_NAME                    PSTR("Temp Sens 2")
+#define ADC_1_NAME                    "Temp Sens 2"
 #define ADC_1_CONVERTER               SteinhartHartBOnlyConverter
 #define ADC_ADMUX_1                   0x41
 #define ADC_ADCSRB_1                  0x08
-#define ADC_2_NAME                    PSTR("Temp Sens 3")
+#define ADC_2_NAME                    "Temp Sens 3"
 #define ADC_2_CONVERTER               SteinhartHartBOnlyConverter
 #define ADC_ADMUX_2                   0x42
 #define ADC_ADCSRB_2                  0x08

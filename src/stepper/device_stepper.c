@@ -13,18 +13,26 @@
  *
  */
 #include <stdbool.h>
+#include "board_cfg.h"
 #include "device_buzzer.h"
 #include "protocol.h"
 #include "com.h"
 #include "step.h"
 #include "device_input.h"
-#include "trinamic.h"
 #include "hal_cfg.h"
 #include "hal_spi.h"
 #include "device_stepper.h"
 #include "copy_string.h"
+#ifdef HAS_TRINAMIC
+#include "trinamic.h"
+#else
+#include "pololu.h"
+#endif
 
+#ifdef NAMED_STEPPERS
+#else
 static char Stepper_name[]= "Stepper 0";
+#endif
 
 static uint_fast8_t state[MAX_NUMBER];
 static uint_fast32_t max_steps_per_second[MAX_NUMBER];
@@ -51,6 +59,8 @@ void dev_stepper_init(void)
     }
 #ifdef HAS_TRINAMIC
     available_steppers = 0;
+#else
+    pololu_init();
 #endif
 }
 
@@ -87,11 +97,43 @@ uint_fast8_t dev_stepper_get_name(uint_fast8_t number, uint8_t *position, uint_f
     }
     else
     {
+#ifdef NAMED_STEPPERS
+        switch(number)
+        {
+    #if NUMBER_OF_STEPPERS > 0
+        case  0: return strlcpy_P((char *)position, STR(STEPPER_0_NAME), max_length);
+    #endif
+    #if NUMBER_OF_STEPPERS > 1
+        case  1: return strlcpy_P((char *)position, STR(STEPPER_1_NAME), max_length);
+    #endif
+    #if NUMBER_OF_STEPPERS > 2
+        case  2: return strlcpy_P((char *)position, STR(STEPPER_2_NAME), max_length);
+    #endif
+    #if NUMBER_OF_STEPPERS > 3
+        case  3: return strlcpy_P((char *)position, STR(STEPPER_3_NAME), max_length);
+    #endif
+    #if NUMBER_OF_STEPPERS > 4
+        case  4: return strlcpy_P((char *)position, STR(STEPPER_4_NAME), max_length);
+    #endif
+    #if NUMBER_OF_STEPPERS > 5
+        case  5: return strlcpy_P((char *)position, STR(STEPPER_5_NAME), max_length);
+    #endif
+    #if NUMBER_OF_STEPPERS > 6
+        case  6: return strlcpy_P((char *)position, STR(STEPPER_6_NAME), max_length);
+    #endif
+    #if NUMBER_OF_STEPPERS > 7
+        case  7: return strlcpy_P((char *)position, STR(STEPPER_7_NAME), max_length);
+    #endif
+        default:
+            return 0;
+        }
+#else
         uint_fast8_t length = copy_string((char*)&Stepper_name, position, max_length);
         position = position + length -1;
         // increment the number at the end of the String
         *position = *position + number;
         return length;
+#endif
     }
 }
 

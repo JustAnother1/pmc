@@ -25,7 +25,7 @@
 #define DEBUG_LED_PIN                 PINB
 #define DEBUG_LED_PORT                PORTB
 
-// UART
+// USART
 #define GCODE_USART_NUMBER            0
 #define GCODE_USART_UCSRA             UCSR0A
 #define GCODE_USART_UCSRB             UCSR0B
@@ -82,7 +82,7 @@
 #define PWM_DD_3                      DDRH
 #define PWM_PORT_3_MASK               0x78; // H3, H4; H5, H6
 
-#define PWM_0_NAME                    PSTR("Heated Bed")
+#define PWM_0_NAME                    "Heated Bed"
 #define PWM_0_OCR                     OCR2B
 #define PWM_0_TCNT                    TCNT2
 #define PWM_0_TIMSK                   TIMSK2
@@ -93,7 +93,7 @@
 #define PWM_0_TCCRB_1                 0x01
 #define PWM_0_TCCRB_0                 0xce
 
-#define PWM_1_NAME                    PSTR("Heater 0")
+#define PWM_1_NAME                    "Heater 0"
 #define PWM_1_OCR                     OCR3B
 #define PWM_1_TCNT                    TCNT3
 #define PWM_1_TIMSK                   TIMSK3
@@ -104,42 +104,42 @@
 #define PWM_1_TCCRB_1                 0x09
 #define PWM_1_TCCRB_0                 0x16
 
-#define PWM_2_NAME                    PSTR("Heater 1")
+#define PWM_2_NAME                    "Heater 1"
 #define PWM_2_OCR                     OCR3C
 #define PWM_2_TCNT                    TCNT3
 #define PWM_2_TIMSK                   TIMSK3
 #define PWM_2_TCCRA                   TCCR3A
 #define PWM_2_TCCRB                   TCCR3B
 
-#define PWM_3_NAME                    PSTR("Heater 2")
+#define PWM_3_NAME                    "Heater 2"
 #define PWM_3_OCR                     OCR4A
 #define PWM_3_TCNT                    TCNT4
 #define PWM_3_TIMSK                   TIMSK4
 #define PWM_3_TCCRA                   TCCR4A
 #define PWM_3_TCCRB                   TCCR4B
 
-#define PWM_4_NAME                    PSTR("Fan 0")
+#define PWM_4_NAME                    "Fan 0"
 #define PWM_4_OCR                     OCR4C
 #define PWM_4_TCNT                    TCNT4
 #define PWM_4_TIMSK                   TIMSK4
 #define PWM_4_TCCRA                   TCCR4A
 #define PWM_4_TCCRB                   TCCR4B
 
-#define PWM_5_NAME                    PSTR("Fan 1")
+#define PWM_5_NAME                    "Fan 1"
 #define PWM_5_OCR                     OCR4B
 #define PWM_5_TCNT                    TCNT4
 #define PWM_5_TIMSK                   TIMSK4
 #define PWM_5_TCCRA                   TCCR4A
 #define PWM_5_TCCRB                   TCCR4B
 
-#define PWM_6_NAME                    PSTR("Expansion 1")
+#define PWM_6_NAME                    "Expansion 1"
 #define PWM_6_OCR                     OCR0B
 #define PWM_6_TCNT                    TCNT0
 #define PWM_6_TIMSK                   TIMSK0
 #define PWM_6_TCCRA                   TCCR0A
 #define PWM_6_TCCRB                   TCCR0B
 
-#define PWM_7_NAME                    PSTR("Expansion 2")
+#define PWM_7_NAME                    "Expansion 2"
 #define PWM_7_OCR                     OCR3A
 #define PWM_7_TCNT                    TCNT3
 #define PWM_7_TIMSK                   TIMSK3
@@ -147,7 +147,7 @@
 #define PWM_7_TCCRB                   TCCR3B
 
 // Buzzer
-#define BUZZER_0_NAME                 PSTR("Buzzer")
+#define BUZZER_0_NAME                 "Buzzer"
 #define BUZZER_PORT_1                 PORTL
 #define BUZZER_DD_1                   DDRL
 #define BUZZER_PORT_1_MASK            0x20; // L5
@@ -162,26 +162,152 @@
 #define ADC_ADCSRA                    0x87 // Enable ADC, prescaler /128
 #define ADC_DIDR0                     0x00
 #define ADC_DIDR1                     0xf8
-#define ADC_0_NAME                    PSTR("Temp Sens 1")
+#define ADC_0_NAME                    "Temp Sens 1"
 #define ADC_0_CONVERTER               SteinhartHartBOnlyConverter
 #define ADC_ADMUX_0                   0x47
 #define ADC_ADCSRB_0                  0x08
-#define ADC_1_NAME                    PSTR("Temp Sens 2")
+#define ADC_1_NAME                    "Temp Sens 2"
 #define ADC_1_CONVERTER               SteinhartHartBOnlyConverter
 #define ADC_ADMUX_1                   0x46
 #define ADC_ADCSRB_1                  0x08
-#define ADC_2_NAME                    PSTR("Temp Sens 3")
+#define ADC_2_NAME                    "Temp Sens 3"
 #define ADC_2_CONVERTER               SteinhartHartBOnlyConverter
 #define ADC_ADMUX_2                   0x45
 #define ADC_ADCSRB_2                  0x08
-#define ADC_3_NAME                    PSTR("Temp Sens 4")
+#define ADC_3_NAME                    "Temp Sens 4"
 #define ADC_3_CONVERTER               SteinhartHartBOnlyConverter
 #define ADC_ADMUX_3                   0x44
 #define ADC_ADCSRB_3                  0x08
-#define ADC_4_NAME                    PSTR("Temp Sens 5")
+#define ADC_4_NAME                    "Temp Sens 5"
 #define ADC_4_CONVERTER               NoConverter
 #define ADC_ADMUX_4                   0x43
 #define ADC_ADCSRB_4                  0x08
+
+// Digital Input Pins
+
+#define D_IN_NUM_PINS                 6
+// C0
+#define D_IN_0_NAME                   "X-Min"
+#define D_IN_0_DDR                    DDRC
+#define D_IN_0_PORT                   PORTC
+#define D_IN_0_PIN                    PINC
+#define D_IN_0_MASK                   0x01
+// C1
+#define D_IN_1_NAME                   "X-Max"
+#define D_IN_1_DDR                    DDRC
+#define D_IN_1_PORT                   PORTC
+#define D_IN_1_PIN                    PINC
+#define D_IN_1_MASK                   0x02
+// C2
+#define D_IN_2_NAME                   "Y-Min"
+#define D_IN_2_DDR                    DDRC
+#define D_IN_2_PORT                   PORTC
+#define D_IN_2_PIN                    PINC
+#define D_IN_2_MASK                   0x04
+// C3
+#define D_IN_3_NAME                   "Y-Max"
+#define D_IN_3_DDR                    DDRC
+#define D_IN_3_PORT                   PORTC
+#define D_IN_3_PIN                    PINC
+#define D_IN_3_MASK                   0x08
+// C4
+#define D_IN_4_NAME                   "Z-Min"
+#define D_IN_4_DDR                    DDRC
+#define D_IN_4_PORT                   PORTC
+#define D_IN_4_PIN                    PINC
+#define D_IN_4_MASK                   0x10
+// C5
+#define D_IN_5_NAME                   "Z-Max"
+#define D_IN_5_DDR                    DDRC
+#define D_IN_5_PORT                   PORTC
+#define D_IN_5_PIN                    PINC
+#define D_IN_5_MASK                   0x20
+
+// Pololu Stepper
+
+#define STEPPER_0_NAME                "X"
+// Enable : PL1
+#define STEPPER_0_ENABLE_DDR          DDRL
+#define STEPPER_0_ENABLE_PORT         PORTL
+#define STEPPER_0_ENABLE_MASK         0x02
+// Step : PH0
+#define STEPPER_0_STEP_DDR            DDRH
+#define STEPPER_0_STEP_PORT           PORTH
+#define STEPPER_0_STEP_MASK           0x01
+// Dir : PH1
+#define STEPPER_0_DIR_DDR             DDRH
+#define STEPPER_0_DIR_PORT            PORTH
+#define STEPPER_0_DIR_MASK            0x02
+
+#define STEPPER_1_NAME                "Y"
+// Enable : PF1
+#define STEPPER_1_ENABLE_DDR          DDRF
+#define STEPPER_1_ENABLE_PORT         PORTF
+#define STEPPER_1_ENABLE_MASK         0x02
+// Step : PF0
+#define STEPPER_1_STEP_DDR            DDRF
+#define STEPPER_1_STEP_PORT           PORTF
+#define STEPPER_1_STEP_MASK           0x01
+// Dir : PL2
+#define STEPPER_1_DIR_DDR             DDRL
+#define STEPPER_1_DIR_PORT            PORTL
+#define STEPPER_1_DIR_MASK            0x04
+
+#define STEPPER_2_NAME                "Z"
+// Enable : PK0
+#define STEPPER_2_ENABLE_DDR          DDRK
+#define STEPPER_2_ENABLE_PORT         PORTK
+#define STEPPER_2_ENABLE_MASK         0x01
+// Step : PF3
+#define STEPPER_2_STEP_DDR            DDRF
+#define STEPPER_2_STEP_PORT           PORTF
+#define STEPPER_2_STEP_MASK           0x08
+// Dir : PF2
+#define STEPPER_2_DIR_DDR             DDRF
+#define STEPPER_2_DIR_PORT            PORTF
+#define STEPPER_2_DIR_MASK            0x04
+
+#define STEPPER_3_NAME                "E0"
+// Enable : PA2
+#define STEPPER_3_ENABLE_DDR          DDRA
+#define STEPPER_3_ENABLE_PORT         PORTA
+#define STEPPER_3_ENABLE_MASK         0x04
+// Step : PA1
+#define STEPPER_3_STEP_DDR            DDRA
+#define STEPPER_3_STEP_PORT           PORTA
+#define STEPPER_3_STEP_MASK           0x02
+// Dir : PA0
+#define STEPPER_3_DIR_DDR             DDRA
+#define STEPPER_3_DIR_PORT            PORTA
+#define STEPPER_3_DIR_MASK            0x01
+
+#define STEPPER_4_NAME                "E1"
+// Enable : PA5
+#define STEPPER_4_ENABLE_DDR          DDRA
+#define STEPPER_4_ENABLE_PORT         PORTA
+#define STEPPER_4_ENABLE_MASK         0x20
+// Step : PA4
+#define STEPPER_4_STEP_DDR            DDRA
+#define STEPPER_4_STEP_PORT           PORTA
+#define STEPPER_4_STEP_MASK           0x10
+// Dir : PA3
+#define STEPPER_4_DIR_DDR             DDRA
+#define STEPPER_4_DIR_PORT            PORTA
+#define STEPPER_4_DIR_MASK            0x08
+
+#define STEPPER_5_NAME                "E2"
+// Enable : PG2
+#define STEPPER_5_ENABLE_DDR          DDRG
+#define STEPPER_5_ENABLE_PORT         PORTG
+#define STEPPER_5_ENABLE_MASK         0x04
+// Step : PA7
+#define STEPPER_5_STEP_DDR            DDRA
+#define STEPPER_5_STEP_PORT           PORTA
+#define STEPPER_5_STEP_MASK           0x80
+// Dir : PA6
+#define STEPPER_5_DIR_DDR             DDRA
+#define STEPPER_5_DIR_PORT            PORTA
+#define STEPPER_5_DIR_MASK            0x040
 
 
 #endif /* HAL_MICROCHIP_AVR_RUMBA_BOARD_CFG_H_ */

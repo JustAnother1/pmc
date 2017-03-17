@@ -143,19 +143,19 @@ uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position, uint_fast8
     switch(device)
     {
 #if ADC_NUM_PINS > 0
-    case  0: return strlcpy_P((char *)position, ADC_0_NAME, max_length);
+    case  0: return strlcpy_P((char *)position, STR(ADC_0_NAME), max_length);
 #endif
 #if ADC_NUM_PINS > 1
-    case  1: return strlcpy_P((char *)position, ADC_1_NAME, max_length);
+    case  1: return strlcpy_P((char *)position, STR(ADC_1_NAME), max_length);
 #endif
 #if ADC_NUM_PINS > 2
-    case  2: return strlcpy_P((char *)position, ADC_2_NAME, max_length);
+    case  2: return strlcpy_P((char *)position, STR(ADC_2_NAME), max_length);
 #endif
 #if ADC_NUM_PINS > 3
-    case  3: return strlcpy_P((char *)position, ADC_3_NAME, max_length);
+    case  3: return strlcpy_P((char *)position, STR(ADC_3_NAME), max_length);
 #endif
 #if ADC_NUM_PINS > 4
-    case  4: return strlcpy_P((char *)position, ADC_4_NAME, max_length);
+    case  4: return strlcpy_P((char *)position, STR(ADC_4_NAME), max_length);
 #endif
     default:
         return 0;

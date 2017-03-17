@@ -167,28 +167,28 @@ uint_fast8_t hal_pwm_get_name(uint_fast8_t device, uint8_t *position, uint_fast8
     switch(device)
     {
 #if PWM_NUM_PINS > 0
-    case  0: return strlcpy_P((char *)position, PWM_0_NAME, max_length);
+    case  0: return strlcpy_P((char *)position, STR(PWM_0_NAME), max_length);
 #endif
 #if PWM_NUM_PINS > 1
-    case  1: return strlcpy_P((char *)position, PWM_1_NAME, max_length);
+    case  1: return strlcpy_P((char *)position, STR(PWM_1_NAME), max_length);
 #endif
 #if PWM_NUM_PINS > 2
-    case  2: return strlcpy_P((char *)position, PWM_2_NAME, max_length);
+    case  2: return strlcpy_P((char *)position, STR(PWM_2_NAME), max_length);
 #endif
 #if PWM_NUM_PINS > 3
-    case  3: return strlcpy_P((char *)position, PWM_3_NAME, max_length);
+    case  3: return strlcpy_P((char *)position, STR(PWM_3_NAME), max_length);
 #endif
 #if PWM_NUM_PINS > 4
-    case  4: return strlcpy_P((char *)position, PWM_4_NAME, max_length);
+    case  4: return strlcpy_P((char *)position, STR(PWM_4_NAME), max_length);
 #endif
 #if PWM_NUM_PINS > 5
-    case  5: return strlcpy_P((char *)position, PWM_5_NAME, max_length);
+    case  5: return strlcpy_P((char *)position, STR(PWM_5_NAME), max_length);
 #endif
 #if PWM_NUM_PINS > 6
-    case  6: return strlcpy_P((char *)position, PWM_6_NAME, max_length);
+    case  6: return strlcpy_P((char *)position, STR(PWM_6_NAME), max_length);
 #endif
 #if PWM_NUM_PINS > 7
-    case  7: return strlcpy_P((char *)position, PWM_7_NAME, max_length);
+    case  7: return strlcpy_P((char *)position, STR(PWM_7_NAME), max_length);
 #endif
     default:
         return 0;

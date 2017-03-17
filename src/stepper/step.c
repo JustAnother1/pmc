@@ -1,5 +1,5 @@
 /*
-              * This program is free software; you can redistribute it and/or
+ * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License version 2
  * as published by the Free Software Foundation.
  *
@@ -21,7 +21,11 @@
 #include "hal_stepper_port.h"
 #include "hal_time.h"
 #include "step.h"
+#ifdef HAS_TRINAMIC
 #include "trinamic.h"
+#else
+#include "pololu.h"
+#endif
 
 
 static void caclculate_basic_move_chunk(uint_fast8_t num_slots);
@@ -865,7 +869,7 @@ void step_disable_all_motors(void)
 #ifdef HAS_TRINAMIC
             trinamic_disable_stepper(i);
 #else
-            // TODO
+            pololu_disable_motor(i);
 #endif
         }
         // else already disabled
@@ -883,7 +887,7 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 #ifdef HAS_TRINAMIC
                 trinamic_enable_stepper(stepper_number);
 #else
-                // TODO
+                pololu_enable_motor(stepper_number);
 #endif
             }
             // else already enabled
@@ -895,7 +899,7 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 #ifdef HAS_TRINAMIC
                 trinamic_disable_stepper(stepper_number);
 #else
-                // TODO
+                pololu_disable_motor(stepper_number);
 #endif
             }
             // else  already disabled

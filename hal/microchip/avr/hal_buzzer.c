@@ -14,6 +14,7 @@
  */
 
 #include "board_cfg.h"
+#include "hal_cfg.h"
 #include "hal_buzzer.h"
 
 void hal_buzzer_init(void)
@@ -61,7 +62,7 @@ uint_fast8_t hal_buzzer_get_name(uint_fast8_t device, uint8_t *position, uint_fa
 {
     switch(device)
     {
-    case  0: return strlcpy_P((char *)position, BUZZER_0_NAME, max_length);
+    case  0: return strlcpy_P((char *)position, STR(BUZZER_0_NAME), max_length);
     default:
         return 0;
     }

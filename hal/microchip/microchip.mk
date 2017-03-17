@@ -3,6 +3,8 @@ ifeq ($(BOARD), rumba)
 	ARCHITECTURE = avr
 	BOARD_FOLDER = microchip/avr
 	DDEFS += -DARCHITECTURE_AVR
+	DDEFS += -DPOLL_END_STOPS
+	DDEFS += -DNAMED_STEPPERS
 	DDEFS += -DF_CPU=16000000UL
 	INCDIRS += $(HAL_FOLDER)$(BOARD_FOLDER)/rumba/
 	INCDIRS += /usr/lib/avr/include/
@@ -44,6 +46,8 @@ ifeq ($(BOARD), ultimaker_original)
 	ARCHITECTURE = avr
 	BOARD_FOLDER = microchip/avr
 	DDEFS += -DARCHITECTURE_AVR
+	DDEFS += -DPOLL_END_STOPS
+	DDEFS += -DNAMED_STEPPERS
 	DDEFS += -DF_CPU=16000000UL
 	INCDIRS += $(HAL_FOLDER)$(BOARD_FOLDER)/ultimaker_original/
 	INCDIRS += /usr/lib/avr/include/
