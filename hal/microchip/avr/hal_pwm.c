@@ -44,29 +44,10 @@ void hal_pwm_init(void)
     {
         cur_pwm[i] = 0;
     }
-    // Disable timers
-    PWM_0_TCCRB = 0;
-#if PWM_NUM_PINS > 1
-    PWM_1_TCCRB = 0;
-#endif
-#if PWM_NUM_PINS > 2
-    PWM_2_TCCRB = 0;
-#endif
-#if PWM_NUM_PINS > 3
-    PWM_3_TCCRB = 0;
-#endif
-#if PWM_NUM_PINS > 4
-    PWM_4_TCCRB = 0;
-#endif
-#if PWM_NUM_PINS > 5
-    PWM_5_TCCRB = 0;
-#endif
-#if PWM_NUM_PINS > 6
-    PWM_6_TCCRB = 0;
-#endif
-#if PWM_NUM_PINS > 7
-    PWM_7_TCCRB = 0;
-#endif
+    // Do not disable timers !
+    // Not all Timers are exclusively used for PWM generation.
+    // the time base (millisecond tick) and the stepper also use timers!
+    // we must not interfere with those usages.
 }
 
 uint_fast8_t hal_pwm_get_amount(void)
@@ -81,18 +62,14 @@ void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)
     case 0:
         cur_pwm[0] = on_time>>8;
         PWM_0_OCR   = cur_pwm[0];
-        PWM_0_TIMSK = 0x00; // no Interrupts !
         PWM_0_TCCRA = (PWM_0_TCCRA | PWM_0_TCCRA_1) &~PWM_0_TCCRA_0;
-        PWM_0_TCNT  = 0;
         PWM_0_TCCRB = (PWM_0_TCCRB | PWM_0_TCCRB_1) &~PWM_0_TCCRB_0;
         break;
 #if PWM_NUM_PINS > 1
     case 1:
         cur_pwm[1] = on_time>>8;
         PWM_1_OCR   = cur_pwm[1];
-        PWM_1_TIMSK = 0x00; // no Interrupts !
         PWM_1_TCCRA = (PWM_1_TCCRA | PWM_1_TCCRA_1) &~PWM_1_TCCRA_0;
-        PWM_1_TCNT  = 0;
         PWM_1_TCCRB = (PWM_1_TCCRB | PWM_1_TCCRB_1) &~PWM_1_TCCRB_0;
         break;
 #endif
@@ -100,60 +77,48 @@ void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)
     case 2:
         cur_pwm[2] = on_time>>8;
         PWM_2_OCR   = cur_pwm[2];
-        PWM_2_TIMSK = 0x00; // no Interrupts !
-        PWM_2_TCCRA = 0xab; // non inverted PWM output
-        PWM_2_TCNT  = 0;
-        PWM_2_TCCRB = 0x09; // No prescaler - CTC
+        PWM_2_TCCRA = (PWM_2_TCCRA | PWM_2_TCCRA_1) &~PWM_2_TCCRA_0;
+        PWM_2_TCCRB = (PWM_2_TCCRB | PWM_2_TCCRB_1) &~PWM_2_TCCRB_0;
         break;
 #endif
 #if PWM_NUM_PINS > 3
     case 3:
         cur_pwm[3] = on_time>>8;
         PWM_3_OCR   = cur_pwm[3];
-        PWM_3_TIMSK = 0x00; // no Interrupts !
-        PWM_3_TCCRA = 0xab; // non inverted PWM output
-        PWM_3_TCNT  = 0;
-        PWM_3_TCCRB = 0x09; // No prescaler - CTC
+        PWM_3_TCCRA = (PWM_3_TCCRA | PWM_3_TCCRA_1) &~PWM_3_TCCRA_0;
+        PWM_3_TCCRB = (PWM_3_TCCRB | PWM_3_TCCRB_1) &~PWM_3_TCCRB_0;
         break;
 #endif
 #if PWM_NUM_PINS > 4
     case 4:
         cur_pwm[4] = on_time>>8;
         PWM_4_OCR   = cur_pwm[4];
-        PWM_4_TIMSK = 0x00; // no Interrupts !
-        PWM_4_TCCRA = 0xab; // non inverted PWM output
-        PWM_4_TCNT  = 0;
-        PWM_4_TCCRB = 0x09; // No prescaler - CTC
+        PWM_4_TCCRA = (PWM_4_TCCRA | PWM_4_TCCRA_1) &~PWM_4_TCCRA_0;
+        PWM_4_TCCRB = (PWM_4_TCCRB | PWM_4_TCCRB_1) &~PWM_4_TCCRB_0;
         break;
 #endif
 #if PWM_NUM_PINS > 5
     case 5:
         cur_pwm[5] = on_time>>8;
         PWM_5_OCR   = cur_pwm[5];
-        PWM_5_TIMSK = 0x00; // no Interrupts !
-        PWM_5_TCCRA = 0xab; // non inverted PWM output
-        PWM_5_TCNT  = 0;
-        PWM_5_TCCRB = 0x09; // No prescaler - CTC
+        PWM_5_TCCRA = (PWM_5_TCCRA | PWM_5_TCCRA_1) &~PWM_5_TCCRA_0;
+        PWM_5_TCCRB = (PWM_5_TCCRB | PWM_5_TCCRB_1) &~PWM_5_TCCRB_0;
         break;
 #endif
 #if PWM_NUM_PINS > 6
     case 6:
         cur_pwm[6] = on_time>>8;
         PWM_6_OCR   = cur_pwm[6];
-        PWM_6_TIMSK = 0x00; // no Interrupts !
-        PWM_6_TCCRA = 0xab; // non inverted PWM output
-        PWM_6_TCNT  = 0;
-        PWM_6_TCCRB = 0x09; // No prescaler - CTC
+        PWM_6_TCCRA = (PWM_6_TCCRA | PWM_6_TCCRA_1) &~PWM_6_TCCRA_0;
+        PWM_6_TCCRB = (PWM_6_TCCRB | PWM_6_TCCRB_1) &~PWM_6_TCCRB_0;
         break;
 #endif
 #if PWM_NUM_PINS > 7
     case 7:
         cur_pwm[7] = on_time>>8;
         PWM_7_OCR   = cur_pwm[7];
-        PWM_7_TIMSK = 0x00; // no Interrupts !
-        PWM_7_TCCRA = 0xab; // non inverted PWM output
-        PWM_7_TCNT  = 0;
-        PWM_7_TCCRB = 0x09; // No prescaler - CTC
+        PWM_7_TCCRA = (PWM_7_TCCRA | PWM_7_TCCRA_1) &~PWM_7_TCCRA_0;
+        PWM_7_TCCRB = (PWM_7_TCCRB | PWM_7_TCCRB_1) &~PWM_7_TCCRB_0;
         break;
 #endif
     default:

@@ -37,6 +37,9 @@ struct tick_node {
 typedef struct tick_node tick_entry;
 
 static tick_entry  tick_list[MAX_TICK_FUNC];
+#ifdef CPU_MS_TIMER_NEEDS_CNT
+static volatile uint_fast8_t cnt = 0;
+#endif
 static volatile uint32_t now = 0;
 static uint32_t lastTickAt = 0;
 
@@ -57,28 +60,26 @@ void hal_cpu_init_hal(void)
     now = 0;
     // Start time base timer
     CPU_MS_TIMER_OCRA  = CPU_MS_TIMER_RELOAD_VALUE;
-    CPU_MS_TIMER_TIMSK = 0x02;
-    CPU_MS_TIMER_TCCRA = 0;
-    CPU_MS_TIMER_TCCRC = 0;
+    CPU_MS_TIMER_TIMSK = (CPU_MS_TIMER_TIMSK | CPU_MS_TIMER_IRQ_1) & ~CPU_MS_TIMER_IRQ_0;
     CPU_MS_TIMER_TCNT  = 0;
-    CPU_MS_TIMER_TCCRB = 0x09; // No prescaler - CTC
+    CPU_MS_TIMER_TCCRA = (CPU_MS_TIMER_TCCRA | CPU_MS_TIMER_TCCRA_1) &~CPU_MS_TIMER_TCCRA_0;
+    CPU_MS_TIMER_TCCRB = (CPU_MS_TIMER_TCCRB | CPU_MS_TIMER_TCCRB_1) &~CPU_MS_TIMER_TCCRB_0;
 }
 
-ISR(TIMER1_COMPA_vect, ISR_BLOCK)
+ISR(CPU_MS_TIMER_COMPARE_ISR, ISR_BLOCK)
 {
     hal_set_isr1_led(true);
-    now++;
+#ifdef CPU_MS_TIMER_NEEDS_CNT
+    cnt++;
+    if(0 == cnt%CPU_MS_TIMER_NEEDS_CNT)
+    {
+#endif
+        now++;
+#ifdef CPU_MS_TIMER_NEEDS_CNT
+        cnt = 0;
+    }
+#endif
     hal_set_isr1_led(false);
-}
-
-ISR(TIMER1_OVF_vect, ISR_BLOCK)
-{
-    // Should not happen, right?
-}
-
-ISR(TIMER1_CAPT_vect, ISR_BLOCK)
-{
-    // Should not happen, right?
 }
 
 ISR(BADISR_vect, ISR_BLOCK)

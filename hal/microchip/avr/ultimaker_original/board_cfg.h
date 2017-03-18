@@ -16,6 +16,36 @@
 #ifndef HAL_MICROCHIP_AVR_ULTIMAKER_ORIGINAL_BOARD_CFG_H_
 #define HAL_MICROCHIP_AVR_ULTIMAKER_ORIGINAL_BOARD_CFG_H_
 
+/* Timers:
+ *  Timer 0 (8 bit):
+ *  a:
+ *  b: PWM 0
+ *
+ *  Timer 1 (16 bit): Millisecond Timer
+ *  a:
+ *  b:
+ *  c:
+ *
+ *  Timer 2 (8 bit):
+ *  a:
+ *  b:
+ *
+ *  Timer 3 (16 bit):
+ *  a:
+ *  b: PWM 2
+ *  c: PWM 1
+ *
+ *  Timer 4 (16 bit):
+ *  a:
+ *  b:
+ *  c:
+ *
+ *  Timer 5 (16 bit):
+ *  a:
+ *  b:
+ *  c:
+ */
+
 // UART
 #define GCODE_USART_NUMBER            0
 #define GCODE_USART_UCSRA             UCSR0A
@@ -58,8 +88,7 @@
 #define CPU_MS_TIMER_OCRA             OCR1A
 #define CPU_MS_TIMER_TIMSK            TIMSK1
 #define CPU_MS_TIMER_RELOAD_VALUE     (F_CPU/1000)
-#define CPU_MS_TIMER_COMPARE_A_ISR    TIMER1_COMPA_vect
-#define CPU_MS_TIMER_OVERFLOW_ISR     TIMER1_OVF_vect
+#define CPU_MS_TIMER_COMPARE_ISR      TIMER1_COMPA_vect
 
 // PWM
 #define PWM_NUM_PINS                  3

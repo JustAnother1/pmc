@@ -19,6 +19,36 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 
+/* Timers:
+ *  Timer 0 (8 bit):
+ *  a: millisecond timer
+ *  b: PWM 6 ( Expansion)
+ *
+ *  Timer 1 (16 bit): Stepper Timer
+ *  a:
+ *  b:
+ *  c:
+ *
+ *  Timer 2 (8 bit):
+ *  a:
+ *  b: PWM 0
+ *
+ *  Timer 3 (16 bit):
+ *  a: PWM 7 ( Expansion)
+ *  b: PWM 1
+ *  c: PWM 2
+ *
+ *  Timer 4 (16 bit):
+ *  a: PWM 3
+ *  b: PWM 5
+ *  c: PWM 4
+ *
+ *  Timer 5 (16 bit):
+ *  a: Buzzer
+ *  b:
+ *  c:
+ */
+
 // LED
 #define DEBUG_LED_MASK                0x80
 #define DEBUG_LED_DDR                 DDRB
@@ -58,16 +88,21 @@
 
 // Timer
 
-// Time Base (millisecond timer) -> Timer 1
-#define CPU_MS_TIMER_TCCRA            TCCR1A
-#define CPU_MS_TIMER_TCCRB            TCCR1B
-#define CPU_MS_TIMER_TCCRC            TCCR1C
-#define CPU_MS_TIMER_TCNT             TCNT1
-#define CPU_MS_TIMER_OCRA             OCR1A
-#define CPU_MS_TIMER_TIMSK            TIMSK1
-#define CPU_MS_TIMER_RELOAD_VALUE     (F_CPU/1000)
-#define CPU_MS_TIMER_COMPARE_A_ISR    TIMER1_COMPA_vect
-#define CPU_MS_TIMER_OVERFLOW_ISR     TIMER1_OVF_vect
+// Time Base (millisecond timer) -> Timer 0 channel A
+#define CPU_MS_TIMER_TCCRA            TCCR0A
+#define CPU_MS_TIMER_TCCRA_1          0x03
+#define CPU_MS_TIMER_TCCRA_0          0
+#define CPU_MS_TIMER_TCCRB            TCCR0B
+#define CPU_MS_TIMER_TCCRB_1          0x01
+#define CPU_MS_TIMER_TCCRB_0          0xce
+#define CPU_MS_TIMER_TCNT             TCNT0
+#define CPU_MS_TIMER_OCRA             OCR0A
+#define CPU_MS_TIMER_TIMSK            TIMSK0
+#define CPU_MS_TIMER_IRQ_1            0x02
+#define CPU_MS_TIMER_IRQ_0            0
+#define CPU_MS_TIMER_NEEDS_CNT        8
+#define CPU_MS_TIMER_RELOAD_VALUE     (F_CPU/1000)/8
+#define CPU_MS_TIMER_COMPARE_ISR      TIMER1_COMPA_vect
 
 // PWM
 #define PWM_NUM_PINS                  8
@@ -82,6 +117,7 @@
 #define PWM_DD_3                      DDRH
 #define PWM_PORT_3_MASK               0x78; // H3, H4; H5, H6
 
+// Timer 2 Channel B
 #define PWM_0_NAME                    "Heated Bed"
 #define PWM_0_OCR                     OCR2B
 #define PWM_0_TCNT                    TCNT2
@@ -93,6 +129,7 @@
 #define PWM_0_TCCRB_1                 0x01
 #define PWM_0_TCCRB_0                 0xce
 
+// Timer 3 Channel B
 #define PWM_1_NAME                    "Heater 0"
 #define PWM_1_OCR                     OCR3B
 #define PWM_1_TCNT                    TCNT3
@@ -104,53 +141,84 @@
 #define PWM_1_TCCRB_1                 0x09
 #define PWM_1_TCCRB_0                 0x16
 
+// Timer 3 Channel C
 #define PWM_2_NAME                    "Heater 1"
 #define PWM_2_OCR                     OCR3C
 #define PWM_2_TCNT                    TCNT3
 #define PWM_2_TIMSK                   TIMSK3
 #define PWM_2_TCCRA                   TCCR3A
+#define PWM_2_TCCRA_1                 0x09
+#define PWM_2_TCCRA_0                 0x06
 #define PWM_2_TCCRB                   TCCR3B
+#define PWM_2_TCCRB_1                 0x09
+#define PWM_2_TCCRB_0                 0x16
 
+// Timer 4 Channel A
 #define PWM_3_NAME                    "Heater 2"
 #define PWM_3_OCR                     OCR4A
 #define PWM_3_TCNT                    TCNT4
 #define PWM_3_TIMSK                   TIMSK4
 #define PWM_3_TCCRA                   TCCR4A
+#define PWM_3_TCCRA_1                 0x81
+#define PWM_3_TCCRA_0                 0x42
 #define PWM_3_TCCRB                   TCCR4B
+#define PWM_3_TCCRB_1                 0x09
+#define PWM_3_TCCRB_0                 0x16
 
+// Timer 4 Channel C
 #define PWM_4_NAME                    "Fan 0"
 #define PWM_4_OCR                     OCR4C
 #define PWM_4_TCNT                    TCNT4
 #define PWM_4_TIMSK                   TIMSK4
 #define PWM_4_TCCRA                   TCCR4A
+#define PWM_4_TCCRA_1                 0x09
+#define PWM_4_TCCRA_0                 0x06
 #define PWM_4_TCCRB                   TCCR4B
+#define PWM_4_TCCRB_1                 0x09
+#define PWM_4_TCCRB_0                 0x16
 
+// Timer 4 Channel B
 #define PWM_5_NAME                    "Fan 1"
 #define PWM_5_OCR                     OCR4B
 #define PWM_5_TCNT                    TCNT4
 #define PWM_5_TIMSK                   TIMSK4
 #define PWM_5_TCCRA                   TCCR4A
+#define PWM_5_TCCRA_1                 0x21
+#define PWM_5_TCCRA_0                 0x12
 #define PWM_5_TCCRB                   TCCR4B
+#define PWM_5_TCCRB_1                 0x09
+#define PWM_5_TCCRB_0                 0x16
 
+// Timer 0 Channel B
 #define PWM_6_NAME                    "Expansion 1"
 #define PWM_6_OCR                     OCR0B
 #define PWM_6_TCNT                    TCNT0
 #define PWM_6_TIMSK                   TIMSK0
 #define PWM_6_TCCRA                   TCCR0A
+#define PWM_6_TCCRA_1                 0x23
+#define PWM_6_TCCRA_0                 0x10
 #define PWM_6_TCCRB                   TCCR0B
+#define PWM_6_TCCRB_1                 0x01
+#define PWM_6_TCCRB_0                 0xce
 
+// Timer 3 Channel A
 #define PWM_7_NAME                    "Expansion 2"
 #define PWM_7_OCR                     OCR3A
 #define PWM_7_TCNT                    TCNT3
 #define PWM_7_TIMSK                   TIMSK3
 #define PWM_7_TCCRA                   TCCR3A
+#define PWM_7_TCCRA_1                 0x81
+#define PWM_7_TCCRA_0                 0x42
 #define PWM_7_TCCRB                   TCCR3B
+#define PWM_7_TCCRB_1                 0x09
+#define PWM_7_TCCRB_0                 0x16
 
 // Buzzer
 #define BUZZER_0_NAME                 "Buzzer"
 #define BUZZER_PORT_1                 PORTL
 #define BUZZER_DD_1                   DDRL
 #define BUZZER_PORT_1_MASK            0x20; // L5
+// Timer 5 Channel A
 #define BUZZER_0_OCRA                 OCR5A
 #define BUZZER_0_TCCRA                TCCR5A
 #define BUZZER_0_TCCRB                TCCR5B
