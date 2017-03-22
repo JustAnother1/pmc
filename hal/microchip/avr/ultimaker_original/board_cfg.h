@@ -40,7 +40,7 @@
  *  b:
  *  c:
  *
- *  Timer 5 (16 bit):
+ *  Timer 5 (16 bit): Stepper Timer
  *  a:
  *  b:
  *  c:
@@ -79,6 +79,16 @@
 
 
 // Timer
+// Step Timer Timer 1 (Channel a)
+#define STEP_TIMER_TCCRA              TCCR5A
+#define STEP_TIMER_TCCRB              TCCR5B
+#define STEP_TIMER_OCRA               OCR5A
+#define STEP_TIMER_TCCRA_1            0x00
+#define STEP_TIMER_TCCRA_0            0xff
+#define STEP_TIMER_TCCRB_1            0x09
+#define STEP_TIMER_TCCRB_0            0xf6
+#define STEP_TIMER_TIMSK              TIMSK5
+#define STEP_TIMER_TIMSK_VALUE        0x02
 
 // Time Base (millisecond timer) -> Timer 1
 #define CPU_MS_TIMER_TCCRA            TCCR1A

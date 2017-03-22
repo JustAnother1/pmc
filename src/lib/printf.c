@@ -29,6 +29,7 @@
  * OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <printf.h>
 #ifdef ARCHITECTURE_AVR
 

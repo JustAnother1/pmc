@@ -147,6 +147,8 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
 
 void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
 {
+	(void) port;
+	(void) idx;
     // TODO
 }
 

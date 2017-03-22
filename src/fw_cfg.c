@@ -25,22 +25,26 @@ void fw_cfg_init(void)
 
 void fw_cfg_get_value_property(uint_fast8_t idx)
 {
-
+	// TODO
+	(void) idx;
 }
 
 void fw_cfg_get_next_value(uint_fast8_t last_value_idx)
 {
-
+	// TODO
+	(void) last_value_idx;
 }
 
 void fw_cfg_get_value_of(uint_fast8_t parameterLength)
 {
-
+	// TODO
+	(void) parameterLength;
 }
 
 void fw_cfg_set_value_to(uint_fast8_t parameterLength)
 {
-
+	// TODO
+	(void) parameterLength;
 }
 
 uint_fast8_t fw_cfg_read_setting_to(uint_fast8_t setting, uint8_t *position)

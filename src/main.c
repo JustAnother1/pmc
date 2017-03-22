@@ -34,6 +34,7 @@
 #include "hal_cfg.h"
 #include "hal_power.h"
 #include "endStopHandling.h"
+#include "step.h"
 
 
 int main (void)
@@ -84,6 +85,9 @@ int main (void)
         hal_cpu_tick();
 #ifdef WATCHDOG_ACTIVE
         watchdog_tick();
+#endif
+#ifdef POLL_STEP_BUFFER_REFILL
+        refill_step_buffer();
 #endif
     }
     return 0;

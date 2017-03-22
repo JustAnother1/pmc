@@ -191,5 +191,6 @@ static uint_fast16_t SteinhartHartBOnlyConverter(uint16_t DR, uint_fast8_t numbe
 
 static uint_fast16_t NoConverter(uint16_t DR, uint_fast8_t number)
 {
+	(void)number;
     return (uint_fast16_t)0xffff & DR;
 }

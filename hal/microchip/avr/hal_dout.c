@@ -26,25 +26,33 @@ uint_fast8_t hal_dout_get_amount(void)
 
 void hal_dout_set_pin_high(uint_fast8_t device)
 {
-
+	// TODO
+	(void) device;
 }
 
 void hal_dout_set_pin_low(uint_fast8_t device)
 {
-
+	// TODO
+	(void) device;
 }
 
 void hal_dout_set_pin_HighZ(uint_fast8_t device)
 {
-
+	// TODO
+	(void) device;
 }
 
 uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position, uint_fast8_t max_length)
 {
-    return 0;
+	// TODO
+	(void) device;
+    (void) position;
+	(void) max_length;
+	return 0;
 }
 
 uint_fast8_t hal_dout_get_current_state_of(uint_fast8_t number)
 {
+	(void) number;
     return 0;
 }

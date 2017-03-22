@@ -26,7 +26,8 @@ void events_init(void)
 
 void events_receive(uint_fast8_t last_id)
 {
-
+	// TODO
+	(void) last_id;
 }
 
 void events_get_number_format_ids(void)
@@ -36,7 +37,8 @@ void events_get_number_format_ids(void)
 
 void events_get_string_format(uint_fast16_t idx)
 {
-
+	// TODO
+	(void) idx;
 }
 
 // returns TRUE if a Event has occurred and is ready for collection by the host.

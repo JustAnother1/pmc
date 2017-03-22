@@ -29,6 +29,6 @@ void hal_nvram_setUInt16Value(uint32_t addr, uint16_t value);
 bool hal_nvram_getUInt8Value(uint32_t addr, uint8_t* value);
 void hal_nvram_setUInt8Value(uint32_t addr, uint8_t value);
 bool hal_nvram_getfloat(uint32_t addr, float* value);
-void hal_nvram_setfloat(uint32_t addrh, float value);
+void hal_nvram_setfloat(uint32_t addr, float value);
 
 #endif /* HAL_INCLUDE_HAL_NVRAM_H_ */

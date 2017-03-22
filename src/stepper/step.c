@@ -28,6 +28,12 @@
 #include "pololu.h"
 #endif
 
+#ifndef STEP_TIMER_FREQ_12MHZ
+ #ifndef STEP_TIMER_FREQ_16MHZ
+  #error "Step Timer Frequency must be defined !"
+ #endif
+#endif
+
 
 static void caclculate_basic_move_chunk(uint_fast8_t num_slots);
 static uint_fast16_t get_reload_primary_axis(void);
@@ -37,8 +43,6 @@ static uint_fast8_t get_number_of_free_slots(void);
 static void finished_cur_slot(void);
 static void make_the_needed_steps(uint_fast16_t reload_time);
 static void auto_activate_usedAxis(void);
-static void step_isr(void);
-static void refill_step_buffer(void);
 static void increment_write_pos(void);
 #ifdef USE_STEP_DIR
 static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value);
@@ -96,8 +100,10 @@ static volatile uint_fast8_t next_direction[STEP_BUFFER_SIZE];
 #endif
 static volatile uint_fast16_t next_reload[STEP_BUFFER_SIZE];
 
-// 16bit Timer running at 12MHz
+
 static uint_fast16_t speed_reloads[256] ={
+#ifdef STEP_TIMER_FREQ_12MHZ
+        // 16bit Timer running at 12MHz
         65535,  65535, 38250, 25500, 19125, 15300, 12750, 10929,
         9563,  8500,  7650,  6955,  6373,  5885,  5464,  5100,
         4781,  4500,  4250,  4026,  3825,  3643,  3477,  3326,
@@ -133,6 +139,44 @@ static uint_fast16_t speed_reloads[256] ={
          330,   328,   327,   326,   324,   323,   321,   320,
          319,   317,   316,   315,   314,   312,   311,   310,
          308,   307,   306,   305,   304,   302,   301,   300
+#endif
+#ifdef STEP_TIMER_FREQ_16MHZ
+         65535, 51200, 34133, 25600, 20480, 17067, 14629, 12800,
+         11378, 10240, 9309, 8533, 7877, 7314, 6827, 6400,
+         6024, 5689, 5389, 5120, 4876, 4655, 4452, 4267,
+         4096, 3938, 3793, 3657, 3531, 3413, 3303, 3200,
+         3103, 3012, 2926, 2844, 2768, 2695, 2626, 2560,
+         2498, 2438, 2381, 2327, 2276, 2226, 2179, 2133,
+         2090, 2048, 2008, 1969, 1932, 1896, 1862, 1829,
+         1796, 1766, 1736, 1707, 1679, 1652, 1625, 1600,
+
+         1575, 1552, 1528, 1506, 1484, 1463, 1442, 1422,
+         1403, 1384, 1365, 1347, 1330, 1313, 1296, 1280,
+         1264, 1249, 1234, 1219, 1205, 1191, 1177, 1164,
+         1151, 1138, 1125, 1113, 1101, 1089, 1078, 1067,
+         1056, 1045, 1034, 1024, 1014, 1004, 994, 985,
+         975, 966, 957, 948, 939, 931, 923, 914,
+         906, 898, 890, 883, 875, 868, 861, 853,
+         846, 839, 833, 826, 819, 813, 806, 800,
+
+         794, 788, 782, 776, 770, 764, 759, 753,
+         747, 742, 737, 731, 726, 721, 716, 711,
+         706, 701, 697, 692, 687, 683, 678, 674,
+         669, 665, 661, 656, 652, 648, 644, 640,
+         636, 632, 628, 624, 621, 617, 613, 610,
+         606, 602, 599, 595, 592, 589, 585, 582,
+         579, 575, 572, 569, 566, 563, 560, 557,
+         554, 551, 548, 545, 542, 539, 536, 533,
+
+         531, 528, 525, 522, 520, 517, 515, 512,
+         509, 507, 504, 502, 500, 497, 495, 492,
+         490, 488, 485, 483, 481, 479, 476, 474,
+         472, 470, 468, 465, 463, 461, 459, 457,
+         455, 453, 451, 449, 447, 445, 443, 441,
+         439, 438, 436, 434, 432, 430, 428, 427,
+         425, 423, 421, 420, 418, 416, 415, 413,
+         411, 410, 408, 406, 405, 403, 402, 400,
+#endif
 };
 
 
@@ -168,7 +212,7 @@ static uint_fast16_t speed_reloads[256] ={
  * execute the steps, by writing the calculated values out to the port pins. It
  * will sleep between the Steps for the times specified.
  */
-static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
+STEP_ISR_FUNCTION  // 16bit Timer at 12MHz Tick Rate High priority !
 {
     if(read_pos == write_pos)
     {
@@ -229,7 +273,7 @@ static void step_isr(void) // 16bit Timer at 12MHz Tick Rate High priority !
     }
 }
 
-static void refill_step_buffer(void)
+void refill_step_buffer(void)
 {
     uint_fast8_t free_slots = get_number_of_free_slots();
     if(free_slots > STEP_CHUNK_SIZE)
@@ -256,6 +300,7 @@ static void refill_step_buffer(void)
         // else nothing to do for the step timer -> no need to start it
     }
 
+#ifndef POLL_STEP_BUFFER_REFILL
     // start this timer if not already running -> first move after pause in movement
     if(false == buffer_timer_running)
     {
@@ -282,6 +327,7 @@ static void refill_step_buffer(void)
             buffer_timer_running = false;
         }
     }
+#endif
 }
 
 static uint_fast8_t get_number_of_free_slots(void)

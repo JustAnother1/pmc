@@ -19,6 +19,8 @@
 #include <util/delay.h>
 #include "hal_time.h"
 #include "hal_pwm.h"
+#include "board_cfg.h"
+#include "hal_cfg.h"
 
 
 void hal_time_init(void)
@@ -33,16 +35,33 @@ void hal_time_ms_sleep(uint_fast32_t ms)
 
 bool hal_time_start_timer(uint_fast8_t device, uint32_t clock, uint_fast16_t reload_value, TimerFkt function)
 {
-    // TODO
+	(void) clock;
+	(void) function;
+    if(STEP_TIMER == device)
+    {
+        STEP_TIMER_OCRA = reload_value;
+        STEP_TIMER_TCCRA = (STEP_TIMER_TCCRA | STEP_TIMER_TCCRA_1) &~STEP_TIMER_TCCRA_0;
+        STEP_TIMER_TCCRB = (STEP_TIMER_TCCRB | STEP_TIMER_TCCRB_1) &~STEP_TIMER_TCCRB_0;
+        STEP_TIMER_TIMSK = STEP_TIMER_TIMSK_VALUE;
+        return true;
+    }
     return false;
 }
 void hal_time_stop_timer(uint_fast8_t device)
 {
-
+    if(STEP_TIMER == device)
+    {
+        STEP_TIMER_TCCRA = 0;
+    }
 }
 
 bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
 {
+    if(STEP_TIMER == device)
+    {
+        STEP_TIMER_OCRA = reload_value;
+        return true;
+    }
     return false;
 }
 

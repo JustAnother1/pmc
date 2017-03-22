@@ -127,6 +127,7 @@ void hal_cpu_die(void)
 
 void hal_cpu_do_software_reset(uint32_t reason)
 {
+	(void)reason;
     wdt_enable(WDTO_15MS);
     for(;;)
     {
@@ -229,5 +230,5 @@ void hal_cpu_print_Interrupt_information(void)
 
 void hal_cpu_report_issue(uint32_t issue_number)
 {
-
+	(void) issue_number;
 }

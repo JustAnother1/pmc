@@ -53,6 +53,8 @@ void dev_pwm_set_pwm(uint_fast8_t number, uint_fast16_t pwm)
 void dev_pwm_set_frequency(uint_fast8_t number, uint_fast16_t frequency)
 {
     // TODO: Really ?
+	(void) number;
+	(void) frequency;
 }
 
 // end of File

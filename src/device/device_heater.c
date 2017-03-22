@@ -200,7 +200,8 @@ uint_fast16_t PidRegulator(uint_fast16_t temperature_should, uint_fast16_t tempe
     float ki = 0;
     float kd = 0;
     float nextPwm;
-
+	
+	(void) curPwm;
 
     int_fast16_t error = temperature_should - temperature_is;
 

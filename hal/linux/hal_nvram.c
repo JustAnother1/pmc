@@ -66,7 +66,7 @@ bool hal_nvram_getfloat(uint32_t addr, float* value)
     return false;
 }
 
-void hal_nvram_setfloat(uint32_t addrh, float value)
+void hal_nvram_setfloat(uint32_t addr, float value)
 {
 
 }

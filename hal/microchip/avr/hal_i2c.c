@@ -31,6 +31,12 @@ bool hal_do_i2c_transaction(bool read,
                             uint8_t*     data,
                             uint_fast8_t num_bytes)
 {
+	// TODO
+	(void) read;
+	(void) i2cAddress;
+	(void) dataAddress;
+	(void) data;
+	(void) num_bytes;
     return false;
 }
 
@@ -40,7 +46,12 @@ void hal_start_i2c_transaction(bool read,
                                uint8_t*     data,
                                uint_fast8_t num_bytes )
 {
-
+	// TODO
+	(void) read;
+	(void) i2cAddress;
+	(void) dataAddress;
+	(void) data;
+	(void) num_bytes;
 }
 
 bool hal_i2c_is_idle(void)

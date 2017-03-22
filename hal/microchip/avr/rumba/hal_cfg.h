@@ -18,6 +18,9 @@
 
 // handling of constant Strings
 #include <avr/pgmspace.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
 #define STR(x) PSTR(x)
 
 // SPI
@@ -45,7 +48,11 @@
 // Steppers
 #define NUMBER_OF_STEPPERS   6
 
-#define STEP_TIMER                 6
-#define STEP_BUFFER_TIMER          7
+#define STEP_TIMER                 1
+
+#define STEP_ISR_FUNCTION ISR(TIMER1_COMPA_vect, ISR_BLOCK)
+
+// fix for pointer to ISR function that we do not use
+#define step_isr    refill_step_buffer
 
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */

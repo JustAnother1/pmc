@@ -33,6 +33,7 @@ void hal_debug_init(void)
 
 static void debug_putc(void* p, char c)
 {
+	(void)p;
     // TODO hal_send_frame_debug_uart((uint8_t *)&c, 1);
 
     if(false == hal_send_frame_non_blocking_debug_uart((uint8_t *)&c, 1))

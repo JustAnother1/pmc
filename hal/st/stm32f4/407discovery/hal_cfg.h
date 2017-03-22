@@ -85,5 +85,6 @@
 #define PWM_0_TIMER                12
 #define PWM_0_Channel              1
 
+#define STEP_ISR_FUNCTION static void step_isr(void)
 
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */

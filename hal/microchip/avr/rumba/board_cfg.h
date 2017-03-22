@@ -88,6 +88,17 @@
 
 // Timer
 
+// Step Timer Timer 1 (Channel a)
+#define STEP_TIMER_TCCRA              TCCR1A
+#define STEP_TIMER_TCCRB              TCCR1B
+#define STEP_TIMER_OCRA               OCR1A
+#define STEP_TIMER_TCCRA_1            0x00
+#define STEP_TIMER_TCCRA_0            0xff
+#define STEP_TIMER_TCCRB_1            0x09
+#define STEP_TIMER_TCCRB_0            0xf6
+#define STEP_TIMER_TIMSK              TIMSK1
+#define STEP_TIMER_TIMSK_VALUE        0x02
+
 // Time Base (millisecond timer) -> Timer 0 channel A
 #define CPU_MS_TIMER_TCCRA            TCCR0A
 #define CPU_MS_TIMER_TCCRA_1          0x03
@@ -102,7 +113,7 @@
 #define CPU_MS_TIMER_IRQ_0            0
 #define CPU_MS_TIMER_NEEDS_CNT        8
 #define CPU_MS_TIMER_RELOAD_VALUE     (F_CPU/1000)/8
-#define CPU_MS_TIMER_COMPARE_ISR      TIMER1_COMPA_vect
+#define CPU_MS_TIMER_COMPARE_ISR      TIMER0_COMPA_vect
 
 // PWM
 #define PWM_NUM_PINS                  8

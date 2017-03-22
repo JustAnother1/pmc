@@ -47,6 +47,8 @@ uint_fast8_t dev_buzzer_get_status(uint_fast8_t number)
 void dev_buzzer_set_pwm(uint_fast8_t number, uint_fast16_t pwm)
 {
     // TODO. Really ?
+	(void) number;
+	(void) pwm;
 }
 
 void dev_buzzer_set_frequency(uint_fast8_t number, uint_fast16_t frequency)
