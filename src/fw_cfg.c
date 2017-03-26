@@ -23,32 +23,40 @@ void fw_cfg_init(void)
     // if incorrect -> write default values
 }
 
-void fw_cfg_get_value_property(uint_fast8_t idx)
+void fw_cfg_get_value_property(uint_fast8_t parameterLength)
 {
-	// TODO
-	(void) idx;
+    // TODO
+    (void) parameterLength;
 }
 
-void fw_cfg_get_next_value(uint_fast8_t last_value_idx)
+/** Get the name of the next configuration item in the list after the provided item name.
+ *
+ * The parameter is either:
+ * - empty -> return the name of the first configuration item
+ * - a name of a configuration item
+ *
+ */
+void fw_cfg_get_next_value(uint_fast8_t parameterLength)
 {
-	// TODO
-	(void) last_value_idx;
+    // TODO
+    (void) parameterLength;
 }
 
 void fw_cfg_get_value_of(uint_fast8_t parameterLength)
 {
-	// TODO
-	(void) parameterLength;
+    // TODO
+    (void) parameterLength;
 }
 
 void fw_cfg_set_value_to(uint_fast8_t parameterLength)
 {
-	// TODO
-	(void) parameterLength;
+    // TODO
+    (void) parameterLength;
 }
 
 uint_fast8_t fw_cfg_read_setting_to(uint_fast8_t setting, uint8_t *position)
 {
+    // TODO
     switch(setting)
     {
     case SETTING_SERIAL_NUMBER:

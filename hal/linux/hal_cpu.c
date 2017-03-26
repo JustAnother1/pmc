@@ -97,3 +97,8 @@ void hal_cpu_report_issue(uint32_t issue_number)
 {
 
 }
+
+uint_fast8_t hal_cpu_get_state_byte(void)
+{
+    return 0;
+}

@@ -227,6 +227,11 @@ void hal_cpu_check_Reset_Reason(void)
     }
 }
 
+uint_fast8_t hal_cpu_get_state_byte(void)
+{
+    return MCUSR;
+}
+
 void hal_cpu_print_Interrupt_information(void)
 {
 

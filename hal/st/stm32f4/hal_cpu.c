@@ -381,6 +381,13 @@ void hal_cpu_tick(void)
     }
 }
 
+uint_fast8_t hal_cpu_get_state_byte(void)
+{
+    uint32_t resetSource = RCC->CSR;
+    resetSource = resetSource>>24;
+    return (uint_fast8_t)(resetSource & 0xff);
+}
+
 // my own Fault Handlers
 #ifdef DEBUG_ACTIVE
 void hal_cpu_check_Reset_Reason(void)

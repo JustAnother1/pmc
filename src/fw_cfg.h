@@ -24,8 +24,8 @@
 
 uint_fast8_t fw_cfg_read_setting_to(uint_fast8_t setting, uint8_t *position);
 void fw_cfg_init(void);
-void fw_cfg_get_value_property(uint_fast8_t idx);
-void fw_cfg_get_next_value(uint_fast8_t last_value_idx);
+void fw_cfg_get_value_property(uint_fast8_t parameterLength);
+void fw_cfg_get_next_value(uint_fast8_t parameterLength);
 void fw_cfg_get_value_of(uint_fast8_t parameterLength);
 void fw_cfg_set_value_to(uint_fast8_t parameterLength);
 

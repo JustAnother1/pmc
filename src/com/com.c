@@ -624,17 +624,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             break;
 
         case ORDER_TRAVERSE_FIMRWARE_CONFIGURATION_VALUES:
-            // TODO check if implemented
-            if(1 == parameter_length)
-            {
-                fw_cfg_get_next_value(com_get_parameter_byte(0));
-            }
-            else
-            {
-                com_send_generic_application_error_response_with_comment(GENERIC_ERROR_BAD_PARAMETER_FORMAT,
-                                                                         WRONG_LENGTH,
-                                                                         parameter_length);
-            }
+            fw_cfg_get_next_value(parameter_length);
             break;
 
         case ORDER_CONFIGURE_MOVEMENT_UNDERRUN_AVOIDANCE_PARAMETERS:
@@ -663,17 +653,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             break;
 
         case ORDER_GET_FIRMWARE_CONFIGURATION_VALUE_PROPERTIES:
-            // TODO check if implemented
-            if(1 == parameter_length)
-            {
-                fw_cfg_get_value_property(com_get_parameter_byte(0));
-            }
-            else
-            {
-                com_send_generic_application_error_response_with_comment(GENERIC_ERROR_BAD_PARAMETER_FORMAT,
-                                                                         WRONG_LENGTH,
-                                                                         parameter_length);
-            }
+            fw_cfg_get_value_property(parameter_length);
             break;
 
         case ORDER_SET_OUTPUT_TONE:
@@ -797,7 +777,8 @@ static void send_firmware_id_frame(void)
     send_buffer[REPLY_FRAME_POS_OF_REPLY_CODE] = REPLY_CODE_DEBUG;
     send_buffer[REPLY_FRAME_START_OF_PARAMETER] = FIRMWARE_REVISION_MAJOR;
     send_buffer[REPLY_FRAME_START_OF_PARAMETER + 1] = FIRMWARE_REVISION_MINOR;
-    send_buffer[6] = crc8(5);
+    send_buffer[REPLY_FRAME_START_OF_PARAMETER + 2] = hal_cpu_get_state_byte();
+    send_buffer[6] = crc8(6);
     send_frame(7);
 }
 

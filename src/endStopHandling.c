@@ -46,7 +46,7 @@ void endStopHandling_init(void)
     for(i = 0; i < MAX_NUM_END_STOPS; i++)
     {
         enabled[i] = END_STOP_DISABLED;
-        inverted[i] = false;
+        inverted[i] = true;
     }
 }
 
