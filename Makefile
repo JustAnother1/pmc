@@ -149,7 +149,8 @@ debug:
 else ifeq ($(BOARD),$(filter $(BOARD),rumba ultimaker_original))
 burn: 
 # needs avrdude
-	avrdude -p$(MCU) -c$(PROGRAMMER) -P/dev/ttyACM0 -D -U flash:w:$(BIN_FOLDER)$(PROJECT).elf -v -v
+	avrdude -p$(MCU) -c$(PROGRAMMER) -P$(PROGRAM_PORT) -D -U flash:w:$(BIN_FOLDER)$(PROJECT).elf -v 
+	# -v
 endif
 
 .PHONY: all clean directories list

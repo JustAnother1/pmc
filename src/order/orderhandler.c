@@ -359,9 +359,9 @@ void oh_handle_request_state_of_switch(uint_fast8_t parameter_length)
         }
         *result_position =(uint8_t)switch_state;
         result_position++;
-        bytes_done = bytes_done + 2;
+        bytes_done = bytes_done + 1;
     }
-    com_send_ok_with_prefilled_parameter(parameter_length);
+    com_send_ok_with_prefilled_parameter(parameter_length/2);
 }
 
 void oh_handle_switch_an_output(uint_fast8_t parameter_length)

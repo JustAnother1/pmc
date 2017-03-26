@@ -10,7 +10,10 @@ ifeq ($(BOARD), rumba)
 	INCDIRS += /usr/lib/avr/include/
 	INCDIRS += /usr/lib/gcc/avr/4.9.2/include/
 	MCU = atmega2560
-	PROGRAMMER = wiring
+	#PROGRAMMER = wiring
+	PROGRAMMER = atmelice
+	#PROGRAM_PORT = /dev/ttyACM0
+	PROGRAM_PORT = usb
 	OPTIONS_ARCH += -mmcu=atmega2560
 	# -g: produce debugging information 
 	CFLAGS += -g 
@@ -54,6 +57,7 @@ ifeq ($(BOARD), ultimaker_original)
 	INCDIRS += /usr/lib/gcc/avr/4.9.2/include/
 	MCU = atmega2560
 	PROGRAMMER = wiring
+	PROGRAM_PORT = /dev/ttyACM0
 	OPTIONS_ARCH += -mmcu=atmega2560
 	# -g: produce debugging information 
 	CFLAGS += -g 

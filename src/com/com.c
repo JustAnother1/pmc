@@ -151,7 +151,7 @@ uint_fast8_t com_get_parameter_byte(uint_fast8_t index)
 
 uint_fast8_t com_get_host_timeout_sec(void)
 {
-    return (uint_fast8_t)host_timeout_tick/1000;
+    return (uint_fast8_t)(host_timeout_tick/1000);
 }
 
 static void check_host_timeout(void)
@@ -624,6 +624,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             break;
 
         case ORDER_TRAVERSE_FIMRWARE_CONFIGURATION_VALUES:
+            // TODO check if implemented
             if(1 == parameter_length)
             {
                 fw_cfg_get_next_value(com_get_parameter_byte(0));
@@ -662,6 +663,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             break;
 
         case ORDER_GET_FIRMWARE_CONFIGURATION_VALUE_PROPERTIES:
+            // TODO check if implemented
             if(1 == parameter_length)
             {
                 fw_cfg_get_value_property(com_get_parameter_byte(0));

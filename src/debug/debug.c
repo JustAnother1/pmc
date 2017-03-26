@@ -35,6 +35,7 @@
 #include "device_heater.h"
 #include "device_stepper.h"
 #include "device_temperature_sensor.h"
+#include "endStopHandling.h"
 #include "protocol.h"
 #include "trinamic.h"
 
@@ -508,16 +509,37 @@ static bool continue_order_debug_information(void)
             break;
 
     case 4: if(slow_order_cur_value < slow_order_num_values)
-        {
-            dev_temperature_sensor_print_status(slow_order_cur_value);
-            slow_order_cur_value++;
-        }
-        else
-        {
-            // printed all sensors -> done with this
-            slow_order_state++;
-        }
-        break;
+            {
+                dev_temperature_sensor_print_status(slow_order_cur_value);
+                slow_order_cur_value++;
+            }
+            else
+            {
+                // printed all sensors -> done with this
+                slow_order_cur_value = 0;
+                slow_order_num_values = hal_din_get_amount();
+                slow_order_state++;
+            }
+            break;
+
+    case 5: if(slow_order_cur_value < slow_order_num_values)
+            {
+                if(0 == dev_input_get_switch_state(slow_order_cur_value))
+                {
+                    debug_line(STR("End Stop %d : not Triggered"), slow_order_cur_value );
+                }
+                else
+                {
+                    debug_line(STR("End Stop %d : Triggered"), slow_order_cur_value );
+                }
+                slow_order_cur_value++;
+            }
+            else
+            {
+                // printed all end stops -> done with this
+                slow_order_state++;
+            }
+            break;
 
     // if we reach the default case then we are done.
     default: return true;
@@ -899,10 +921,6 @@ static bool parse_order(int length)
     case 'L':
     case 'l': // list - list the available debug information
         start_order_debug_information();
-        // debug_line(STR("current status:"));
-        // debug_line(STR("ticks per ms: max=%d, min=%d"), tick_max, tick_min);
-        // debug_line(STR("number of detected steppers: %d"), dev_stepper_get_count());
-        // dev_temperature_sensor_print_status();
         break;
 
 // order = m
