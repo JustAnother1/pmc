@@ -13,12 +13,12 @@
  *
  */
 
+#include <end_stop_handling.h>
 #include "com.h"
 #include "command_queue.h"
 #include "device_heater.h"
 #include "device_stepper.h"
 #include "device_input.h"
-#include "endStopHandling.h"
 #include "error.h"
 #include "events.h"
 #include "fw_cfg.h"

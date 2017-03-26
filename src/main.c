@@ -33,7 +33,7 @@
 #include "hal_time.h"
 #include "hal_cfg.h"
 #include "hal_power.h"
-#include "endStopHandling.h"
+#include "end_stop_handling.h"
 #include "step.h"
 
 

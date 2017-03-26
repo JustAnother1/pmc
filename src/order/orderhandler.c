@@ -24,7 +24,7 @@
 #include "device_stepper.h"
 #include "device_temperature_sensor.h"
 #include "fw_cfg.h"
-#include "endStopHandling.h"
+#include "end_stop_handling.h"
 #include "copy_string.h"
 
 static char firmware_name[]= "Pacemaker Client";

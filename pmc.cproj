@@ -341,10 +341,10 @@
     <Compile Include="src\device\device_temperature_sensor.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\endStopHandling.c">
+    <Compile Include="src\end_stop_handling.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="src\endStopHandling.h">
+    <Compile Include="src\end_stop_handling.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\error.c">

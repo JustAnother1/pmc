@@ -35,7 +35,7 @@
 #include "device_heater.h"
 #include "device_stepper.h"
 #include "device_temperature_sensor.h"
-#include "endStopHandling.h"
+#include "end_stop_handling.h"
 #include "protocol.h"
 #include "trinamic.h"
 

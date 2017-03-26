@@ -25,7 +25,7 @@
 #include "device_input.h"
 #include "hal_cfg.h"
 #include "hal_debug.h"
-#include "endStopHandling.h"
+#include "end_stop_handling.h"
 
 #define MAX_QUEUE_ELEMENTS                50
 // Block Envelope is Length and Type -> 2 Bytes

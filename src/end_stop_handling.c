@@ -15,7 +15,7 @@
 
 #include "step.h"
 #include "protocol.h"
-#include "endStopHandling.h"
+#include "end_stop_handling.h"
 #include "hal_cfg.h"
 #include "hal_din.h"
 #include "hal_debug.h"

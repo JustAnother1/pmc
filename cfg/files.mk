@@ -34,7 +34,7 @@ SRC += $(SRC_FOLDER)stepper/device_stepper.c
 SRC += $(SRC_FOLDER)stepper/step.c
 SRC += $(SRC_FOLDER)order/command_queue.c
 SRC += $(SRC_FOLDER)order/orderhandler.c
-SRC += $(SRC_FOLDER)endStopHandling.c
+SRC += $(SRC_FOLDER)end_stop_handling.c
 # Hardware abstraction layer - used peripherals
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_adc.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_buzzer.c

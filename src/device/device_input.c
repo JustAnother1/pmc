@@ -16,7 +16,7 @@
 #include "device_buzzer.h"
 #include "protocol.h"
 #include "hal_din.h"
-#include "endStopHandling.h"
+#include "end_stop_handling.h"
 
 void dev_input_init(void)
 {
