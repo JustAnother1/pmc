@@ -267,7 +267,7 @@ bool hal_send_frame_non_blocking_gcode_uart(uint8_t * frame, uint_fast16_t lengt
     if(false == copy_data_to_send(GCODE_UART, frame, length))
     {
         // Send buffer is full
-        hal_cpu_report_issue(10);
+        hal_cpu_report_issue(9);
         return false;
     }
 

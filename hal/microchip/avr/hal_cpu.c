@@ -18,6 +18,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/wdt.h>
+#include <avr/eeprom.h>
 #include "stddef.h"
 #include "stdbool.h"
 #include "hal_cfg.h"
@@ -27,6 +28,14 @@
 #include "board_cfg.h"
 
 #define MAX_TICK_FUNC         10
+
+// EEPROM Address
+#define EEPROM_ADDRESS_RESET_REASON (uint8_t*)(0)
+#define EEPROM_ADDRESS_ISSUES_START (uint8_t*)(1)
+
+// issues
+#define NUMBER_OF_ISSUES      10
+#define NO_ISSUE               0
 
 
 struct tick_node {
@@ -127,7 +136,7 @@ void hal_cpu_die(void)
 
 void hal_cpu_do_software_reset(uint32_t reason)
 {
-    (void)reason;
+    eeprom_write_byte(EEPROM_ADDRESS_RESET_REASON, (uint8_t)(0xff & reason));
     wdt_enable(WDTO_15MS);
     for(;;)
     {
@@ -196,6 +205,10 @@ void hal_cpu_add_ms_tick_function_cycle(msTickFkt additional_function, int every
 
 void hal_cpu_check_Reset_Reason(void)
 {
+    uint8_t reset_reason;
+    int i;
+
+    // CPU Register
     if(0 == MCUSR)
     {
         debug_line(STR("Reset: no reason"));
@@ -225,6 +238,35 @@ void hal_cpu_check_Reset_Reason(void)
     {
         debug_line(STR("Reset: 0x%02x"), MCUSR);
     }
+
+    // reported Reset reason
+    reset_reason = eeprom_read_byte(EEPROM_ADDRESS_RESET_REASON);
+    debug_msg(STR("Reset reason : "));
+    switch(reset_reason)
+    {
+    case RESET_REASON_NO_REASON          : debug_line(STR("no reason")); break;
+    case RESET_REASON_HOST_ORDER         : debug_line(STR("host order")); break;
+    case RESET_REASON_DEBUG_USER_REQUEST : debug_line(STR("user request on debug interface")); break;
+    case RESET_REASON_HAL                : debug_line(STR("HAL")); break;
+    default                              : debug_line(STR("%d"), reset_reason); break;
+    }
+    eeprom_write_byte(EEPROM_ADDRESS_RESET_REASON, RESET_REASON_NO_REASON);
+
+    // reported issues
+    for(i = 0; i < NUMBER_OF_ISSUES; i++)
+    {
+        uint8_t issue;
+        issue = eeprom_read_byte(EEPROM_ADDRESS_ISSUES_START + i);
+        if(NO_ISSUE == issue)
+        {
+            // empty slot
+        }
+        else
+        {
+            debug_line(STR("issue %d : %d"), i, issue);
+            eeprom_write_byte(EEPROM_ADDRESS_ISSUES_START + i, NO_ISSUE);
+        }
+    }
 }
 
 uint_fast8_t hal_cpu_get_state_byte(void)
@@ -239,5 +281,16 @@ void hal_cpu_print_Interrupt_information(void)
 
 void hal_cpu_report_issue(uint32_t issue_number)
 {
-    (void) issue_number;
+    int i;
+    for(i = 0; i < NUMBER_OF_ISSUES; i++)
+    {
+        uint8_t issue;
+        issue = eeprom_read_byte(EEPROM_ADDRESS_ISSUES_START + i);
+        if(NO_ISSUE == issue)
+        {
+            eeprom_write_byte(EEPROM_ADDRESS_ISSUES_START + i, (uint8_t)(0xff & issue_number));
+            break;
+        }
+        // else read next position
+    }
 }

@@ -18,10 +18,17 @@
 
 #include <inttypes.h>
 
+#if HARDWARE_TYPE == 1
+#define RESET_REASON_NO_REASON          0x1
+#define RESET_REASON_HOST_ORDER         0x2
+#define RESET_REASON_DEBUG_USER_REQUEST 0x3
+#define RESET_REASON_HAL                0x4
+#else
 #define RESET_REASON_NO_REASON          0x10000000
 #define RESET_REASON_HOST_ORDER         0x20000000
 #define RESET_REASON_DEBUG_USER_REQUEST 0x30000000
 #define RESET_REASON_HAL                0x40000000
+#endif
 
 typedef void (*msTickFkt)(void);
 

@@ -772,14 +772,14 @@ void com_send_stepper_error_event(uint_fast8_t cur_errors)
 
 static void send_firmware_id_frame(void)
 {
-    send_buffer[REPLY_FRAME_POS_OF_LENGTH] = 4;
+    send_buffer[REPLY_FRAME_POS_OF_LENGTH] = 5;
     send_buffer[REPLY_FRAME_POS_OF_CONTROL] = REPLY_CONTROL_FLAG_DEBUG;
     send_buffer[REPLY_FRAME_POS_OF_REPLY_CODE] = REPLY_CODE_DEBUG;
     send_buffer[REPLY_FRAME_START_OF_PARAMETER] = FIRMWARE_REVISION_MAJOR;
     send_buffer[REPLY_FRAME_START_OF_PARAMETER + 1] = FIRMWARE_REVISION_MINOR;
     send_buffer[REPLY_FRAME_START_OF_PARAMETER + 2] = hal_cpu_get_state_byte();
-    send_buffer[6] = crc8(6);
-    send_frame(7);
+    send_buffer[7] = crc8(6);
+    send_frame(8);
 }
 
 void com_send_bad_crc(uint_fast8_t received, uint_fast8_t expected)
