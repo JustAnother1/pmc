@@ -45,12 +45,14 @@ struct tick_node {
 };
 typedef struct tick_node tick_entry;
 
-static tick_entry  tick_list[MAX_TICK_FUNC];
+static volatile uint32_t now;
 #ifdef CPU_MS_TIMER_NEEDS_CNT
-static volatile uint_fast8_t cnt = 0;
+    volatile uint8_t cur_time_cnt;
 #endif
-static volatile uint32_t now = 0;
+
+static tick_entry  tick_list[MAX_TICK_FUNC];
 static uint32_t lastTickAt = 0;
+
 
 void hal_cpu_init_hal(void)
 {
@@ -66,7 +68,11 @@ void hal_cpu_init_hal(void)
     PRR1 = 0;
 
     // start time
+#ifdef CPU_MS_TIMER_NEEDS_CNT
+    cur_time_cnt = 0;
+#endif
     now = 0;
+
     // Start time base timer
     CPU_MS_TIMER_OCRA  = CPU_MS_TIMER_RELOAD_VALUE;
     CPU_MS_TIMER_TIMSK = (CPU_MS_TIMER_TIMSK | CPU_MS_TIMER_IRQ_1) & ~CPU_MS_TIMER_IRQ_0;
@@ -79,13 +85,13 @@ ISR(CPU_MS_TIMER_COMPARE_ISR, ISR_BLOCK)
 {
     hal_set_isr1_led(true);
 #ifdef CPU_MS_TIMER_NEEDS_CNT
-    cnt++;
-    if(0 == cnt%CPU_MS_TIMER_NEEDS_CNT)
+    cur_time_cnt++;
+    if(0 == cur_time_cnt%CPU_MS_TIMER_NEEDS_CNT)
     {
 #endif
-        now++;
+        now = now + 1ul;
 #ifdef CPU_MS_TIMER_NEEDS_CNT
-        cnt = 0;
+        cur_time_cnt = 0;
     }
 #endif
     hal_set_isr1_led(false);
@@ -99,6 +105,11 @@ ISR(BADISR_vect, ISR_BLOCK)
 uint32_t hal_cpu_get_ms_tick(void)
 {
     return now;
+}
+
+void hal_cpu_print_Interrupt_information(void)
+{
+    debug_line(STR("now  : %lu"), now);
 }
 
 void hal_cpu_tick(void)
@@ -272,11 +283,6 @@ void hal_cpu_check_Reset_Reason(void)
 uint_fast8_t hal_cpu_get_state_byte(void)
 {
     return MCUSR;
-}
-
-void hal_cpu_print_Interrupt_information(void)
-{
-
 }
 
 void hal_cpu_report_issue(uint32_t issue_number)

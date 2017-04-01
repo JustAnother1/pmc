@@ -43,7 +43,7 @@ CFLAGS += -pedantic
 # Use C99 with GNU extensions
 CFLAGS += -std=gnu99
 # print warnings in color
-CFLAGS += -fdiagnostics-color
+#CFLAGS += -fdiagnostics-color
 CPPFLAGS += -g -Wall -pedantic -fdiagnostics-color
 # to get reproduceable builds: 
 CFLAGS += -save-temps=obj
@@ -53,8 +53,8 @@ ifeq ($(COMPILER),clang)
 else
 endif
 
-CFLAGS += -nostdinc
-LDFLAGS += -nostdinc
+#CFLAGS += -nostdinc
+#LDFLAGS += -nostdinc
 
 LDFLAGS += -g
 LDFLAGS += -Wall
@@ -150,7 +150,7 @@ else ifeq ($(BOARD),$(filter $(BOARD),rumba ultimaker_original))
 burn: 
 # needs avrdude
 	avrdude -p$(MCU) -c$(PROGRAMMER) -P$(PROGRAM_PORT) -D -U flash:w:$(BIN_FOLDER)$(PROJECT).elf -v 
-	# -v
+# -v
 endif
 
 .PHONY: all clean directories list

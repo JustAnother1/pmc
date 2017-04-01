@@ -44,8 +44,6 @@
 #error "at least one interface(UART USB) needs to be enabled !"
 #endif
 
-
-
 #define WRONG_LENGTH      0
 #define NUMBER_OF_STRINGS 1
 
@@ -56,7 +54,7 @@ static uint8_t send_buffer[MAX_SEND_FRAME_SIZE];
 #define CS_CLEARED       1
 static uint_fast8_t client_state = CS_STOPPED;
 static uint32_t last_host_activity_tick = 0;
-static uint32_t host_timeout_tick = 30000; // 30 seconds
+static uint32_t host_timeout_tick = 30000ul; // 30 seconds
 static uint_fast8_t recovery_options = RECOVERY_CONDITION_CLEARED;
 static uint_fast8_t cause = STOPPED_CAUSE_RESET;
 static uint_fast8_t last_sequence_number = NOT_MATCHING_SEQUENCE_NUMBER; // Invalid Number so that it does not match

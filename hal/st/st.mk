@@ -30,6 +30,9 @@ ifeq ($(BOARD), stm407disco)
 		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/st_usb_device.c
 		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/st_usb_descriptor.c
 	endif
+	CFLAGS += -nostdinc
+	LDFLAGS += -nostdinc
+	CFLAGS += -fdiagnostics-color
 endif
 
 # Target is the pipy Board
@@ -92,4 +95,7 @@ ifeq ($(BOARD), pipy)
 		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/st_usb_device.c
 		SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/st_usb_descriptor.c
 	endif
+	CFLAGS += -nostdinc
+	LDFLAGS += -nostdinc
+	CFLAGS += -fdiagnostics-color
 endif

@@ -46,7 +46,7 @@
 
 // ticks per millisecond
 static uint_fast32_t tick_cnt;
-static uint_fast32_t tick_value;
+static uint32_t tick_value;
 static uint_fast32_t tick_max;
 static uint_fast32_t tick_min;
 
@@ -175,7 +175,7 @@ static void handle_ongoing_commands(void)
 
 static void count_debug_ticks_per_ms(void)
 {
-    uint_fast32_t time =  hal_cpu_get_ms_tick();
+    uint32_t time =  hal_cpu_get_ms_tick();
     if(tick_value == time)
     {
         // another tick in this ms
@@ -627,39 +627,45 @@ static bool continue_order_help(void)
 
 static void order_curTime(void)
 {
-    uint16_t millis = 0;
-    uint32_t seconds = 0;
-    uint32_t minutes = 0;
-    uint32_t hours = 0;
     uint32_t now =  hal_cpu_get_ms_tick();
-    debug_line(STR("now : %d"), now);
+    debug_line(STR("now : %lu"), now);
+
     if(now < 1000)
     {
-        debug_line(STR("%d ms"), now);
+        debug_line(STR("%u ms"), now);
     }
     else
     {
+        uint16_t millis;
+        uint32_t seconds;
         millis = now % 1000;
+        // debug_line(STR("millis : %u"), millis);
         seconds = now / 1000;
+        // debug_line(STR("seconds : %lu"), seconds);
         if(seconds < 60)
         {
-            debug_line(STR("%d,%03d s"), seconds, millis);
+            debug_line(STR("%lu,%03u s"), seconds, millis);
         }
         else
         {
+            uint32_t minutes;
             now = seconds;
             seconds = seconds % 60;
+            // debug_line(STR("seconds : %lu"), seconds);
             minutes = now / 60;
+            // debug_line(STR("minutes : %lu"), minutes);
             if(minutes < 60)
             {
-                debug_line(STR("%d:%02d,%03d mm:ss"),minutes, seconds, millis);
+                debug_line(STR("%lu:%02lu,%03u mm:ss"),minutes, seconds, millis);
             }
             else
             {
+                uint32_t hours;
                 now = minutes;
                 minutes = minutes % 60;
+                // debug_line(STR("minutes : %u"), minutes);
                 hours = now / 60;
-                debug_line(STR("%d:%02d:%02d,%03d hh:mm:ss"), hours, minutes, seconds, millis);
+                debug_line(STR("%lu:%02lu:%02lu,%03u hh:mm:ss"), hours, minutes, seconds, millis);
             }
         }
     }

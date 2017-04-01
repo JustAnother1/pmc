@@ -102,7 +102,7 @@
 // Time Base (millisecond timer) -> Timer 0 channel A
 #define CPU_MS_TIMER_TCCRA            TCCR0A
 #define CPU_MS_TIMER_TCCRA_1          0x03
-#define CPU_MS_TIMER_TCCRA_0          0
+#define CPU_MS_TIMER_TCCRA_0          0xc0
 #define CPU_MS_TIMER_TCCRB            TCCR0B
 #define CPU_MS_TIMER_TCCRB_1          0x01
 #define CPU_MS_TIMER_TCCRB_0          0xce
@@ -111,8 +111,8 @@
 #define CPU_MS_TIMER_TIMSK            TIMSK0
 #define CPU_MS_TIMER_IRQ_1            0x02
 #define CPU_MS_TIMER_IRQ_0            0
-#define CPU_MS_TIMER_NEEDS_CNT        8
-#define CPU_MS_TIMER_RELOAD_VALUE     (uint8_t)((F_CPU/1000)/8)
+#define CPU_MS_TIMER_NEEDS_CNT        64
+#define CPU_MS_TIMER_RELOAD_VALUE     (uint8_t)((F_CPU/1000)/CPU_MS_TIMER_NEEDS_CNT)
 #define CPU_MS_TIMER_COMPARE_ISR      TIMER0_COMPA_vect
 
 // PWM
