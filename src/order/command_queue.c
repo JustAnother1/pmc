@@ -410,10 +410,14 @@ bool cmd_queue_chnage_setting(uint8_t* setting)
     case 'e': // enable stepper test
         if(true == enabled)
         {
+            debug_line(STR("disabling !"));
+            step_enable_motor(0, 0);
             enabled = false;
         }
         else
         {
+            debug_line(STR("enabling !"));
+            step_enable_motor(0, 1);
             enabled = true;
         }
         return true;

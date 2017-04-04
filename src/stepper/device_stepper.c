@@ -60,6 +60,11 @@ void dev_stepper_init(void)
 #ifdef HAS_TRINAMIC
     available_steppers = 0;
 #else
+    step_init(available_steppers);
+    for(i = 0; i < available_steppers; i++)
+    {
+        state[i] = DEVICE_STATUS_ACTIVE;
+    }
     pololu_init();
 #endif
 }

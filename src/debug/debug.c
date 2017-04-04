@@ -37,6 +37,7 @@
 #include "device_temperature_sensor.h"
 #include "end_stop_handling.h"
 #include "protocol.h"
+#include "pololu.h"
 #include "trinamic.h"
 
 #define SLOW_ORDER_HELP                1
@@ -587,34 +588,39 @@ static bool continue_order_help(void)
     case 15: debug_line(STR("pc                         : print CPU configuration")); slow_order_state++; break;
     case 16: debug_line(STR("pi                         : print I2C configuration")); slow_order_state++; break;
     case 17: debug_line(STR("pin<Port,idx>              : print state of the pin")); slow_order_state++; break;
-    case 18: debug_line(STR("pse                        : print expansion SPI configuration")); slow_order_state++; break;
-    case 19: debug_line(STR("pss                        : print stepper SPI configuration")); slow_order_state++; break;
-    case 20: debug_line(STR("ptim<num>                  : print Timer Registers")); slow_order_state++; break;
+#ifdef HAS_TRINAMIC
+    case 18: slow_order_state++; break;
+#else
+    case 18: debug_line(STR("pp                         : print Pololu stepper status")); slow_order_state++; break;
+#endif
+    case 19: debug_line(STR("pse                        : print expansion SPI configuration")); slow_order_state++; break;
+    case 20: debug_line(STR("pss                        : print stepper SPI configuration")); slow_order_state++; break;
+    case 21: debug_line(STR("ptim<num>                  : print Timer Registers")); slow_order_state++; break;
 #ifdef USE_STEP_DIR
 #ifdef HAS_TRINAMIC
-    case 21: debug_line(STR("ptri                       : print Trinamic status")); slow_order_state++; break;
+    case 22: debug_line(STR("ptri                       : print Trinamic stepper status")); slow_order_state++; break;
 #else
-    case 21: slow_order_state++; break;
+    case 22: slow_order_state++; break;
 #endif
 #else
-    case 21: slow_order_state++; break;
+    case 22: slow_order_state++; break;
 #endif
-    case 22: debug_line(STR("pud                        : print Debug UART configuration")); slow_order_state++; break;
-    case 23: debug_line(STR("pug                        : print G-Code UART configuration")); slow_order_state++; break;
-    case 24: debug_line(STR("pq                         : print command queue status")); slow_order_state++; break;
+    case 23: debug_line(STR("pud                        : print Debug UART configuration")); slow_order_state++; break;
+    case 24: debug_line(STR("pug                        : print G-Code UART configuration")); slow_order_state++; break;
+    case 25: debug_line(STR("pq                         : print command queue status")); slow_order_state++; break;
     // q
-    case 25: debug_line(STR("r                          : reset the processor")); slow_order_state++; break;
+    case 26: debug_line(STR("r                          : reset the processor")); slow_order_state++; break;
     // s
 #ifdef HAS_TRINAMIC
-    case 26: debug_line(STR("sc                         : scan number of steppers")); slow_order_state++; break;
+    case 27: debug_line(STR("sc                         : scan number of steppers")); slow_order_state++; break;
 #else
-    case 26: slow_order_state++; break;
+    case 27: slow_order_state++; break;
 #endif
-    case 27: debug_line(STR("t                          : show current time")); slow_order_state++; break;
+    case 28: debug_line(STR("t                          : show current time")); slow_order_state++; break;
     // u
     // v
-    case 28: debug_line(STR("we<hex chars>              : write data to expansion SPI")); slow_order_state++; break;
-    case 29: debug_line(STR("ws<hex chars>              : write data to stepper SPI")); slow_order_state++; break;
+    case 29: debug_line(STR("we<hex chars>              : write data to expansion SPI")); slow_order_state++; break;
+    case 30: debug_line(STR("ws<hex chars>              : write data to stepper SPI")); slow_order_state++; break;
     // x
     // y
     // z
@@ -1065,6 +1071,15 @@ static bool parse_order(int length)
                 break;
             }
             break;
+
+// order = pp
+#ifdef HAS_TRINAMIC
+#else
+        case 'P':
+        case 'p':
+            pololu_print_status();
+            break;
+#endif
 
 // order = ps
         case 'S':
