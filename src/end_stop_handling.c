@@ -17,6 +17,7 @@
 #include "protocol.h"
 #include "end_stop_handling.h"
 #include "hal_cfg.h"
+#include "hal_cpu.h"
 #include "hal_din.h"
 #include "hal_debug.h"
 #include "com.h"
@@ -33,6 +34,8 @@ static uint_fast8_t max_end_stop[MAX_NUMBER];
 static uint_fast8_t min_end_stop[MAX_NUMBER];
 // index is switch number, value in array is if this switch is active or not
 static uint_fast8_t enabled[MAX_NUM_END_STOPS];
+static uint32_t debounce[MAX_NUM_END_STOPS];
+static bool is_triggered[MAX_NUM_END_STOPS];
 static bool inverted[MAX_NUM_END_STOPS]; // TODO make this configurable
 
 void endStopHandling_init(void)
@@ -46,6 +49,7 @@ void endStopHandling_init(void)
     for(i = 0; i < MAX_NUM_END_STOPS; i++)
     {
         enabled[i] = END_STOP_DISABLED;
+        is_triggered[i] = false;
         inverted[i] = true;
     }
 }
@@ -84,30 +88,45 @@ static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast
            || ((true  == inverted[switch_number]) && (false == high)) )
         {
             // end stop has triggered
-            if(true == step_is_homing())
+            if(false == is_triggered[switch_number])
             {
-                // stop movement on this stepper
-                debug_line(STR("End Stop %d hit -> stop movement"), switch_number);
-                step_end_stop_hit_on(stepper);
+                if(true == step_is_homing())
+                {
+                    // stop movement on this stepper
+                    debug_line(STR("End Stop %d hit -> stop movement"), switch_number);
+                    step_end_stop_hit_on(stepper);
+                }
+                else
+                {
+                    // end stop was hit unexpectedly and was enabled ! -> we have a problem !
+                    debug_line(STR("End Stop %d hit -> go to stopped mode!"), switch_number);
+                    gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
+                }
+                is_triggered[switch_number] = true;
+                debounce[switch_number] = hal_cpu_get_ms_tick() + 5;
             }
-            else
-            {
-                // end stop was hit unexpectedly and was enabled ! -> we have a problem !
-                debug_line(STR("End Stop %d hit -> go to stopped mode!"), switch_number);
-                gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
-            }
+            // else already detected (bouncing switch)
         }
         else
         {
-            // else end stop is not triggered any more
-            debug_line(STR("End Stop %d not triggered(inverted : %d, high: %d))"),
-                       switch_number, inverted[switch_number], high);
+            // end stop is not triggered any more
+            if(true == is_triggered[switch_number])
+            {
+                uint32_t now =  hal_cpu_get_ms_tick();
+                if(now > debounce[switch_number])
+                {
+                    is_triggered[switch_number] = false;
+                }
+                // else switch is bouncing
+            }
+            // debug_line(STR("End Stop %d not triggered(inverted : %d, high: %d))"),
+            //            switch_number, inverted[switch_number], high);
         }
     }
     else
     {
         // else the end stop is not enabled -> we ignore this event
-        debug_line(STR("End Stop %d not enabled!"), switch_number);
+        // debug_line(STR("End Stop %d not enabled!"), switch_number);
     }
 }
 
@@ -117,13 +136,13 @@ bool dev_input_enable(uint_fast8_t switch_number, uint_fast8_t enable)
     {
         if(END_STOP_ENABLED == enable)
         {
-            debug_line(STR("enabling end stop %d"), switch_number);
+            // debug_line(STR("enabling end stop %d"), switch_number);
             enabled[switch_number] = true;
             return true;
         }
         else if(END_STOP_DISABLED == enable)
         {
-            debug_line(STR("disabling end stop %d"), switch_number);
+            // debug_line(STR("disabling end stop %d"), switch_number);
             enabled[switch_number] = false;
             return true;
         }

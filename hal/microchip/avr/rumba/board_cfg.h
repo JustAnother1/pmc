@@ -49,7 +49,7 @@
  *  c:
  */
 
-// LED
+// LED - PB7
 #define DEBUG_LED_MASK                0x80
 #define DEBUG_LED_DDR                 DDRB
 #define DEBUG_LED_PIN                 PINB

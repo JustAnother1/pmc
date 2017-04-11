@@ -19,6 +19,8 @@
 #include "step.h"
 #include "board_cfg.h"
 
+// TODO move to hal - and then use hal_dout
+
 void pololu_init(void)
 {
 #if NUMBER_OF_STEPPERS > 0
@@ -103,49 +105,49 @@ void pololu_enable_motor(uint_fast8_t stepper_number)
         {
     #if NUMBER_OF_STEPPERS > 0
         case  0:
-            debug_line(STR("enabling Motor 0!"));
+            // debug_line(STR("enabling Motor 0!"));
             STEPPER_0_ENABLE_PORT &= ~STEPPER_0_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 1
         case  1:
-            debug_line(STR("enabling Motor 1!"));
+            // debug_line(STR("enabling Motor 1!"));
             STEPPER_1_ENABLE_PORT &= ~STEPPER_1_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 2
         case  2:
-            debug_line(STR("enabling Motor 2!"));
+            // debug_line(STR("enabling Motor 2!"));
             STEPPER_2_ENABLE_PORT &= ~STEPPER_2_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 3
         case  3:
-            debug_line(STR("enabling Motor 3!"));
+            // debug_line(STR("enabling Motor 3!"));
             STEPPER_3_ENABLE_PORT &= ~STEPPER_3_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 4
         case  4:
-            debug_line(STR("enabling Motor 4!"));
+            // debug_line(STR("enabling Motor 4!"));
             STEPPER_4_ENABLE_PORT &= ~STEPPER_4_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 5
         case  5:
-            debug_line(STR("enabling Motor 5!"));
+            // debug_line(STR("enabling Motor 5!"));
             STEPPER_5_ENABLE_PORT &= ~STEPPER_5_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 6
         case  6:
-            debug_line(STR("enabling Motor 6!"));
+            // debug_line(STR("enabling Motor 6!"));
             STEPPER_6_ENABLE_PORT &= ~STEPPER_6_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 7
         case  7:
-            debug_line(STR("enabling Motor 7!"));
+            // debug_line(STR("enabling Motor 7!"));
             STEPPER_7_ENABLE_PORT &= ~STEPPER_7_ENABLE_MASK;
             break;
     #endif
@@ -162,49 +164,49 @@ void pololu_disable_motor(uint_fast8_t stepper_number)
         {
     #if NUMBER_OF_STEPPERS > 0
         case  0:
-            debug_line(STR("disabling Motor 0!"));
+            // debug_line(STR("disabling Motor 0!"));
             STEPPER_0_ENABLE_PORT |= STEPPER_0_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 1
         case  1:
-            debug_line(STR("disabling Motor 1!"));
+            // debug_line(STR("disabling Motor 1!"));
             STEPPER_1_ENABLE_PORT |= STEPPER_1_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 2
         case  2:
-            debug_line(STR("disabling Motor 2!"));
+            // debug_line(STR("disabling Motor 2!"));
             STEPPER_2_ENABLE_PORT |= STEPPER_2_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 3
         case  3:
-            debug_line(STR("disabling Motor 3!"));
+            // debug_line(STR("disabling Motor 3!"));
             STEPPER_3_ENABLE_PORT |= STEPPER_3_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 4
         case  4:
-            debug_line(STR("disabling Motor 4!"));
+            // debug_line(STR("disabling Motor 4!"));
             STEPPER_4_ENABLE_PORT |= STEPPER_4_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 5
         case  5:
-            debug_line(STR("disabling Motor 5!"));
+            // debug_line(STR("disabling Motor 5!"));
             STEPPER_5_ENABLE_PORT |= STEPPER_5_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 6
         case  6:
-            debug_line(STR("disabling Motor 6!"));
+            // debug_line(STR("disabling Motor 6!"));
             STEPPER_6_ENABLE_PORT |= STEPPER_6_ENABLE_MASK;
             break;
     #endif
     #if NUMBER_OF_STEPPERS > 7
         case  7:
-            debug_line(STR("disabling Motor 7!"));
+            // debug_line(STR("disabling Motor 7!"));
             STEPPER_7_ENABLE_PORT |= STEPPER_7_ENABLE_MASK;
             break;
     #endif

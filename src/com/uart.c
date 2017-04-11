@@ -25,7 +25,7 @@ static bool crc_is_valid(void);
 static bool has_a_frame = false;
 static uint_fast16_t checked_bytes = 0;
 
-static uint_fast8_t length;
+static uint_fast16_t length;
 
 // TODO: Timeout if more than 20ms no byte has been received,
 // then forget the already received bytes.

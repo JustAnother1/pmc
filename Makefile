@@ -86,7 +86,7 @@ help:
 	@echo "make burn BOARD=ultimaker_original - programm the created file to Ultimaker Original"
 	@echo "  "
 
-all: directories $(OBJS) $(BIN_FOLDER)$(PROJECT).elf $(OBJS) $(BIN_FOLDER)$(PROJECT).bin
+all: directories $(OBJS) $(BIN_FOLDER)$(PROJECT).elf $(OBJS) $(BIN_FOLDER)$(PROJECT).bin list
 	$(TRGT)size $(BIN_FOLDER)$(PROJECT).elf
 
 $(BIN_FOLDER)%o: %c
@@ -130,11 +130,14 @@ clean:
 	-rm -rf $(TEST_BIN_FOLDER)
 	-rm -rf $(BIN_FOLDER)
 
+
+
 list:
 	@echo " READ -> $(BIN_FOLDER)$(PROJECT).rd"
 	@arm-none-eabi-readelf -Wall $(BIN_FOLDER)$(PROJECT).elf > $(BIN_FOLDER)$(PROJECT).rd
 	@echo " LIST -> $(BIN_FOLDER)$(PROJECT).lst"
-	@arm-none-eabi-objdump -axdDSstr $(BIN_FOLDER)$(PROJECT).elf > $(BIN_FOLDER)$(PROJECT).lst
+	@$(OBJDUMP) -axdDSstr $(BIN_FOLDER)$(PROJECT).elf > $(BIN_FOLDER)$(PROJECT).lst
+	#$(OBJDUMP) -h -S -z $< > $@
 
 ifeq ($(BOARD),$(filter $(BOARD),stm407disco pipy))
 burn: 

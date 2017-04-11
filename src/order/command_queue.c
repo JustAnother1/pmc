@@ -321,6 +321,8 @@ void cmd_queue_add_blocks(uint_fast8_t received_bytes)
                                                "invalid block length");
                     return;
                 }
+                // Check that Accel + Decel Steps are not higher than steps on primary axis
+                // TODO
             }
             // Everything is OK
             write_pos = next_write_position;

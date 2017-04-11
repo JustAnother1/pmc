@@ -35,8 +35,8 @@ void hal_time_ms_sleep(uint_fast32_t ms)
 
 bool hal_time_start_timer(uint_fast8_t device, uint32_t clock, uint_fast16_t reload_value, TimerFkt function)
 {
-	(void) clock;
-	(void) function;
+    (void) clock;
+    (void) function;
     if(STEP_TIMER == device)
     {
         STEP_TIMER_OCRA = reload_value;
@@ -52,6 +52,8 @@ void hal_time_stop_timer(uint_fast8_t device)
     if(STEP_TIMER == device)
     {
         STEP_TIMER_TCCRA = 0;
+        STEP_TIMER_TCCRB = 0; // Stop Timer
+        STEP_TIMER_TIMSK = 0; // disable all interrupts
     }
 }
 

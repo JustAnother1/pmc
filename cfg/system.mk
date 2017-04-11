@@ -23,6 +23,7 @@ endif
 AS = $(CCPREFIX)gcc -x assembler-with-cpp
 CP = $(CCPREFIX)objcopy
 DB = $(CCPREFIX)gdb
+OBJDUMP = $(CCPREFIX)objdump
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
 DIS = $(CP) -S

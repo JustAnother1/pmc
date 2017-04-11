@@ -31,7 +31,7 @@ static void forget_bytes(uint_fast16_t how_many);
 
 static bool is_connected = false;
 static bool has_a_frame = false;
-static uint_fast8_t length;
+static uint_fast16_t length;
 static uint_fast16_t read_pos = 0;
 static uint_fast16_t write_pos = 0;
 static uint_fast16_t checked_bytes = 0;

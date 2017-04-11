@@ -100,6 +100,7 @@ ISR(CPU_MS_TIMER_COMPARE_ISR, ISR_BLOCK)
 ISR(BADISR_vect, ISR_BLOCK)
 {
     debug_line(STR("Interrupt occurred with no ISR !"));
+    hal_set_error_led(true);
 }
 
 uint32_t hal_cpu_get_ms_tick(void)
@@ -223,31 +224,33 @@ void hal_cpu_check_Reset_Reason(void)
     if(0 == MCUSR)
     {
         debug_line(STR("Reset: no reason"));
-        return;
     }
-    if(0 != (MCUSR & 0x01))
+    else
     {
-        debug_line(STR("Reset: Power on"));
-    }
-    if(0 != (MCUSR & 0x02))
-    {
-        debug_line(STR("Reset: External"));
-    }
-    if(0 != (MCUSR & 0x04))
-    {
-        debug_line(STR("Reset: Brown out"));
-    }
-    if(0 != (MCUSR & 0x08))
-    {
-        debug_line(STR("Reset: Watchdog"));
-    }
-    if(0 != (MCUSR & 0x10))
-    {
-        debug_line(STR("Reset: JTAG"));
-    }
-    if(0 != (MCUSR & 0xe0))
-    {
-        debug_line(STR("Reset: 0x%02x"), MCUSR);
+        if(0 != (MCUSR & 0x01))
+        {
+            debug_line(STR("Reset: Power on"));
+        }
+        if(0 != (MCUSR & 0x02))
+        {
+            debug_line(STR("Reset: External"));
+        }
+        if(0 != (MCUSR & 0x04))
+        {
+            debug_line(STR("Reset: Brown out"));
+        }
+        if(0 != (MCUSR & 0x08))
+        {
+            debug_line(STR("Reset: Watchdog"));
+        }
+        if(0 != (MCUSR & 0x10))
+        {
+            debug_line(STR("Reset: JTAG"));
+        }
+        if(0 != (MCUSR & 0xe0))
+        {
+            debug_line(STR("Reset: 0x%02x"), MCUSR);
+        }
     }
 
     // reported Reset reason

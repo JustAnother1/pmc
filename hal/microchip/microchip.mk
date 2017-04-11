@@ -24,6 +24,11 @@ ifeq ($(BOARD), rumba)
 	# uses DWARF format version 2 (TODO: Why not 4? and then also change -g to -g3)
 	CFLAGS += -ffunction-sections
 	CFLAGS += -fdata-sections
+	CFLAGS += -funsigned-char
+	CFLAGS += -funsigned-bitfields
+	CFLAGS += -fpack-struct 
+	CFLAGS += -fshort-enums
+	CFLAGS += -mrelax
 	# warn if a float is implicitly promoted to double
 	##CFLAGS += -Wdouble-promotion
 	# warn if more then this amount of bytes on the stack are used

@@ -596,7 +596,7 @@ static void make_the_needed_steps(uint_fast16_t reload_time)
 
 static void get_steps_for_this_phase(float factor)
 {
-    int maxSteps = 0;
+    uint_fast16_t maxSteps = 0;
     uint_fast8_t i;
     for(i = 0; i < 8; i++)
     {
@@ -939,6 +939,7 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 #else
                 pololu_enable_motor(stepper_number);
 #endif
+                enabled[stepper_number] = true;
             }
             // else already enabled
         }
@@ -951,6 +952,7 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
 #else
                 pololu_disable_motor(stepper_number);
 #endif
+                enabled[stepper_number] = false;
             }
             // else  already disabled
         }
