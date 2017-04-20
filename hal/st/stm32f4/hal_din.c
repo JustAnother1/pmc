@@ -212,22 +212,22 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
         switch(device)
         {
 #if D_IN_NUM_PINS > 0
-        case 0: if(0 !=(D_IN_0_GPIO_PORT->IDR & D_IN_0_IDR)) {return 1;} else {return 0;} break;
+        case 0: if(0 !=(D_IN_0_GPIO_PORT->IDR & D_IN_0_IDR)) {return DIN_HIGH;} else {return DIN_LOW;} break;
 #endif
 #if D_IN_NUM_PINS > 1
-        case 1: if(0 !=(D_IN_1_GPIO_PORT->IDR & D_IN_1_IDR)) {return 1;} else {return 0;} break;
+        case 1: if(0 !=(D_IN_1_GPIO_PORT->IDR & D_IN_1_IDR)) {return DIN_HIGH;} else {return DIN_LOW;} break;
 #endif
 #if D_IN_NUM_PINS > 2
-        case 2: if(0 !=(D_IN_2_GPIO_PORT->IDR & D_IN_2_IDR)) {return 1;} else {return 0;} break;
+        case 2: if(0 !=(D_IN_2_GPIO_PORT->IDR & D_IN_2_IDR)) {return DIN_HIGH;} else {return DIN_LOW;} break;
 #endif
 #if D_IN_NUM_PINS > 3
-        case 3: if(0 !=(D_IN_3_GPIO_PORT->IDR & D_IN_3_IDR)) {return 1;} else {return 0;} break;
+        case 3: if(0 !=(D_IN_3_GPIO_PORT->IDR & D_IN_3_IDR)) {return DIN_HIGH;} else {return DIN_LOW;} break;
 #endif
 #if D_IN_NUM_PINS > 4
-        case 4: if(0 !=(D_IN_4_GPIO_PORT->IDR & D_IN_4_IDR)) {return 1;} else {return 0;} break;
+        case 4: if(0 !=(D_IN_4_GPIO_PORT->IDR & D_IN_4_IDR)) {return DIN_HIGH;} else {return DIN_LOW;} break;
 #endif
 #if D_IN_NUM_PINS > 5
-        case 5: if(0 !=(D_IN_5_GPIO_PORT->IDR & D_IN_5_IDR)) {return 1;} else {return 0;} break;
+        case 5: if(0 !=(D_IN_5_GPIO_PORT->IDR & D_IN_5_IDR)) {return DIN_HIGH;} else {return DIN_LOW;} break;
 #endif
         default:
             debug_line(STR("din pin(%d) not available!"), device);
@@ -238,7 +238,7 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
     {
         debug_line(STR("din pin(%d) not available!"), device);
     }
-    return 0;
+    return DIN_ERROR;
 }
 
 void hal_din_subscribe_to_events(uint_fast8_t switch_number, uint_fast8_t stepper_number, din_func handle_func)

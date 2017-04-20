@@ -55,7 +55,7 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data);
 bool step_add_delay(uint_fast16_t ms);
 void step_disable_all_motors(void);
 void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off);
-void step_end_stop_hit_on(uint_fast8_t stepper_number);
+void step_end_stop_hit_on(uint_fast8_t stepper_number, bool max);
 void refill_step_buffer(void);
 
 

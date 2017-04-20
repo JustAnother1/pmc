@@ -21,12 +21,14 @@
 #include "hal_spi.h"
 #include "hal_stepper_port.h"
 #include "hal_time.h"
+#include "device_stepper.h"
 #include "step.h"
 #ifdef HAS_TRINAMIC
 #include "trinamic.h"
 #else
 #include "pololu.h"
 #endif
+#include "protocol.h"
 
 #ifndef STEP_TIMER_FREQ_12MHZ
  #ifndef STEP_TIMER_FREQ_16MHZ
@@ -44,6 +46,7 @@ static void finished_cur_slot(void);
 static void make_the_needed_steps(uint_fast16_t reload_time);
 static void auto_activate_usedAxis(void);
 static void increment_write_pos(void);
+static bool check_end_stops(void);
 #ifdef USE_STEP_DIR
 static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value);
 #else
@@ -672,6 +675,96 @@ static void auto_activate_usedAxis(void)
     }
 }
 
+static bool check_end_stops(void)
+{
+    uint_fast8_t active_steppers = 0;
+    uint_fast8_t stepper_mask = 1; // init mask to first stepper
+    uint_fast8_t i;
+
+    for(i = 0; i < MAX_NUMBER; i++)
+    {
+        if(0 != (stepper_mask & active_axes_map))
+        {
+            // This stepper will move...
+            if(0 == (stepper_mask & direction_for_move))
+            {
+#if MOVEMENT_DIRECTION_DECREASING == 0
+                // ... towards min
+                if(true == dev_stepper_is_end_stop_triggered(i, MIN_END))
+                {
+                    debug_line(STR("End Stop hit on Min End!"));
+                    // end stop already triggered -> no movement on this stepper
+                    step_end_stop_hit_on(i, false);
+                }
+                else
+                {
+                    // this stepper can move
+                    active_steppers++;
+                }
+#else
+                // ... towards max
+                if(true == dev_stepper_is_end_stop_triggered(i, MAX_END))
+                {
+                    debug_line(STR("End Stop hit on Max End!"));
+                    // end stop already triggered -> no movement on this stepper
+                    step_end_stop_hit_on(i, true);
+                }
+                else
+                {
+                    // this stepper can move
+                    active_steppers++;
+                }
+#endif
+            }
+            else
+            {
+#if MOVEMENT_DIRECTION_DECREASING == 0
+                // ... towards max
+                if(true == dev_stepper_is_end_stop_triggered(i, MAX_END))
+                {
+                    debug_line(STR("End Stop hit on Max End!"));
+                    // end stop already triggered -> no movement on this stepper
+                    step_end_stop_hit_on(i, true);
+                }
+                else
+                {
+                    // this stepper can move
+                    active_steppers++;
+                }
+#else
+                // ... towards min
+                if(true == dev_stepper_is_end_stop_triggered(i, MIN_END))
+                {
+                    debug_line(STR("End Stop hit on Min End!"));
+                    // end stop already triggered -> no movement on this stepper
+                    step_end_stop_hit_on(i, false);
+                }
+                else
+                {
+                    // this stepper can move
+                    active_steppers++;
+                }
+#endif
+            }
+        }
+
+        // shift mask to next stepper
+        stepper_mask = stepper_mask << 1;
+    }
+
+    if(0 == active_steppers)
+    {
+        // no stepper will move
+        return false;
+    }
+    else
+    {
+        // some steppers will move
+        return true;
+    }
+}
+
+
 // public functions
 
 void step_init(uint_fast8_t num_stepper)
@@ -723,6 +816,7 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
     {
         return false;
     }
+    // Parse move data
     active_axes_map = 0;
     primary_axis = 0;
     if(0x80 == (0x80 & move_data[1]))
@@ -791,7 +885,9 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         }
         offset = 6;
     }
+
     auto_activate_usedAxis();
+
     // acceleration Steps
     if(true == eight_Bit_Steps)
     {
@@ -814,6 +910,7 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         decelleration_steps = move_data[offset] * 256 + move_data[offset + 1];
         offset = offset + 2;
     }
+
     for(i = 0; i < 8; i++)
     {
         if(0 == (active_axes_map & (0x01 << i)))
@@ -861,6 +958,14 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
             phase_of_move = MOVE_PHASE_DECELERATE ;
             get_steps_for_this_phase(1);
         }
+    }
+
+    if(false == check_end_stops())
+    {
+        // we are done with this move because all steppers in this move
+        // have already triggered the end stops for that direction.
+        busy = false;
+        return true;
     }
 
     if(0 < acceleration_steps)
@@ -961,38 +1066,57 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
     // else invalid stepper
 }
 
-void step_end_stop_hit_on(uint_fast8_t stepper_number)
+void step_end_stop_hit_on(uint_fast8_t stepper_number, bool max)
 {
-    int i;
     uint32_t stepper_Mask = 1 << stepper_number;
-    // plan no more steps on this axis
-    steps_on_axis[stepper_number] = 0;
-    steps_in_this_phase_on_axis[stepper_number] = 0;
 
-    // cancel all planned steps on this axis
-    if(0 == (hal_stepper_get_Output() & stepper_Mask))
+    if(0 != (active_axes_map & stepper_Mask))
     {
-        // step signal is currently 0 and should stay that way
-        for(i = read_pos; i != write_pos; i++)
+        if(   (   (true == max)
+                && ((MOVEMENT_DIRECTION_INCREASING << stepper_number) == (direction_for_move & stepper_Mask)))
+           ||
+              (   (false == max)
+                && ((MOVEMENT_DIRECTION_DECREASING << stepper_number) == (direction_for_move & stepper_Mask))) )
         {
-            if(i == STEP_BUFFER_SIZE)
+            if(true == max)
             {
-                i = 0;
+                debug_line(STR("stopping movement(Stepper %d, max)"), stepper_number);
             }
-            next_step[read_pos] = next_step[read_pos] & ~stepper_Mask;
+            else
+            {
+                debug_line(STR("stopping movement(Stepper %d, min)"), stepper_number);
+            }
+            write_pos = read_pos; // Forget all planned moves
+            // Check if another axis was in this move
+            if(0 == (active_axes_map &~(1<<stepper_number)))
+            {
+                // end of move
+                finished_cur_slot();
+            }
+            else
+            {
+                // TODO create new move with only the remaining axis
+                finished_cur_slot();
+            }
+        }
+        else
+        {
+            if(true == max)
+            {
+                debug_line(STR("We move towards other end stop (triggered: End Stop max, Stepper %d)"), stepper_number);
+            }
+            else
+            {
+                debug_line(STR("We move towards other end stop (triggered: End Stop min, Stepper %d)"), stepper_number);
+            }
+            // end stop hit for other direction. This is ok.
+            // Example: After homing the first move is moving away from the end stop,
+            //          but the end stop is still triggered!
         }
     }
     else
     {
-        // step signal is currently 1 and should stay that way
-        for(i = read_pos; i != write_pos; i++)
-        {
-            if(i == STEP_BUFFER_SIZE)
-            {
-                i = 0;
-            }
-            next_step[read_pos] = next_step[read_pos] | stepper_Mask;
-        }
+        // end stop hit for a stepper that is not moving -> nothing to do
     }
 }
 

@@ -20,73 +20,73 @@
 // The Pacemaker protocol definition is available here:
 // https://github.com/JustAnother1/Pacemaker/blob/master/doc/Pacemaker_Protocol.asciidoc
 
-#define HOST_SYNC_REQUEST                    0x23
-#define CLIENT_FRAME_SYNC                    0x42
+#define HOST_SYNC_REQUEST                                      0x23
+#define CLIENT_FRAME_SYNC                                      0x42
 
-#define REQUEST_NUMBER_OF_NON_PARAMETER_BYTES_IN_LENGTH 2
+#define REQUEST_NUMBER_OF_NON_PARAMETER_BYTES_IN_LENGTH        2
 
 
-#define REPLY_FRAME_POS_OF_LENGTH            1
-#define REPLY_FRAME_POS_OF_CONTROL           2
-#define REPLY_FRAME_POS_OF_REPLY_CODE        3
-#define REPLY_FRAME_START_OF_PARAMETER       4
+#define REPLY_FRAME_POS_OF_LENGTH                              1
+#define REPLY_FRAME_POS_OF_CONTROL                             2
+#define REPLY_FRAME_POS_OF_REPLY_CODE                          3
+#define REPLY_FRAME_START_OF_PARAMETER                         4
 
-#define REQUEST_FRAME_POS_OF_CONTROL         2
-#define REQUEST_FRAME_POS_OF_ORDER_CODE      3
-#define REQUEST_FRAME_START_OF_PARAMETER     4
+#define REQUEST_FRAME_POS_OF_CONTROL                           2
+#define REQUEST_FRAME_POS_OF_ORDER_CODE                        3
+#define REQUEST_FRAME_START_OF_PARAMETER                       4
 
-#define REQUEST_CONTROL_SEQUNECE_NUMBER_FLAG 0x0f
-#define REQUEST_CONTROL_RESYNC_FLAG_FLAG     0x10
-#define REPLY_CONTROL_FLAG_DEBUG             0x80
+#define REQUEST_CONTROL_SEQUNECE_NUMBER_FLAG                   0x0f
+#define REQUEST_CONTROL_RESYNC_FLAG_FLAG                       0x10
+#define REPLY_CONTROL_FLAG_DEBUG                               0x80
 
-#define MIN_BYTES_HOST_FRAME                 5
-#define MIN_BYTES_CLIENT_FRAME               5
-#define MAX_BYTES_CLIENT_PARAMETER           50  // TODO
-#define MAX_RECEIVE_FRAME_SIZE               256
-#define MAX_SEND_FRAME_SIZE                  MIN_BYTES_CLIENT_FRAME + MAX_BYTES_CLIENT_PARAMETER
+#define MIN_BYTES_HOST_FRAME                                   5
+#define MIN_BYTES_CLIENT_FRAME                                 5
+#define MAX_BYTES_CLIENT_PARAMETER                             50  // TODO
+#define MAX_RECEIVE_FRAME_SIZE                                 256
+#define MAX_SEND_FRAME_SIZE                                    MIN_BYTES_CLIENT_FRAME + MAX_BYTES_CLIENT_PARAMETER
 
-#define REPLY_CODE_FRAME_RECEIPT_ERROR       0x00
-#define FRAME_ERROR_BAD_FRAME                0
-#define FRAME_ERROR_BAD_CRC                  1
-#define FRAME_ERROR_UNABLE_TO_ACCEPT         2
+#define REPLY_CODE_FRAME_RECEIPT_ERROR                         0x00
+#define FRAME_ERROR_BAD_FRAME                                  0
+#define FRAME_ERROR_BAD_CRC                                    1
+#define FRAME_ERROR_UNABLE_TO_ACCEPT                           2
 
-#define REPLY_CODE_OK                        0x10
+#define REPLY_CODE_OK                                          0x10
 
-#define REPLY_CODE_GENERIC_APPLICATION_ERROR 0x11
-#define GENERIC_ERROR_UNKNOWN_ORDER          1
-#define GENERIC_ERROR_BAD_PARAMETER_FORMAT   2
-#define GENERIC_ERROR_BAD_PARAMETER_VALUE    3
-#define GENERIC_ERROR_INVALID_DEVICE_TYPE    4
-#define GENERIC_ERROR_INVALID_DEVICE_NUMBER  5
-#define GENERIC_ERROR_INCORRECT_MODE         6
-#define GENERIC_ERROR_BUSY                   7
-#define GENERIC_ERROR_FAILED                 8
-#define GENERIC_ERROR_FIRMWARE_ERROR         9
+#define REPLY_CODE_GENERIC_APPLICATION_ERROR                   0x11
+#define GENERIC_ERROR_UNKNOWN_ORDER                            1
+#define GENERIC_ERROR_BAD_PARAMETER_FORMAT                     2
+#define GENERIC_ERROR_BAD_PARAMETER_VALUE                      3
+#define GENERIC_ERROR_INVALID_DEVICE_TYPE                      4
+#define GENERIC_ERROR_INVALID_DEVICE_NUMBER                    5
+#define GENERIC_ERROR_INCORRECT_MODE                           6
+#define GENERIC_ERROR_BUSY                                     7
+#define GENERIC_ERROR_FAILED                                   8
+#define GENERIC_ERROR_FIRMWARE_ERROR                           9
 
-#define REPLY_CODE_STOPPED                   0x12
-#define RECOVERY_CONDITION_CLEARED           1
-#define RECOVERY_CONDITION_PERSIST           2
-#define RECOVERY_UNRECOVERABLE               3
-#define STOPPED_CAUSE_RESET                  0
-#define STOPPED_CAUSE_END_STOP_HIT           1
-#define STOPPED_CAUSE_MOVEMENT_ERROR         2
-#define STOPPED_CAUSE_TEMPERATURE_ERROR      3
-#define STOPPED_CAUSE_DEVICE_FAULT           4
-#define STOPPED_CAUSE_ELECTRICAL_FAULT       5
-#define STOPPED_CAUSE_FIRMWARE_FAULT         6
-#define STOPPED_CAUSE_USER_REQUESTED         7
-#define STOPPED_CAUSE_HOST_TIMEOUT           8
-#define STOPPED_CAUSE_OTHER_FAULT            9
+#define REPLY_CODE_STOPPED                                     0x12
+#define RECOVERY_CONDITION_CLEARED                             1
+#define RECOVERY_CONDITION_PERSIST                             2
+#define RECOVERY_UNRECOVERABLE                                 3
+#define STOPPED_CAUSE_RESET                                    0
+#define STOPPED_CAUSE_END_STOP_HIT                             1
+#define STOPPED_CAUSE_MOVEMENT_ERROR                           2
+#define STOPPED_CAUSE_TEMPERATURE_ERROR                        3
+#define STOPPED_CAUSE_DEVICE_FAULT                             4
+#define STOPPED_CAUSE_ELECTRICAL_FAULT                         5
+#define STOPPED_CAUSE_FIRMWARE_FAULT                           6
+#define STOPPED_CAUSE_USER_REQUESTED                           7
+#define STOPPED_CAUSE_HOST_TIMEOUT                             8
+#define STOPPED_CAUSE_OTHER_FAULT                              9
 
-#define REPLY_CODE_ORDER_SPECIFIC_ERROR      0x13
-#define QUEUE_CAUSE_QUEUE_FULL               1
-#define QUEUE_CAUSE_UNKNOWN_COMMAND_BLOCK    2
-#define QUEUE_CAUSE_MALFORMED_BLOCK          3
-#define QUEUE_CAUSE_ERROR_IN_COMMAND_BLOCK   4
+#define REPLY_CODE_ORDER_SPECIFIC_ERROR                        0x13
+#define QUEUE_CAUSE_QUEUE_FULL                                 1
+#define QUEUE_CAUSE_UNKNOWN_COMMAND_BLOCK                      2
+#define QUEUE_CAUSE_MALFORMED_BLOCK                            3
+#define QUEUE_CAUSE_ERROR_IN_COMMAND_BLOCK                     4
 
-#define DEFAULT_ERROR_REPLY_CODE             0xff
+#define DEFAULT_ERROR_REPLY_CODE                               0xff
 
-#define REPLY_CODE_DEBUG                     0x50
+#define REPLY_CODE_DEBUG                                       0x50
 
 // orders
 #define ORDER_RESUME                                           0x00
@@ -144,10 +144,13 @@
 #define OUTPUT_STATE_HIGH                                      1
 #define OUTPUT_STATE_HIGH_Z                                    2
 
-#define MOVEMENT_BLOCK_TYPE_COMMAND_WRAPPER     1
-#define MOVEMENT_BLOCK_TYPE_DELAY               2
-#define MOVEMENT_BLOCK_TYPE_BASIC_LINEAR_MOVE   3
-#define MOVEMENT_BLOCK_TYPE_SET_ACTIVE_TOOLHEAD 4
-#define MOVEMENT_BLOCK_TYPE_MOVEMENT_CHECKPOINT 5
+#define MOVEMENT_BLOCK_TYPE_COMMAND_WRAPPER                    1
+#define MOVEMENT_BLOCK_TYPE_DELAY                              2
+#define MOVEMENT_BLOCK_TYPE_BASIC_LINEAR_MOVE                  3
+#define MOVEMENT_BLOCK_TYPE_SET_ACTIVE_TOOLHEAD                4
+#define MOVEMENT_BLOCK_TYPE_MOVEMENT_CHECKPOINT                5
+
+#define MOVEMENT_DIRECTION_INCREASING                          1
+#define MOVEMENT_DIRECTION_DECREASING                          0
 
 #endif /* PROTOCOL_H_ */

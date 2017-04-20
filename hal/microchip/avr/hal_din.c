@@ -24,6 +24,9 @@ static din_func funcs[D_IN_NUM_PINS];
 static uint_fast8_t steppers[D_IN_NUM_PINS];
 static uint_fast8_t last_state[D_IN_NUM_PINS];
 
+#define STABLE_CNT  5
+static uint_fast8_t debounce_cnt[D_IN_NUM_PINS];
+static uint_fast8_t pin_state[D_IN_NUM_PINS];
 
 void hal_din_init(void)
 {
@@ -40,6 +43,8 @@ void hal_din_init(void)
         funcs[i] = NULL;
         steppers[i] = 0xff;
         last_state[i] = 0;
+        pin_state[i] = 0;
+        debounce_cnt[i] = 0;
     }
 
     // Enable Pull Up functionality
@@ -113,42 +118,111 @@ uint_fast8_t hal_din_get_switch_state(uint_fast8_t device)
 {
     if(device < D_IN_NUM_PINS)
     {
+        uint8_t cur_state;
         switch(device)
         {
 #if D_IN_NUM_PINS > 0
-        case 0: if(0 !=(D_IN_0_PIN & D_IN_0_MASK)) {return 1;} else {return 0;} break;
+        case 0:
+            cur_state = (D_IN_0_PIN & D_IN_0_MASK);
+            break;
 #endif
 #if D_IN_NUM_PINS > 1
-        case 1: if(0 !=(D_IN_1_PIN & D_IN_1_MASK)) {return 1;} else {return 0;} break;
+        case 1:
+            cur_state = (D_IN_1_PIN & D_IN_1_MASK);
+            break;
 #endif
 #if D_IN_NUM_PINS > 2
-        case 2: if(0 !=(D_IN_2_PIN & D_IN_2_MASK)) {return 1;} else {return 0;} break;
+        case 2:
+            cur_state = (D_IN_2_PIN & D_IN_2_MASK);
+            break;
 #endif
 #if D_IN_NUM_PINS > 3
-        case 3: if(0 !=(D_IN_3_PIN & D_IN_3_MASK)) {return 1;} else {return 0;} break;
+        case 3:
+            cur_state = (D_IN_3_PIN & D_IN_3_MASK);
+            break;
 #endif
 #if D_IN_NUM_PINS > 4
-        case 4: if(0 !=(D_IN_4_PIN & D_IN_4_MASK)) {return 1;} else {return 0;} break;
+        case 4:
+            cur_state = (D_IN_4_PIN & D_IN_4_MASK);
+            break;
 #endif
 #if D_IN_NUM_PINS > 5
-        case 5: if(0 !=(D_IN_5_PIN & D_IN_5_MASK)) {return 1;} else {return 0;} break;
+        case 5:
+            cur_state = (D_IN_5_PIN & D_IN_5_MASK);
+            break;
 #endif
         default:
             debug_line(STR("din pin(%d) not available!"), device);
+            return DIN_ERROR;
             break;
+        }
+
+        if(0 != cur_state)
+        {
+            // Pin is high
+            if(pin_state[device] == 1)
+            {
+                // Pin was high before
+                debounce_cnt[device] = 0;
+                return DIN_HIGH;
+            }
+            else
+            {
+                // Pin was low
+                debounce_cnt[device] ++;
+                if(STABLE_CNT < debounce_cnt[device])
+                {
+                    // Pin change is now stable 0 -> 1
+                    pin_state[device] = 1;
+                    debounce_cnt[device] = 0;
+                    return DIN_HIGH;
+                }
+                else
+                {
+                    // not stable enough - report previous level
+                    return DIN_LOW;
+                }
+            }
+        }
+        else
+        {
+            // Pin is low
+            if(pin_state[device] == 0)
+            {
+                // Pin was low
+                debounce_cnt[device] = 0;
+                return DIN_LOW;
+            }
+            else
+            {
+                // Pin was high
+                debounce_cnt[device] ++;
+                if(STABLE_CNT < debounce_cnt[device])
+                {
+                    // pin change is now stable 1-> 0
+                    pin_state[device] = 0;
+                    debounce_cnt[device] = 0;
+                    return DIN_LOW;
+                }
+                else
+                {
+                    // not stable enough - report previous level
+                    return DIN_HIGH;
+                }
+            }
         }
     }
     else
     {
         debug_line(STR("din pin(%d) not available!"), device);
     }
-    return 0;
+    return DIN_ERROR;
 }
 
 void hal_din_print_PinConfiguration(uint_fast8_t port, int idx)
 {
-	(void) port;
-	(void) idx;
+    (void) port;
+    (void) idx;
     // TODO
 }
 
@@ -187,6 +261,16 @@ void hal_din_poll(void)
             // else no change on this pin
         }
         // else this pin is not subscribed
+    }
+}
+
+void hal_din_tick(void)
+{
+    int i;
+    int cur_state;
+    for(i = 0; i < D_IN_NUM_PINS; i++)
+    {
+        cur_state = hal_din_get_switch_state(i);
     }
 }
 #endif

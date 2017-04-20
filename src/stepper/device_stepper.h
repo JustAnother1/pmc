@@ -29,5 +29,6 @@ void dev_stepper_configure_axis_movement_rate(uint_fast8_t stepper_number, uint_
 void dev_stepper_configure_mvmnt_unrun_avoid_para(uint_fast8_t stepper_number,
                                                   uint_fast32_t max_steps,
                                                   uint_fast32_t max_decelleration);
+bool dev_stepper_is_end_stop_triggered(uint_fast8_t stepper, uint_fast8_t min_max);
 
 #endif /* DEVICE_STEPPER_H_ */

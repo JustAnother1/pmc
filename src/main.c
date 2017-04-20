@@ -29,6 +29,7 @@
 #include "debug.h"
 #include "hal_watchdog.h"
 #include "hal_cpu.h"
+#include "hal_din.h"
 #include "hal_led.h"
 #include "hal_time.h"
 #include "hal_cfg.h"
@@ -88,6 +89,9 @@ int main (void)
 #endif
 #ifdef POLL_STEP_BUFFER_REFILL
         refill_step_buffer();
+#endif
+#ifdef POLL_END_STOPS
+        hal_din_tick();
 #endif
     }
     return 0;
