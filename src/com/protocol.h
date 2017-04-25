@@ -150,7 +150,4 @@
 #define MOVEMENT_BLOCK_TYPE_SET_ACTIVE_TOOLHEAD                4
 #define MOVEMENT_BLOCK_TYPE_MOVEMENT_CHECKPOINT                5
 
-#define MOVEMENT_DIRECTION_INCREASING                          1
-#define MOVEMENT_DIRECTION_DECREASING                          0
-
 #endif /* PROTOCOL_H_ */

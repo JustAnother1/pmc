@@ -51,27 +51,21 @@ void hal_din_init(void)
     MCUCR &= ~0x10; // PUD = 0
     // configure pins as Digital Input - pull up enabled
 #if D_IN_NUM_PINS > 0
-    D_IN_0_DDR &= ~D_IN_0_MASK;
     D_IN_0_PORT |= D_IN_0_MASK;
 #endif
 #if D_IN_NUM_PINS > 1
-    D_IN_1_DDR &= ~D_IN_1_MASK;
     D_IN_1_PORT |= D_IN_1_MASK;
 #endif
 #if D_IN_NUM_PINS > 2
-    D_IN_2_DDR &= ~D_IN_2_MASK;
     D_IN_2_PORT |= D_IN_2_MASK;
 #endif
 #if D_IN_NUM_PINS > 3
-    D_IN_3_DDR &= ~D_IN_3_MASK;
     D_IN_3_PORT |= D_IN_3_MASK;
 #endif
 #if D_IN_NUM_PINS > 4
-    D_IN_4_DDR &= ~D_IN_4_MASK;
     D_IN_4_PORT |= D_IN_4_MASK;
 #endif
 #if D_IN_NUM_PINS > 5
-    D_IN_5_DDR &= ~D_IN_5_MASK;
     D_IN_5_PORT |= D_IN_5_MASK;
 #endif
 }

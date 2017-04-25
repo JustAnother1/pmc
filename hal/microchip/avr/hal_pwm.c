@@ -52,7 +52,7 @@ void hal_pwm_init(void)
 
 uint_fast8_t hal_pwm_get_amount(void)
 {
-    return PWM_NUM_PINS - NUMBER_OF_HEATERS;
+    return PWM_NUM_PINS;
 }
 
 void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)

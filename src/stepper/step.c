@@ -688,11 +688,11 @@ static bool check_end_stops(void)
             // This stepper will move...
             if(0 == (stepper_mask & direction_for_move))
             {
-#if MOVEMENT_DIRECTION_DECREASING == 0
                 // ... towards min
                 if(true == dev_stepper_is_end_stop_triggered(i, MIN_END))
                 {
                     debug_line(STR("End Stop hit on Min End!"));
+                    steps_on_axis[i] = 0; // no more steps on this axis
                     // end stop already triggered -> no movement on this stepper
                     step_end_stop_hit_on(i, false);
                 }
@@ -701,28 +701,14 @@ static bool check_end_stops(void)
                     // this stepper can move
                     active_steppers++;
                 }
-#else
-                // ... towards max
-                if(true == dev_stepper_is_end_stop_triggered(i, MAX_END))
-                {
-                    debug_line(STR("End Stop hit on Max End!"));
-                    // end stop already triggered -> no movement on this stepper
-                    step_end_stop_hit_on(i, true);
-                }
-                else
-                {
-                    // this stepper can move
-                    active_steppers++;
-                }
-#endif
             }
             else
             {
-#if MOVEMENT_DIRECTION_DECREASING == 0
                 // ... towards max
                 if(true == dev_stepper_is_end_stop_triggered(i, MAX_END))
                 {
                     debug_line(STR("End Stop hit on Max End!"));
+                    steps_on_axis[i] = 0; // no more steps on this axis
                     // end stop already triggered -> no movement on this stepper
                     step_end_stop_hit_on(i, true);
                 }
@@ -731,20 +717,6 @@ static bool check_end_stops(void)
                     // this stepper can move
                     active_steppers++;
                 }
-#else
-                // ... towards min
-                if(true == dev_stepper_is_end_stop_triggered(i, MIN_END))
-                {
-                    debug_line(STR("End Stop hit on Min End!"));
-                    // end stop already triggered -> no movement on this stepper
-                    step_end_stop_hit_on(i, false);
-                }
-                else
-                {
-                    // this stepper can move
-                    active_steppers++;
-                }
-#endif
             }
         }
 
@@ -1073,10 +1045,10 @@ void step_end_stop_hit_on(uint_fast8_t stepper_number, bool max)
     if(0 != (active_axes_map & stepper_Mask))
     {
         if(   (   (true == max)
-                && ((MOVEMENT_DIRECTION_INCREASING << stepper_number) == (direction_for_move & stepper_Mask)))
+                && (0 != (direction_for_move & stepper_Mask)))
            ||
               (   (false == max)
-                && ((MOVEMENT_DIRECTION_DECREASING << stepper_number) == (direction_for_move & stepper_Mask))) )
+                && (0 == (direction_for_move & stepper_Mask))) )
         {
             if(true == max)
             {
@@ -1086,17 +1058,61 @@ void step_end_stop_hit_on(uint_fast8_t stepper_number, bool max)
             {
                 debug_line(STR("stopping movement(Stepper %d, min)"), stepper_number);
             }
-            write_pos = read_pos; // Forget all planned moves
             // Check if another axis was in this move
             if(0 == (active_axes_map &~(1<<stepper_number)))
             {
                 // end of move
+                write_pos = read_pos; // Forget all planned moves
                 finished_cur_slot();
             }
             else
             {
-                // TODO create new move with only the remaining axis
-                finished_cur_slot();
+                // modify move so that it has only the remaining steps on the remaining axis
+                uint_fast8_t i;
+                bool stepHigh;
+                uint32_t curState = hal_stepper_get_Output();
+                if(0 == (curState & (1<<stepper_number)))
+                {
+                    stepHigh = false;
+                }
+                else
+                {
+                    stepHigh = true;
+                }
+                for(i = read_pos; i != write_pos; i++)
+                {
+                    if(i == STEP_BUFFER_SIZE)
+                    {
+                        i = 0;
+                    }
+                    if(true == stepHigh)
+                    {
+                        next_step[i] = next_step[i] | (1<<stepper_number);
+                    }
+                    else
+                    {
+                        next_step[i] = next_step[i] & ~(1<<stepper_number);
+                    }
+                }
+                steps_on_axis[stepper_number] = 0;
+                increment_on_axis[stepper_number] = 0;
+                steps_in_this_phase_on_axis[stepper_number] = 0;
+                if(stepper_number == primary_axis)
+                {
+                    // detect new Primary Axis
+                    uint_fast8_t i;
+                    uint_fast16_t steps = 0;
+                    for(i = 0; i < MAX_NUMBER; i++)
+                    {
+                        if(steps < steps_on_axis[i])
+                        {
+                            steps = steps_on_axis[i];
+                            primary_axis = i;
+                        }
+                    }
+                }
+                active_axes_map = active_axes_map & ~(1 << stepper_number);
+                debug_line(STR("modified step and removed stepper %d"), stepper_number);
             }
         }
         else

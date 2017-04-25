@@ -57,8 +57,8 @@ static void handle_wrapped_command(void);
 static uint_fast8_t queue[MAX_QUEUE_ELEMENTS][MAX_BLOCK_LENGTH];
 static uint_fast8_t queue_type[MAX_QUEUE_ELEMENTS];
 // Index to Queue for:
-static uint_fast8_t read_pos; // reading
-static uint_fast8_t write_pos; // writing
+static volatile uint_fast8_t read_pos; // reading
+static volatile uint_fast8_t write_pos; // writing
 static uint_fast16_t finished_blocks = 0; // number of successfully executed Blocks
 
 #define STEPPER_MODULE_TEST
