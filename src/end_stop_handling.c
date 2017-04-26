@@ -26,7 +26,7 @@
 static uint_fast8_t max_end_stop[MAX_NUMBER];
 static uint_fast8_t min_end_stop[MAX_NUMBER];
 // index is switch number, value in array is if this switch is active or not
-static volatile uint_fast8_t enabled[MAX_NUM_END_STOPS];
+static volatile uint_fast8_t volatile enabled[MAX_NUM_END_STOPS];
 static uint32_t debounce[MAX_NUM_END_STOPS];
 static bool is_triggered[MAX_NUM_END_STOPS];
 static bool inverted[MAX_NUM_END_STOPS]; // TODO make this configurable
@@ -132,7 +132,7 @@ bool dev_stepper_is_end_stop_triggered(uint_fast8_t stepper, uint_fast8_t min_ma
 
 static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast8_t switch_number)
 {
-    // if(END_STOP_ENABLED == enabled[stepper])
+    if(END_STOP_ENABLED == enabled[switch_number])
     {
         if(   ((false == inverted[switch_number]) && (true == high))
            || ((true  == inverted[switch_number]) && (false == high)) )
@@ -140,6 +140,7 @@ static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast
             // end stop has triggered
             if(false == is_triggered[switch_number])
             {
+                is_triggered[switch_number] = true;
                 if(true == step_is_homing())
                 {
                     // stop movement on this stepper
@@ -165,7 +166,6 @@ static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast
                     debug_line(STR("End Stop %d hit -> go to stopped mode!"), switch_number);
                     gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
                 }
-                is_triggered[switch_number] = true;
                 debounce[switch_number] = hal_cpu_get_ms_tick() + 5;
             }
             // else already detected (bouncing switch)
@@ -186,13 +186,11 @@ static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast
                         switch_number, inverted[switch_number], high);
         }
     }
-    /*
     else
     {
         // else the end stop is not enabled -> we ignore this event
         debug_line(STR("End Stop %d not enabled!"), switch_number);
     }
-    */
 }
 
 bool dev_input_enable(uint_fast8_t switch_number, uint_fast8_t enable)
