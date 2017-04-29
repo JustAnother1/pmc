@@ -691,10 +691,18 @@ static bool check_end_stops(void)
                 // ... towards min
                 if(true == dev_stepper_is_end_stop_triggered(i, MIN_END))
                 {
-                    debug_line(STR("End Stop hit on Min End!"));
-                    steps_on_axis[i] = 0; // no more steps on this axis
-                    // end stop already triggered -> no movement on this stepper
-                    step_end_stop_hit_on(i, false);
+                    debug_line(STR("end stop (st: %d min) hit!"), i);
+                    if(true == is_a_homing_move)
+                    {
+                        steps_on_axis[i] = 0; // no more steps on this axis
+                        // end stop already triggered -> no movement on this stepper
+                        step_end_stop_hit_on(i, false);
+                    }
+                    else
+                    {
+                        debug_line(STR("End Stop (st:%d)hit -> go to stopped mode!"), i);
+                        gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
+                    }
                 }
                 else
                 {
@@ -707,10 +715,18 @@ static bool check_end_stops(void)
                 // ... towards max
                 if(true == dev_stepper_is_end_stop_triggered(i, MAX_END))
                 {
-                    debug_line(STR("End Stop hit on Max End!"));
-                    steps_on_axis[i] = 0; // no more steps on this axis
-                    // end stop already triggered -> no movement on this stepper
-                    step_end_stop_hit_on(i, true);
+                    if(true == is_a_homing_move)
+                    {
+                        debug_line(STR("end stop (st: %d max) hit!"), i);
+                        steps_on_axis[i] = 0; // no more steps on this axis
+                        // end stop already triggered -> no movement on this stepper
+                        step_end_stop_hit_on(i, true);
+                    }
+                    else
+                    {
+                        debug_line(STR("End Stop (st:%d)hit -> go to stopped mode!"), i);
+                        gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
+                    }
                 }
                 else
                 {
@@ -936,6 +952,14 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
     {
         // we are done with this move because all steppers in this move
         // have already triggered the end stops for that direction.
+        if(false == is_a_homing_move)
+        {
+            debug_line(STR("Did not execute the move due to end stops!"));
+            debug_line(STR("active_axes_map : %04x"), active_axes_map);
+            debug_line(STR("direction_for_move : %04x"), direction_for_move);
+            debug_line(STR("acceleration_steps : %u"), acceleration_steps);
+            debug_line(STR("decelleration_steps : %u"), decelleration_steps);
+        }
         busy = false;
         return true;
     }
@@ -998,6 +1022,7 @@ void step_disable_all_motors(void)
 #else
             pololu_disable_motor(i);
 #endif
+            enabled[i] = false;
         }
         // else already disabled
     }
@@ -1038,102 +1063,98 @@ void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off)
     // else invalid stepper
 }
 
-void step_end_stop_hit_on(uint_fast8_t stepper_number, bool max)
+bool step_is_moving_towards(uint_fast8_t stepper_number, bool max)
 {
     uint32_t stepper_Mask = 1 << stepper_number;
 
     if(0 != (active_axes_map & stepper_Mask))
     {
+        // this stepper moves
         if(   (   (true == max)
                 && (0 != (direction_for_move & stepper_Mask)))
            ||
               (   (false == max)
                 && (0 == (direction_for_move & stepper_Mask))) )
         {
-            if(true == max)
-            {
-                debug_line(STR("stopping movement(Stepper %d, max)"), stepper_number);
-            }
-            else
-            {
-                debug_line(STR("stopping movement(Stepper %d, min)"), stepper_number);
-            }
-            // Check if another axis was in this move
-            if(0 == (active_axes_map &~(1<<stepper_number)))
-            {
-                // end of move
-                write_pos = read_pos; // Forget all planned moves
-                finished_cur_slot();
-            }
-            else
-            {
-                // modify move so that it has only the remaining steps on the remaining axis
-                uint_fast8_t i;
-                bool stepHigh;
-                uint32_t curState = hal_stepper_get_Output();
-                if(0 == (curState & (1<<stepper_number)))
-                {
-                    stepHigh = false;
-                }
-                else
-                {
-                    stepHigh = true;
-                }
-                for(i = read_pos; i != write_pos; i++)
-                {
-                    if(i == STEP_BUFFER_SIZE)
-                    {
-                        i = 0;
-                    }
-                    if(true == stepHigh)
-                    {
-                        next_step[i] = next_step[i] | (1<<stepper_number);
-                    }
-                    else
-                    {
-                        next_step[i] = next_step[i] & ~(1<<stepper_number);
-                    }
-                }
-                steps_on_axis[stepper_number] = 0;
-                increment_on_axis[stepper_number] = 0;
-                steps_in_this_phase_on_axis[stepper_number] = 0;
-                if(stepper_number == primary_axis)
-                {
-                    // detect new Primary Axis
-                    uint_fast8_t i;
-                    uint_fast16_t steps = 0;
-                    for(i = 0; i < MAX_NUMBER; i++)
-                    {
-                        if(steps < steps_on_axis[i])
-                        {
-                            steps = steps_on_axis[i];
-                            primary_axis = i;
-                        }
-                    }
-                }
-                active_axes_map = active_axes_map & ~(1 << stepper_number);
-                debug_line(STR("modified step and removed stepper %d"), stepper_number);
-            }
+            // moving toward that end stop
+            return true;
         }
         else
         {
-            if(true == max)
-            {
-                debug_line(STR("We move towards other end stop (triggered: End Stop max, Stepper %d)"), stepper_number);
-            }
-            else
-            {
-                debug_line(STR("We move towards other end stop (triggered: End Stop min, Stepper %d)"), stepper_number);
-            }
-            // end stop hit for other direction. This is ok.
-            // Example: After homing the first move is moving away from the end stop,
-            //          but the end stop is still triggered!
+            // moving away from end Stop
+            return false;
         }
     }
     else
     {
-        // end stop hit for a stepper that is not moving -> nothing to do
+        // not moving -> not towards that end stop
+        return false;
     }
+}
+
+void step_end_stop_hit_on(uint_fast8_t stepper_number, bool max)
+{
+    if(true == step_is_moving_towards(stepper_number, max))
+    {
+        debug_line(STR("stopping movement on Stepper %d"), stepper_number);
+        // Check if another axis was in this move
+        if(0 == (active_axes_map &~(1<<stepper_number)))
+        {
+            // end of move
+            write_pos = read_pos; // Forget all planned moves
+            finished_cur_slot();
+        }
+        else
+        {
+            // modify move so that it has only the remaining steps on the remaining axis
+            uint_fast8_t i;
+            bool stepHigh;
+            uint32_t curState = hal_stepper_get_Output();
+            if(0 == (curState & (1<<stepper_number)))
+            {
+                stepHigh = false;
+            }
+            else
+            {
+                stepHigh = true;
+            }
+            for(i = read_pos; i != write_pos; i++)
+            {
+                if(i == STEP_BUFFER_SIZE)
+                {
+                    i = 0;
+                }
+                if(true == stepHigh)
+                {
+                    next_step[i] = next_step[i] | (1<<stepper_number);
+                }
+                else
+                {
+                    next_step[i] = next_step[i] & ~(1<<stepper_number);
+                }
+            }
+            steps_on_axis[stepper_number] = 0;
+            increment_on_axis[stepper_number] = 0;
+            steps_in_this_phase_on_axis[stepper_number] = 0;
+            if(stepper_number == primary_axis)
+            {
+                // detect new Primary Axis
+                uint_fast8_t i;
+                uint_fast16_t steps = 0;
+                for(i = 0; i < MAX_NUMBER; i++)
+                {
+                    if(steps < steps_on_axis[i])
+                    {
+                        steps = steps_on_axis[i];
+                        primary_axis = i;
+                    }
+                }
+            }
+            active_axes_map = active_axes_map & ~(1 << stepper_number);
+            debug_line(STR("modified step and removed stepper %d"), stepper_number);
+        }
+    }
+    // else ignore this
 }
 
 #ifdef DEBUG_ACTIVE

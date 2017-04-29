@@ -92,7 +92,7 @@ bool dev_stepper_is_end_stop_triggered(uint_fast8_t stepper, uint_fast8_t min_ma
             uint_fast8_t level = dev_input_get_switch_state(max_end_stop[stepper]);
             if(DIN_HIGH == level)
             {
-                debug_line(STR("triggered %d"), max_end_stop[stepper]);
+                // debug_line(STR("triggered %d"), max_end_stop[stepper]);
                 return true;
             }
             else // DIN_LOW or DIN_ERROR
@@ -140,33 +140,44 @@ static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast
             // end stop has triggered
             if(false == is_triggered[switch_number])
             {
+                bool is_max_end_stop;
                 is_triggered[switch_number] = true;
+                debounce[switch_number] = hal_cpu_get_ms_tick() + 5;
+
+                if(switch_number == max_end_stop[stepper])
+                {
+                    is_max_end_stop = true;
+                }
+                else if(switch_number == min_end_stop[stepper])
+                {
+                    is_max_end_stop = false;
+                }
+                else
+                {
+                    // -> something is wrong !
+                    debug_line(STR("End Stop %d hit but is not associated with stepper %d -> go to stopped mode!"), switch_number, stepper);
+                    gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
+                    return;
+                }
+
                 if(true == step_is_homing())
                 {
                     // stop movement on this stepper
                     debug_line(STR("End Stop %d hit -> stop movement"), switch_number);
-                    if(switch_number == max_end_stop[stepper])
-                    {
-                        step_end_stop_hit_on(stepper, true);
-                    }
-                    else if(switch_number == min_end_stop[stepper])
-                    {
-                        step_end_stop_hit_on(stepper, false);
-                    }
-                    else
-                    {
-                        // -> something is wrong !
-                        debug_line(STR("End Stop %d hit but is not associated with stepper %d -> go to stopped mode!"), switch_number, stepper);
-                        gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
-                    }
+                    step_end_stop_hit_on(stepper, is_max_end_stop);
                 }
                 else
                 {
-                    // end stop was hit unexpectedly and was enabled ! -> we have a problem !
-                    debug_line(STR("End Stop %d hit -> go to stopped mode!"), switch_number);
-                    gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
+                    // check if we are currently moving towards that end stop.
+                    if(true == step_is_moving_towards(stepper, is_max_end_stop))
+                    {
+                        // end stop was hit unexpectedly and was enabled ! -> we have a problem !
+                        debug_line(STR("End Stop %d(st:%d) hit -> go to stopped mode!"), switch_number, stepper);
+                        gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
+                    }
+                    // else ignore that
                 }
-                debounce[switch_number] = hal_cpu_get_ms_tick() + 5;
+
             }
             // else already detected (bouncing switch)
         }
@@ -182,8 +193,8 @@ static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast
                 }
                 // else switch is bouncing
             }
-            debug_line(STR("End Stop %d not triggered(inverted : %d, high: %d))"),
-                        switch_number, inverted[switch_number], high);
+            // debug_line(STR("End Stop %d not triggered(inverted : %d, high: %d))"),
+            //             switch_number, inverted[switch_number], high);
         }
     }
     else

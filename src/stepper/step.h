@@ -57,6 +57,7 @@ void step_disable_all_motors(void);
 void step_enable_motor(uint_fast8_t stepper_number, uint_fast8_t on_off);
 void step_end_stop_hit_on(uint_fast8_t stepper_number, bool max);
 void refill_step_buffer(void);
+bool step_is_moving_towards(uint_fast8_t stepper_number, bool max);
 
 
 #ifdef DEBUG_ACTIVE

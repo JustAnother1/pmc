@@ -242,7 +242,7 @@ void hal_din_poll(void)
             {
                 // this pin had a change
                 last_state[i] = cur_state;
-                debug_line(STR("Notify step"));
+                // debug_line(STR("Notify step"));
                 if(1 == cur_state)
                 {
                     funcs[i](true,steppers[i], i);
