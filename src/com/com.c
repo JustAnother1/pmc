@@ -308,6 +308,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             if(2 == parameter_length)
             {
                 dev_heater_set_temperature_sensor(com_get_parameter_byte(0), com_get_parameter_byte(1));
+                com_send_ok_response();
             }
             else
             {
