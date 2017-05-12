@@ -13,28 +13,23 @@
  *
  */
 
-#include "CppUTest/TestHarness.h"
-#include "CppUTest/TestOutput.h"
-#include "CppUTest/TestTestingFixture.h"
-#include "CppUTest/PlatformSpecificFunctions.h"
 
+#define static
 extern "C"
 {
-#include "log.h"
+#include <inttypes.h>
+
+#define static
+
+#define STEP_ISR_FUNCTION void step_isr_function(void)
+#define step_isr          refill_step_buffer
+
+bool stopModeEnabled = false;
+
+void gotoStoppedMode(uint_fast8_t cause_for_stopped_mode, uint_fast8_t recovery_options_for_stopped_mode)
+{
+    stopModeEnabled = true;
 }
 
-TEST_GROUP(SrcLibLogTestGroup)
-{
-
-};
-
-TEST(SrcLibLogTestGroup, log)
-{
-    // (Expected, actual, tolerance)
-    DOUBLES_EQUAL(0, logf(1), 0.001)
-    DOUBLES_EQUAL(3, logf(20.0855), 0.001)
-    DOUBLES_EQUAL(10, logf(22026.46579), 0.001)
-    DOUBLES_EQUAL(-3.2995437279, logf(0.0369), 0.001)
+#include "stepper/step.c"
 }
-
-

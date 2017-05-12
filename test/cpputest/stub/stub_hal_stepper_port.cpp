@@ -13,28 +13,24 @@
  *
  */
 
-#include "CppUTest/TestHarness.h"
-#include "CppUTest/TestOutput.h"
-#include "CppUTest/TestTestingFixture.h"
-#include "CppUTest/PlatformSpecificFunctions.h"
-
 extern "C"
 {
-#include "log.h"
-}
 
-TEST_GROUP(SrcLibLogTestGroup)
+#include <inttypes.h>
+
+void hal_stepper_port_init(void)
 {
 
-};
-
-TEST(SrcLibLogTestGroup, log)
-{
-    // (Expected, actual, tolerance)
-    DOUBLES_EQUAL(0, logf(1), 0.001)
-    DOUBLES_EQUAL(3, logf(20.0855), 0.001)
-    DOUBLES_EQUAL(10, logf(22026.46579), 0.001)
-    DOUBLES_EQUAL(-3.2995437279, logf(0.0369), 0.001)
 }
 
+void hal_stepper_set_Output(uint32_t value)
+{
 
+}
+
+uint32_t hal_stepper_get_Output(void)
+{
+    return 0;
+}
+
+}

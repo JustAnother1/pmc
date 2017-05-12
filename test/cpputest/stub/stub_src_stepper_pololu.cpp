@@ -13,28 +13,30 @@
  *
  */
 
-#include "CppUTest/TestHarness.h"
-#include "CppUTest/TestOutput.h"
-#include "CppUTest/TestTestingFixture.h"
-#include "CppUTest/PlatformSpecificFunctions.h"
-
 extern "C"
 {
-#include "log.h"
+#include <stdint.h>
+
+void pololu_init(void)
+{
+
 }
 
-TEST_GROUP(SrcLibLogTestGroup)
+void pololu_enable_motor(uint_fast8_t stepper_number)
 {
 
-};
+}
 
-TEST(SrcLibLogTestGroup, log)
+void pololu_disable_motor(uint_fast8_t stepper_number)
 {
-    // (Expected, actual, tolerance)
-    DOUBLES_EQUAL(0, logf(1), 0.001)
-    DOUBLES_EQUAL(3, logf(20.0855), 0.001)
-    DOUBLES_EQUAL(10, logf(22026.46579), 0.001)
-    DOUBLES_EQUAL(-3.2995437279, logf(0.0369), 0.001)
+
+}
+
+void pololu_print_status(void)
+{
+
+}
+
 }
 
 
