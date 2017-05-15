@@ -1,3 +1,7 @@
+# common settings for all AVR based boards:
+# libm is needed for floats nto work efficient
+LDFLAGS += -lm
+
 # Target is the rumba Board
 ifeq ($(BOARD), rumba)
 	ARCHITECTURE = avr
@@ -45,7 +49,6 @@ ifeq ($(BOARD), rumba)
 	##CFLAGS += -fsingle-precision-constant
 	CFLAGS += -Wa,-ahlms=$(addprefix $(BIN_FOLDER),$(<:.c=.lst))
 	##LDFLAGS += -fsingle-precision-constant
-	LDFLAGS += -lm
 	#LDFLAGS += -flto
 	LDFLAGS += -gdwarf-2
 	LDFLAGS += -fwhole-program

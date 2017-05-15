@@ -635,8 +635,16 @@ static void get_steps_for_this_phase(float factor)
     for(i = 0; i < 8; i++)
     {
         error_on_axis[i] = 0;
-        increment_on_axis[i] = steps_in_this_phase_on_axis[i]/maxSteps;
+        if(0 < maxSteps)
+        {
+            increment_on_axis[i] = steps_in_this_phase_on_axis[i]/maxSteps;
+        }
+        else
+        {
+            increment_on_axis[i] = 0;
+        }
     }
+
 }
 
 static void auto_activate_usedAxis(void)
