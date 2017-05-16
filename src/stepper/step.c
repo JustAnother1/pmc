@@ -13,6 +13,7 @@
  *
  */
 
+#include "com.h"
 #include "error.h"
 #include "hal_cfg.h"
 #include "hal_debug.h"
@@ -836,7 +837,7 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         nominal_speed = move_data[6];
         end_speed = move_data[7];
         // 1 or 2 Bytes for Steps?
-        if(0x80 == (0x80 & move_data[3]))
+        if(0x80 == (0x80 & move_data[4]))
         {
             // bytes for Steps = 2;
             eight_Bit_Steps = false;

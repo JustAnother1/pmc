@@ -21,6 +21,7 @@
 extern "C"
 {
 #include "step.h"
+#include "hal_stepper_port.h"
 
 extern uint_fast8_t direction_for_move;  // bitmap
 extern volatile uint_fast16_t active_axes_map;
@@ -45,6 +46,8 @@ extern volatile uint_fast32_t curTime;
 extern volatile uint_fast8_t primary_axis;
 extern volatile uint_fast16_t steps_already_made[MAX_NUMBER];
 extern volatile uint32_t next_step[STEP_BUFFER_SIZE];
+extern volatile uint_fast16_t delay_ms;
+extern volatile uint_fast16_t decelleration_steps;
 
 
 void step_isr_function(void);
@@ -89,7 +92,7 @@ TEST(SrcStepperStepTestGroup, step_end_stop_hit_on)
 
     active_axes_map = 1;
     direction_for_move = 1;
-    step_end_stop_hit_on(0, false);
+    step_end_stop_hit_on(0, true);
 }
 
 TEST(SrcStepperStepTestGroup, step_is_moving_towards)
@@ -177,36 +180,65 @@ TEST(SrcStepperStepTestGroup, step_add_delay)
 
 TEST(SrcStepperStepTestGroup, step_add_basic_linear_move)
 {
-    uint_fast8_t move_data[13] = {0};
+    uint_fast8_t move_data[14] = {0};
+    move_data[0] = 0x03;
     busy = true;
     CHECK_FALSE(step_add_basic_linear_move(move_data));
 
     busy = false;
-    move_data[0] = 0x03; // 1 byte axis selection (0..7), 2 active axis: 0, 1
-    move_data[1] = 0x02; // 1 byte step counts, Direction on 0 = 0, direction on 1 = 1;
-    move_data[2] = 0x01; // primary axis is 1, not homing
-    move_data[3] = 13;   // nominal speed
-    move_data[4] = 5;    // end speed
-    move_data[5] = 10;   // acceleration steps
-    move_data[6] = 9;    // deceleration steps
-    move_data[7] = 20;   // steps on axis 0
-    move_data[8] = 200;  // steps on axis 1
+    move_data[1] = 0x03; // 1 byte axis selection (0..7), 2 active axis: 0, 1
+    move_data[2] = 0x02; // 1 byte step counts, Direction on 0 = 0, direction on 1 = 1;
+    move_data[3] = 0x01; // primary axis is 1, not homing
+    move_data[4] = 13;   // nominal speed
+    move_data[5] = 5;    // end speed
+    move_data[6] = 10;   // acceleration steps
+    move_data[7] = 9;    // deceleration steps
+    move_data[8] = 20;   // steps on axis 0
+    move_data[9] = 200;  // steps on axis 1
     CHECK(step_add_basic_linear_move(move_data));
 
     busy = false;
-    move_data[ 0] = 0x03; // 1 byte axis selection (0..7), 2 active axis: 0, 1
-    move_data[ 1] = 0x82; // 2 byte step counts, Direction on 0 = 0, direction on 1 = 1;
-    move_data[ 2] = 0x01; // primary axis is 1, not homing
-    move_data[ 3] = 13;   // nominal speed
-    move_data[ 4] = 5;    // end speed
-    move_data[ 5] = 0x02; // acceleration steps
-    move_data[ 6] = 0x34; // acceleration steps
-    move_data[ 7] = 0x01; // deceleration steps
-    move_data[ 8] = 0x23; // deceleration steps
-    move_data[ 9] = 0x54; // steps on axis 0
-    move_data[10] = 0x32; // steps on axis 0
-    move_data[11] = 0x98; // steps on axis 1
-    move_data[12] = 0x76; // steps on axis 1
+    move_data[1] = 0x03; // 1 byte axis selection (0..7), 2 active axis: 0, 1
+    move_data[2] = 0x02; // 1 byte step counts, Direction on 0 = 0, direction on 1 = 1;
+    move_data[3] = 0x11; // primary axis is 1, homing
+    move_data[4] = 13;   // nominal speed
+    move_data[5] = 5;    // end speed
+    move_data[6] = 10;   // acceleration steps
+    move_data[7] = 9;    // deceleration steps
+    move_data[8] = 20;   // steps on axis 0
+    move_data[9] = 200;  // steps on axis 1
+    CHECK(step_add_basic_linear_move(move_data));
+
+    busy = false;
+    move_data[ 1] = 0x03; // 1 byte axis selection (0..7), 2 active axis: 0, 1
+    move_data[ 2] = 0x82; // 2 byte step counts, Direction on 0 = 0, direction on 1 = 1;
+    move_data[ 3] = 0x01; // primary axis is 1, not homing
+    move_data[ 4] = 13;   // nominal speed
+    move_data[ 5] = 5;    // end speed
+    move_data[ 6] = 0x02; // acceleration steps
+    move_data[ 7] = 0x34; // acceleration steps
+    move_data[ 8] = 0x01; // deceleration steps
+    move_data[ 9] = 0x23; // deceleration steps
+    move_data[10] = 0x54; // steps on axis 0
+    move_data[11] = 0x32; // steps on axis 0
+    move_data[12] = 0x98; // steps on axis 1
+    move_data[13] = 0x76; // steps on axis 1
+    CHECK(step_add_basic_linear_move(move_data));
+
+    busy = false;
+    move_data[ 1] = 0x03; // 1 byte axis selection (0..7), 2 active axis: 0, 1
+    move_data[ 2] = 0x82; // 2 byte step counts, Direction on 0 = 0, direction on 1 = 1;
+    move_data[ 3] = 0x11; // primary axis is 1, homing
+    move_data[ 4] = 13;   // nominal speed
+    move_data[ 5] = 5;    // end speed
+    move_data[ 6] = 0x02; // acceleration steps
+    move_data[ 7] = 0x34; // acceleration steps
+    move_data[ 8] = 0x01; // deceleration steps
+    move_data[ 9] = 0x23; // deceleration steps
+    move_data[10] = 0x54; // steps on axis 0
+    move_data[11] = 0x32; // steps on axis 0
+    move_data[12] = 0x98; // steps on axis 1
+    move_data[13] = 0x76; // steps on axis 1
     CHECK(step_add_basic_linear_move(move_data));
 
 }
@@ -383,7 +415,25 @@ TEST(SrcStepperStepTestGroup, caclculate_basic_move_chunk)
 
     primary_axis = 0;
     steps_already_made[0] = 1;
+    steps_on_axis[primary_axis] = 5;
+    decelleration_steps = 0;
     steps_in_this_phase_on_axis[0] = 1;
+    phase_of_move = MOVE_PHASE_ACCELLERATE;
+    caclculate_basic_move_chunk(1);
+
+    primary_axis = 0;
+    steps_already_made[0] = 1;
+    steps_in_this_phase_on_axis[0] = 1;
+    steps_on_axis[primary_axis] = 0;
+    decelleration_steps = 5;
+    phase_of_move = MOVE_PHASE_ACCELLERATE;
+    caclculate_basic_move_chunk(1);
+
+    primary_axis = 0;
+    steps_already_made[0] = 1;
+    steps_in_this_phase_on_axis[0] = 1;
+    steps_on_axis[primary_axis] = 0;
+    decelleration_steps = 0;
     phase_of_move = MOVE_PHASE_ACCELLERATE;
     caclculate_basic_move_chunk(1);
 
@@ -398,16 +448,34 @@ TEST(SrcStepperStepTestGroup, caclculate_basic_move_chunk)
     steps_in_this_phase_on_axis[0] = 1;
     phase_of_move = MOVE_PHASE_DECELERATE;
     caclculate_basic_move_chunk(1);
+
+    primary_axis = 0;
+    steps_already_made[0] = 1;
+    steps_in_this_phase_on_axis[0] = 1;
+    phase_of_move = 120;
+    caclculate_basic_move_chunk(1);
 }
 
 TEST(SrcStepperStepTestGroup, calculate_step_chunk)
 {
     cur_slot_type = SLOT_TYPE_BASIC_LINEAR_MOVE;
     calculate_step_chunk(0);
+
+    busy = true;
+    delay_ms = 0;
     cur_slot_type = SLOT_TYPE_DELAY;
-    calculate_step_chunk(0);
+    calculate_step_chunk(10);
+    CHECK_FALSE(busy);
+
+    busy = true;
+    delay_ms = 5;
+    cur_slot_type = SLOT_TYPE_DELAY;
+    calculate_step_chunk(10);
+    CHECK_FALSE(busy);
+
     cur_slot_type = SLOT_TYPE_EMPTY;
     calculate_step_chunk(0);
+
     cur_slot_type = 120;
     calculate_step_chunk(0);
 }
@@ -458,13 +526,26 @@ TEST(SrcStepperStepTestGroup, refill_step_buffer)
 
 TEST(SrcStepperStepTestGroup, step_isr_function)
 {
+    hal_stepper_port_init();
     read_pos = 5;
     write_pos = 5;
     step_isr_function();
+    CHECK_EQUAL(0, hal_stepper_get_Output());
+
+    hal_stepper_port_init();
     read_pos = 0;
     write_pos = 1;
     next_step[0] = 0x12345678;
     step_isr_function();
     CHECK_EQUAL(1, read_pos);
+    CHECK_EQUAL(0x12345678, hal_stepper_get_Output());
+
+    hal_stepper_port_init();
+    read_pos = STEP_BUFFER_SIZE -1;
+    write_pos = 1;
+    next_step[read_pos] = 0x87654321;
+    step_isr_function();
+    CHECK_EQUAL(0, read_pos);
+    CHECK_EQUAL(0x87654321, hal_stepper_get_Output());
 }
 

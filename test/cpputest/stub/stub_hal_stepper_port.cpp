@@ -18,19 +18,21 @@ extern "C"
 
 #include <inttypes.h>
 
+static uint32_t port;
+
 void hal_stepper_port_init(void)
 {
-
+    port = 0;
 }
 
 void hal_stepper_set_Output(uint32_t value)
 {
-
+    port = value;
 }
 
 uint32_t hal_stepper_get_Output(void)
 {
-    return 0;
+    return port;
 }
 
 }
