@@ -42,7 +42,6 @@ static bool weControllTheSteppers = true;
 
 #ifdef HAS_TRINAMIC
 static uint_fast8_t available_steppers;
-static void dev_stepper_detectSteppers(void);
 #else
 #define available_steppers NUMBER_OF_STEPPERS
 #endif
@@ -287,7 +286,7 @@ void dev_stepper_configure_mvmnt_unrun_avoid_para(uint_fast8_t stepper_number,
 }
 
 #ifdef HAS_TRINAMIC
-static void dev_stepper_detectSteppers(void)
+void dev_stepper_detectSteppers(void)
 {
     unsigned int i;
     available_steppers = trinamic_detect_number_of_steppers();

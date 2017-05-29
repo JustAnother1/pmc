@@ -44,6 +44,9 @@
 #define BOARD_HAS_ISR_1_LED
 #define BOARD_HAS_ISR_2_LED
 
+#define NUMBER_OF_STEPPERS   6
+#define STEP_ISR_FUNCTION static void step_isr(void)
+
 // Timer
 // Step creation
 #define STEP_TIMER        6

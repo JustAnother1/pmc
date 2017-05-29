@@ -31,4 +31,7 @@ void dev_stepper_configure_mvmnt_unrun_avoid_para(uint_fast8_t stepper_number,
                                                   uint_fast32_t max_decelleration);
 bool dev_stepper_is_end_stop_triggered(uint_fast8_t stepper, uint_fast8_t min_max);
 
+#ifdef HAS_TRINAMIC
+void dev_stepper_detectSteppers(void);
+#endif
 #endif /* DEVICE_STEPPER_H_ */

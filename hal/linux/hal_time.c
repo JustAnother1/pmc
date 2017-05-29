@@ -51,7 +51,7 @@ bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
 }
 
 #ifdef DEBUG_ACTIVE
-bool hal_time_print_Configuration(int timerNumber)
+bool hal_time_print_Configuration(int timerNumber, int lineNumber)
 {
     return false;
 }
