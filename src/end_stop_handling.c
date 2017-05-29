@@ -22,6 +22,8 @@
 #include "hal_debug.h"
 #include "com.h"
 
+#define DEBOUNCE_TIMEOUT_MS  5
+
 // index is stepper number, value in array is switch number
 static uint_fast8_t max_end_stop[MAX_NUMBER];
 static uint_fast8_t min_end_stop[MAX_NUMBER];
@@ -142,7 +144,7 @@ static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast
             {
                 bool is_max_end_stop;
                 is_triggered[switch_number] = true;
-                debounce[switch_number] = hal_cpu_get_ms_tick() + 5;
+                debounce[switch_number] = hal_cpu_get_ms_tick() + DEBOUNCE_TIMEOUT_MS;
 
                 if(switch_number == max_end_stop[stepper])
                 {
@@ -175,7 +177,18 @@ static void handle_end_stop_triggered(bool high, uint_fast8_t stepper, uint_fast
                         debug_line(STR("End Stop %d(st:%d) hit -> go to stopped mode!"), switch_number, stepper);
                         gotoStoppedMode(STOPPED_CAUSE_END_STOP_HIT, RECOVERY_CONDITION_CLEARED);
                     }
-                    // else ignore that
+                    else
+                    {
+                        // ignore this
+                        if(true == is_max_end_stop)
+                        {
+                            debug_line(STR("ignoring max end stop (%d) for stepper %d"), switch_number, stepper);
+                        }
+                        else
+                        {
+                            debug_line(STR("ignoring min end stop (%d) for stepper %d"), switch_number, stepper);
+                        }
+                    }
                 }
 
             }

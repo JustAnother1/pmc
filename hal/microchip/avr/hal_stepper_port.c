@@ -234,7 +234,7 @@ void hal_stepper_set_Output(uint32_t value)
     // else no step on this stepper
 #endif
 
-    // I probably don't need to wait here as the computation already took enougth time
+    // I probably don't need to wait here as the computation already took enough time
 
 #if NUMBER_OF_STEPPERS > 0
     if((stepper_port_output & 0x01) != (value & 0x01))

@@ -185,6 +185,7 @@ void gotoStoppedMode(uint_fast8_t cause_for_stopped_mode, uint_fast8_t recovery_
     }
     // disable all steppers
     step_disable_all_motors();
+    step_init(MAX_NUMBER); // stop movement
     // disable all buzzers
     for(i = 0; i < hal_buzzer_get_amount(); i++)
     {

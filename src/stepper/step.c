@@ -56,8 +56,8 @@ static uint32_t toggle_bit(uint_fast8_t bit, uint32_t value);
 
 // Step Timer
 static volatile bool step_timer_running;
-static volatile uint_fast8_t read_pos = 0;
-static volatile uint_fast8_t write_pos = 0;
+static volatile uint_fast8_t read_pos;
+static volatile uint_fast8_t write_pos;
 
 // step buffer timer
 static volatile bool buffer_timer_running;
@@ -551,7 +551,7 @@ static void make_the_needed_steps(uint_fast16_t reload_time)
         {
             // change of direction on this axis
             cur_step_has_direction_change = true;
-            cur_step = toggle_bit(i + 8, cur_step);
+            cur_step = toggle_bit(i + DIRECTION_OFFSET, cur_step);
             last_direction_axis = toggle_bit(i, last_direction_axis);
         }
     }
@@ -767,6 +767,8 @@ static bool check_end_stops(void)
 void step_init(uint_fast8_t num_stepper)
 {
     int i;
+    read_pos = 0;
+    write_pos = 0;
     for(i = 0; i < MAX_NUMBER; i++)
     {
         steps_on_axis[i] = 0;
@@ -776,6 +778,7 @@ void step_init(uint_fast8_t num_stepper)
     }
     start_speed = 0;
     cur_slot_type = SLOT_TYPE_EMPTY;
+    is_a_homing_move = false;
     busy = false;
     delay_ms = 0;
     if(num_stepper < MAX_NUMBER)
@@ -1163,7 +1166,11 @@ void step_end_stop_hit_on(uint_fast8_t stepper_number, bool max)
             debug_line(STR("modified step and removed stepper %d"), stepper_number);
         }
     }
-    // else ignore this
+    else
+    {
+        // ignore this
+        debug_line(STR("ignoring end stop for stepper %d"), stepper_number);
+    }
 }
 
 #ifdef DEBUG_ACTIVE
@@ -1203,6 +1210,42 @@ void step_print_state(void)
         debug_line(STR("not busy"));
     }
     debug_line(STR("free slots : %d"), get_number_of_free_slots());
+    switch(cur_slot_type)
+    {
+    case SLOT_TYPE_EMPTY:
+        debug_line(STR("current slot is empty !"));
+        break;
+
+    case SLOT_TYPE_DELAY:
+        debug_line(STR("current slot is Delay !"));
+        break;
+
+    case SLOT_TYPE_BASIC_LINEAR_MOVE:
+        debug_line(STR("current slot is Basic Linear Move!"));
+        break;
+
+    default:
+        debug_line(STR("current slot is %d !"), cur_slot_type);
+        break;
+    }
+    switch(phase_of_move)
+    {
+    case MOVE_PHASE_ACCELLERATE:
+        debug_line(STR("move phase : Accelerate"));
+        break;
+
+    case MOVE_PHASE_CONSTANT_SPEED:
+        debug_line(STR("move phase : constant speed"));
+        break;
+
+    case MOVE_PHASE_DECELERATE:
+        debug_line(STR("move phase : Decelerate"));
+        break;
+
+    default:
+        debug_line(STR("move phase : %d"), phase_of_move);
+        break;
+    }
 }
 
 #endif

@@ -21,6 +21,8 @@
 
 // max allowed number of steppers
 #define MAX_NUMBER 8
+// bit offset of direction signal in stepper port
+#define DIRECTION_OFFSET 8
 
 #define STEP_CHUNK_SIZE             10
 #define STEP_BUFFER_SIZE            (10 * STEP_CHUNK_SIZE) + 1

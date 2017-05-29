@@ -593,8 +593,12 @@ static bool continue_order_help(void)
 #else
     case 18: debug_line(STR("pp                         : print Pololu stepper status")); slow_order_state++; break;
 #endif
+#ifdef EXPANSION_SPI
     case 19: debug_line(STR("pse                        : print expansion SPI configuration")); slow_order_state++; break;
+#endif
+#ifdef STEPPER_SPI
     case 20: debug_line(STR("pss                        : print stepper SPI configuration")); slow_order_state++; break;
+#endif
     case 21: debug_line(STR("ptim<num>                  : print Timer Registers")); slow_order_state++; break;
 #ifdef USE_STEP_DIR
 #ifdef HAS_TRINAMIC
@@ -605,8 +609,12 @@ static bool continue_order_help(void)
 #else
     case 22: slow_order_state++; break;
 #endif
+#ifdef DEBUG_UART
     case 23: debug_line(STR("pud                        : print Debug UART configuration")); slow_order_state++; break;
+#endif
+#ifdef GCODE_UART
     case 24: debug_line(STR("pug                        : print G-Code UART configuration")); slow_order_state++; break;
+#endif
     case 25: debug_line(STR("pq                         : print command queue status")); slow_order_state++; break;
     // q
     case 26: debug_line(STR("r                          : reset the processor")); slow_order_state++; break;
@@ -619,8 +627,12 @@ static bool continue_order_help(void)
     case 28: debug_line(STR("t                          : show current time")); slow_order_state++; break;
     // u
     // v
+#ifdef EXPANSION_SPI
     case 29: debug_line(STR("we<hex chars>              : write data to expansion SPI")); slow_order_state++; break;
+#endif
+#ifdef STEPPER_SPI
     case 30: debug_line(STR("ws<hex chars>              : write data to stepper SPI")); slow_order_state++; break;
+#endif
     // x
     // y
     // z
@@ -1091,18 +1103,21 @@ static bool parse_order(int length)
             }
             switch(cmd_buf[2])
             {
-
 // order = pss
+#ifdef STEPPER_SPI
             case 'S':
             case 's':
                 hal_print_stepper_spi_configuration();
                 break;
+#endif
 
 // order = pse
+#ifdef EXPANSION_SPI
             case 'E':
             case 'e':
                 hal_print_expansion_spi_configuration();
                 break;
+#endif
 
             default:
                 debug_line(STR("Invalid command ! try h for help"));
@@ -1184,16 +1199,20 @@ static bool parse_order(int length)
             {
 
 // order = pud
+#ifdef DEBUG_UART
             case 'D':
             case 'd':
                 hal_print_configuration_debug_uart();
                 break;
+#endif
 
 // order = pug
+#ifdef GCODE_UART
             case 'G':
             case 'g':
                 hal_print_configuration_gcode_uart();
                 break;
+#endif
 
             default:
                 debug_line(STR("Invalid command ! try h for help"));
@@ -1236,6 +1255,7 @@ static bool parse_order(int length)
             {
 
 // order = ws
+#ifdef STEPPER_SPI
             case 'S':
             case 's':
                 for (i = 0; i < (length -2)/2; i++)
@@ -1251,8 +1271,10 @@ static bool parse_order(int length)
                 debug_hex_buffer(&receive_data[0], (length -2)/2);
                 debug_line(STR("Done."));
                 break;
+#endif
 
 // order = we
+#ifdef EXPANSION_SPI
             case 'E':
             case 'e':
                 for (i = 0; i < (length -2)/2; i++)
@@ -1268,6 +1290,7 @@ static bool parse_order(int length)
                 debug_hex_buffer(&receive_data[0], (length -2)/2);
                 debug_line(STR("Done."));
                 break;
+#endif
 
             default:
                 debug_line(STR("Invalid command ! try h for help"));
