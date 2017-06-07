@@ -17,6 +17,7 @@
 #define DEVICE_STEPPER_H_
 
 #include <inttypes.h>
+#include <stdbool.h>
 
 void dev_stepper_init(void);
 uint_fast8_t dev_stepper_get_count(void);

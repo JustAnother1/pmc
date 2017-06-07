@@ -22,3 +22,8 @@
 void hal_debug_init(void)
 {
 }
+
+bool hal_debug_is_send_buffer_empty(void)
+{
+    return false;
+}

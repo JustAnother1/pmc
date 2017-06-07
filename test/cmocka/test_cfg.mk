@@ -14,6 +14,7 @@ CMOCKA_SRC_DEBUG_DEBUG_SRCS  = cmocka/src/debug/test_debug.c
 # code that gets tested
 CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/src/debug/wrap_debug.c
 #stubs
+CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/stub/src/stub_end_stop_handling.c
 CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/stub/hal/stubHal_debug.c
 CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/stub/hal/stubHal_uart.c
 CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/stub/hal/stubHal_time.c
@@ -30,6 +31,7 @@ CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/stub/src/lib/stubPrintf.c
 CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/stub/src/order/stubCommand_queue.c
 CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/stub/src/stepper/stubTrinamic.c
 CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/stub/src/stepper/stubDevice_stepper.c
+CMOCKA_SRC_DEBUG_DEBUG_SRCS += cmocka/stub/src/stepper/stubPololu.c
 
 CMOCKA_SRC_DEBUG_DEBUG_OBJS = $(addprefix $(TEST_BIN_FOLDER),$(CMOCKA_SRC_DEBUG_DEBUG_SRCS:%.c=%.o))
 
@@ -41,10 +43,13 @@ CMOCKA_SRC_STEPPER_STEP_SRCS  = cmocka/src/stepper/test_step.c
 CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/src/stepper/wrap_step.c
 #stubs
 CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/stub/src/stubError.c
+CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/stub/src/stub_end_stop_handling.c
 CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/stub/hal/stubHal_stepper_port.c
 CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/stub/hal/stubHal_time.c
+CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/stub/src/com/stubCom.c
 CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/stub/src/lib/stubPrintf.c
 CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/stub/src/stepper/stubTrinamic.c
 CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/stub/src/stepper/stubDevice_stepper.c
+CMOCKA_SRC_STEPPER_STEP_SRCS += cmocka/stub/src/stepper/stubPololu.c
 
 CMOCKA_SRC_STEPPER_STEP_OBJS = $(addprefix $(TEST_BIN_FOLDER),$(CMOCKA_SRC_STEPPER_STEP_SRCS:%.c=%.o))

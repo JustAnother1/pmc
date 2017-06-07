@@ -633,7 +633,7 @@ static void get_steps_for_this_phase(float factor)
             }
         }
     }
-    for(i = 0; i < 8; i++)
+    for(i = 0; i < MAX_NUMBER; i++)
     {
         error_on_axis[i] = 0;
         if(0 < maxSteps)

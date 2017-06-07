@@ -43,7 +43,7 @@ void hal_time_stop_timer(uint_fast8_t device)
 
 }
 
-void hal_time_print_Configuration(int timerNumber)
+bool hal_time_print_Configuration(int timerNumber, int lineNumber)
 {
-
+    return false;
 }
