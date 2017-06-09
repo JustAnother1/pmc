@@ -917,6 +917,7 @@ bool step_add_basic_linear_move(uint_fast8_t *move_data)
         {
             // Axis is not active
             // -> skip this axis
+            steps_on_axis[i] = 0;
         }
         else
         {

@@ -232,6 +232,57 @@ static void test_step_add_basic_linear_move(void **state)
     assert_false(step_add_basic_linear_move(NULL));
 }
 
+static void test_step_add_basic_linear_move_homing_2axis(void **state)
+{
+    uint_fast8_t move_data[14];
+    move_data[ 0] = 0x03; // Basic liean Move
+    move_data[ 1] = 0x05; // 1 byte format, Axis 0 and 2
+    move_data[ 2] = 0x84; // 2 bytes for steps axis0 = decreasing, axis 2 increasing
+    move_data[ 3] = 0x12; // homing, primary axis = 2
+    move_data[ 4] = 12;   // nominal speed
+    move_data[ 5] = 5;    // end speed
+    move_data[ 6] = 0;    // Acceleration steps
+    move_data[ 7] = 200;
+    move_data[ 8] = 0;    // Deceleration steps
+    move_data[ 9] = 210;
+    move_data[10] = 0x02; // steps on axis 0
+    move_data[11] = 0;
+    move_data[12] = 0x04; // steps on axis 2
+    move_data[13] = 0;
+    busy = false;
+    cur_slot_type = SLOT_TYPE_EMPTY;
+    active_axes_map = 0;
+    direction_for_move = 0;
+    primary_axis = 0;
+    is_a_homing_move = false;
+    nominal_speed = 0;
+    end_speed = 0;
+    acceleration_steps = 0;
+    decelleration_steps = 0;
+    steps_on_axis[0] = 0;
+    steps_on_axis[1] = 5;
+    steps_on_axis[2] = 0;
+    phase_of_move = MOVE_PHASE_DECELERATE;
+
+    assert_true(step_add_basic_linear_move(&move_data[0]));
+
+    assert_int_equal(5, active_axes_map);
+    assert_int_equal(4, direction_for_move);
+    assert_int_equal(2, primary_axis);
+    assert_true(is_a_homing_move);
+    assert_int_equal(12, nominal_speed);
+    assert_int_equal(5, end_speed);
+    assert_int_equal(200, acceleration_steps);
+    assert_int_equal(210, decelleration_steps);
+    // the steps for the acceleration phase have already been subtracted.
+    assert_int_equal(0x200 -100, steps_on_axis[0]);
+    assert_int_equal(0, steps_on_axis[1]);
+    assert_int_equal(0x400 -200, steps_on_axis[2]);
+    assert_int_equal(MOVE_PHASE_ACCELLERATE, phase_of_move);
+    assert_int_equal(SLOT_TYPE_BASIC_LINEAR_MOVE, cur_slot_type);
+    assert_true(busy);
+}
+
 // static void auto_activate_usedAxis(void)
 static void test_auto_activate_usedAxis(void **state)
 {
@@ -324,6 +375,7 @@ int main(void)
             cmocka_unit_test(test_step_is_busy),
             cmocka_unit_test(test_step_add_delay),
             cmocka_unit_test(test_step_add_basic_linear_move),
+            cmocka_unit_test(test_step_add_basic_linear_move_homing_2axis),
             cmocka_unit_test(test_auto_activate_usedAxis),
             cmocka_unit_test(test_get_steps_for_this_phase),
             cmocka_unit_test(test_make_the_needed_steps),
