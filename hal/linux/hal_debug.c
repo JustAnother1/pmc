@@ -27,6 +27,11 @@ void hal_debug_init(void)
     init_printf(NULL, debug_putc);
 }
 
+putcf getDebugOutput(void)
+{
+    return debug_putc;
+}
+
 static void debug_putc(void* p, char c)
 {
     putc(c, stdout);

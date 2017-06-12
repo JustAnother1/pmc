@@ -31,9 +31,14 @@ void hal_debug_init(void)
     init_printf(NULL, debug_putc);
 }
 
+putcf getDebugOutput(void)
+{
+    return debug_putc;
+}
+
 static void debug_putc(void* p, char c)
 {
-	(void)p;
+    (void)p;
     // TODO hal_send_frame_debug_uart((uint8_t *)&c, 1);
 
     if(false == hal_send_frame_non_blocking_debug_uart((uint8_t *)&c, 1))
@@ -41,7 +46,6 @@ static void debug_putc(void* p, char c)
         hal_set_error_led(true);
         hal_cpu_report_issue(5);
     }
-
 }
 
 bool hal_debug_is_send_buffer_empty(void)

@@ -30,14 +30,15 @@
  */
 
 #include <stdint.h>
-#include <printf.h>
+#include <stdio.h>
+#include "hal_debug.h"
+#include "lib/printf.h"
 #ifdef ARCHITECTURE_AVR
 
 #include <avr/pgmspace.h>
 
 #endif
 
-typedef void (*putcf) (void*, char);
 
 #ifdef PRINTF_FLOAT_SUPPORT
 static void f2a(double num, char * bf);
@@ -272,6 +273,19 @@ void tfp_format(void* putp, putcf putf, const char* cfmt, va_list va)
 #else
     fmt = (char *)cfmt;
 #endif
+    // if we do not know where to write,...
+    if(NULL == putf)
+    {
+        // .. then ask for the debug Output
+        putf = getDebugOutput();
+    }
+
+    // if the debug output function is not available...
+    if(NULL == putf)
+    {
+        // ...then there is nothing we can do.
+        return;
+    }
 
     while((length < MAX_STRING_LENGTH) && (ch = *(fmt++)) )
     {
@@ -282,18 +296,18 @@ void tfp_format(void* putp, putcf putf, const char* cfmt, va_list va)
         }
         else
         {
+
             // lz = leading Zeros -> 0 = no leading zeros; 1= leading Zeros
             char lz = 0;
 #ifdef PRINTF_LONG_SUPPORT
             char lng = 0;
 #endif
             // w = width -> number of characters used to print the number
-            /*
-             * %03d with number 23 -> lz=1, w=3 ->   "023"
-             * %3d  with number 23 -> lz=0, w=3 ->   " 23"
-             * %5d  with number 23 -> lz=0, w=5 -> "   23"
-             * %05d with number 23 -> lz=1, w=5 -> "00023"
-             */
+
+            // %03d with number 23 -> lz=1, w=3 ->   "023"
+            // %3d  with number 23 -> lz=0, w=3 ->   " 23"
+            // %5d  with number 23 -> lz=0, w=5 -> "   23"
+            // %05d with number 23 -> lz=1, w=5 -> "00023"
             int w = 0;
             ch = *(fmt++);
             if(ch == '0')

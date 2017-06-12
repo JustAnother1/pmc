@@ -18,6 +18,9 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include <stdio.h>
+
+typedef void (*putcf) (void*, char);
 
 #ifdef DEBUG_ACTIVE
 
@@ -29,10 +32,12 @@
 
 void hal_debug_init(void);
 bool hal_debug_is_send_buffer_empty(void);
+putcf getDebugOutput(void);
 #else
 #define debug_msg(...)
 #define debug_line(...)
 #define hal_debug_is_send_buffer_empty()  (true)
+#define getDebugOutput() (NULL)
 #endif
 
 #endif /* HAL_INCLUDE_HAL_DEBUG_H_ */
