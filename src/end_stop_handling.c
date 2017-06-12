@@ -268,15 +268,17 @@ bool dev_input_is_enabled(uint_fast8_t switch_number)
 
 bool dev_stepper_configure_end_stops(uint_fast8_t stepper_number, uint_fast8_t switch_number, uint_fast8_t min_max)
 {
-    if(stepper_number -1  > MAX_NUMBER)
+    if(stepper_number > MAX_NUMBER)
     {
         com_send_generic_application_error_response(GENERIC_ERROR_INVALID_DEVICE_NUMBER);
         return false;
     }
+
     else
     {
         if(switch_number < MAX_NUM_END_STOPS)
         {
+
             if(MAX_END == min_max)
             {
                 debug_line(STR("Stepper %d Max is Switch %d!"), stepper_number, switch_number);

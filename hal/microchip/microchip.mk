@@ -21,10 +21,6 @@ ifeq ($(BOARD), rumba)
 	#PROGRAMMER = atmelice
 	#PROGRAM_PORT = usb
 	OPTIONS_ARCH += -mmcu=atmega2560
-	# -g: produce debugging information 
-	CFLAGS += -g 
-	# enable warnings
-	CFLAGS += -Wall
 	# uses DWARF format version 2 (TODO: Why not 4? and then also change -g to -g3)
 	CFLAGS += -ffunction-sections
 	CFLAGS += -fdata-sections
@@ -70,10 +66,6 @@ ifeq ($(BOARD), ultimaker_original)
 	PROGRAMMER = wiring
 	PROGRAM_PORT = /dev/ttyACM0
 	OPTIONS_ARCH += -mmcu=atmega2560
-	# -g: produce debugging information 
-	CFLAGS += -g 
-	# enable warnings
-	CFLAGS += -Wall
 	# uses DWARF format version 2 (TODO: Why not 4? and then also change -g to -g3)
 	CFLAGS += -ffunction-sections
 	CFLAGS += -fdata-sections

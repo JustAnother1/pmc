@@ -446,29 +446,29 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             {
                 // one Switch
                 if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
-                                                com_get_parameter_byte(1),
-                                                com_get_parameter_byte(2) ))
+                                                           com_get_parameter_byte(1),
+                                                           com_get_parameter_byte(2) ))
                 {
                     com_send_ok_response();
                 }
-                // TODO check else - command already send error
+                // else - command already send error
             }
             else if(5 == parameter_length)
             {
                 // two switches
                 if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
-                                                com_get_parameter_byte(1),
-                                                com_get_parameter_byte(2) ) )
+                                                           com_get_parameter_byte(1),
+                                                           com_get_parameter_byte(2) ) )
                 {
                     if(true == dev_stepper_configure_end_stops(com_get_parameter_byte(0),
-                                                com_get_parameter_byte(3),
-                                                com_get_parameter_byte(4) ))
+                                                               com_get_parameter_byte(3),
+                                                               com_get_parameter_byte(4) ))
                     {
                         com_send_ok_response();
                     }
-                    // TODO check  else - command already send error
+                    // else - command already send error
                 }
-                // TODO check  else - command already send error
+                // else - command already send error
             }
             else
             {
@@ -483,7 +483,7 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             {
                 // one Switch
                 if(true == dev_input_enable(com_get_parameter_byte(0),
-                                 com_get_parameter_byte(1) ))
+                                            com_get_parameter_byte(1) ))
                 {
                     com_send_ok_response();
                 }
@@ -493,10 +493,10 @@ static void handle_frame(uint_fast8_t order, uint_fast8_t parameter_length, uint
             {
                 // two switches
                 if(true == dev_input_enable(com_get_parameter_byte(0),
-                                 com_get_parameter_byte(1) ) )
+                                            com_get_parameter_byte(1) ) )
                 {
                     if(true == dev_input_enable(com_get_parameter_byte(2),
-                                 com_get_parameter_byte(3) ) )
+                                                com_get_parameter_byte(3) ) )
                     {
                         com_send_ok_response();
                     }

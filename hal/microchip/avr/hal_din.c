@@ -224,8 +224,12 @@ void hal_din_subscribe_to_events(uint_fast8_t switch_number,
                                  uint_fast8_t stepper_number,
                                  din_func handle_func)
 {
-    funcs[switch_number] = handle_func;
-    steppers[switch_number] = stepper_number;
+    if(switch_number < D_IN_NUM_PINS)
+    {
+        funcs[switch_number] = handle_func;
+        steppers[switch_number] = stepper_number;
+    }
+    // else invalid switch number
 }
 
 #ifdef POLL_END_STOPS
