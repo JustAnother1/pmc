@@ -53,9 +53,12 @@ extern volatile uint_fast16_t steps_on_axis[MAX_NUMBER];
 extern volatile uint_fast8_t phase_of_move;
 extern volatile uint_fast16_t steps_in_this_phase_on_axis[MAX_NUMBER];
 extern volatile uint_fast16_t steps_already_made[MAX_NUMBER];
+extern volatile float error_on_axis[MAX_NUMBER];
+extern volatile float increment_on_axis[MAX_NUMBER];
 extern volatile uint_fast32_t curTime;
 extern volatile float speed_increse_acc_tick;
 extern volatile float speed_decrese_decel_tick;
+
 
 // enable / disable Stepper
 extern uint_fast8_t available_steppers;
@@ -295,7 +298,148 @@ static void test_auto_activate_usedAxis(void **state)
 // static void get_steps_for_this_phase(float factor)
 static void test_get_steps_for_this_phase(void **state)
 {
+    active_axes_map = 0x05;  // axis 0 and 2
+    error_on_axis[0] = 0.5;
+    error_on_axis[1] = 0.5;
+    error_on_axis[2] = 0.5;
+    error_on_axis[3] = 0.5;
+    error_on_axis[4] = 0.5;
+    error_on_axis[5] = 0.5;
+    error_on_axis[6] = 0.5;
+    error_on_axis[7] = 0.5;
+    steps_on_axis[0] = 200;
+    steps_on_axis[1] = 0;
+    steps_on_axis[2] = 300;
+    steps_on_axis[3] = 0;
+    steps_on_axis[4] = 0;
+    steps_on_axis[5] = 0;
+    steps_on_axis[6] = 0;
+    steps_on_axis[7] = 0;
+    steps_in_this_phase_on_axis[0] = 57;
+    steps_in_this_phase_on_axis[1] = 57;
+    steps_in_this_phase_on_axis[2] = 57;
+    steps_in_this_phase_on_axis[3] = 57;
+    steps_in_this_phase_on_axis[4] = 57;
+    steps_in_this_phase_on_axis[5] = 57;
+    steps_in_this_phase_on_axis[6] = 57;
+    steps_in_this_phase_on_axis[7] = 57;
+    increment_on_axis[0] = 3.9;
+    increment_on_axis[1] = 3.9;
+    increment_on_axis[2] = 3.9;
+    increment_on_axis[3] = 3.9;
+    increment_on_axis[4] = 3.9;
+    increment_on_axis[5] = 3.9;
+    increment_on_axis[6] = 3.9;
+    increment_on_axis[7] = 3.9;
+
     get_steps_for_this_phase(1.0);
+
+    assert_int_equal(0x05, active_axes_map);
+    assert_int_equal(0, error_on_axis[0]);
+    assert_int_equal(0, error_on_axis[1]);
+    assert_int_equal(0, error_on_axis[2]);
+    assert_int_equal(0, error_on_axis[3]);
+    assert_int_equal(0, error_on_axis[4]);
+    assert_int_equal(0, error_on_axis[5]);
+    assert_int_equal(0, error_on_axis[6]);
+    assert_int_equal(0, error_on_axis[7]);
+    assert_int_equal(0, steps_on_axis[0]);
+    assert_int_equal(0, steps_on_axis[1]);
+    assert_int_equal(0, steps_on_axis[2]);
+    assert_int_equal(0, steps_on_axis[3]);
+    assert_int_equal(0, steps_on_axis[4]);
+    assert_int_equal(0, steps_on_axis[5]);
+    assert_int_equal(0, steps_on_axis[6]);
+    assert_int_equal(0, steps_on_axis[7]);
+    assert_int_equal(200, steps_in_this_phase_on_axis[0]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[1]);
+    assert_int_equal(300, steps_in_this_phase_on_axis[2]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[3]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[4]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[5]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[6]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[7]);
+    assert_int_equal(0.666, increment_on_axis[0]);
+    assert_int_equal(0, increment_on_axis[1]);
+    assert_int_equal(1.0, increment_on_axis[2]);
+    assert_int_equal(0, increment_on_axis[3]);
+    assert_int_equal(0, increment_on_axis[4]);
+    assert_int_equal(0, increment_on_axis[5]);
+    assert_int_equal(0, increment_on_axis[6]);
+    assert_int_equal(0, increment_on_axis[7]);
+}
+
+static void test_get_steps_for_this_phase_0_5(void **state)
+{
+    active_axes_map = 0x05;  // axis 0 and 2
+    error_on_axis[0] = 0.5;
+    error_on_axis[1] = 0.5;
+    error_on_axis[2] = 0.5;
+    error_on_axis[3] = 0.5;
+    error_on_axis[4] = 0.5;
+    error_on_axis[5] = 0.5;
+    error_on_axis[6] = 0.5;
+    error_on_axis[7] = 0.5;
+    steps_on_axis[0] = 200;
+    steps_on_axis[1] = 0;
+    steps_on_axis[2] = 300;
+    steps_on_axis[3] = 0;
+    steps_on_axis[4] = 0;
+    steps_on_axis[5] = 0;
+    steps_on_axis[6] = 0;
+    steps_on_axis[7] = 0;
+    steps_in_this_phase_on_axis[0] = 57;
+    steps_in_this_phase_on_axis[1] = 57;
+    steps_in_this_phase_on_axis[2] = 57;
+    steps_in_this_phase_on_axis[3] = 57;
+    steps_in_this_phase_on_axis[4] = 57;
+    steps_in_this_phase_on_axis[5] = 57;
+    steps_in_this_phase_on_axis[6] = 57;
+    steps_in_this_phase_on_axis[7] = 57;
+    increment_on_axis[0] = 3.9;
+    increment_on_axis[1] = 3.9;
+    increment_on_axis[2] = 3.9;
+    increment_on_axis[3] = 3.9;
+    increment_on_axis[4] = 3.9;
+    increment_on_axis[5] = 3.9;
+    increment_on_axis[6] = 3.9;
+    increment_on_axis[7] = 3.9;
+
+    get_steps_for_this_phase(0.5);
+
+    assert_int_equal(0x05, active_axes_map);
+    assert_int_equal(0, error_on_axis[0]);
+    assert_int_equal(0, error_on_axis[1]);
+    assert_int_equal(0, error_on_axis[2]);
+    assert_int_equal(0, error_on_axis[3]);
+    assert_int_equal(0, error_on_axis[4]);
+    assert_int_equal(0, error_on_axis[5]);
+    assert_int_equal(0, error_on_axis[6]);
+    assert_int_equal(0, error_on_axis[7]);
+    assert_int_equal(100, steps_on_axis[0]);
+    assert_int_equal(0, steps_on_axis[1]);
+    assert_int_equal(150, steps_on_axis[2]);
+    assert_int_equal(0, steps_on_axis[3]);
+    assert_int_equal(0, steps_on_axis[4]);
+    assert_int_equal(0, steps_on_axis[5]);
+    assert_int_equal(0, steps_on_axis[6]);
+    assert_int_equal(0, steps_on_axis[7]);
+    assert_int_equal(100, steps_in_this_phase_on_axis[0]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[1]);
+    assert_int_equal(150, steps_in_this_phase_on_axis[2]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[3]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[4]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[5]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[6]);
+    assert_int_equal(0, steps_in_this_phase_on_axis[7]);
+    assert_int_equal(0.666, increment_on_axis[0]);
+    assert_int_equal(0, increment_on_axis[1]);
+    assert_int_equal(1.0, increment_on_axis[2]);
+    assert_int_equal(0, increment_on_axis[3]);
+    assert_int_equal(0, increment_on_axis[4]);
+    assert_int_equal(0, increment_on_axis[5]);
+    assert_int_equal(0, increment_on_axis[6]);
+    assert_int_equal(0, increment_on_axis[7]);
 }
 
 // static void make_the_needed_steps(uint_fast16_t reload_time)
@@ -378,6 +522,7 @@ int main(void)
             cmocka_unit_test(test_step_add_basic_linear_move_homing_2axis),
             cmocka_unit_test(test_auto_activate_usedAxis),
             cmocka_unit_test(test_get_steps_for_this_phase),
+            cmocka_unit_test(test_get_steps_for_this_phase_0_5),
             cmocka_unit_test(test_make_the_needed_steps),
             cmocka_unit_test(test_get_reload_primary_axis),
             cmocka_unit_test(test_caclculate_basic_move_chunk),
