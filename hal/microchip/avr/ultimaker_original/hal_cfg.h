@@ -47,6 +47,9 @@
 
 #define STEP_TIMER                 5
 
-#define STEP_ISR_FUNCTION ISR(TIM5_COMPA_vect, ISR_BLOCK)
+#define STEP_ISR_FUNCTION ISR(TIMER5_COMPA_vect, ISR_BLOCK)
+
+// fix for pointer to ISR function that we do not use
+#define step_isr    refill_step_buffer
 
 #endif /* HAL_INCLUDE_HAL_CFG_H_ */
