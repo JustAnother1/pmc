@@ -215,8 +215,10 @@ void pololu_disable_motor(uint_fast8_t stepper_number)
     // else this board does not have that stepper
 }
 
+#ifdef DEBUG_ACTIVE
 void pololu_print_status()
 {
     step_print_state();
 }
+#endif
 

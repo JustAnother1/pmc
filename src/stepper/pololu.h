@@ -21,6 +21,8 @@
 void pololu_init(void);
 void pololu_enable_motor(uint_fast8_t stepper_number);
 void pololu_disable_motor(uint_fast8_t stepper_number);
+#ifdef DEBUG_ACTIVE
 void pololu_print_status(void);
+#endif
 
 #endif /* SRC_STEPPER_POLOLU_H_ */
