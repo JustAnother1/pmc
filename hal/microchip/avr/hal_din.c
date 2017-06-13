@@ -15,6 +15,8 @@
 
 #include <stdbool.h>
 #include <stdio.h>
+#include <avr/io.h>
+#include "hal_cfg.h"
 #include "hal_din.h"
 #include "hal_debug.h"
 #include "board_cfg.h"

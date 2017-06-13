@@ -14,10 +14,13 @@
  */
 
 #include "hal_adc.h"
+#include "hal_cfg.h"
 #include "board_cfg.h"
 #include "log.h"
 #include "hal_debug.h"
 #include <math.h>
+#include <avr/io.h>
+
 
 #define VCC_OF_ADC            5.0
 #define SERIES_RESISTOR      4700
@@ -191,6 +194,6 @@ static uint_fast16_t SteinhartHartBOnlyConverter(uint16_t DR, uint_fast8_t numbe
 
 static uint_fast16_t NoConverter(uint16_t DR, uint_fast8_t number)
 {
-	(void)number;
+    (void)number;
     return (uint_fast16_t)0xffff & DR;
 }
