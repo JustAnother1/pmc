@@ -544,7 +544,7 @@ bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
 
 #ifdef DEBUG_ACTIVE
 
-void hal_time_print_Configuration(int timerNumber)
+void hal_time_print_Configuration(int timerNumber, int lineNumber)
 {
     TIM_TypeDef* timer = get_timer_register_for(timerNumber);
     switch(timerNumber)

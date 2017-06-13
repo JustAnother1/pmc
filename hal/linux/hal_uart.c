@@ -253,7 +253,6 @@ static void* uart_task(void * dev_ptr)
 {
     uart_device_typ * device = dev_ptr;
     int sock_fd;
-    int client_fd;
     int err;
     int length;
     socklen_t addr_size;
@@ -297,6 +296,7 @@ static void* uart_task(void * dev_ptr)
     while(1)
     {
         int opts;
+        int client_fd;
         // listen
         err = listen(sock_fd, 1);
         if(-1 == err)
