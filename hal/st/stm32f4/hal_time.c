@@ -544,7 +544,7 @@ bool hal_time_set_timer_reload(uint_fast8_t device, uint16_t reload_value)
 
 #ifdef DEBUG_ACTIVE
 
-void hal_time_print_Configuration(int timerNumber, int lineNumber)
+bool hal_time_print_Configuration(int timerNumber, int lineNumber)
 {
     TIM_TypeDef* timer = get_timer_register_for(timerNumber);
     switch(timerNumber)
@@ -719,7 +719,7 @@ void hal_time_print_Configuration(int timerNumber, int lineNumber)
 
     default:
         debug_line(STR("Invalid Timer Number %d! allowed = 1..14"), timerNumber);
-        return;
+        return false;
     }
 
     debug_line(STR("Timer->ARR     = 0x%08x"), timer->ARR);
@@ -742,6 +742,7 @@ void hal_time_print_Configuration(int timerNumber, int lineNumber)
     debug_line(STR("Timer->RCR     = 0x%08x"), timer->RCR);
     debug_line(STR("Timer->SMCR    = 0x%08x"), timer->SMCR);
     debug_line(STR("Timer->SR      = 0x%08x"), timer->SR);
+    return false;
 }
 
 #endif // debug

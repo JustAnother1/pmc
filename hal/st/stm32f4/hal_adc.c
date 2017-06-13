@@ -421,6 +421,20 @@ static void aquireValues(void)
     }
 }
 
+uint_fast16_t hal_adc_get_raw_value(uint_fast8_t device)
+{
+    if(device < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES))
+    {
+        return res_buf[device];
+    }
+    else
+    {
+        // invalid device number
+        debug_line(STR("Invalid Device %d !"), device);
+        return 0xffff;
+    }
+}
+
 uint_fast16_t hal_adc_get_value(uint_fast8_t device)
 {
     if(device < (NUM_TEMPERATURES + NUM_EXTERNAL_TEMPERATURES))
