@@ -179,6 +179,10 @@ void gotoStoppedMode(uint_fast8_t cause_for_stopped_mode, uint_fast8_t recovery_
     // stop executing the queue
     cmd_queue_clear();
     // power off all heaters and Fans
+    for(i = 0; i < NUMBER_OF_HEATERS; i++)
+    {
+        dev_heater_set_target_temperature(i, 0);
+    }
     for(i = 0; i < hal_pwm_get_amount(); i++)
     {
         hal_pwm_set_on_time(i, 0);
