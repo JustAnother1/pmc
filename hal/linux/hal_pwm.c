@@ -22,7 +22,7 @@ void hal_pwm_init(void)
 
 uint_fast8_t hal_pwm_get_amount(void)
 {
-    return 0;
+    return 12;
 }
 
 void hal_pwm_set_on_time(uint_fast8_t device, uint_fast16_t on_time)

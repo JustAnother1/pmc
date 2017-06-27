@@ -341,7 +341,6 @@ static void* uart_task(void * dev_ptr)
 
         while (1)
         {
-            fprintf(stderr, "receive\n");
             // receive
             pthread_mutex_lock(&device->receive_mutex);
             length = recv(client_fd,
@@ -372,7 +371,6 @@ static void* uart_task(void * dev_ptr)
             }
             pthread_mutex_unlock(&device->receive_mutex);
 
-            fprintf(stderr, "send\n");
             // send
             pthread_mutex_lock(&device->send_mutex);
             if(true == device->i_want_to_send)
@@ -383,7 +381,6 @@ static void* uart_task(void * dev_ptr)
             }
             pthread_mutex_unlock(&device->send_mutex);
 
-            fprintf(stderr, "wait\n");
             // do not use the whole CPU
             usleep(1000);
         }

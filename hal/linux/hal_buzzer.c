@@ -22,7 +22,7 @@ void hal_buzzer_init(void)
 
 uint_fast8_t hal_buzzer_get_amount(void)
 {
-    return 0;
+    return 1;
 }
 
 void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency)

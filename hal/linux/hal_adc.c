@@ -22,7 +22,7 @@ void hal_adc_init(void)
 
 uint_fast8_t hal_adc_get_amount(void)
 {
-    return 0;
+    return 5;
 }
 
 uint_fast16_t hal_adc_get_raw_value(uint_fast8_t device)

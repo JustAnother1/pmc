@@ -21,7 +21,7 @@ void hal_dout_init(void)
 
 uint_fast8_t hal_dout_get_amount(void)
 {
-    return 0;
+    return 3;
 }
 
 void hal_dout_set_pin_high(uint_fast8_t device)
