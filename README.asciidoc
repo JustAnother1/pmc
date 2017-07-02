@@ -1,8 +1,8 @@
 Pacemaker Client
 ----------------
 
-The pacemaker client is the counterpart to the pacemaker host. The Client handles the time critical tasks.
-You can find the pacemaker host here: https://github.com/JustAnother1/Pacemaker
+The pacemaker client implements the client role as defined in the https://github.com/JustAnother1/Pacemaker/blob/master/doc/Pacemaker_Protocol.asciidoc[pacemaker protocol].
+Together with a https://github.com/JustAnother1/Pacemaker[pacemaker host] it can replace a 3d printer firmware.
 
 Summary
 -------
@@ -11,7 +11,7 @@ The Pacemaker protocol provides an open interface to allow the separation of rea
 
 This has the huge benefit of allowing new controller hardware (the real-time component) to work with existing host software solutions (the non-real-time component). This makes it easy to expand the Pacemaker system to new machines.
 
-Pacemaker allows a much richer level of machine control by the non-real-time host software than is possible with typical G-code based systems. This provides feature-rich host software, more integrated start-to-finish tool chain solutions whilst still being able to operate on a wide range of platforms.
+Pacemaker allows a much richer level of machine control by the non-real-time host software than is possible with typical G-code based systems. This provides feature-rich host software, more integrated start-to-finish tool chain solutions whilst still being able to operate on a wide range of platforms. The standard G-Code interface is also provided.
 
 Building and Starting
 ---------------------
