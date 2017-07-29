@@ -154,7 +154,6 @@ void hal_din_init(void)
         NVIC_EnableIRQ(EXTI_10_15_IRQ_NUMBER);
 
         // Enable Interrupts for state change on Input lines
-        EXTI->SWIER = D_IN_EXTI_SWIER;
         EXTI->FTSR = D_IN_EXTI_FTSR;
         EXTI->RTSR = D_IN_EXTI_RTSR;
         EXTI->EMR = D_IN_EXTI_EMR;

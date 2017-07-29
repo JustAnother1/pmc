@@ -19,6 +19,8 @@
 // handling of constant Strings
 #define STR(x) (x)
 
+#define HAS_CCM  1
+
 // SPI
 #define STEPPER_SPI   0
 #define EXPANSION_SPI 1

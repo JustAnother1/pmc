@@ -35,7 +35,6 @@
 // Temperatures measured with internal ADC = Pins + Chip Temperature
 #define NUM_TEMPERATURES                      (ADC_NUM_PINS + 1)
 // Temperatures measured by external chips ( Thermocouple, I2C Sensor)
-#define NUM_EXTERNAL_TEMPERATURES             2
 #define MAX_TRIES                             500
 #define I2C_TEMP_POLL_MS                      240 // The I2C sensor measures only every 240ms
 #define I2C_TEMPERATURE_SENSOR_DEVICE_ADDRESS 0x90
@@ -72,13 +71,14 @@ void hal_adc_init(void)
         converters[i] = NoConverter;
     }
     converters[0] = SteinhartHartBOnlyConverter;
-    converters[4] = InternalTempSensorConverter;
+    converters[ADC_NUM_PINS] = InternalTempSensorConverter;
 
     nextMeasurement = 0;
 
     hal_init_expansion_spi();
+#ifdef HAS_I2C
     hal_init_i2c();
-
+#endif
     start = true;
     spi_ok = true;
     curDevice = 0;
@@ -93,10 +93,21 @@ void hal_adc_init(void)
     // Power on ADC
     RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
     // enable clock for GPIO Port
+#if ADC_NUM_PINS > 0
     RCC->AHB1ENR |= ADC_0_GPIO_PORT_RCC;
+#endif
+#if ADC_NUM_PINS > 1
     RCC->AHB1ENR |= ADC_1_GPIO_PORT_RCC;
+#endif
+#if ADC_NUM_PINS > 2
     RCC->AHB1ENR |= ADC_2_GPIO_PORT_RCC;
+#endif
+#if ADC_NUM_PINS > 3
     RCC->AHB1ENR |= ADC_3_GPIO_PORT_RCC;
+#endif
+#if ADC_NUM_PINS > 4
+    TODO more than 4 Temperature sensor Input Pins
+#endif
 
 #if 1 == ADC_USE_DMA
     DMA2_Stream0->PAR = ADC1->DR;  // Peripheral Address
@@ -114,15 +125,25 @@ void hal_adc_init(void)
                      | (1 <<0); // Stream enable
 #endif
 
+#if ADC_NUM_PINS > 0
     ADC_0_GPIO_PORT->MODER   |=  ADC_0_GPIO_MODER_1;
     ADC_0_GPIO_PORT->MODER   &= ~ADC_0_GPIO_MODER_0;
+#endif
+#if ADC_NUM_PINS > 1
     ADC_1_GPIO_PORT->MODER   |=  ADC_1_GPIO_MODER_1;
     ADC_1_GPIO_PORT->MODER   &= ~ADC_1_GPIO_MODER_0;
+#endif
+#if ADC_NUM_PINS > 2
     ADC_2_GPIO_PORT->MODER   |=  ADC_2_GPIO_MODER_1;
     ADC_2_GPIO_PORT->MODER   &= ~ADC_2_GPIO_MODER_0;
+#endif
+#if ADC_NUM_PINS > 3
     ADC_3_GPIO_PORT->MODER   |=  ADC_3_GPIO_MODER_1;
     ADC_3_GPIO_PORT->MODER   &= ~ADC_3_GPIO_MODER_0;
-    // TODO more than 4 Temperature sensor Input Pins
+#endif
+#if ADC_NUM_PINS > 4
+    TODO more than 4 Temperature sensor Input Pins
+#endif
 
 #if 1 == ADC_USE_DMA
     // set list of channels that shall be measured
@@ -171,6 +192,7 @@ void hal_adc_init(void)
     ADC1->CR1 = 0;
 #endif
 
+#ifdef HAS_I2C
     // I2C
     {
         // 0x80 in Register 3 sets the resolution to 16bit.
@@ -184,6 +206,7 @@ void hal_adc_init(void)
             debug_line(STR("ERROR: I2C write failed!"));
         }
     }
+#endif
 
     hal_cpu_add_ms_tick_function(aquireValues);
 }
@@ -455,11 +478,21 @@ uint_fast8_t hal_adc_get_name(uint_fast8_t device, uint8_t *position, uint_fast8
     {
         switch(device)
         {
+#if NUM_TEMPERATURES > 0
         case  0: return copy_string(ADC_0_NAME, position, max_length);
+#endif
+#if NUM_TEMPERATURES > 1
         case  1: return copy_string(ADC_1_NAME, position, max_length);
+#endif
+#if NUM_TEMPERATURES > 2
         case  2: return copy_string(ADC_2_NAME, position, max_length);
+#endif
+#if NUM_TEMPERATURES > 3
         case  3: return copy_string(ADC_3_NAME, position, max_length);
+#endif
+#if NUM_TEMPERATURES > 4
         case  4: return copy_string(ADC_4_NAME, position, max_length);
+#endif
 #if NUM_TEMPERATURES > 5
         case  5: return copy_string(ADC_5_NAME, position);
 #endif

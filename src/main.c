@@ -27,7 +27,9 @@
 #include "command_queue.h"
 #include "hal_debug.h"
 #include "debug.h"
+#ifdef WATCHDOG_ACTIVE
 #include "hal_watchdog.h"
+#endif
 #include "hal_cpu.h"
 #include "hal_din.h"
 #include "hal_led.h"
@@ -54,11 +56,8 @@ int main (void)
     // initialize Pacemaker Client Firmware
     hal_init_power();
     hal_power_on_5V();
-    hal_time_ms_sleep(5);
     hal_power_on_12V(); // Fans are on 12V ! So for safety it is critical to have 12V on all the time !
-    hal_time_ms_sleep(5);
-    // hal_power_on_HighVoltage();
-    hal_time_ms_sleep(5);
+    hal_power_on_HighVoltage();
     events_init();
     fw_cfg_init();
     dev_temperature_sensor_init();

@@ -586,7 +586,9 @@ static bool continue_order_help(void)
     case 14: slow_order_state++; break;
 #endif
     case 15: debug_line(STR("pc                         : print CPU configuration")); slow_order_state++; break;
+#ifdef HAS_I2C
     case 16: debug_line(STR("pi                         : print I2C configuration")); slow_order_state++; break;
+#endif
     case 17: debug_line(STR("pin<Port,idx>              : print state of the pin")); slow_order_state++; break;
 #ifdef HAS_TRINAMIC
     case 18: slow_order_state++; break;
@@ -1067,7 +1069,12 @@ static bool parse_order(int length)
         case 'i':
             if(2 == pos_in_buf)
             {
+#ifdef HAS_I2C
                 hal_print_i2c_configuration();
+#else
+                debug_line(STR("Invalid command ! try h for help"));
+                return true;
+#endif
             }
             switch(cmd_buf[2])
             {

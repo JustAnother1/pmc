@@ -23,7 +23,9 @@
 #include "protocol.h"
 #include "copy_string.h"
 
+#if(D_OUT_NUM_PINS > 0)
 static uint_fast8_t curState[D_OUT_NUM_PINS];
+#endif
 static bool initialized = false;
 
 void hal_dout_init(void)
@@ -162,6 +164,17 @@ uint_fast8_t hal_dout_get_name(uint_fast8_t device, uint8_t *position, uint_fast
 
 uint_fast8_t hal_dout_get_current_state_of(uint_fast8_t number)
 {
-    return curState[number];
+#if(D_OUT_NUM_PINS > 0)
+    if(number < D_OUT_NUM_PINS)
+    {
+        return curState[number];
+    }
+    else
+    {
+        return OUTPUT_STATE_LOW;
+    }
+#else
+    return OUTPUT_STATE_LOW;
+#endif
 }
 

@@ -17,6 +17,7 @@
 #include "hal_i2c.h"
 #include "hal_nvram.h"
 
+#ifdef HAS_I2C
 static uint_fast8_t get_i2c_device_address_for(uint32_t addr);
 static uint_fast8_t get_i2c_data_address_for(uint32_t addr);
 
@@ -221,3 +222,62 @@ static uint_fast8_t get_i2c_data_address_for(uint32_t addr)
     // TODO
     return 0xff & addr;
 }
+
+#else // HAS_I2C
+
+void hal_nvram_init(void)
+{
+
+}
+
+bool hal_nvram_getString(uint32_t addr, char* buf, int maxLength)
+{
+    return false;
+}
+
+void hal_nvram_setString(uint32_t addr, char* buf, int length)
+{
+
+}
+
+bool hal_nvram_getUInt32Value(uint32_t addr, uint32_t* value)
+{
+    return false;
+}
+
+void hal_nvram_setUInt32Value(uint32_t addr, uint32_t value)
+{
+
+}
+
+bool hal_nvram_getUInt16Value(uint32_t addr, uint16_t* value)
+{
+    return false;
+}
+
+void hal_nvram_setUInt16Value(uint32_t addr, uint16_t value)
+{
+
+}
+
+bool hal_nvram_getUInt8Value(uint32_t addr, uint8_t* value)
+{
+    return false;
+}
+
+void hal_nvram_setUInt8Value(uint32_t addr, uint8_t value)
+{
+
+}
+
+bool hal_nvram_getfloat(uint32_t addr, float* value)
+{
+    return false;
+}
+
+void hal_nvram_setfloat(uint32_t addr, float value)
+{
+
+}
+#endif // USE_I2C
+

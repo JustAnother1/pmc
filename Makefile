@@ -68,7 +68,7 @@ OBJS = $(addprefix $(BIN_FOLDER),$(STARTUP:.s=.o) $(SRC:.c=.o))
 
 help:
 	@echo "  "
-	@echo "BUILD TARGETS FOR PMC"
+	@echo "Build targets for PMC (PaceMaker Client)"
 	@echo "  "
 	@echo "make clean                         - delete all created files"
 	@echo "make doxygen                       - create documentation"
@@ -76,10 +76,14 @@ help:
 	@echo "make cpputest_test                 - run CppUTest unit tests"
 	@echo "make list                          - readelf + objdump"
 	@echo "make all BOARD=linux               - build project to run on Linux"
+	@echo "make all BOARD=401nucleo           - build project to run on Nucleo(-64)-F401RE board"
+	@echo "make all BOARD=446nucleo           - build project to run on Nucleo(-64)-F446RE board"
 	@echo "make all BOARD=stm407disco         - build project to run on STM32F4 discovery board"
 	@echo "make all BOARD=pipy                - build project to run on pipy board"
 	@echo "make all BOARD=rumba               - build project to run on rumba board"
 	@echo "make all BOARD=ultimaker_original  - build project to run on Ultimaker Original"
+	@echo "make burn BOARD=401nucleo          - programm the created file to Nucleo(-64)-F401RE board"
+	@echo "make burn BOARD=446nucleo          - programm the created file to Nucleo(-64)-F466RE board"
 	@echo "make burn BOARD=stm407disco        - programm the created file to STM32F4 discovery board"
 	@echo "make burn BOARD=pipy               - programm the created file to pipy board"
 	@echo "make burn BOARD=rumba              - programm the created file to rumba board"
@@ -130,8 +134,6 @@ clean:
 	-rm -rf $(TEST_BIN_FOLDER)
 	-rm -rf $(BIN_FOLDER)
 
-
-
 list:
 	@echo " READ -> $(BIN_FOLDER)$(PROJECT).rd"
 	@arm-none-eabi-readelf -Wall $(BIN_FOLDER)$(PROJECT).elf > $(BIN_FOLDER)$(PROJECT).rd
@@ -139,7 +141,7 @@ list:
 	@$(OBJDUMP) -axdDSstr $(BIN_FOLDER)$(PROJECT).elf > $(BIN_FOLDER)$(PROJECT).lst
 	#$(OBJDUMP) -h -S -z $< > $@
 
-ifeq ($(BOARD),$(filter $(BOARD),stm407disco pipy))
+ifeq ($(BOARD),$(filter $(BOARD),stm407disco pipy 401nucleo 446nucleo))
 burn: 
 # needs https://github.com/texane/stlink
 	$(STLINK_FOLDER)/st-flash write $(BIN_FOLDER)$(PROJECT).bin 0x8000000

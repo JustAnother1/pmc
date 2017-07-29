@@ -169,57 +169,66 @@ void hal_cpu_init_hal(void)
     {
         tick_list[i].tick = NULL;
     }
-    // start time
-    now = 0;
-    hal_cpu_start_ms_timer();
+#ifdef HAS_CCM
     // CC Memory
     RCC->AHB1ENR |= RCC_AHB1ENR_CCMDATARAMEN;
+#endif
     // Power
     RCC->APB1ENR |= RCC_APB1ENR_PWREN;
     // Sys Cfg
     RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-    // Power Scale 1 (for 168MHz, Brown out Reset activated)
-    PWR->CR = 0x000040f0;
+    // Power configuration
+    PWR->CR = PWR_CR;
 
     // FLASH
     // Enable Cache and prefetch for performance
     // configure wait states
     FLASH->ACR = (FLASH_ACR_LATENCY & WAIT_STATES)
-               + FLASH_ACR_PRFTEN
+               + FLASH_ACR_PRFTEN // ART Accelerator
                + FLASH_ACR_ICEN
                + FLASH_ACR_DCEN;
+
     // RCC - Reset and Clock Control
     RCC->PLLCFGR = (RCC->PLLCFGR & 0xf0bc8000) // preserve Reserved Bits
                  + RCC_PLL_PLLQ
-                 + RCC_PLLCFGR_PLLSRC_HSE
+                 + RCC_PLLSRC
                  + RCC_PLL_PLLP
                  + RCC_PLL_PLLN
                  + RCC_PLL_PLLM;
-    RCC->CR = RCC_CR_PLLON
-            + RCC_CR_HSEON
+    RCC->CR = RCC_CR
             + (RCC->CR & 0x0000fff8); // preserve calibration and trimming bits
     // Disable all interrupts
     RCC->CIR = 0x00000000;
+#ifdef USES_CLK_HSE
     do
     {
         // wait for High Speed External (HSE) Clock to become ready.
         ;
     }while(0 == (RCC->CR & RCC_CR_HSERDY));
+#endif
+#ifdef USES_CLK_PLL
     do
     {
         // wait for High Speed External (HSE) Clock to become ready.
         ;
     }while(0 == (RCC->CR & RCC_CR_PLLRDY));
+#endif
 
     RCC->CFGR = RCC_PRESC_APB2
               + RCC_PRESC_APB1
               + RCC_PRESC_AHB
               + RCC_SYS_CLK_SW;
+
+#ifdef USES_CLK_PLL
     do
     {
         // wait for High Speed External (HSE) Clock to become ready.
         ;
     }while(0x00000008 != (RCC->CFGR & RCC_CFGR_SWS));
+#endif
+    // start time
+    now = 0;
+    hal_cpu_start_ms_timer();
 }
 
 void hal_cpu_remove_ms_tick_function(msTickFkt function_to_remove)
@@ -490,6 +499,14 @@ void hal_cpu_check_Reset_Reason(void)
         debug_line(STR("Reason Detail: Floating Point Unit Interrupt"));
         break;
 
+    case RESET_REASON_HAL | 10:
+        debug_line(STR("Reason Detail: Forced Hard Fault"));
+        break;
+
+    case RESET_REASON_HAL | 11:
+        debug_line(STR("Reason Detail: Vector Table Hard Fault"));
+        break;
+
     default:
         debug_line(STR("Reason Detail: 0x%08X"), RTC->BKP0R);
         break;
@@ -708,11 +725,122 @@ void NMI_Handler(void)
     NVIC_SystemReset();
 }
 
+/*
 void HardFault_Handler(void)
 {
-    RTC->BKP0R = RESET_REASON_HAL | 2;
-    NVIC_SystemReset();
+    if(0x40000000 == (0x40000000 & SCB->HFSR))
+    {
+        RTC->BKP0R = RESET_REASON_HAL | 10;
+        NVIC_SystemReset();
+    }
+    else if(0x2 == (0x02 & SCB->HFSR))
+    {
+        RTC->BKP0R = RESET_REASON_HAL | 11;
+        NVIC_SystemReset();
+    }
+    else
+    {
+        RTC->BKP0R = RESET_REASON_HAL | 2;
+        NVIC_SystemReset();
+    }
 }
+*/
+
+// new code start
+
+/**
+ * HardFaultHandler_C:
+ * This is called from the HardFault_HandlerAsm with a pointer the Fault stack
+ * as the parameter. We can then read the values from the stack and place them
+ * into local variables for ease of reading.
+ * We then read the various Fault Status and Address Registers to help decode
+ * cause of the fault.
+ * The function ends with a BKPT instruction to force control back into the debugger
+ */
+/*
+void HardFault_HandlerC(unsigned long *hardfault_args)
+{
+    volatile unsigned long stacked_r0;
+    volatile unsigned long stacked_r1;
+    volatile unsigned long stacked_r2;
+    volatile unsigned long stacked_r3;
+    volatile unsigned long stacked_r12;
+    volatile unsigned long stacked_lr;
+    volatile unsigned long stacked_pc;
+    volatile unsigned long stacked_psr;
+    volatile unsigned long _CFSR;
+    volatile unsigned long _HFSR;
+    volatile unsigned long _DFSR;
+    volatile unsigned long _AFSR;
+    volatile unsigned long _BFAR;
+    volatile unsigned long _MMAR;
+
+    stacked_r0  = ((unsigned long)hardfault_args[0]);
+    stacked_r1  = ((unsigned long)hardfault_args[1]);
+    stacked_r2  = ((unsigned long)hardfault_args[2]);
+    stacked_r3  = ((unsigned long)hardfault_args[3]);
+    stacked_r12 = ((unsigned long)hardfault_args[4]);
+    stacked_lr  = ((unsigned long)hardfault_args[5]);
+    stacked_pc  = ((unsigned long)hardfault_args[6]);
+    stacked_psr = ((unsigned long)hardfault_args[7]);
+
+    // Configurable Fault Status Register
+    // Consists of MMSR, BFSR and UFSR
+    _CFSR = (*((volatile unsigned long *)(0xE000ED28)));
+
+    // Hard Fault Status Register
+    _HFSR = (*((volatile unsigned long *)(0xE000ED2C)));
+
+    // Debug Fault Status Register
+    _DFSR = (*((volatile unsigned long *)(0xE000ED30)));
+
+    // Auxiliary Fault Status Register
+    _AFSR = (*((volatile unsigned long *)(0xE000ED3C)));
+
+    // Read the Fault Address Registers. These may not contain valid values.
+    // Check BFARVALID/MMARVALID to see if they are valid values
+    // MemManage Fault Address Register
+    _MMAR = (*((volatile unsigned long *)(0xE000ED34)));
+    // Bus Fault Address Register
+    _BFAR = (*((volatile unsigned long *)(0xE000ED38)));
+
+    __asm("BKPT #0\n"); // Break into the debugger
+    debug_line(STR("Stacked R0  : %08X"), stacked_r0);
+    debug_line(STR("Stacked R1  : %08X"), stacked_r1);
+    debug_line(STR("Stacked R2  : %08X"), stacked_r2);
+    debug_line(STR("Stacked R3  : %08X"), stacked_r3);
+    debug_line(STR("Stacked R12 : %08X"), stacked_r12);
+    debug_line(STR("Stacked lr  : %08X"), stacked_lr);
+    debug_line(STR("Stacked pc  : %08X"), stacked_pc);
+    debug_line(STR("Stacked psr : %08X"), stacked_psr);
+    debug_line(STR("_CFSR : %08X"), _CFSR);
+    debug_line(STR("_HFSR : %08X"), _HFSR);
+    debug_line(STR("_DFSR : %08X"), _DFSR);
+    debug_line(STR("_AFSR : %08X"), _AFSR);
+    debug_line(STR("_BFAR : %08X"), _BFAR);
+    debug_line(STR("_MMAR : %08X"), _MMAR);
+}
+
+__attribute__((naked))
+void PE_ISR(int Cpu_ivINT_Hard_Fault)
+{
+  __asm volatile (
+    " movs r0,#4       \n"
+    " movs r1, lr      \n"
+    " tst r0, r1       \n"
+    " beq _MSP         \n"
+    " mrs r0, psp      \n"
+    " b _HALT          \n"
+  "_MSP:               \n"
+    " mrs r0, msp      \n"
+  "_HALT:              \n"
+    " ldr r1,[r0,#20]  \n"
+    " b HardFault_HandlerC \n"
+    " bkpt #0          \n"
+  );
+}
+
+// new code end */
 
 void MemManage_Handler(void)
 {

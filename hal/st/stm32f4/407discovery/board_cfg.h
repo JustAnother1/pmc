@@ -32,7 +32,15 @@
 // Wait states (3,3V and 168MHz) RM0090_P80
 #define WAIT_STATES   FLASH_ACR_LATENCY_5WS
 
+// Power Scale 1 (for 168MHz, Brown out Reset activated)
+#define PWR_CR 0x000040f0;
+
 // 8MHz -> 168MHz (PLLCFGR)
+#define RCC_PLLSRC RCC_PLLCFGR_PLLSRC_HSE
+#define RCC_CR RCC_CR_PLLON + RCC_CR_HSEON
+#define RCC_CFGR RCC_PRESC_APB2 + RCC_PRESC_APB1 + RCC_PRESC_AHB + RCC_SYS_CLK_SW
+#define USES_CLK_HSE 1
+#define USES_CLK_PLL 1
 // PLLQ = 7
 #define RCC_PLL_PLLQ  (RCC_PLLCFGR_PLLQ_0 + RCC_PLLCFGR_PLLQ_1 + RCC_PLLCFGR_PLLQ_2)
 // PLLP = /2
@@ -43,8 +51,6 @@
 #define RCC_PLL_PLLM  8
 
 // Clock Configuration (CFGR)
-#define RCC_MC02          RCC_CFGR_MCO2_1
-#define RCC_MC01          RCC_CFGR_MCO1_1
 #define RCC_PRESC_APB2    RCC_CFGR_PPRE2_DIV1
 #define RCC_PRESC_APB1    RCC_CFGR_PPRE1_DIV2
 #define RCC_PRESC_AHB     RCC_CFGR_HPRE_DIV2
@@ -135,6 +141,7 @@
 #define ADC_3_NAME                 "Temp_3"
 #define ADC_4_NAME                 "Temp_4"
 #define ADC_5_NAME                 "Temp_5"
+#define NUM_EXTERNAL_TEMPERATURES  2
 #define ADC_EXT_0_NAME             "Temp_Thermocouple"
 #define ADC_EXT_1_NAME             "Temp_PCB"
 
@@ -475,7 +482,11 @@
 /*         Universal Synchronous Asynchronous Receiver Transmitter            */
 /*                                                                            */
 /******************************************************************************/
-
+// Baud Rate = PeripheralClock/(16*BRR)
+// BRR = Lowest 4 bits = 1/16, Top Bits = Mantissa
+// Example:
+// 115200 (115226,3..) = 84MHz / (16 * 45,5625
+// 45,5625 = 45 + 9/16 -> 0x2d and 0x9 -> 0x2d9
 #define UART_0                     USART1
 #define UART_0_BRR                 0x2d9 // 115200 kbit
 #define UART_0_IRQ_HANDLER         USART1_IRQHandler
@@ -781,10 +792,9 @@
 /*                                                                            */
 /******************************************************************************/
 
-#define EXTI_GPIO_PORT_RCC         0x00000004
-#define EXTI_APB2ENR               0x00004000
+#define EXTI_GPIO_PORT_RCC         RCC_AHB1ENR_GPIOCEN
+#define EXTI_APB2ENR               RCC_APB2ENR_SYSCFGEN
 
-#define D_IN_EXTI_SWIER            0x1c00
 #define D_IN_EXTI_FTSR             0x1c00
 #define D_IN_EXTI_RTSR             0x1c00
 #define D_IN_EXTI_EMR              0x1c00
@@ -844,6 +854,8 @@
 
 #define STEPPER_PORT_RCC_GPIO_ENABLE  RCC_AHB1ENR_GPIODEN
 #define STEPPER_PORT_GPIO_PORT        GPIOD
+// Used Pins Mask (2 bits per pin; used = 1; unused = 0)
+#define USED_PINS_MASK                0xffffffff
 #define STEPPER_PORT_MODER            0x55555555
 #define STEPPER_PORT_OTYPER           0x00000000
 #define STEPPER_PORT_OSPEEDR          0x00000000

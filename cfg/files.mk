@@ -41,14 +41,15 @@ SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_buzzer.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_cpu.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_din.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_dout.c
-SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_i2c.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_led.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_nvram.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_power.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_pwm.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_spi.c
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_time.c
+ifeq ($(USE_WATCHDOG), yes)
 SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_watchdog.c
+endif
 
 
 # source files for specific features - only compiled if feature is activated
@@ -68,6 +69,11 @@ ifeq ($(USE_USB), yes)
 	SRC += $(SRC_FOLDER)com/usb.c
 	SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_usb_device_cdc.c
 	DDEFS += -DHAS_USB
+endif
+
+ifeq ($(USE_I2C), yes)
+	SRC += $(HAL_FOLDER)$(BOARD_FOLDER)/hal_i2c.c
+	DDEFS += -DHAS_I2C
 endif
 
 ifeq ($(USE_STEP_DIR), yes)

@@ -17,6 +17,7 @@
 #include <st_gpio.h>
 #include <st_rcc.h>
 #include "hal_power.h"
+#include "hal_time.h"
 #include "board_cfg.h"
 
 static bool initialized = false;
@@ -74,6 +75,7 @@ void hal_power_on_5V(void)
 {
 #if (1 == POWER_HAS_5V_SWITCH)
     POWER_5V_GPIO_PORT->BSRR_SET = POWER_5V_BSRR;
+    hal_time_ms_sleep(5);
 #endif
 }
 
@@ -88,6 +90,7 @@ void hal_power_on_12V(void)
 {
 #if (1 == POWER_HAS_12V_SWITCH)
     POWER_12V_GPIO_PORT->BSRR_SET = POWER_12V_BSRR;
+    hal_time_ms_sleep(5);
 #endif
 }
 
@@ -102,6 +105,7 @@ void hal_power_on_HighVoltage(void)
 {
 #if (1 == POWER_HAS_HIGH_SWITCH)
     POWER_HV_GPIO_PORT->BSRR_SET = POWER_HV_BSRR;
+    hal_time_ms_sleep(5);
 #endif
 }
 

@@ -614,7 +614,7 @@ static bool hal_uart_init(uint_fast8_t device)
             // enable UART
             UART_1->CR1 = 0x00002000;
             // baud rate
-            UART_1->BRR = UART_0_BRR;
+            UART_1->BRR = UART_1_BRR;
             // 16x oversampling,  no parity, 1 stop bit, 8 data bits, only Receive interrupts
             UART_1->CR1 = 0x00002020;
             // not Lin, No SPI, address = 0
