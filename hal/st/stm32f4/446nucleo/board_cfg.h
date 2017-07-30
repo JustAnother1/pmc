@@ -339,8 +339,8 @@
 #define UART_0_TX_GPIO_AFR_1_1     0x00000070
 
 // UART1 = Debug Terminal Interface = Pin PA3(Input) PA2(Output)
-#define UART_1                     USART2  // APB1 - 45 MHz
-#define UART_1_BRR                 0x187 // 115200 kbit
+#define UART_1                     USART2  // APB1 - 42 MHz
+#define UART_1_BRR                 0x16c // 115200 kbit
 #define UART_1_IRQ_HANDLER         USART2_IRQHandler
 #define UART_1_APB1ENR             0x00020000
 #define UART_1_APB2ENR             0

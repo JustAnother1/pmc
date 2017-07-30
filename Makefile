@@ -83,7 +83,7 @@ help:
 	@echo "make all BOARD=rumba               - build project to run on rumba board"
 	@echo "make all BOARD=ultimaker_original  - build project to run on Ultimaker Original"
 	@echo "make burn BOARD=401nucleo          - programm the created file to Nucleo(-64)-F401RE board"
-	@echo "make burn BOARD=446nucleo          - programm the created file to Nucleo(-64)-F466RE board"
+	@echo "make burn BOARD=446nucleo          - programm the created file to Nucleo(-64)-F446RE board"
 	@echo "make burn BOARD=stm407disco        - programm the created file to STM32F4 discovery board"
 	@echo "make burn BOARD=pipy               - programm the created file to pipy board"
 	@echo "make burn BOARD=rumba              - programm the created file to rumba board"
