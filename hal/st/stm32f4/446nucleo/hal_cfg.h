@@ -21,8 +21,8 @@
 
 // SPI
 #define STEPPER_SPI   0
-#define EXPANSION_SPI 1
-#define MAX_SPI       2
+#define EXPANSION_SPI 0
+#define MAX_SPI       1
 
 // UART
 #define GCODE_UART  0

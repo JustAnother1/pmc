@@ -69,8 +69,9 @@ static bool waitForEndOfSpiTransaction(uint_fast8_t device);
 static void hal_spi_reset_transaction(uint_fast8_t device);
 
 void SPI_0_IRQ_HANDLER(void) __attribute__ ((interrupt ("IRQ")));
+#if MAX_SPI > 1
 void SPI_1_IRQ_HANDLER(void) __attribute__ ((interrupt ("IRQ")));
-
+#endif
 
 static volatile spi_device_typ spi_devices[MAX_SPI];
 static bool stepper_initialized = false;
@@ -253,11 +254,12 @@ static void hal_spi_init(uint_fast8_t device)
             SPI_0_SCK_GPIO_PORT->AFR[0]  &= ~SPI_0_SCK_GPIO_AFR_0_0;
             SPI_0_SCK_GPIO_PORT->AFR[1]  |=  SPI_0_SCK_GPIO_AFR_1_1;
             SPI_0_SCK_GPIO_PORT->AFR[1]  &= ~SPI_0_SCK_GPIO_AFR_1_0;
-            SPI_1_SCK_GPIO_PORT->BSRR_SET =  SPI_0_SCK_GPIO_BSRR;
+            SPI_0_SCK_GPIO_PORT->BSRR_SET =  SPI_0_SCK_GPIO_BSRR;
 
             spi_devices[device].bus = SPI_0;
             break;
 
+#if MAX_SPI > 1
         case 1:
             // enable clock for GPIO Port
             RCC->AHB1ENR |= SPI_1_MISO_GPIO_PORT_RCC;
@@ -336,6 +338,7 @@ static void hal_spi_init(uint_fast8_t device)
 
             spi_devices[device].bus = SPI_1;
             break;
+#endif
         }
     }
     // else invalid Interface Specified
@@ -389,6 +392,7 @@ static void hal_spi_print_configuration(uint_fast8_t device)
             print_gpio_configuration(SPI_0_SCK_GPIO_PORT);
             break;
 
+#if MAX_SPI > 1
         case 1 :
             debug_line(STR("MISO Pin:"));
             print_gpio_configuration(SPI_1_MISO_GPIO_PORT);
@@ -399,6 +403,7 @@ static void hal_spi_print_configuration(uint_fast8_t device)
             debug_line(STR("NSS Pin:"));
             print_gpio_configuration(SPI_1_SCK_GPIO_PORT);
             break;
+#endif
 
         default:
             break;
@@ -416,6 +421,7 @@ void SPI_0_IRQ_HANDLER(void)
     hal_set_isr1_led(false);
 }
 
+#if MAX_SPI > 1
 void SPI_1_IRQ_HANDLER(void)
 {
     hal_set_isr1_led(true);
@@ -423,54 +429,59 @@ void SPI_1_IRQ_HANDLER(void)
     asm volatile("" : "+r" (spi_devices[1].idle));
     hal_set_isr1_led(false);
 }
+#endif
 
 static void spi_device_IRQ_handler(uint_fast8_t device)
 {
-    uint32_t sr = spi_devices[device].bus->SR;
-
-    // Receive
-    if(SPI_SR_RXNE == (SPI_SR_RXNE & sr))
+    if(device < MAX_SPI)
     {
-        // Ack the flag
-        spi_devices[device].bus->SR = spi_devices[device].bus->SR &~SPI_SR_RXNE;
-        // check for overrun
-        if(0 != (SPI_SR_OVR & sr))
+        uint32_t sr = spi_devices[device].bus->SR;
+
+        // Receive
+        if(SPI_SR_RXNE == (SPI_SR_RXNE & sr))
         {
-            // we had an overrun!
-            // as we are master the only thing that could have happened is
-            // that we did not service the RXNE Interrupt fast enough.
-            // We have one byte in queue when sending so one byte has been lost.
-            spi_devices[device].successfully_received = false;
+            // Ack the flag
+            spi_devices[device].bus->SR = spi_devices[device].bus->SR &~SPI_SR_RXNE;
+            // check for overrun
+            if(0 != (SPI_SR_OVR & sr))
+            {
+                // we had an overrun!
+                // as we are master the only thing that could have happened is
+                // that we did not service the RXNE Interrupt fast enough.
+                // We have one byte in queue when sending so one byte has been lost.
+                spi_devices[device].successfully_received = false;
+                spi_devices[device].rec_pos++;
+            }
+            // we received a byte
+            spi_devices[device].receive_buffer[spi_devices[device].rec_pos] = (uint8_t)spi_devices[device].bus->DR;
             spi_devices[device].rec_pos++;
+            if(spi_devices[device].length == spi_devices[device].rec_pos)
+            {
+                // we received the last byte
+                spi_devices[device].idle = true;
+                slave_select_end(device);
+            }
         }
-        // we received a byte
-        spi_devices[device].receive_buffer[spi_devices[device].rec_pos] = (uint8_t)spi_devices[device].bus->DR;
-        spi_devices[device].rec_pos++;
-        if(spi_devices[device].length == spi_devices[device].rec_pos)
-        {
-            // we received the last byte
-            spi_devices[device].idle = true;
-            slave_select_end(device);
-        }
-    }
 
-    // send
-    if(SPI_SR_TXE == (SPI_SR_TXE & sr))
-    {
-        // Ack the flag
-        spi_devices[device].bus->SR =  spi_devices[device].bus->SR &~SPI_SR_TXE;
-        // send the next byte
-        if(spi_devices[device].length > spi_devices[device].send_pos)
+        // send
+        if(SPI_SR_TXE == (SPI_SR_TXE & sr))
         {
-            spi_devices[device].bus->DR = spi_devices[device].send_buffer[spi_devices[device].send_pos];
-            spi_devices[device].send_pos++;
-        }
-        else
-        {
-            // we send the last byte
-            spi_devices[device].bus->CR2 &= ~SPI_CR2_TXEIE;
+            // Ack the flag
+            spi_devices[device].bus->SR =  spi_devices[device].bus->SR &~SPI_SR_TXE;
+            // send the next byte
+            if(spi_devices[device].length > spi_devices[device].send_pos)
+            {
+                spi_devices[device].bus->DR = spi_devices[device].send_buffer[spi_devices[device].send_pos];
+                spi_devices[device].send_pos++;
+            }
+            else
+            {
+                // we send the last byte
+                spi_devices[device].bus->CR2 &= ~SPI_CR2_TXEIE;
+            }
         }
     }
+    // else invalid
 }
 
 static bool waitForEndOfSpiTransaction(uint_fast8_t device)
@@ -522,7 +533,9 @@ static void slave_select_start(uint_fast8_t device)
     switch(device)
     {
     case 0 : SPI_0_NSS_GPIO_PORT->BSRR_RESET = SPI_0_NSS_GPIO_BSRR; break;
+#if MAX_SPI > 1
     case 1 : SPI_1_NSS_GPIO_PORT->BSRR_RESET = SPI_1_NSS_GPIO_BSRR; break;
+#endif
     default: break;
     }
 }
@@ -533,7 +546,9 @@ static void slave_select_end(uint_fast8_t device)
     switch(device)
     {
     case 0 : SPI_0_NSS_GPIO_PORT->BSRR_SET = SPI_0_NSS_GPIO_BSRR; break;
+#if MAX_SPI > 1
     case 1 : SPI_1_NSS_GPIO_PORT->BSRR_SET = SPI_1_NSS_GPIO_BSRR; break;
+#endif
     default: break;
     }
 }

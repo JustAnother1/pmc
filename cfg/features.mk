@@ -46,5 +46,9 @@ else
 # default Pacemeaker
 DDEFS += -DHARDWARE_TYPE=0
 DDEFS += -DSTEP_TIMER_FREQ_12MHZ
-USE_TRINAMIC = yes
+ifeq ($(BOARD),$(filter $(BOARD),401nucleo 446nucleo))
+	USE_TRINAMIC = no
+else
+    USE_TRINAMIC = yes
+endif
 endif

@@ -761,7 +761,7 @@
 
 #define D_OUT_NUM_PINS             2
 #define D_OUT_0_NAME               "Out 1"
-#define D_OUT_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
+#define D_OUT_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOEEN
 #define D_OUT_0_GPIO_PORT          GPIOE
 #define D_OUT_0_MODER_0            GPIO_MODER_15_INPUT_0
 #define D_OUT_0_MODER_1            GPIO_MODER_15_INPUT_1
@@ -774,7 +774,7 @@
 #define D_OUT_0_ODR                GPIO_ODR_15
 
 #define D_OUT_1_NAME               "Out 2"
-#define D_OUT_1_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIODEN
+#define D_OUT_1_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOEEN
 #define D_OUT_1_GPIO_PORT          GPIOE
 #define D_OUT_1_MODER_0            GPIO_MODER_12_INPUT_0
 #define D_OUT_1_MODER_1            GPIO_MODER_12_INPUT_1
@@ -785,6 +785,60 @@
 #define D_OUT_1_PUPD_0             GPIO_PUPDR_12_NONE_0
 #define D_OUT_1_PUPD_1             GPIO_PUPDR_12_NONE_1
 #define D_OUT_1_ODR                GPIO_ODR_12
+
+/******************************************************************************/
+/*                                                                            */
+/*         Stepper Enable Pins                                                */
+/*                                                                            */
+/******************************************************************************/
+
+#define STEPPER_ENABLE_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
+#define STEPPER_ENABLE_0_GPIO_PORT          GPIOB
+#define STEPPER_ENABLE_0_MODER_0            GPIO_MODER_15_INPUT_0
+#define STEPPER_ENABLE_0_MODER_1            GPIO_MODER_15_INPUT_1
+#define STEPPER_ENABLE_0_OTYPER_0           GPIO_OTYPER_15_OPEN_DRAIN_0
+#define STEPPER_ENABLE_0_OTYPER_1           GPIO_OTYPER_15_OPEN_DRAIN_1
+#define STEPPER_ENABLE_0_OSPEEDR_0          GPIO_OSPEEDER_15_LOW_SPEED_0
+#define STEPPER_ENABLE_0_OSPEEDR_1          GPIO_OSPEEDER_15_LOW_SPEED_1
+#define STEPPER_ENABLE_0_PUPD_0             GPIO_PUPDR_15_NONE_0
+#define STEPPER_ENABLE_0_PUPD_1             GPIO_PUPDR_15_NONE_1
+#define STEPPER_ENABLE_0_ODR                GPIO_ODR_15
+
+#define STEPPER_ENABLE_1_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
+#define STEPPER_ENABLE_1_GPIO_PORT          GPIOB
+#define STEPPER_ENABLE_1_MODER_0            GPIO_MODER_14_INPUT_0
+#define STEPPER_ENABLE_1_MODER_1            GPIO_MODER_14_INPUT_1
+#define STEPPER_ENABLE_1_OTYPER_0           GPIO_OTYPER_14_OPEN_DRAIN_0
+#define STEPPER_ENABLE_1_OTYPER_1           GPIO_OTYPER_14_OPEN_DRAIN_1
+#define STEPPER_ENABLE_1_OSPEEDR_0          GPIO_OSPEEDER_14_LOW_SPEED_0
+#define STEPPER_ENABLE_1_OSPEEDR_1          GPIO_OSPEEDER_14_LOW_SPEED_1
+#define STEPPER_ENABLE_1_PUPD_0             GPIO_PUPDR_14_NONE_0
+#define STEPPER_ENABLE_1_PUPD_1             GPIO_PUPDR_14_NONE_1
+#define STEPPER_ENABLE_1_ODR                GPIO_ODR_14
+
+#define STEPPER_ENABLE_2_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
+#define STEPPER_ENABLE_2_GPIO_PORT          GPIOB
+#define STEPPER_ENABLE_2_MODER_0            GPIO_MODER_13_INPUT_0
+#define STEPPER_ENABLE_2_MODER_1            GPIO_MODER_13_INPUT_1
+#define STEPPER_ENABLE_2_OTYPER_0           GPIO_OTYPER_13_OPEN_DRAIN_0
+#define STEPPER_ENABLE_2_OTYPER_1           GPIO_OTYPER_13_OPEN_DRAIN_1
+#define STEPPER_ENABLE_2_OSPEEDR_0          GPIO_OSPEEDER_13_LOW_SPEED_0
+#define STEPPER_ENABLE_2_OSPEEDR_1          GPIO_OSPEEDER_13_LOW_SPEED_1
+#define STEPPER_ENABLE_2_PUPD_0             GPIO_PUPDR_13_NONE_0
+#define STEPPER_ENABLE_2_PUPD_1             GPIO_PUPDR_13_NONE_1
+#define STEPPER_ENABLE_2_ODR                GPIO_ODR_13
+
+#define STEPPER_ENABLE_3_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
+#define STEPPER_ENABLE_3_GPIO_PORT          GPIOB
+#define STEPPER_ENABLE_3_MODER_0            GPIO_MODER_5_INPUT_0
+#define STEPPER_ENABLE_3_MODER_1            GPIO_MODER_5_INPUT_1
+#define STEPPER_ENABLE_3_OTYPER_0           GPIO_OTYPER_5_OPEN_DRAIN_0
+#define STEPPER_ENABLE_3_OTYPER_1           GPIO_OTYPER_5_OPEN_DRAIN_1
+#define STEPPER_ENABLE_3_OSPEEDR_0          GPIO_OSPEEDER_5_LOW_SPEED_0
+#define STEPPER_ENABLE_3_OSPEEDR_1          GPIO_OSPEEDER_5_LOW_SPEED_1
+#define STEPPER_ENABLE_3_PUPD_0             GPIO_PUPDR_5_NONE_0
+#define STEPPER_ENABLE_3_PUPD_1             GPIO_PUPDR_5_NONE_1
+#define STEPPER_ENABLE_3_ODR                GPIO_ODR_5
 
 /******************************************************************************/
 /*                                                                            */

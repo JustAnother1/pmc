@@ -133,9 +133,9 @@
 #define ADC_1_NAME                 "Temp_CPU"
 #define NUM_EXTERNAL_TEMPERATURES  1
 #define ADC_EXT_0_NAME             "Temp_Thermocouple_Nozzle"
-// C0
-#define ADC_0_GPIO_PORT_RCC        RCC_AHB1ENR_GPIOCEN
-#define ADC_0_GPIO_PORT            GPIOC
+// B0
+#define ADC_0_GPIO_PORT_RCC        RCC_AHB1ENR_GPIOBEN
+#define ADC_0_GPIO_PORT            GPIOB
 #define ADC_0_GPIO_MODER_1         GPIO_MODER_0_ANALOG_1
 #define ADC_0_GPIO_MODER_0         GPIO_MODER_0_ANALOG_0
 
@@ -143,7 +143,7 @@
 // Input Numbers for used ADC Input Pins,
 // then 16 for the internal temperature sensor,
 // then 0 till the end.
-#define ADC_0_INPUT_NUM            10
+#define ADC_0_INPUT_NUM            8
 #define ADC_1_INPUT_NUM            16
 #define ADC_2_INPUT_NUM            0
 #define ADC_3_INPUT_NUM            0
@@ -448,70 +448,6 @@
 #define SPI_0_SCK_GPIO_AFR_1_1    0
 #define SPI_0_SCK_GPIO_BSRR       GPIO_BSRR_5
 
-// SPI-1 MISO(PC2), MOSI(PC3), /CS(PB12), SCLK(PB10)
-#define SPI_1_MISO_GPIO_PORT_RCC  RCC_AHB1ENR_GPIOCEN
-#define SPI_1_MOSI_GPIO_PORT_RCC  RCC_AHB1ENR_GPIOCEN
-#define SPI_1_NSS_GPIO_PORT_RCC   RCC_AHB1ENR_GPIOBEN
-#define SPI_1_SCK_GPIO_PORT_RCC   RCC_AHB1ENR_GPIOBEN
-#define SPI_1                     SPI2
-#define SPI_1_IRQ_HANDLER         SPI2_IRQHandler
-#define SPI_1_APB1ENR             RCC_APB1ENR_SPI2EN
-#define SPI_1_APB2ENR             0
-#define SPI_1_MISO_GPIO_PORT      GPIOC
-#define SPI_1_MOSI_GPIO_PORT      GPIOC
-#define SPI_1_NSS_GPIO_PORT       GPIOB
-#define SPI_1_SCK_GPIO_PORT       GPIOB
-
-#define SPI_1_MISO_GPIO_MODER_0   GPIO_MODER_2_ALTFUNC_0
-#define SPI_1_MISO_GPIO_MODER_1   GPIO_MODER_2_ALTFUNC_1
-#define SPI_1_MISO_GPIO_OTYPER_0  GPIO_OTYPER_2_OPEN_DRAIN_0
-#define SPI_1_MISO_GPIO_OTYPER_1  GPIO_OTYPER_2_OPEN_DRAIN_1
-#define SPI_1_MISO_GPIO_OSPEEDR_0 GPIO_OSPEEDER_2_MEDIUM_SPEED_0
-#define SPI_1_MISO_GPIO_OSPEEDR_1 GPIO_OSPEEDER_2_MEDIUM_SPEED_1
-#define SPI_1_MISO_GPIO_PUPD_0    GPIO_PUPDR_2_PULL_UP_0
-#define SPI_1_MISO_GPIO_PUPD_1    GPIO_PUPDR_2_PULL_UP_1
-#define SPI_1_MISO_GPIO_AFR_0_0   0x00000a00
-#define SPI_1_MISO_GPIO_AFR_0_1   0x00000500
-#define SPI_1_MISO_GPIO_AFR_1_0   0
-#define SPI_1_MISO_GPIO_AFR_1_1   0
-
-#define SPI_1_MOSI_GPIO_MODER_0   GPIO_MODER_3_ALTFUNC_0
-#define SPI_1_MOSI_GPIO_MODER_1   GPIO_MODER_3_ALTFUNC_1
-#define SPI_1_MOSI_GPIO_OTYPER_0  GPIO_OTYPER_3_PUSH_PULL_0
-#define SPI_1_MOSI_GPIO_OTYPER_1  GPIO_OTYPER_3_PUSH_PULL_1
-#define SPI_1_MOSI_GPIO_OSPEEDR_0 GPIO_OSPEEDER_3_MEDIUM_SPEED_0
-#define SPI_1_MOSI_GPIO_OSPEEDR_1 GPIO_OSPEEDER_3_MEDIUM_SPEED_1
-#define SPI_1_MOSI_GPIO_PUPD_0    GPIO_PUPDR_3_PULL_UP_0
-#define SPI_1_MOSI_GPIO_PUPD_1    GPIO_PUPDR_3_PULL_UP_1
-#define SPI_1_MOSI_GPIO_AFR_0_0   0x0000a000
-#define SPI_1_MOSI_GPIO_AFR_0_1   0x00005000
-#define SPI_1_MOSI_GPIO_AFR_1_0   0
-#define SPI_1_MOSI_GPIO_AFR_1_1   0
-
-#define SPI_1_NSS_GPIO_MODER_0    GPIO_MODER_12_OUTPUT_0
-#define SPI_1_NSS_GPIO_MODER_1    GPIO_MODER_12_OUTPUT_1
-#define SPI_1_NSS_GPIO_OTYPER_0   GPIO_OTYPER_12_PUSH_PULL_0
-#define SPI_1_NSS_GPIO_OTYPER_1   GPIO_OTYPER_12_PUSH_PULL_1
-#define SPI_1_NSS_GPIO_OSPEEDR_0  GPIO_OSPEEDER_12_LOW_SPEED_0
-#define SPI_1_NSS_GPIO_OSPEEDR_1  GPIO_OSPEEDER_12_LOW_SPEED_1
-#define SPI_1_NSS_GPIO_PUPD_0     GPIO_PUPDR_12_PULL_UP_0
-#define SPI_1_NSS_GPIO_PUPD_1     GPIO_PUPDR_12_PULL_UP_1
-#define SPI_1_NSS_GPIO_BSRR       GPIO_BSRR_12
-
-#define SPI_1_SCK_GPIO_MODER_0    GPIO_MODER_10_ALTFUNC_0
-#define SPI_1_SCK_GPIO_MODER_1    GPIO_MODER_10_ALTFUNC_1
-#define SPI_1_SCK_GPIO_OTYPER_0   GPIO_OTYPER_10_PUSH_PULL_0
-#define SPI_1_SCK_GPIO_OTYPER_1   GPIO_OTYPER_10_PUSH_PULL_1
-#define SPI_1_SCK_GPIO_OSPEEDR_0  GPIO_OSPEEDER_10_MEDIUM_SPEED_0
-#define SPI_1_SCK_GPIO_OSPEEDR_1  GPIO_OSPEEDER_10_MEDIUM_SPEED_1
-#define SPI_1_SCK_GPIO_PUPD_0     GPIO_PUPDR_10_PULL_UP_0
-#define SPI_1_SCK_GPIO_PUPD_1     GPIO_PUPDR_10_PULL_UP_1
-#define SPI_1_SCK_GPIO_AFR_0_0    0
-#define SPI_1_SCK_GPIO_AFR_0_1    0
-#define SPI_1_SCK_GPIO_AFR_1_0    0x00000a00
-#define SPI_1_SCK_GPIO_AFR_1_1    0x00000500
-#define SPI_1_SCK_GPIO_BSRR       GPIO_BSRR_10
-
 /******************************************************************************/
 /*                                                                            */
 /*         Digital Output Pin                                                 */
@@ -519,6 +455,60 @@
 /******************************************************************************/
 
 #define D_OUT_NUM_PINS             0
+
+/******************************************************************************/
+/*                                                                            */
+/*         Stepper Enable Pins                                                */
+/*                                                                            */
+/******************************************************************************/
+
+#define STEPPER_ENABLE_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
+#define STEPPER_ENABLE_0_GPIO_PORT          GPIOB
+#define STEPPER_ENABLE_0_MODER_0            GPIO_MODER_15_INPUT_0
+#define STEPPER_ENABLE_0_MODER_1            GPIO_MODER_15_INPUT_1
+#define STEPPER_ENABLE_0_OTYPER_0           GPIO_OTYPER_15_OPEN_DRAIN_0
+#define STEPPER_ENABLE_0_OTYPER_1           GPIO_OTYPER_15_OPEN_DRAIN_1
+#define STEPPER_ENABLE_0_OSPEEDR_0          GPIO_OSPEEDER_15_LOW_SPEED_0
+#define STEPPER_ENABLE_0_OSPEEDR_1          GPIO_OSPEEDER_15_LOW_SPEED_1
+#define STEPPER_ENABLE_0_PUPD_0             GPIO_PUPDR_15_NONE_0
+#define STEPPER_ENABLE_0_PUPD_1             GPIO_PUPDR_15_NONE_1
+#define STEPPER_ENABLE_0_ODR                GPIO_ODR_15
+
+#define STEPPER_ENABLE_1_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
+#define STEPPER_ENABLE_1_GPIO_PORT          GPIOB
+#define STEPPER_ENABLE_1_MODER_0            GPIO_MODER_14_INPUT_0
+#define STEPPER_ENABLE_1_MODER_1            GPIO_MODER_14_INPUT_1
+#define STEPPER_ENABLE_1_OTYPER_0           GPIO_OTYPER_14_OPEN_DRAIN_0
+#define STEPPER_ENABLE_1_OTYPER_1           GPIO_OTYPER_14_OPEN_DRAIN_1
+#define STEPPER_ENABLE_1_OSPEEDR_0          GPIO_OSPEEDER_14_LOW_SPEED_0
+#define STEPPER_ENABLE_1_OSPEEDR_1          GPIO_OSPEEDER_14_LOW_SPEED_1
+#define STEPPER_ENABLE_1_PUPD_0             GPIO_PUPDR_14_NONE_0
+#define STEPPER_ENABLE_1_PUPD_1             GPIO_PUPDR_14_NONE_1
+#define STEPPER_ENABLE_1_ODR                GPIO_ODR_14
+
+#define STEPPER_ENABLE_2_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
+#define STEPPER_ENABLE_2_GPIO_PORT          GPIOB
+#define STEPPER_ENABLE_2_MODER_0            GPIO_MODER_13_INPUT_0
+#define STEPPER_ENABLE_2_MODER_1            GPIO_MODER_13_INPUT_1
+#define STEPPER_ENABLE_2_OTYPER_0           GPIO_OTYPER_13_OPEN_DRAIN_0
+#define STEPPER_ENABLE_2_OTYPER_1           GPIO_OTYPER_13_OPEN_DRAIN_1
+#define STEPPER_ENABLE_2_OSPEEDR_0          GPIO_OSPEEDER_13_LOW_SPEED_0
+#define STEPPER_ENABLE_2_OSPEEDR_1          GPIO_OSPEEDER_13_LOW_SPEED_1
+#define STEPPER_ENABLE_2_PUPD_0             GPIO_PUPDR_13_NONE_0
+#define STEPPER_ENABLE_2_PUPD_1             GPIO_PUPDR_13_NONE_1
+#define STEPPER_ENABLE_2_ODR                GPIO_ODR_13
+
+#define STEPPER_ENABLE_3_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
+#define STEPPER_ENABLE_3_GPIO_PORT          GPIOB
+#define STEPPER_ENABLE_3_MODER_0            GPIO_MODER_5_INPUT_0
+#define STEPPER_ENABLE_3_MODER_1            GPIO_MODER_5_INPUT_1
+#define STEPPER_ENABLE_3_OTYPER_0           GPIO_OTYPER_5_OPEN_DRAIN_0
+#define STEPPER_ENABLE_3_OTYPER_1           GPIO_OTYPER_5_OPEN_DRAIN_1
+#define STEPPER_ENABLE_3_OSPEEDR_0          GPIO_OSPEEDER_5_LOW_SPEED_0
+#define STEPPER_ENABLE_3_OSPEEDR_1          GPIO_OSPEEDER_5_LOW_SPEED_1
+#define STEPPER_ENABLE_3_PUPD_0             GPIO_PUPDR_5_NONE_0
+#define STEPPER_ENABLE_3_PUPD_1             GPIO_PUPDR_5_NONE_1
+#define STEPPER_ENABLE_3_ODR                GPIO_ODR_5
 
 /******************************************************************************/
 /*                                                                            */
@@ -540,19 +530,19 @@
 #define D_IN_SYSCFG_EXTICR3        0
 
 #define D_IN_NUM_PINS              6
-// B0
+// B10
 #define D_IN_0_NAME                "X min"
 #define D_IN_0_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIOBEN
 #define D_IN_0_GPIO_PORT           GPIOB
-#define D_IN_0_MODER_0             GPIO_MODER_0_INPUT_0
-#define D_IN_0_MODER_1             GPIO_MODER_0_INPUT_1
-#define D_IN_0_OTYPER_0            GPIO_OTYPER_0_OPEN_DRAIN_0
-#define D_IN_0_OTYPER_1            GPIO_OTYPER_0_OPEN_DRAIN_1
-#define D_IN_0_OSPEEDR_0           GPIO_OSPEEDER_0_LOW_SPEED_0
-#define D_IN_0_OSPEEDR_1           GPIO_OSPEEDER_0_LOW_SPEED_1
-#define D_IN_0_PUPD_0              GPIO_PUPDR_0_PULL_DOWN_0
-#define D_IN_0_PUPD_1              GPIO_PUPDR_0_PULL_DOWN_1
-#define D_IN_0_IDR                 GPIO_IDR_0
+#define D_IN_0_MODER_0             GPIO_MODER_10_INPUT_0
+#define D_IN_0_MODER_1             GPIO_MODER_10_INPUT_1
+#define D_IN_0_OTYPER_0            GPIO_OTYPER_10_OPEN_DRAIN_0
+#define D_IN_0_OTYPER_1            GPIO_OTYPER_10_OPEN_DRAIN_1
+#define D_IN_0_OSPEEDR_0           GPIO_OSPEEDER_10_LOW_SPEED_0
+#define D_IN_0_OSPEEDR_1           GPIO_OSPEEDER_10_LOW_SPEED_1
+#define D_IN_0_PUPD_0              GPIO_PUPDR_10_PULL_DOWN_0
+#define D_IN_0_PUPD_1              GPIO_PUPDR_10_PULL_DOWN_1
+#define D_IN_0_IDR                 GPIO_IDR_10
 // B1
 #define D_IN_1_NAME                "X max"
 #define D_IN_1_RCC_GPIO_ENABLE     RCC_AHB1ENR_GPIOBEN
