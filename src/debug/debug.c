@@ -561,79 +561,93 @@ static bool continue_order_help(void)
     switch(slow_order_state)
     {
     // a
-    case 1: debug_line(STR("b<frequency>               : activate buzzer (freq=0 -> off)")); slow_order_state++; break;
-    case 2: debug_line(STR("c<setting>                 : change special setting")); slow_order_state++; break;
-    case 3: debug_line(STR("d                          : die - stops the processor")); slow_order_state++; break;
-    case 4: debug_line(STR("e                          : show errors that have been reported.")); slow_order_state++; break;
+    case 1: debug_line(STR("b<frequency>               : activate buzzer (freq=0 -> off)")); break;
+    case 2: debug_line(STR("c<setting>                 : change special setting")); break;
+    case 3: debug_line(STR("d                          : die - stops the processor")); break;
+    case 4: debug_line(STR("e                          : show errors that have been reported.")); break;
     // f
     // g
-    case 5: debug_line(STR("h                          : print this information")); slow_order_state++; break;
-    case 6: debug_line(STR("ha <heat> <sens>           : associate temp.sensor to heater")); slow_order_state++; break;
-    case 7: debug_line(STR("hs                         : show status of the heaters")); slow_order_state++; break;
-    case 8: debug_line(STR("ht <num> <temp>            : set temperature of the heater")); slow_order_state++; break;
+    case 5: debug_line(STR("h                          : print this information")); break;
+    case 6: debug_line(STR("ha <heat> <sens>           : associate temp.sensor to heater")); break;
+    case 7: debug_line(STR("hs                         : show status of the heaters")); break;
+    case 8: debug_line(STR("ht <num> <temp>            : set temperature of the heater")); break;
     // i
     // j
     // k
-    case 9: debug_line(STR("l                          : list recorded debug information")); slow_order_state++; break;
-    case 10: debug_line(STR("md<addressHex> <lengthHex> : print memory")); slow_order_state++; break;
+    case 9: debug_line(STR("l                          : list recorded debug information")); break;
+    case 10: debug_line(STR("md<addressHex> <lengthHex> : print memory")); break;
     // n
-    case 11: debug_line(STR("on                         : switch all power on")); slow_order_state++; break;
-    case 12: debug_line(STR("off                        : switch all power off")); slow_order_state++; break;
-    case 13: debug_line(STR("pa                         : print ADC configuration")); slow_order_state++; break;
+    case 11: debug_line(STR("on                         : switch all power on")); break;
+    case 12: debug_line(STR("off                        : switch all power off")); break;
+    case 13: debug_line(STR("pa                         : print ADC configuration")); break;
 #ifdef HAS_USB
-    case 14: debug_line(STR("pb                         : print USB configuration")); slow_order_state++; break;
+    case 14: debug_line(STR("pb                         : print USB configuration")); break;
 #else
-    case 14: slow_order_state++; break;
+    case 14: break;
 #endif
-    case 15: debug_line(STR("pc                         : print CPU configuration")); slow_order_state++; break;
+    case 15: debug_line(STR("pc                         : print CPU configuration")); break;
 #ifdef HAS_I2C
-    case 16: debug_line(STR("pi                         : print I2C configuration")); slow_order_state++; break;
-#endif
-    case 17: debug_line(STR("pin<Port,idx>              : print state of the pin")); slow_order_state++; break;
-#ifdef HAS_TRINAMIC
-    case 18: slow_order_state++; break;
+    case 16: debug_line(STR("pi                         : print I2C configuration")); break;
 #else
-    case 18: debug_line(STR("pp                         : print Pololu stepper status")); slow_order_state++; break;
+    case 16: break;
+#endif
+    case 17: debug_line(STR("pin<Port,idx>              : print state of the pin")); break;
+#ifdef HAS_TRINAMIC
+    case 18: break;
+#else
+    case 18: debug_line(STR("pp                         : print Pololu stepper status")); break;
 #endif
 #ifdef EXPANSION_SPI
-    case 19: debug_line(STR("pse                        : print expansion SPI configuration")); slow_order_state++; break;
+    case 19: debug_line(STR("pse                        : print expansion SPI configuration")); break;
+#else
+    case 19: break;
 #endif
 #ifdef STEPPER_SPI
-    case 20: debug_line(STR("pss                        : print stepper SPI configuration")); slow_order_state++; break;
+    case 20: debug_line(STR("pss                        : print stepper SPI configuration")); break;
+#else
+    case 20: break;
 #endif
-    case 21: debug_line(STR("ptim<num>                  : print Timer Registers")); slow_order_state++; break;
+    case 21: debug_line(STR("ptim<num>                  : print Timer Registers")); break;
 #ifdef USE_STEP_DIR
 #ifdef HAS_TRINAMIC
-    case 22: debug_line(STR("ptri                       : print Trinamic stepper status")); slow_order_state++; break;
+    case 22: debug_line(STR("ptri                       : print Trinamic stepper status")); break;
 #else
-    case 22: slow_order_state++; break;
+    case 22: break;
 #endif
 #else
-    case 22: slow_order_state++; break;
+    case 22: break;
 #endif
 #ifdef DEBUG_UART
-    case 23: debug_line(STR("pud                        : print Debug UART configuration")); slow_order_state++; break;
+    case 23: debug_line(STR("pud                        : print Debug UART configuration")); break;
+#else
+    case 23: break;
 #endif
 #ifdef GCODE_UART
-    case 24: debug_line(STR("pug                        : print G-Code UART configuration")); slow_order_state++; break;
+    case 24: debug_line(STR("pug                        : print G-Code UART configuration")); break;
+#else
+    case 24: break;
 #endif
-    case 25: debug_line(STR("pq                         : print command queue status")); slow_order_state++; break;
+    case 25: debug_line(STR("pq                         : print command queue status")); break;
     // q
-    case 26: debug_line(STR("r                          : reset the processor")); slow_order_state++; break;
+    case 26: debug_line(STR("r                          : reset the processor")); break;
     // s
 #ifdef HAS_TRINAMIC
-    case 27: debug_line(STR("sc                         : scan number of steppers")); slow_order_state++; break;
+    case 27: debug_line(STR("sc                         : scan number of steppers")); break;
 #else
-    case 27: slow_order_state++; break;
+    case 27:  break;
 #endif
-    case 28: debug_line(STR("t                          : show current time")); slow_order_state++; break;
+    case 28: debug_line(STR("t                          : show current time")); break;
     // u
     // v
 #ifdef EXPANSION_SPI
-    case 29: debug_line(STR("we<hex chars>              : write data to expansion SPI")); slow_order_state++; break;
+    case 29: debug_line(STR("we<hex chars>              : write data to expansion SPI")); break;
+#else
+    case 29: break;
 #endif
 #ifdef STEPPER_SPI
-    case 30: debug_line(STR("ws<hex chars>              : write data to stepper SPI")); slow_order_state++; break;
+    case 30: debug_line(STR("ws<hex chars>              : write data to stepper SPI")); break;
+#else
+    case 30: break;
 #endif
     // x
     // y
@@ -642,6 +656,7 @@ static bool continue_order_help(void)
     // if we reach the default case then we are done.
     default: return true;
     }
+    slow_order_state++;
     return false;
 }
 
