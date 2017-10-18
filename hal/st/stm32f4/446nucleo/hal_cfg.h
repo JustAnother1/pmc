@@ -20,7 +20,7 @@
 #define STR(x) (x)
 
 // SPI
-#define STEPPER_SPI   0
+// not available: #define STEPPER_SPI   0
 #define EXPANSION_SPI 0
 #define MAX_SPI       1
 

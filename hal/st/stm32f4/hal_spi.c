@@ -74,11 +74,13 @@ void SPI_1_IRQ_HANDLER(void) __attribute__ ((interrupt ("IRQ")));
 #endif
 
 static volatile spi_device_typ spi_devices[MAX_SPI];
+#ifdef STEPPER_SPI
 static bool stepper_initialized = false;
+#endif
 static bool expansion_initialized = false;
 
 // Implementation of hal_api_api
-
+#ifdef STEPPER_SPI
 void hal_init_stepper_spi(void)
 {
     if(true == stepper_initialized)
@@ -121,6 +123,8 @@ void hal_reset_stepper_spi_transaction(void)
 {
     hal_spi_reset_transaction(STEPPER_SPI);
 }
+
+#endif
 
 // the "other" SPI
 
