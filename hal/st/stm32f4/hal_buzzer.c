@@ -63,23 +63,28 @@ void hal_buzzer_set_frequency(uint_fast8_t device, uint_fast16_t frequency)
     {
         if(0 == frequency)
         {
-            // Stop Timer -> Low Level
+            // Stop Timer
             hal_time_stop_timer(BUZZER_TIMER);
         }
         else
         {
-            // calculate Reload Value
-            // the reason for the 2 is that the reload is just one half of the
-            // period. The timer runs to the reload value and only toggels the
-            // output. To get a whole wave it has to run to the reload agin to
-            // toggle the utput again. -> 2
-            int reload = BUZZER_0_TIMER_FREQUENCY/(2*frequency);
-            if(reload > 0xffff)
+            uint32_t reload;
+            uint32_t timer_frequency;
+            // calculate Reload Value:
+            // the reason for 2*timer_frequency is that the timers run with twice the peripheral clock
+            // the reason for the 2*frequency is that the reload is just one half of the
+            // period. The timer runs to the reload value and only toggles the
+            // output. To get a whole wave it has to run to the reload again to
+            // toggle the output again. -> 2
+            timer_frequency = getClockFrequencyForTimer(BUZZER_TIMER);
+            reload = (2*timer_frequency)/(2*frequency);
+            while(reload > 0xffff)
             {
-                reload = 0xffff;
+                timer_frequency = timer_frequency / 2;
+                reload = reload / 2;
             }
             // Start Timer
-            hal_time_start_timer(BUZZER_TIMER, BUZZER_0_TIMER_FREQUENCY, reload, NULL);
+            hal_time_start_timer(BUZZER_TIMER, timer_frequency, reload, NULL);
         }
     }
     // else ignore request for not available device

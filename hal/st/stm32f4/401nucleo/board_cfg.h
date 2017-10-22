@@ -169,7 +169,6 @@
 
 #define BUZZER_NUM_PINS             1
 #define BUZZER_0_NAME               "Buzzer_0"
-#define BUZZER_0_TIMER_FREQUENCY    500000
 #define BUZZER_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOAEN
 #define BUZZER_0_GPIO_PORT          GPIOA
 #define BUZZER_0_MODER_0            GPIO_MODER_0_ALTFUNC_0

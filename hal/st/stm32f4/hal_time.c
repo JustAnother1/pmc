@@ -24,13 +24,10 @@
 #include "hal_debug.h"
 
 
-#define PWM_FREQUENCY 500000 // TODO
-
 static TIM_TypeDef* get_timer_register_for(uint_fast8_t device);
 static void enable_clock_for_timer(uint_fast8_t device);
 static void disable_clock_for_timer(uint_fast8_t device);
 static void error_isr_on_stopped_timer(void);
-static uint32_t getClockFrequencyForTimer(uint_fast8_t device);
 
 void TIM1_CC_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
 void TIM2_IRQHandler(void) __attribute__ ((interrupt ("IRQ")));
@@ -127,7 +124,7 @@ static TIM_TypeDef* get_timer_register_for(uint_fast8_t device)
     }
 }
 
-static uint32_t getClockFrequencyForTimer(uint_fast8_t device)
+uint32_t getClockFrequencyForTimer(uint_fast8_t device)
 {
     switch(device)
     {
@@ -387,7 +384,7 @@ void TIM8_TRG_COM_TIM14_IRQHandler(void)
 bool hal_time_enable_pwm_for(uint_fast8_t device)
 {
     TIM_TypeDef* timer = get_timer_register_for(device);
-    if((NULL == timer) || (0 == PWM_FREQUENCY))
+    if(NULL == timer)
     {
         hal_cpu_report_issue(2);
         return false;
@@ -395,7 +392,7 @@ bool hal_time_enable_pwm_for(uint_fast8_t device)
     enable_clock_for_timer(device);
     timer->EGR   = 0x0021;  // ???
     timer->CNT   = 0; // start counting at 0
-    timer->PSC   = 1; // MAx frequency is best // (uint16_t)(0xffff & ((getClockFrequencyForTimer(device) / PWM_FREQUENCY) - 1));
+    timer->PSC   = 1; // max frequency is best
     timer->ARR   = 0x00010001; // might be a 32bit counter
     timer->CCR1  = 0;
     timer->CCR2  = 0;

@@ -168,7 +168,6 @@ extern "C"
 
 #define BUZZER_NUM_PINS            1
 #define BUZZER_0_NAME              "Buzzer_0"
-#define BUZZER_0_TIMER_FREQUENCY    500000
 #define BUZZER_0_RCC_GPIO_ENABLE    RCC_AHB1ENR_GPIOBEN
 #define BUZZER_0_GPIO_PORT          GPIOB
 #define BUZZER_0_MODER_0            GPIO_MODER_9_ALTFUNC_0
