@@ -267,10 +267,9 @@ void hal_din_poll(void)
 void hal_din_tick(void)
 {
     int i;
-    int cur_state;
     for(i = 0; i < D_IN_NUM_PINS; i++)
     {
-        cur_state = hal_din_get_switch_state(i);
+        hal_din_get_switch_state(i);
     }
 }
 #endif

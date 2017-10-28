@@ -17,6 +17,7 @@
 #define HAL_INCLUDE_HAL_STEPPER_PORT_H_
 
 #include <inttypes.h>
+#include <stdbool.h>
 
 void hal_stepper_port_init(void);
 void hal_setEnable(uint_fast8_t stepper_number, bool on);

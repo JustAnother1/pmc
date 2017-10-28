@@ -1,6 +1,11 @@
 # Hardware used:
+ifeq ($(BOARD),$(filter $(BOARD),stm407disco pipy 401nucleo 446nucleo))
 include hal/st/st.mk
+endif
+
+ifeq ($(BOARD),$(filter $(BOARD),rumba ultimaker_original))
 include hal/microchip/microchip.mk
+endif
 
 # Target is Linux 
 ifeq ($(BOARD), linux)

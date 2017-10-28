@@ -718,7 +718,7 @@ static void printMemory(uint8_t* buf, uint32_t length)
     {
         uint_fast8_t i;
         uint_fast8_t bytesInRow;
-        uint32_t addr = (uint32_t) buf;
+        uint32_t addr = (uint32_t)(uintptr_t)buf;
         if(length > 16)
         {
             bytesInRow = 16;
@@ -991,7 +991,7 @@ static bool parse_order(int length)
             numCharsLengthParam = getNumBytesNextWord(&cmd_buf[startIndexOfParam], length - startIndexOfParam);
             memoryLength = getHexNumber(&cmd_buf[startIndexOfParam], numCharsLengthParam);
             debug_line(STR("memoryLength: 0x%x address: 0x%x"), memoryLength, address);
-            printMemory((uint8_t*)address, memoryLength);
+            printMemory((uint8_t*)(uintptr_t)address, memoryLength);
             debug_line(STR(""));
         }
             break;
